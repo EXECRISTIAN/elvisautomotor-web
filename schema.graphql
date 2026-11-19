@@ -2922,6 +2922,224 @@ input TradeInPhotoCreateInput {
   sortOrder: Int
 }
 
+type Bank {
+  id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String
+  active: Boolean
+  website: String
+  notes: String
+  providerKey: String
+  plans(where: FinancingPlanWhereInput! = {}, orderBy: [FinancingPlanOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FinancingPlanWhereUniqueInput): [FinancingPlan!]
+  plansCount(where: FinancingPlanWhereInput! = {}): Int
+}
+
+input BankWhereUniqueInput {
+  id: ID
+}
+
+input BankWhereInput {
+  AND: [BankWhereInput!]
+  OR: [BankWhereInput!]
+  NOT: [BankWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeFilter
+  updatedAt: DateTimeFilter
+  name: StringFilter
+  active: BooleanFilter
+  website: StringFilter
+  notes: StringFilter
+  providerKey: StringFilter
+  plans: FinancingPlanManyRelationFilter
+}
+
+input FinancingPlanManyRelationFilter {
+  every: FinancingPlanWhereInput
+  some: FinancingPlanWhereInput
+  none: FinancingPlanWhereInput
+}
+
+input BankOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+  name: OrderDirection
+  active: OrderDirection
+  website: OrderDirection
+  notes: OrderDirection
+  providerKey: OrderDirection
+}
+
+input BankUpdateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String
+  active: Boolean
+  website: String
+  notes: String
+  providerKey: String
+  plans: FinancingPlanRelateToManyForUpdateInput
+}
+
+input FinancingPlanRelateToManyForUpdateInput {
+  disconnect: [FinancingPlanWhereUniqueInput!]
+  set: [FinancingPlanWhereUniqueInput!]
+  create: [FinancingPlanCreateInput!]
+  connect: [FinancingPlanWhereUniqueInput!]
+}
+
+input BankUpdateArgs {
+  where: BankWhereUniqueInput!
+  data: BankUpdateInput!
+}
+
+input BankCreateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String
+  active: Boolean
+  website: String
+  notes: String
+  providerKey: String
+  plans: FinancingPlanRelateToManyForCreateInput
+}
+
+input FinancingPlanRelateToManyForCreateInput {
+  create: [FinancingPlanCreateInput!]
+  connect: [FinancingPlanWhereUniqueInput!]
+}
+
+type FinancingPlan {
+  id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  bank: Bank
+  name: String
+  active: Boolean
+  tnaBps: Int
+  teaBps: Int
+  cftBps: Int
+  termsMonths: String
+  minAmountCents: Float
+  maxAmountCents: Float
+  maxFinancedBps: Int
+  amortization: String
+  validFrom: DateTime
+  validUntil: DateTime
+  extraCosts: String
+  requirements: String
+  sortOrder: Int
+}
+
+input FinancingPlanWhereUniqueInput {
+  id: ID
+}
+
+input FinancingPlanWhereInput {
+  AND: [FinancingPlanWhereInput!]
+  OR: [FinancingPlanWhereInput!]
+  NOT: [FinancingPlanWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeFilter
+  updatedAt: DateTimeFilter
+  bank: BankWhereInput
+  name: StringFilter
+  active: BooleanFilter
+  tnaBps: IntFilter
+  teaBps: IntNullableFilter
+  cftBps: IntNullableFilter
+  termsMonths: StringFilter
+  minAmountCents: FloatNullableFilter
+  maxAmountCents: FloatNullableFilter
+  maxFinancedBps: IntNullableFilter
+  amortization: StringFilter
+  validFrom: DateTimeNullableFilter
+  validUntil: DateTimeNullableFilter
+  extraCosts: StringFilter
+  requirements: StringFilter
+  sortOrder: IntNullableFilter
+}
+
+input FinancingPlanOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+  name: OrderDirection
+  active: OrderDirection
+  tnaBps: OrderDirection
+  teaBps: OrderDirection
+  cftBps: OrderDirection
+  termsMonths: OrderDirection
+  minAmountCents: OrderDirection
+  maxAmountCents: OrderDirection
+  maxFinancedBps: OrderDirection
+  amortization: OrderDirection
+  validFrom: OrderDirection
+  validUntil: OrderDirection
+  extraCosts: OrderDirection
+  requirements: OrderDirection
+  sortOrder: OrderDirection
+}
+
+input FinancingPlanUpdateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  bank: BankRelateToOneForUpdateInput
+  name: String
+  active: Boolean
+  tnaBps: Int
+  teaBps: Int
+  cftBps: Int
+  termsMonths: String
+  minAmountCents: Float
+  maxAmountCents: Float
+  maxFinancedBps: Int
+  amortization: String
+  validFrom: DateTime
+  validUntil: DateTime
+  extraCosts: String
+  requirements: String
+  sortOrder: Int
+}
+
+input BankRelateToOneForUpdateInput {
+  create: BankCreateInput
+  connect: BankWhereUniqueInput
+  disconnect: Boolean
+}
+
+input FinancingPlanUpdateArgs {
+  where: FinancingPlanWhereUniqueInput!
+  data: FinancingPlanUpdateInput!
+}
+
+input FinancingPlanCreateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  bank: BankRelateToOneForCreateInput
+  name: String
+  active: Boolean
+  tnaBps: Int
+  teaBps: Int
+  cftBps: Int
+  termsMonths: String
+  minAmountCents: Float
+  maxAmountCents: Float
+  maxFinancedBps: Int
+  amortization: String
+  validFrom: DateTime
+  validUntil: DateTime
+  extraCosts: String
+  requirements: String
+  sortOrder: Int
+}
+
+input BankRelateToOneForCreateInput {
+  create: BankCreateInput
+  connect: BankWhereUniqueInput
+}
+
 type ServiceAppointment {
   id: ID!
   createdAt: DateTime
@@ -8547,6 +8765,18 @@ type Mutation {
   updateTradeInPhotos(data: [TradeInPhotoUpdateArgs!]!): [TradeInPhoto]
   deleteTradeInPhoto(where: TradeInPhotoWhereUniqueInput!): TradeInPhoto
   deleteTradeInPhotos(where: [TradeInPhotoWhereUniqueInput!]!): [TradeInPhoto]
+  createBank(data: BankCreateInput!): Bank
+  createBanks(data: [BankCreateInput!]!): [Bank]
+  updateBank(where: BankWhereUniqueInput!, data: BankUpdateInput!): Bank
+  updateBanks(data: [BankUpdateArgs!]!): [Bank]
+  deleteBank(where: BankWhereUniqueInput!): Bank
+  deleteBanks(where: [BankWhereUniqueInput!]!): [Bank]
+  createFinancingPlan(data: FinancingPlanCreateInput!): FinancingPlan
+  createFinancingPlans(data: [FinancingPlanCreateInput!]!): [FinancingPlan]
+  updateFinancingPlan(where: FinancingPlanWhereUniqueInput!, data: FinancingPlanUpdateInput!): FinancingPlan
+  updateFinancingPlans(data: [FinancingPlanUpdateArgs!]!): [FinancingPlan]
+  deleteFinancingPlan(where: FinancingPlanWhereUniqueInput!): FinancingPlan
+  deleteFinancingPlans(where: [FinancingPlanWhereUniqueInput!]!): [FinancingPlan]
   createServiceAppointment(data: ServiceAppointmentCreateInput!): ServiceAppointment
   createServiceAppointments(data: [ServiceAppointmentCreateInput!]!): [ServiceAppointment]
   updateServiceAppointment(where: ServiceAppointmentWhereUniqueInput!, data: ServiceAppointmentUpdateInput!): ServiceAppointment
@@ -8902,7 +9132,7 @@ type Mutation {
   createLeadTask(data: CreateLeadTaskInput!): Task
   completeTask(id: ID!, idempotencyKey: String!): Task
   startInventoryAcquisition(data: StartInventoryAcquisitionInput!): InventoryAcquisition
-  transitionInventoryAcquisition(id: ID!, toStatus: String!, expectedUpdatedAt: DateTime!, reason: String!, purchaseCents: Int, reconEstimateCents: Int, vehicleId: ID, idempotencyKey: String!): InventoryAcquisition
+  transitionInventoryAcquisition(id: ID!, toStatus: String!, expectedUpdatedAt: DateTime!, reason: String!, purchaseCents: Float, reconEstimateCents: Float, vehicleId: ID, idempotencyKey: String!): InventoryAcquisition
   transferLeadOwnership(data: TransferLeadOwnershipInput!): OperatorCommandResult!
   saveDealWorksheet(data: SaveDealWorksheetInput!): OperatorCommandResult!
   presentDealWorksheet(data: PresentDealWorksheetInput!): OperatorCommandResult!
@@ -9055,6 +9285,12 @@ type Query {
   tradeInPhoto(where: TradeInPhotoWhereUniqueInput!): TradeInPhoto
   tradeInPhotos(where: TradeInPhotoWhereInput! = {}, orderBy: [TradeInPhotoOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TradeInPhotoWhereUniqueInput): [TradeInPhoto!]
   tradeInPhotosCount(where: TradeInPhotoWhereInput! = {}): Int
+  bank(where: BankWhereUniqueInput!): Bank
+  banks(where: BankWhereInput! = {}, orderBy: [BankOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BankWhereUniqueInput): [Bank!]
+  banksCount(where: BankWhereInput! = {}): Int
+  financingPlan(where: FinancingPlanWhereUniqueInput!): FinancingPlan
+  financingPlans(where: FinancingPlanWhereInput! = {}, orderBy: [FinancingPlanOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FinancingPlanWhereUniqueInput): [FinancingPlan!]
+  financingPlansCount(where: FinancingPlanWhereInput! = {}): Int
   serviceAppointment(where: ServiceAppointmentWhereUniqueInput!): ServiceAppointment
   serviceAppointments(where: ServiceAppointmentWhereInput! = {}, orderBy: [ServiceAppointmentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ServiceAppointmentWhereUniqueInput): [ServiceAppointment!]
   serviceAppointmentsCount(where: ServiceAppointmentWhereInput! = {}): Int
@@ -9475,7 +9711,7 @@ type ReserveVehiclePayload {
   errorCode: String
   errorMessage: String
   leadId: ID
-  amountCents: Int
+  amountCents: Float
   checkoutUrl: String
   selectedVehicle: PublicSubmissionVehicle
   reused: Boolean
@@ -9665,8 +9901,8 @@ input TestDriveWorkflowInput {
 
 input RecordTradeInAppraisalInput {
   id: ID!
-  referenceValueCents: Int!
-  offerAmountCents: Int!
+  referenceValueCents: Float!
+  offerAmountCents: Float!
   idempotencyKey: String!
 }
 
@@ -9676,19 +9912,19 @@ input CreateDealPencilInput {
   leadId: ID
   salespersonId: ID
   tradeInId: ID
-  vehiclePriceCents: Int!
-  tradeInValueCents: Int
-  downPaymentCents: Int
+  vehiclePriceCents: Float!
+  tradeInValueCents: Float
+  downPaymentCents: Float
   idempotencyKey: String!
 }
 
 input OpenServiceOrderInput {
   appointmentId: ID!
   diagnosis: String
-  laborTotalCents: Int
-  partsTotalCents: Int
-  taxCents: Int
-  grandTotalCents: Int
+  laborTotalCents: Float
+  partsTotalCents: Float
+  taxCents: Float
+  grandTotalCents: Float
   idempotencyKey: String!
 }
 
@@ -9703,8 +9939,8 @@ input StartInventoryAcquisitionInput {
   make: String!
   model: String!
   odometer: Int
-  appraisalCents: Int!
-  reconEstimateCents: Int
+  appraisalCents: Float!
+  reconEstimateCents: Float
   vehicleId: ID
 }
 
@@ -9746,10 +9982,10 @@ input RecordLenderDecisionInput {
   idempotencyKey: String!
   externalReference: String
   decision: String!
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: [String!]
 }
 
@@ -9964,7 +10200,7 @@ type DealVehicleResult {
   exteriorColor: String
   condition: String
   status: String
-  priceCents: Int
+  priceCents: Float
 }
 
 type DealLeadResult {
@@ -9988,18 +10224,18 @@ type DealWorkspaceRecord {
   status: String
   structureType: String
   worksheetVersion: Int
-  vehiclePriceCents: Int
-  tradeInValueCents: Int
-  downPaymentCents: Int
-  financingAmountCents: Int
-  monthlyPaymentCents: Int
-  taxAmountCents: Int
-  totalPriceCents: Int!
+  vehiclePriceCents: Float
+  tradeInValueCents: Float
+  downPaymentCents: Float
+  financingAmountCents: Float
+  monthlyPaymentCents: Float
+  taxAmountCents: Float
+  totalPriceCents: Float!
   loanTerm: Int
   apr: Float
-  residualValueCents: Int
+  residualValueCents: Float
   moneyFactorBasisPoints: Int
-  grossCents: Int
+  grossCents: Float
   fees: JSON
   rebates: JSON
   products: JSON
@@ -10034,8 +10270,8 @@ type DealWorkspaceResult {
 type DealDeskRecord {
   id: ID!
   status: String
-  vehiclePriceCents: Int
-  totalPriceCents: Int!
+  vehiclePriceCents: Float
+  totalPriceCents: Float!
   saleDate: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -10048,7 +10284,7 @@ type DealDeskSummary {
   visibleCount: Int!
   pendingCount: Int!
   deliveredCount: Int!
-  totalRevenueCents: Int!
+  totalRevenueCents: Float!
 }
 
 type DealDeskWorkspaceResult {
@@ -10072,10 +10308,10 @@ type FinanceDecisionResult {
   id: ID!
   providerKey: String!
   decision: String!
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: JSON
   decidedAt: DateTime!
 }
@@ -10109,12 +10345,12 @@ type FinanceApplicationResult {
   applicantEmail: String
   applicantPhone: String
   employmentStatus: String
-  annualIncomeCents: Int
+  annualIncomeCents: Float
   selfReportedCreditTier: String
-  requestedAmountCents: Int
-  plannedMonthlyPaymentCents: Int
-  plannedDownPaymentCents: Int
-  tradeInValueCents: Int
+  requestedAmountCents: Float
+  plannedMonthlyPaymentCents: Float
+  plannedDownPaymentCents: Float
+  tradeInValueCents: Float
   aprBasisPoints: Int
   loanTermMonths: Int
   consentAt: DateTime
@@ -10192,8 +10428,8 @@ type FinanceProductResult {
   category: String!
   providerKey: String!
   active: Boolean!
-  retailPriceCents: Int!
-  costCents: Int
+  retailPriceCents: Float!
+  costCents: Float
   updatedAt: DateTime!
 }
 
@@ -10203,7 +10439,7 @@ type FinanceProductQuoteResult {
   product: FinanceProductResult
   providerKey: String!
   status: String!
-  retailPriceCents: Int
+  retailPriceCents: Float
   evidenceReference: String
   requestedAt: DateTime!
   completedAt: DateTime
@@ -10216,7 +10452,7 @@ type FinanceProductCancellationResult {
   productCode: String!
   status: String!
   reason: String!
-  refundCents: Int
+  refundCents: Float
   requestedAt: DateTime!
   completedAt: DateTime
 }
@@ -10317,7 +10553,7 @@ type WeOweResult {
   status: String!
   promisedAt: DateTime!
   owner: OperatorPersonResult
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   fulfillmentEvidence: String
   customerAcknowledgment: String
   fulfilledAt: DateTime
@@ -10342,8 +10578,8 @@ type FixedOpsLineResult {
   description: String!
   partNumber: String
   quantity: Float!
-  unitPriceCents: Int!
-  priceCents: Int!
+  unitPriceCents: Float!
+  priceCents: Float!
 }
 
 type FixedOpsLeadResult {
@@ -10357,7 +10593,7 @@ type FixedOpsLeadResult {
 type FixedOpsAppointmentOrderResult {
   id: ID!
   status: String
-  grandTotalCents: Int
+  grandTotalCents: Float
 }
 
 type FixedOpsServicePackageResult {
@@ -10414,10 +10650,10 @@ type FixedOpsOrderResult {
   diagnosis: String!
   workPerformed: String!
   recommendations: String!
-  laborTotalCents: Int!
-  partsTotalCents: Int!
-  taxCents: Int!
-  grandTotalCents: Int!
+  laborTotalCents: Float!
+  partsTotalCents: Float!
+  taxCents: Float!
+  grandTotalCents: Float!
   completedAt: DateTime
   settledAt: DateTime
   updatedAt: DateTime
@@ -10440,7 +10676,7 @@ type FixedOpsPartResult {
   committedQuantity: Int
   onOrderQuantity: Int
   minimumQuantity: Int
-  priceCents: Int
+  priceCents: Float
   supplier: String
 }
 
@@ -10491,10 +10727,10 @@ type DealLenderOfferResult {
   id: ID!
   providerKey: String!
   decision: String!
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: JSON
   decidedAt: DateTime!
   selected: Boolean!
@@ -10511,13 +10747,13 @@ input TransferLeadOwnershipInput {
 input SaveDealWorksheetInput {
   dealId: ID!
   structureType: String
-  vehiclePriceCents: Int!
-  tradeInValueCents: Int
-  downPaymentCents: Int
-  monthlyPaymentCents: Int
+  vehiclePriceCents: Float!
+  tradeInValueCents: Float
+  downPaymentCents: Float
+  monthlyPaymentCents: Float
   loanTerm: Int
   apr: Float
-  residualValueCents: Int
+  residualValueCents: Float
   moneyFactorBasisPoints: Int
   fees: JSON
   rebates: JSON
@@ -10609,7 +10845,7 @@ input ManageWeOweItemInput {
   description: String
   promisedAt: DateTime
   ownerId: ID
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   fulfillmentEvidence: String
   customerAcknowledgment: String
   idempotencyKey: String!
@@ -10649,8 +10885,8 @@ input ConfigurePartInput {
   description: String!
   binLocation: String
   minimumQuantity: Int
-  costCents: Int!
-  priceCents: Int!
+  costCents: Float!
+  priceCents: Float!
   supplier: String
   supplierPartNumber: String
   expectedUpdatedAt: DateTime
@@ -10716,14 +10952,14 @@ type WebhookResult {
 input CreatePaymentCheckoutInput {
   sourceType: String!
   sourceId: ID!
-  amountCents: Int!
+  amountCents: Float!
   providerKey: String!
   idempotencyKey: String!
 }
 
 input RequestPaymentRefundInput {
   transactionId: ID!
-  amountCents: Int!
+  amountCents: Float!
   reason: String!
   idempotencyKey: String!
 }
@@ -10759,8 +10995,8 @@ input AddServiceOrderLineInput {
   description: String!
   partNumber: String
   quantity: Float!
-  unitPriceCents: Int!
-  costCents: Int
+  unitPriceCents: Float!
+  costCents: Float
   expectedUpdatedAt: DateTime!
   idempotencyKey: String!
 }
@@ -10772,8 +11008,8 @@ input UpdateServiceOrderLineInput {
   description: String!
   partNumber: String
   quantity: Float!
-  unitPriceCents: Int!
-  costCents: Int
+  unitPriceCents: Float!
+  costCents: Float
   expectedUpdatedAt: DateTime!
   idempotencyKey: String!
 }
@@ -10787,7 +11023,7 @@ input RemoveServiceOrderLineInput {
 
 input SetServiceOrderTaxInput {
   serviceOrderId: ID!
-  taxCents: Int!
+  taxCents: Float!
   expectedUpdatedAt: DateTime!
   idempotencyKey: String!
 }
@@ -10804,8 +11040,8 @@ input ConfigureFinanceProductInput {
   name: String!
   category: String!
   providerKey: String!
-  retailPriceCents: Int!
-  costCents: Int
+  retailPriceCents: Float!
+  costCents: Float
   active: Boolean
   expectNew: Boolean
   idempotencyKey: String!
@@ -10815,8 +11051,8 @@ input RecordFinanceProductQuoteInput {
   dealId: ID!
   productId: ID!
   status: String!
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
   termMonths: Int
   evidenceReference: String
   idempotencyKey: String!
@@ -10895,14 +11131,14 @@ input ManageFinanceFundingInput {
   checklist: JSON!
   exceptions: JSON!
   fundingReference: String
-  paymentAmountCents: Int
+  paymentAmountCents: Float
   paymentMethod: String
   idempotencyKey: String!
 }
 
 input RecordCashDealDepositInput {
   dealId: ID!
-  amountCents: Int!
+  amountCents: Float!
   paymentMethod: String!
   receiptReference: String!
   idempotencyKey: String!
@@ -10910,7 +11146,7 @@ input RecordCashDealDepositInput {
 
 input RecordServiceCounterPaymentInput {
   serviceOrderId: ID!
-  amountCents: Int!
+  amountCents: Float!
   paymentMethod: String!
   receiptReference: String!
   idempotencyKey: String!
@@ -10919,18 +11155,18 @@ input RecordServiceCounterPaymentInput {
 type ServiceCounterPaymentResult {
   id: ID!
   serviceOrderId: ID!
-  amountCents: Int!
-  remainingCents: Int!
+  amountCents: Float!
+  remainingCents: Float!
   reused: Boolean!
 }
 
 type CashDealDepositResult {
   id: ID!
   dealId: ID!
-  amountCents: Int!
+  amountCents: Float!
   paymentMethod: String!
   receiptReference: String!
-  remainingCents: Int!
+  remainingCents: Float!
   form8300Required: Boolean!
   reused: Boolean!
 }
@@ -10941,7 +11177,7 @@ input RecordFinanceProductCancellationInput {
   productCode: String!
   status: String!
   reason: String!
-  refundCents: Int
+  refundCents: Float
   refundBasis: JSON
   evidenceReference: String
   idempotencyKey: String!
@@ -10987,7 +11223,7 @@ type InventoryVehicleResult {
   condition: String
   mileage: Int
   status: String
-  priceCents: Int
+  priceCents: Float
   description: String
   primaryImagePath: String
   images: [InventoryVehicleImageResult!]!
@@ -11008,10 +11244,10 @@ type InventoryPublicListingResult {
 }
 
 type InventoryCostSummary {
-  purchaseCostCents: Int!
-  reconCostCents: Int!
-  otherCostCents: Int!
-  totalCostCents: Int!
+  purchaseCostCents: Float!
+  reconCostCents: Float!
+  otherCostCents: Float!
+  totalCostCents: Float!
 }
 
 type InventoryReconWorkResult {
@@ -11019,8 +11255,8 @@ type InventoryReconWorkResult {
   title: String!
   category: String!
   status: String!
-  estimatedCostCents: Int
-  actualCostCents: Int
+  estimatedCostCents: Float
+  actualCostCents: Float
   dueAt: DateTime
   updatedAt: DateTime!
 }
@@ -11066,9 +11302,9 @@ type InventoryAcquisitionResult {
   make: String!
   model: String!
   acquisitionSource: String!
-  appraisalCents: Int!
-  purchaseCents: Int
-  reconEstimateCents: Int
+  appraisalCents: Float!
+  purchaseCents: Float
+  reconEstimateCents: Float
   updatedAt: DateTime!
   vehicleId: ID
 }
@@ -11089,8 +11325,8 @@ type InventoryWorkspaceSummary {
   availableCount: Int!
   agedCount: Int!
   reconOpenCount: Int!
-  totalRetailValueCents: Int!
-  totalCostCents: Int
+  totalRetailValueCents: Float!
+  totalCostCents: Float
 }
 
 type InventoryPageInfo {
@@ -11162,9 +11398,9 @@ input IntakeInventoryVehicleInput {
   transmission: String
   engine: String
   mileage: Int
-  purchasePriceCents: Int!
-  listPriceCents: Int!
-  priceCents: Int!
+  purchasePriceCents: Float!
+  listPriceCents: Float!
+  priceCents: Float!
   condition: String!
   description: String
   features: JSON
@@ -11179,7 +11415,7 @@ input EstablishInventoryStockInput {
   stockNumber: String!
   locationCode: String!
   locationLabel: String
-  purchaseCostCents: Int
+  purchaseCostCents: Float
   condition: String
   trim: String
   exteriorColor: String
@@ -11200,7 +11436,7 @@ input MoveInventoryStockInput {
 input RecordInventoryCostInput {
   stockId: ID!
   costType: String!
-  amountCents: Int!
+  amountCents: Float!
   reference: String
   reason: String!
   idempotencyKey: String!
@@ -11210,7 +11446,7 @@ input CreateInventoryReconWorkInput {
   stockId: ID!
   title: String!
   category: String!
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   vendorName: String
   assignedToId: ID
   dueAt: DateTime
@@ -11221,7 +11457,7 @@ input CreateInventoryReconWorkInput {
 input TransitionInventoryReconWorkInput {
   id: ID!
   toStatus: String!
-  actualCostCents: Int
+  actualCostCents: Float
   expectedUpdatedAt: DateTime!
   reason: String!
   idempotencyKey: String!
@@ -11242,8 +11478,8 @@ input UpdateInventoryVehicleDetailsInput {
   condition: String!
   mileage: Int
   features: JSON
-  listPriceCents: Int
-  priceCents: Int!
+  listPriceCents: Float
+  priceCents: Float!
   description: String
   priceChangeReason: String
   expectedUpdatedAt: DateTime!
@@ -11253,8 +11489,8 @@ input UpdateInventoryVehicleDetailsInput {
 
 input UpdateInventoryMerchandisingDraftInput {
   stockId: ID!
-  priceCents: Int!
-  listPriceCents: Int
+  priceCents: Float!
+  listPriceCents: Float
   mileage: Int
   description: String!
   imagePath: String
@@ -11318,7 +11554,7 @@ input RecordInventoryFeedRunInput {
 type PaymentReturnStatus {
   state: String!
   retryUrl: String
-  amountCents: Int!
+  amountCents: Float!
   currency: String!
   reference: String!
   purpose: String!
@@ -11363,7 +11599,7 @@ type CustomerRequest {
   status: String!
   timezone: String
   vehicle: String
-  amountCents: Int
+  amountCents: Float
   reference: String
 }
 

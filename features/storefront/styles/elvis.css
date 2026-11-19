@@ -122,3 +122,9 @@
 .elv-contact-grid dd { margin-top: 0.5rem; font-size: 0.95rem; color: var(--sf-ink); }
 }
 .storefront .elv-contact-grid > div:only-child { grid-column: 1 / -1; }
+.storefront .sf-pill[aria-pressed="true"],
+.storefront .sf-pill[data-active="true"] {
+  background: var(--sf-gold-gradient);
+  color: var(--sf-accent-ink);
+  border-color: transparent;
+}

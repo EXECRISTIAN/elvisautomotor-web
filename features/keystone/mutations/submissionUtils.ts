@@ -72,7 +72,7 @@ export function parseScheduledTime(dateValue: unknown, timeValue: unknown, label
 }
 
 export const PUBLIC_SUBMISSION_VEHICLE_QUERY = `
-  id vin stockNumber year make model trim exteriorColor interiorColor mileage condition description priceCents listPriceCents features status
+  id vin stockNumber year make model trim exteriorColor interiorColor mileage fuelType transmission engine condition description priceCents listPriceCents features status
   images { id imagePath image { id extension } caption category isPrimary sortOrder }
   rooftop { id status dealerGroup { id status } }
   inventoryStock {
@@ -146,7 +146,7 @@ export async function resolveAvailableVehicle(context: any, vehicleId: unknown, 
 
 export function formatCurrency(value: unknown) {
   const number = Number(value || 0)
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', maximumFractionDigits: 0,
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
   }).format(number)
 }

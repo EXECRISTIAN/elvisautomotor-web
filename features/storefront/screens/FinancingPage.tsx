@@ -1,744 +1,305 @@
 'use client'
 
-import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Landmark } from 'lucide-react'
+import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
 import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
-import { GET_VEHICLE_BY_ID } from '@/features/storefront/lib/data/queries'
+import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
+import { SIMULATION_DISCLAIMER, formatBpsPercent, simulate, type AmortizationSystem } from '@/features/lib/financing/simulate'
+import { normalizeMoneyText } from '@/features/platform/deals/lib/moneyInput'
 import { submitStorefrontFinancing } from '../actions/submissions'
-import { Container } from '../components/Container'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
-import { currencySymbol, formatPrice, storefrontCurrency, vehicleTitle } from '../lib/format'
+import { WhatsAppButton } from '../components/WhatsAppButton'
+import { formatPrice, vehicleTitle } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
+import { ELVIS_ABOUT } from '../lib/elvisContent'
 import { fillBlankFields, useCustomerPrefill } from '../lib/useCustomerPrefill'
-import { FINANCING_ANNUAL_INCOME_INPUT, isFinancingSubmitDisabled } from '../lib/financingForm'
-import { buildAmortizationSchedule, calculateFinancingEstimate, parseFinancingAmount } from '../lib/data/financing-calculator'
-import { classifyVehicleDetailResponse } from '../lib/data/vehicle-detail-response'
-import {
-  Field,
-  FormSection,
-  MobileSummary,
-  Notice,
-  ACTION_ROW,
-  RequestLayout,
-  Sticker,
-  StickerVehicle,
-  type StickerRowData,
-} from '../components/forms/RequestForm'
+import { Field, FormSection, MobileSummary, Notice, RequestLayout, RequestReceived, Sticker, type StickerRowData } from '../components/forms/RequestForm'
 
-type SelectedVehicleLookup =
-  | { status: 'none' }
-  | { status: 'loading' | 'error' | 'not-found'; vehicleId: string }
-  | { status: 'available'; vehicleId: string; vehicle: Vehicle }
+export type PublicFinancingPlan = {
+  id: string
+  bankName: string
+  name: string
+  tnaBps: number
+  teaBps: number | null
+  cftBps: number | null
+  termsMonths: number[]
+  minAmountCents: number | null
+  maxAmountCents: number | null
+  maxFinancedBps: number | null
+  amortization: AmortizationSystem
+  validUntil: string | null
+  extraCosts: string
+  requirements: string
+}
 
-const LOAN_TERMS = [36, 48, 60, 72, 84]
-const DEFAULT_INTEREST_RATE = 7.5
-const DEFAULT_DOWN_PAYMENT_PERCENT = 10
-const DOWN_PAYMENT_PRESETS = [0, 10, 15, 20, 25]
+const EMPLOYMENT = [
+  { value: 'employed', label: 'Relación de dependencia' },
+  { value: 'self-employed', label: 'Monotributista / autónomo' },
+  { value: 'retired', label: 'Jubilado / pensionado' },
+  { value: 'other', label: 'Otra' },
+]
+const CREDIT = [
+  { value: 'excellent-720-plus', label: 'Muy buena, sin deudas' },
+  { value: 'good-680-719', label: 'Buena' },
+  { value: 'fair-620-679', label: 'Regular' },
+  { value: 'rebuilding-under-620', label: 'Con deudas / en recuperación' },
+  { value: 'not-sure', label: 'No sé' },
+]
 
-function FinancingContent() {
+/** "54.900.000" -> 54900000 (pesos). Vacío o inválido -> null. */
+function parsePesos(text: string) {
+  const normalized = normalizeMoneyText(text)
+  if (!normalized) return null
+  const value = Number(normalized)
+  return Number.isFinite(value) && value >= 0 ? value : null
+}
+
+export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
   const business = useStorefrontBusiness()
-  const currency = storefrontCurrency(business.currencyCode)
-  const symbol = currencySymbol(currency)
-  const money = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)
-  const wholeMoney = (value: number) => formatPrice(value, currency)
+  const money = (pesos: number) => formatPrice(pesos, business.currencyCode || 'ARS')
   const searchParams = useSearchParams()
-  const vehiclePrice = searchParams?.get('price') ?? null
-  const vehicleId = searchParams?.get('vehicleId') || ''
-  const queryPrice = parseFinancingAmount(vehiclePrice)
-  const initialVehiclePrice = !vehicleId && queryPrice.status === 'valid' ? String(queryPrice.value) : ''
-  const initialDownPayment = queryPrice.status === 'valid' && queryPrice.value > 0
-    ? ((queryPrice.value * DEFAULT_DOWN_PAYMENT_PERCENT) / 100).toFixed(2)
-    : ''
-
-  const [formData, setFormData] = useState({
-    vehiclePrice: initialVehiclePrice,
-    downPayment: initialVehiclePrice ? initialDownPayment : '',
-    downPaymentPercent: DEFAULT_DOWN_PAYMENT_PERCENT,
-    interestRate: DEFAULT_INTEREST_RATE,
-    loanTerm: 60,
-    tradeInValue: '',
-  })
-
-  const [applicationForm, setApplicationForm] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    employmentStatus: '',
-    annualIncome: '',
-    creditTier: '',
-    consent: false,
-    privacyAcknowledged: false,
-    website: '',
-  })
+  const [vehicles, setVehicles] = useState<Vehicle[] | null>(null)
+  const [vehicleId, setVehicleId] = useState(searchParams?.get('vehicleId') || '')
+  const [manualPrice, setManualPrice] = useState('')
+  const [downPayment, setDownPayment] = useState('')
+  const [planId, setPlanId] = useState(plans[0]?.id || '')
+  const [term, setTerm] = useState<number>(plans[0]?.termsMonths[0] || 0)
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', employmentStatus: '', monthlyIncome: '', creditTier: '', consent: false, privacyAcknowledged: false, website: '' })
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
-  const [isApplying, setIsApplying] = useState(false)
-  const [applicationStatus, setApplicationStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [applicationReference, setApplicationReference] = useState<string | null>(null)
-  const [applicationError, setApplicationError] = useState<string | null>(null)
-  const [vehicleLookup, setVehicleLookup] = useState<SelectedVehicleLookup>(
-    vehicleId ? { status: 'loading', vehicleId } : { status: 'none' },
-  )
-  const [vehicleLookupRetry, setVehicleLookupRetry] = useState(0)
-  const [showAmortization, setShowAmortization] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [reference, setReference] = useState<string | null>(null)
   const prefill = useCustomerPrefill()
 
   useEffect(() => {
-    if (!prefill) return
-    setApplicationForm((prev) => fillBlankFields(prev, { fullName: prefill.name, email: prefill.email, phone: prefill.phone }))
+    if (prefill) setForm((prev) => fillBlankFields(prev, { fullName: [prefill.firstName, prefill.lastName].filter(Boolean).join(' '), email: prefill.email, phone: prefill.phone }))
   }, [prefill])
 
-  const currentVehicleLookup = vehicleId && vehicleLookup.status !== 'none' && vehicleLookup.vehicleId === vehicleId
-    ? vehicleLookup
-    : vehicleId ? { status: 'loading' as const, vehicleId } : { status: 'none' as const }
-  const selectedVehicle = currentVehicleLookup.status === 'available' ? currentVehicleLookup.vehicle : null
-  const selectedPrice = selectedVehicle ? parseFinancingAmount(selectedVehicle.price) : null
-  const selectedPriceLabel = selectedPrice?.status === 'valid' && selectedPrice.value > 0
-    ? formatPrice(selectedPrice.value, currency)
-    : 'Price unavailable'
-  const calculationInput = currentVehicleLookup.status === 'loading' ? { ...formData, vehiclePrice: '' } : formData
-  const calculation = calculateFinancingEstimate(calculationInput)
-  const calculatedResults = 'estimate' in calculation ? calculation.estimate : null
-  const amortizationSchedule = calculation.status === 'ready' && calculatedResults
-    ? buildAmortizationSchedule(calculatedResults, formData.interestRate, formData.loanTerm)
-    : []
-  const invalidPriceFromLink = !vehicleId && vehiclePrice !== null && queryPrice.status === 'invalid' && !formData.vehiclePrice
-
   useEffect(() => {
-    if (!vehicleId) {
-      setVehicleLookup({ status: 'none' })
-      return
-    }
+    let active = true
+    void fetchGraphQL<{ publicInventoryVehicles: { items: Vehicle[] } }>(GET_VEHICLES, { where: { status: { equals: 'available' } }, orderBy: [{ year: 'desc' }], take: 100 })
+      .then((data) => { if (active) setVehicles(data.publicInventoryVehicles?.items ?? []) })
+      .catch(() => { if (active) setVehicles([]) })
+    return () => { active = false }
+  }, [])
 
-    let isCurrentRequest = true
-    setVehicleLookup({ status: 'loading', vehicleId })
-    void fetchGraphQL<unknown>(GET_VEHICLE_BY_ID, { id: vehicleId })
-      .then((response) => {
-        if (!isCurrentRequest) return
-        const result = classifyVehicleDetailResponse<Vehicle>(response, vehicleId)
-        if (result.status === 'available') {
-          setVehicleLookup({ status: 'available', vehicleId, vehicle: result.vehicle })
-          const currentPrice = parseFinancingAmount(result.vehicle.price)
-          if (currentPrice.status === 'valid' && currentPrice.value > 0) {
-            setFormData((prev) => prev.vehiclePrice ? prev : {
-              ...prev,
-              vehiclePrice: String(currentPrice.value),
-              downPayment: ((currentPrice.value * prev.downPaymentPercent) / 100).toFixed(2),
-            })
-          }
-        } else if (result.status === 'not-found') {
-          setVehicleLookup({ status: 'not-found', vehicleId })
-        } else {
-          setVehicleLookup({ status: 'error', vehicleId })
-        }
-      })
-      .catch(() => {
-        if (isCurrentRequest) setVehicleLookup({ status: 'error', vehicleId })
-      })
-    return () => {
-      isCurrentRequest = false
-    }
-  }, [vehicleId, vehicleLookupRetry])
+  const vehicle = vehicles?.find((item) => item.id === vehicleId) ?? null
+  const price = vehicle && vehicle.price > 0 ? vehicle.price : parsePesos(manualPrice)
+  const down = parsePesos(downPayment) ?? 0
+  const plan = plans.find((item) => item.id === planId) ?? null
 
-  useEffect(() => {
-    if (!vehicleId) return
-    setFormData((prev) => prev.vehiclePrice || prev.downPayment
-      ? { ...prev, vehiclePrice: '', downPayment: '' }
-      : prev)
-  }, [vehicleId])
+  const result = useMemo(() => {
+    if (!plan || !price || !term) return null
+    return simulate(plan, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(down * 100), termMonths: term })
+  }, [plan, price, down, term])
 
-  useEffect(() => {
-    if (vehicleId) return
-    const linkedPrice = parseFinancingAmount(vehiclePrice)
-    const nextPrice = linkedPrice.status === 'valid' ? String(linkedPrice.value) : ''
-    setFormData((prev) => {
-      if (prev.vehiclePrice === nextPrice) return prev
-      return {
-        ...prev,
-        vehiclePrice: nextPrice,
-        ...(linkedPrice.status === 'valid' && linkedPrice.value > 0
-          ? { downPayment: ((linkedPrice.value * prev.downPaymentPercent) / 100).toFixed(2) }
-          : {}),
-      }
-    })
-  }, [vehicleId, vehiclePrice])
-
-  const retryVehicleLookup = () => {
-    setVehicleLookup({ status: 'loading', vehicleId })
-    setVehicleLookupRetry((current) => current + 1)
+  const choosePlan = (id: string) => {
+    setPlanId(id)
+    const next = plans.find((item) => item.id === id)
+    if (next && !next.termsMonths.includes(term)) setTerm(next.termsMonths[0])
   }
 
-  const handleDownPaymentChange = (value: string) => {
-    const downPayment = value ? parseFinancingAmount(value) : { status: 'valid' as const, value: 0 }
-    const price = parseFinancingAmount(formData.vehiclePrice)
-    const percent = price.status === 'valid' && price.value > 0 && downPayment.status === 'valid'
-      ? (downPayment.value / price.value) * 100
-      : 0
-    setFormData((prev) => ({ ...prev, downPayment: value, downPaymentPercent: percent }))
-  }
-
-  const handleApplicationSubmit = async (event: React.FormEvent) => {
+  const send = async (event: React.FormEvent) => {
     event.preventDefault()
-    setIsApplying(true)
-    setApplicationStatus('idle')
-    setApplicationError(null)
-
+    if (sending) return
+    setSending(true)
+    setError(null)
     try {
-      const result = await submitStorefrontFinancing({
-        ...applicationForm,
-        annualIncome: parseFloat(applicationForm.annualIncome) || 0,
-        requestedAmount: calculation.status === 'ready' || calculation.status === 'no-loan'
-          ? calculatedResults?.loanAmount ?? null
-          : calculation.status === 'zero-price' ? 0 : null,
-        monthlyPayment: calculation.status === 'ready' ? calculatedResults?.monthlyPayment ?? null : null,
-        downPayment: parseFloat(formData.downPayment || '0') || 0,
-        tradeInValue: parseFloat(formData.tradeInValue || '0') || 0,
-        apr: formData.interestRate,
-        loanTerm: formData.loanTerm,
-        vehicleId: selectedVehicle?.id,
+      const income = parsePesos(form.monthlyIncome)
+      if (!income) throw new Error('Ingresá tus ingresos mensuales aproximados.')
+      const response = await submitStorefrontFinancing({
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        employmentStatus: form.employmentStatus,
+        annualIncome: income * 12,
+        creditTier: form.creditTier,
+        consent: form.consent,
+        privacyAcknowledged: form.privacyAcknowledged,
+        website: form.website,
         rooftopSlug: business.rooftopSlug,
         idempotencyKey,
+        vehicleId: vehicle?.id,
+        downPayment: down,
+        ...(plan && result?.ok && price
+          ? { financingPlanId: plan.id, loanTerm: term, vehiclePrice: price, requestedAmount: result.financedCents / 100, monthlyPayment: result.firstInstallmentCents / 100, apr: plan.tnaBps / 100 }
+          : { requestedAmount: price ? Math.max(price - down, 0) : null }),
       })
-
-      if (!result.success) throw new Error(result.error)
-
-      setApplicationReference(
-        result.data.applicationReference || customerRequestReference('financing', result.data.applicationId)
-      )
-      setApplicationStatus('success')
+      if (!response.success) throw new Error(response.error)
+      setReference(response.data.applicationReference || customerRequestReference('financing', response.data.applicationId))
       setIdempotencyKey(crypto.randomUUID())
-      setApplicationForm({
-        fullName: prefill?.name || '',
-        email: prefill?.email || '',
-        phone: prefill?.phone || '',
-        employmentStatus: '',
-        annualIncome: '',
-        creditTier: '',
-        consent: false,
-        privacyAcknowledged: false,
-        website: '',
-      })
-    } catch (error) {
-      setApplicationError(error instanceof Error && error.message ? error.message : null)
-      setApplicationStatus('error')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'No pudimos enviar la solicitud. Intentá de nuevo.')
     } finally {
-      setIsApplying(false)
+      setSending(false)
     }
   }
 
-  const setDownPaymentPercent = (percent: number) => {
-    setFormData((prev) => {
-      const price = parseFinancingAmount(prev.vehiclePrice)
-      return {
-        ...prev,
-        downPaymentPercent: percent,
-        ...(price.status === 'valid' && price.value > 0
-          ? { downPayment: ((price.value * percent) / 100).toFixed(2) }
-          : {}),
-      }
-    })
-  }
-
-  const estimateReadout = calculation.status === 'ready' && calculatedResults ? (
-    <div className="px-4 pb-4 pt-5">
-      <p className="sf-eyebrow">Monthly payment</p>
-      <p className="sf-price mt-2 text-[length:var(--sf-text-display)]" aria-live="polite">
-        {money(calculatedResults.monthlyPayment)}
-      </p>
-      <p className="sf-figure sf-muted mt-2 text-[length:var(--sf-text-sm)]">
-        {formData.loanTerm} mo / {formData.interestRate}% APR
-      </p>
-    </div>
-  ) : (
-    <div className="px-4 py-5">
-      <p className="sf-eyebrow">Monthly payment</p>
-      {calculation.status === 'no-loan' ? (
-        <p role="status" className="sf-title-line mt-3 text-[length:var(--sf-text-sm)]">
-          <span className="sf-dot" data-tone="ok" aria-hidden="true" />
-          <span>Down payment and trade-in cover the full price.</span>
-        </p>
-      ) : calculation.status === 'invalid-price' || calculation.status === 'invalid-input' ? (
-        <p role="alert" className="sf-title-line mt-3 text-[length:var(--sf-text-sm)]">
-          <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-          <span>Check the amounts entered.</span>
-        </p>
-      ) : (
-        <p role="status" className="sf-faint mt-3 text-[length:var(--sf-text-sm)]">Enter a vehicle price.</p>
-      )}
-    </div>
-  )
-
-  const estimateRows: StickerRowData[] = calculatedResults && (calculation.status === 'ready' || calculation.status === 'no-loan')
-    ? [
-        { label: 'Vehicle price', value: wholeMoney(calculatedResults.vehiclePrice) },
-        { label: 'Down payment', value: `−${wholeMoney(calculatedResults.downPayment)}` },
-        ...(calculatedResults.tradeInValue > 0
-          ? [{ label: 'Trade-in', value: `−${wholeMoney(calculatedResults.tradeInValue)}` }]
-          : []),
-        { label: 'Loan amount', value: wholeMoney(calculatedResults.loanAmount), strong: true },
-        ...(calculation.status === 'ready'
-          ? [
-              { label: 'Total interest', value: `+${money(calculatedResults.totalInterest)}` },
-              { label: 'Total payment', value: money(calculatedResults.totalPayment), strong: true },
-            ]
-          : []),
-      ]
-    : []
-
+  const rows: StickerRowData[] = [
+    { label: 'Vehículo', value: vehicle ? vehicleTitle(vehicle) : price ? 'Otro / a definir' : null, strong: true },
+    { label: 'Precio', value: price ? money(price) : null },
+    { label: 'Anticipo', value: money(down) },
+    ...(plan ? [{ label: 'Plan', value: `${plan.bankName} — ${plan.name}` }] : []),
+    ...(result?.ok ? [
+      { label: 'A financiar', value: money(result.financedCents / 100) },
+      { label: plan?.amortization === 'aleman' ? 'Primera cuota' : 'Cuota estimada', value: <span className="sf-figure">{money(result.firstInstallmentCents / 100)}</span>, strong: true },
+      ...(plan?.amortization === 'aleman' ? [{ label: 'Última cuota', value: money(result.lastInstallmentCents / 100) }] : []),
+      { label: 'Plazo', value: `${result.termMonths} meses` },
+    ] : []),
+  ]
   const summary = (
-    <Sticker
-      title="Payment estimate"
-      meta={`${formData.loanTerm} mo`}
-      rows={estimateRows}
-      footer={<p className="sf-faint text-[length:var(--sf-text-xs)]">Estimate. Actual rates and terms may differ.</p>}
-    >
-      {selectedVehicle && <StickerVehicle vehicle={selectedVehicle} label={`Vehicle / ${selectedPriceLabel}`} />}
-      <div className={estimateRows.length ? 'border-b border-dashed' : undefined} style={{ borderColor: 'var(--sf-rule)' }}>
-        {estimateReadout}
-      </div>
+    <Sticker title="Simulación" meta="Estimativa" rows={rows}>
+      <p className="sf-muted px-4 pb-3 text-[length:var(--sf-text-xs)]">{SIMULATION_DISCLAIMER}</p>
     </Sticker>
   )
 
-  const roundedPercent = Math.round(formData.downPaymentPercent * 10) / 10
+  if (reference) {
+    return (
+      <RequestReceived
+        context="Financiación"
+        reference={reference}
+        note={`Un asesor revisa tu consulta y te contacta. ${ELVIS_ABOUT.creditDisclaimer}`}
+        summary={summary}
+        actions={
+          <>
+            <Link href="/inventory" className="sf-btn sf-btn-primary">Ver inventario</Link>
+            <WhatsAppButton label="Consultar por WhatsApp" message={`Hola ${business.shortName}, envié una consulta de financiación (referencia ${reference}).`} className="sf-btn sf-btn-ghost" />
+          </>
+        }
+      />
+    )
+  }
 
   return (
     <>
-      <PageHeader title="Payment estimate" />
-
+      <PageHeader title="Financiación" />
       <RequestLayout summary={summary}>
-        <div className="space-y-[var(--sf-space-xl)]">
-          {vehicleId && currentVehicleLookup.status === 'loading' && (
-            <Notice role="status">Loading vehicle…</Notice>
-          )}
-          {vehicleId && currentVehicleLookup.status === 'not-found' && (
-            <Notice tone="warn" role="status">
-              This vehicle is no longer available.{' '}
-              <Link href="/inventory" className="sf-link">Browse inventory</Link>
-            </Notice>
-          )}
-          {vehicleId && currentVehicleLookup.status === 'error' && (
-            <Notice tone="bad">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <span>This vehicle couldn&apos;t be loaded.</span>
-                <button type="button" onClick={retryVehicleLookup} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">Retry</button>
-              </div>
-            </Notice>
-          )}
+        <div className="space-y-[var(--sf-space-lg)]">
+          <div className="sf-well flex gap-4 p-5">
+            <Landmark className="mt-0.5 size-8 shrink-0" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+            <div className="space-y-2 text-[length:var(--sf-text-sm)]">
+              <p>{ELVIS_ABOUT.credit}</p>
+              <p className="sf-muted">{ELVIS_ABOUT.creditVisit} {ELVIS_ABOUT.creditDisclaimer}</p>
+            </div>
+          </div>
 
-          <FormSection
-            title="Loan"
-            first
-            aside={selectedVehicle ? (
-              <Link href={`/inventory/${selectedVehicle.id}`} className="sf-link shrink-0 text-[length:var(--sf-text-sm)]">
-                Vehicle details
-              </Link>
-            ) : undefined}
-          >
-            <div className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Vehicle price" htmlFor="financing-vehicle-price">
-                  <div className="relative">
-                    <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{symbol}</span>
-                    <input
-                      id="financing-vehicle-price"
-                      type="number"
-                      inputMode="decimal"
-                      value={formData.vehiclePrice}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        const amount = parseFinancingAmount(value)
-                        setFormData((prev) => ({
-                          ...prev,
-                          vehiclePrice: value,
-                          ...(amount.status === 'valid' && amount.value > 0
-                            ? { downPayment: ((amount.value * prev.downPaymentPercent) / 100).toFixed(2) }
-                            : {}),
-                        }))
-                      }}
-                      className="sf-input sf-figure pl-8"
-                      placeholder="e.g. 35,000"
-                      step="0.01"
-                      min="0"
-                      aria-invalid={invalidPriceFromLink || undefined}
-                    />
-                  </div>
-                  {invalidPriceFromLink && (
-                    <p role="alert" className="sf-error">Enter a vehicle price.</p>
-                  )}
-                </Field>
-                <Field label="APR" htmlFor="financing-apr">
-                  <div className="relative">
-                    <input
-                      id="financing-apr"
-                      type="number"
-                      inputMode="decimal"
-                      value={formData.interestRate}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))}
-                      className="sf-input sf-figure pr-8"
-                      placeholder="e.g. 7.5"
-                      step="0.1"
-                      min="0"
-                      max="30"
-                    />
-                    <span className="sf-figure sf-faint pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">%</span>
-                  </div>
-                </Field>
-              </div>
-
-              <div>
-                <p id="financing-loan-term" className="sf-label">Term</p>
-                <div role="group" aria-labelledby="financing-loan-term" className="sf-track sf-track-block">
-                  {LOAN_TERMS.map((term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, loanTerm: term }))}
-                      className="sf-pill min-h-12 gap-1 px-2"
-                      aria-pressed={formData.loanTerm === term}
-                    >
-                      <span className="sf-figure text-[length:var(--sf-text-lg)]">{term}</span>
-                      <span className="sf-faint text-[length:var(--sf-text-xs)] max-[379px]:hidden">mo</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <label htmlFor="financing-down-payment" className="sf-label">Down payment</label>
-                  <span className="sf-figure sf-muted text-[length:var(--sf-text-sm)]">{formData.downPaymentPercent.toFixed(1)}%</span>
-                </div>
-                <div role="group" aria-label="Down payment share" className="sf-track sf-track-block mb-3">
-                  {DOWN_PAYMENT_PRESETS.map((percent) => (
-                    <button
-                      key={percent}
-                      type="button"
-                      onClick={() => setDownPaymentPercent(percent)}
-                      className="sf-pill min-h-12 px-2"
-                      aria-pressed={roundedPercent === percent}
-                    >
-                      <span className="sf-figure text-[length:var(--sf-text-lg)]">{percent}</span>
-                      <span className="sf-figure sf-faint text-[length:var(--sf-text-xs)]">%</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,14rem)_1fr] sm:items-center">
-                  <div className="relative">
-                    <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{symbol}</span>
-                    <input
-                      id="financing-down-payment"
-                      type="number"
-                      inputMode="decimal"
-                      value={formData.downPayment}
-                      onChange={(e) => handleDownPaymentChange(e.target.value)}
-                      className="sf-input sf-figure pl-8"
-                      placeholder="e.g. 3,500"
-                      step="100"
-                      min="0"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="sf-figure sf-faint text-[length:var(--sf-text-xs)]">0%</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="50"
-                      step="1"
-                      value={formData.downPaymentPercent}
-                      onChange={(e) => setDownPaymentPercent(parseFloat(e.target.value))}
-                      className="h-11 w-full min-w-0 accent-[var(--sf-accent)]"
-                      aria-label="Down payment percentage"
-                    />
-                    <span className="sf-figure sf-faint text-[length:var(--sf-text-xs)]">50%</span>
-                  </div>
-                </div>
-              </div>
-
-              <Field label="Trade-in amount" htmlFor="financing-trade-in" className="sm:max-w-sm">
-                <div className="relative">
-                  <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{symbol}</span>
-                  <input
-                    id="financing-trade-in"
-                    type="number"
-                    inputMode="decimal"
-                    value={formData.tradeInValue}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, tradeInValue: e.target.value }))}
-                    className="sf-input sf-figure pl-8"
-                    placeholder="e.g. 5,000"
-                    step="100"
-                    min="0"
-                  />
-                </div>
-                <Link
-                  href={selectedVehicle ? `/trade-in?vehicleId=${selectedVehicle.id}` : '/trade-in'}
-                  className="sf-link mt-1 inline-flex min-h-11 items-center text-[length:var(--sf-text-sm)]"
-                >
-                  Request a trade-in review
-                </Link>
+          <FormSection title="1. Simulá tu cuota" first>
+            <div className="grid gap-4">
+              <Field label="Vehículo" htmlFor="fin-vehicle">
+                <PlatformSelect
+                  id="fin-vehicle"
+                  value={vehicleId}
+                  onValueChange={setVehicleId}
+                  className="sf-input sf-trigger"
+                  placeholder={vehicles === null ? 'Cargando inventario…' : 'Elegí un vehículo'}
+                  searchable
+                  options={[{ value: '', label: 'Otro / todavía no elegí' }, ...(vehicles ?? []).map((item) => ({ value: item.id, label: `${vehicleTitle(item)} — ${item.price > 0 ? money(item.price) : 'consultar'}` }))]}
+                />
               </Field>
+              {!vehicle && (
+                <Field label="Precio del vehículo" htmlFor="fin-price">
+                  <input id="fin-price" inputMode="decimal" value={manualPrice} onChange={(e) => setManualPrice(e.target.value)} className="sf-input sf-figure" placeholder="Ej.: 25.000.000" />
+                </Field>
+              )}
+              <Field label="¿Cuánto podés entregar?" htmlFor="fin-down">
+                <input id="fin-down" inputMode="decimal" value={downPayment} onChange={(e) => setDownPayment(e.target.value)} className="sf-input sf-figure" placeholder="Ej.: 8.000.000 (podés incluir tu usado)" />
+              </Field>
+
+              {plans.length === 0 ? (
+                <Notice tone="warn">
+                  Todavía no hay planes bancarios publicados. Consultá tu crédito de forma presencial y gratuita en nuestro salón, o escribinos y te asesoramos.
+                </Notice>
+              ) : (
+                <>
+                  <fieldset>
+                    <legend className="sf-label">Banco y plan</legend>
+                    <div className="grid gap-2">
+                      {plans.map((item) => (
+                        <label key={item.id} className="sf-well flex cursor-pointer items-start gap-3 p-4" data-active={item.id === planId || undefined} style={item.id === planId ? { borderColor: 'var(--sf-accent)', boxShadow: 'inset 0 0 0 1px var(--sf-accent)' } : undefined}>
+                          <input type="radio" name="plan" value={item.id} checked={item.id === planId} onChange={() => choosePlan(item.id)} className="mt-1" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-semibold">{item.bankName} — {item.name}</span>
+                            <span className="sf-muted mt-1 block text-[length:var(--sf-text-sm)]">
+                              TNA {formatBpsPercent(item.tnaBps)}{item.teaBps != null ? ` · TEA ${formatBpsPercent(item.teaBps)}` : ''}{item.cftBps != null ? ` · CFT ${formatBpsPercent(item.cftBps)}` : ''} · Sistema {item.amortization === 'aleman' ? 'alemán' : 'francés'}
+                              {item.maxFinancedBps != null ? ` · Financia hasta el ${formatBpsPercent(item.maxFinancedBps)}` : ''}
+                              {item.validUntil ? ` · Vigente hasta ${new Date(item.validUntil).toLocaleDateString('es-AR')}` : ''}
+                            </span>
+                            {item.extraCosts && <span className="sf-faint mt-1 block text-[length:var(--sf-text-xs)]">Gastos: {item.extraCosts}</span>}
+                            {item.requirements && <span className="sf-faint mt-1 block text-[length:var(--sf-text-xs)]">Requisitos: {item.requirements}</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  {plan && (
+                    <fieldset>
+                      <legend className="sf-label">Cantidad de cuotas</legend>
+                      <div className="sf-track flex-wrap" role="group">
+                        {plan.termsMonths.map((months) => (
+                          <button key={months} type="button" className="sf-pill" aria-pressed={term === months} onClick={() => setTerm(months)}>{months}</button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                  {result && !result.ok && <Notice tone="warn">{result.reason}</Notice>}
+                  {result?.ok && (
+                    <div className="sf-well p-5" aria-live="polite">
+                      <p className="sf-label">{plan?.amortization === 'aleman' ? 'Primera cuota estimada' : 'Cuota estimada'}</p>
+                      <p className="sf-price text-[2rem]">{money(result.firstInstallmentCents / 100)}</p>
+                      <p className="sf-muted text-[length:var(--sf-text-sm)]">
+                        {result.termMonths} cuotas · A financiar {money(result.financedCents / 100)}
+                        {plan?.amortization === 'aleman' ? ` · Última cuota ${money(result.lastInstallmentCents / 100)}` : ''}
+                      </p>
+                      <p className="sf-faint mt-3 text-[length:var(--sf-text-xs)]">{SIMULATION_DISCLAIMER}</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </FormSection>
 
-          <MobileSummary>{summary}</MobileSummary>
-
-          {calculation.status === 'ready' && calculatedResults && calculatedResults.loanAmount > 0 && (
-            <section className="border-t pt-[var(--sf-space-md)]" style={{ borderColor: 'var(--sf-rule)' }}>
-              <button
-                type="button"
-                onClick={() => setShowAmortization(!showAmortization)}
-                aria-expanded={showAmortization}
-                className="flex min-h-11 w-full items-center justify-between gap-4 text-left"
-              >
-                <span className="sf-heading text-[length:var(--sf-text-xl)]">Amortization</span>
-                <ChevronDown
-                  className={`size-5 shrink-0 transition-transform ${showAmortization ? 'rotate-180' : ''}`}
-                  aria-hidden="true"
-                />
-              </button>
-
-              {showAmortization && (
-                <div className="sf-well mt-4 overflow-x-auto">
-                  <table className="sf-figure w-full min-w-[30rem] text-[length:var(--sf-text-sm)]">
-                    <thead>
-                      <tr>
-                        <th className="sf-eyebrow px-3 py-2.5 text-left font-medium">Month</th>
-                        <th className="sf-eyebrow px-3 py-2.5 text-right font-medium">Payment</th>
-                        <th className="sf-eyebrow px-3 py-2.5 text-right font-medium">Principal</th>
-                        <th className="sf-eyebrow px-3 py-2.5 text-right font-medium">Interest</th>
-                        <th className="sf-eyebrow px-3 py-2.5 text-right font-medium">Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {amortizationSchedule.map((row, idx) => {
-                        if (row.separator) {
-                          return (
-                            <tr key={idx} className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
-                              <td colSpan={5} className="sf-faint px-3 py-1.5 text-center">…</td>
-                            </tr>
-                          )
-                        }
-                        return (
-                          <tr key={idx} className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
-                            <td className="px-3 py-2">{row.month}</td>
-                            <td className="px-3 py-2 text-right">{money(row.payment)}</td>
-                            <td className="px-3 py-2 text-right">{money(row.principal)}</td>
-                            <td className="px-3 py-2 text-right">{money(row.interest)}</td>
-                            <td className="px-3 py-2 text-right">{money(row.balance)}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          )}
-
-          <FormSection title="Financing request">
-            {applicationStatus === 'success' ? (
-              <div className="space-y-5">
-                <p role="status" className="sf-title-line">
-                  <span className="sf-dot" data-tone="ok" aria-hidden="true" />
-                  <span className="sf-heading text-[length:var(--sf-text-2xl)]">Request received</span>
-                </p>
-                <dl className="sf-spec">
-                  <div>
-                    <dt>Dealer</dt>
-                    <dd>{business.fullName}</dd>
-                  </div>
-                  {applicationReference && (
-                    <div>
-                      <dt>Reference</dt>
-                      <dd className="sf-figure">{applicationReference}</dd>
-                    </div>
-                  )}
-                  {selectedVehicle && (
-                    <div>
-                      <dt>Vehicle</dt>
-                      <dd>{vehicleTitle(selectedVehicle)}</dd>
-                    </div>
-                  )}
-                </dl>
-                <nav aria-label="Next" className={ACTION_ROW}>
-                  <Link
-                    href={selectedVehicle ? `/inventory/${selectedVehicle.id}` : '/inventory'}
-                    className="sf-btn sf-btn-primary"
-                  >
-                    {selectedVehicle ? 'Return to vehicle' : 'Browse inventory'}
-                  </Link>
-                  <Link
-                    href={selectedVehicle ? `/test-drive?vehicleId=${selectedVehicle.id}` : '/test-drive'}
-                    className="sf-btn sf-btn-ghost"
-                  >
-                    Test drive
-                  </Link>
-                  <Link href="/account" className="sf-btn sf-btn-ghost">Account</Link>
-                </nav>
+          <form onSubmit={send} className="space-y-[var(--sf-space-lg)]">
+            <input type="text" name="website" value={form.website} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+            <FormSection title="2. Enviá tu solicitud">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Nombre y apellido" htmlFor="fin-name" className="sm:col-span-2">
+                  <input id="fin-name" required autoComplete="name" value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} className="sf-input" />
+                </Field>
+                <Field label="Email" htmlFor="fin-email">
+                  <input id="fin-email" type="email" required autoComplete="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} className="sf-input" />
+                </Field>
+                <Field label="Teléfono / WhatsApp" htmlFor="fin-phone">
+                  <input id="fin-phone" type="tel" required autoComplete="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} className="sf-input" />
+                </Field>
+                <Field label="Situación laboral" htmlFor="fin-employment">
+                  <PlatformSelect id="fin-employment" required value={form.employmentStatus} onValueChange={(v) => setForm((p) => ({ ...p, employmentStatus: v }))} className="sf-input sf-trigger" placeholder="Elegí una opción" options={EMPLOYMENT} />
+                </Field>
+                <Field label="Ingresos mensuales aproximados" htmlFor="fin-income">
+                  <input id="fin-income" required inputMode="decimal" value={form.monthlyIncome} onChange={(e) => setForm((p) => ({ ...p, monthlyIncome: e.target.value }))} className="sf-input sf-figure" placeholder="Ej.: 1.500.000" />
+                </Field>
+                <Field label="Situación crediticia" htmlFor="fin-credit" className="sm:col-span-2">
+                  <PlatformSelect id="fin-credit" required value={form.creditTier} onValueChange={(v) => setForm((p) => ({ ...p, creditTier: v }))} className="sf-input sf-trigger" placeholder="Elegí una opción" options={CREDIT} />
+                </Field>
               </div>
-            ) : (
-              <form onSubmit={handleApplicationSubmit} className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full name" htmlFor="financing-full-name" className="sm:col-span-2">
-                  <input
-                    id="financing-full-name"
-                    type="text"
-                    required
-                    autoComplete="name"
-                    value={applicationForm.fullName}
-                    onChange={(e) => setApplicationForm((prev) => ({ ...prev, fullName: e.target.value }))}
-                    className="sf-input"
-                  />
-                </Field>
-                <Field label="Email" htmlFor="financing-email">
-                  <input
-                    id="financing-email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    value={applicationForm.email}
-                    onChange={(e) => setApplicationForm((prev) => ({ ...prev, email: e.target.value }))}
-                    className="sf-input"
-                  />
-                </Field>
-                <Field label="Phone" htmlFor="financing-phone">
-                  <input
-                    id="financing-phone"
-                    type="tel"
-                    required
-                    autoComplete="tel"
-                    value={applicationForm.phone}
-                    onChange={(e) => setApplicationForm((prev) => ({ ...prev, phone: e.target.value }))}
-                    className="sf-input"
-                  />
-                </Field>
-                <Field label="Employment status" htmlFor="financing-employment">
-                  <PlatformSelect
-                    id="financing-employment"
-                    name="employmentStatus"
-                    required
-                    value={applicationForm.employmentStatus}
-                    onValueChange={(value) => setApplicationForm((prev) => ({ ...prev, employmentStatus: value }))}
-                    className="sf-input sf-trigger"
-                    placeholder="Select"
-                    options={[
-                      { value: 'employed', label: 'Employed' },
-                      { value: 'self-employed', label: 'Self-employed' },
-                      { value: 'retired', label: 'Retired' },
-                      { value: 'student', label: 'Student' },
-                      { value: 'other', label: 'Other' },
-                    ]}
-                  />
-                </Field>
-                <Field label="Annual income" htmlFor="financing-income">
-                  <div className="relative">
-                    <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{symbol}</span>
-                    <input
-                      id="financing-income"
-                      type="number"
-                      inputMode="numeric"
-                      required
-                      value={applicationForm.annualIncome}
-                      onChange={(e) => setApplicationForm((prev) => ({ ...prev, annualIncome: e.target.value }))}
-                      className="sf-input sf-figure pl-8"
-                      min={FINANCING_ANNUAL_INCOME_INPUT.min}
-                      step={FINANCING_ANNUAL_INCOME_INPUT.step}
-                    />
-                  </div>
-                </Field>
-                <Field label="Credit range" htmlFor="financing-credit" className="sm:col-span-2">
-                  <PlatformSelect
-                    id="financing-credit"
-                    name="creditTier"
-                    required
-                    value={applicationForm.creditTier}
-                    onValueChange={(value) => setApplicationForm((prev) => ({ ...prev, creditTier: value }))}
-                    className="sf-input sf-trigger"
-                    placeholder="Self-reported credit range"
-                    options={[
-                      { value: 'excellent-720-plus', label: 'Excellent (720+)' },
-                      { value: 'good-680-719', label: 'Good (680–719)' },
-                      { value: 'fair-620-679', label: 'Fair (620–679)' },
-                      { value: 'rebuilding-under-620', label: 'Rebuilding (<620)' },
-                      { value: 'unknown', label: 'Not sure' },
-                    ]}
-                  />
-                </Field>
-                <label className="sf-muted flex min-h-11 cursor-pointer items-start gap-3 text-[length:var(--sf-text-sm)] sm:col-span-2">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={applicationForm.consent}
-                    onChange={(e) => setApplicationForm((prev) => ({ ...prev, consent: e.target.checked }))}
-                    className="mt-0.5 size-5 shrink-0 accent-[var(--sf-accent)]"
-                  />
-                  <span>I agree to be contacted about financing options.</span>
-                </label>
-                <label className="sf-muted flex min-h-11 cursor-pointer items-start gap-3 text-[length:var(--sf-text-sm)] sm:col-span-2">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={applicationForm.privacyAcknowledged}
-                    onChange={(e) => setApplicationForm((prev) => ({ ...prev, privacyAcknowledged: e.target.checked }))}
-                    className="mt-0.5 size-5 shrink-0 accent-[var(--sf-accent)]"
-                  />
-                  <span>I acknowledge that {business.fullName} stores this application to review financing options with lenders.</span>
-                </label>
-                <input
-                  type="text"
-                  name="website"
-                  value={applicationForm.website}
-                  onChange={(e) => setApplicationForm((prev) => ({ ...prev, website: e.target.value }))}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  className="hidden"
-                  aria-hidden="true"
-                />
-                {applicationStatus === 'error' && (
-                  <div className="sm:col-span-2">
-                    <Notice tone="bad">
-                      {applicationError || 'We could not submit your request. Please try again or contact the dealership.'}
-                    </Notice>
-                  </div>
-                )}
-                <div className="sm:col-span-2">
-                  <button
-                    type="submit"
-                    disabled={isFinancingSubmitDisabled(isApplying)}
-                    className="sf-btn sf-btn-primary w-full sm:w-auto sm:min-w-56"
-                  >
-                    {isApplying ? 'Sending…' : 'Send financing request'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </FormSection>
+              <div className="mt-4 space-y-3 text-[length:var(--sf-text-sm)]">
+                <label className="flex items-start gap-3"><input type="checkbox" required checked={form.consent} onChange={(e) => setForm((p) => ({ ...p, consent: e.target.checked }))} className="mt-1" /> <span>Acepto que {business.shortName} me contacte por esta consulta.</span></label>
+                <label className="flex items-start gap-3"><input type="checkbox" required checked={form.privacyAcknowledged} onChange={(e) => setForm((p) => ({ ...p, privacyAcknowledged: e.target.checked }))} className="mt-1" /> <span>Entiendo que mis datos se usan solo para evaluar la financiación y que la simulación es estimativa.</span></label>
+              </div>
+            </FormSection>
+            <MobileSummary>{summary}</MobileSummary>
+            {error && <Notice tone="bad" role="alert">{error}</Notice>}
+            <div className="flex flex-wrap gap-3">
+              <button type="submit" disabled={sending} className="sf-btn sf-btn-primary">{sending ? 'Enviando…' : 'Enviar solicitud'}</button>
+              <WhatsAppButton label="Prefiero consultar por WhatsApp" message={`Hola ${business.shortName}, quiero consultar por financiación${vehicle ? ` para el ${vehicleTitle(vehicle)}` : ''}.`} className="sf-btn sf-btn-ghost" />
+            </div>
+          </form>
         </div>
       </RequestLayout>
     </>
-  )
-}
-
-function FinancingFallback() {
-  return (
-    <>
-      <PageHeader title="Payment estimate" />
-      <Container className="sf-section">
-        <div className="grid gap-[var(--sf-space-xl)] lg:grid-cols-[minmax(0,1fr)_23rem]">
-          <div className="sf-skeleton h-96" />
-          <div className="sf-skeleton hidden h-80 lg:block" />
-        </div>
-      </Container>
-    </>
-  )
-}
-
-export function FinancingPage() {
-  return (
-    <Suspense fallback={<FinancingFallback />}>
-      <FinancingContent />
-    </Suspense>
   )
 }

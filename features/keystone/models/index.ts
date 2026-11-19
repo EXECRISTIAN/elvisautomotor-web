@@ -15,6 +15,8 @@ import { Deal } from './Deal';
 import { DealApproval } from './DealApproval';
 import { TradeIn } from './TradeIn';
 import { TradeInPhoto } from './TradeInPhoto';
+import { Bank } from './Bank';
+import { FinancingPlan } from './FinancingPlan';
 import { ServiceAppointment } from './ServiceAppointment';
 import { ServiceOrder } from './ServiceOrder';
 import { RepairOrderLineItem } from './RepairOrderLineItem';
@@ -88,6 +90,8 @@ const rawModels = {
   DealApproval,
   TradeIn,
   TradeInPhoto,
+  Bank,
+  FinancingPlan,
   ServiceAppointment,
   ServiceOrder,
   RepairOrderLineItem,

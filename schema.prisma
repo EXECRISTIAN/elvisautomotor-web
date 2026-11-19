@@ -521,6 +521,43 @@ model TradeInPhoto {
   @@index([tradeInId])
 }
 
+model Bank {
+  id          String          @id @default(cuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+  name        String          @default("")
+  active      Boolean         @default(true)
+  website     String          @default("")
+  notes       String          @default("")
+  providerKey String          @default("manual")
+  plans       FinancingPlan[] @relation("FinancingPlan_bank")
+}
+
+model FinancingPlan {
+  id             String    @id @default(cuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+  bank           Bank?     @relation("FinancingPlan_bank", fields: [bankId], references: [id])
+  bankId         String?   @map("bank")
+  name           String    @default("")
+  active         Boolean   @default(false)
+  tnaBps         Int
+  teaBps         Int?
+  cftBps         Int?
+  termsMonths    String    @default("")
+  minAmountCents Float?
+  maxAmountCents Float?
+  maxFinancedBps Int?
+  amortization   String    @default("frances")
+  validFrom      DateTime?
+  validUntil     DateTime?
+  extraCosts     String    @default("")
+  requirements   String    @default("")
+  sortOrder      Int?      @default(0)
+
+  @@index([bankId])
+}
+
 model ServiceAppointment {
   id                         String          @id @default(cuid())
   createdAt                  DateTime        @default(now())

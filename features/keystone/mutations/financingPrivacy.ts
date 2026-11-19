@@ -8,6 +8,7 @@ type FinancingLeadContentInput = {
   tradeInValue: number
   apr: number
   loanTerm: number
+  plan?: { bankName: string; name: string; tnaBps: number; cftBps: number | null; amortization: string } | null
 }
 
 /**
@@ -16,28 +17,31 @@ type FinancingLeadContentInput = {
  * fields, not a restricted credit-application store.
  */
 export function buildFinancingLeadContent(input: FinancingLeadContentInput) {
+  const pct = (bps: number | null | undefined) => (bps == null ? 'no informado' : `${(bps / 100).toLocaleString('es-AR')} %`)
   const requestedAmount = input.requestedAmount == null
-    ? 'Requested amount: Not provided (no calculator amount was recorded).'
-    : `Requested amount: ${formatCurrency(input.requestedAmount)}`
+    ? 'Monto a financiar: no informado.'
+    : `Monto a financiar: ${formatCurrency(input.requestedAmount)}`
   const paymentEstimate = input.monthlyPayment == null
-    ? 'Payment estimate: Not provided.'
-    : `Estimated payment: ${formatCurrency(input.monthlyPayment)} / month for ${input.loanTerm || 'unknown'} months at ${input.apr || 'unknown'}% APR`
+    ? 'Cuota estimada: no calculada.'
+    : `Cuota estimada (simulación): ${formatCurrency(input.monthlyPayment)} en ${input.loanTerm || '?'} cuotas`
+  const plan = input.plan
+    ? `Plan elegido: ${input.plan.bankName} — ${input.plan.name} (TNA ${pct(input.plan.tnaBps)}, CFT ${pct(input.plan.cftBps)}, sistema ${input.plan.amortization === 'aleman' ? 'alemán' : 'francés'})`
+    : 'Plan: sin elegir (consulta general de financiación).'
   const notes = [
-    'Finance options inquiry submitted from storefront.',
-    `Selected vehicle: ${input.vehicleSummary}`,
+    'Consulta de financiación enviada desde la web.',
+    `Vehículo: ${input.vehicleSummary}`,
+    plan,
     requestedAmount,
     paymentEstimate,
-    `Planned down payment: ${formatCurrency(input.downPayment)}`,
-    `Trade-in credit: ${formatCurrency(input.tradeInValue)}`,
-    'Customer consented to contact about financing options. Eligibility details must be handled only through an approved restricted lender workflow; this CRM note is not a credit application or decision.',
+    `Anticipo: ${formatCurrency(input.downPayment)}`,
+    `Valor del usado entregado: ${formatCurrency(input.tradeInValue)}`,
+    'El cliente aceptó ser contactado. La simulación es estimativa; las condiciones finales dependen de la entidad y de la aprobación crediticia.',
   ].join('\n')
 
   const taskDescription = [
-    `Review finance options inquiry. Selected vehicle: ${input.vehicleSummary}.`,
-    input.requestedAmount == null
-      ? 'Requested amount was not provided.'
-      : `Requested amount: ${formatCurrency(input.requestedAmount)}.`,
-    'Use an approved restricted lender workflow for any eligibility or credit data.',
+    `Revisar consulta de financiación. Vehículo: ${input.vehicleSummary}.`,
+    input.plan ? `Plan: ${input.plan.bankName} — ${input.plan.name}.` : 'Sin plan elegido.',
+    input.requestedAmount == null ? 'Monto no informado.' : `Monto: ${formatCurrency(input.requestedAmount)}.`,
   ].join(' ')
 
   return { notes, taskDescription }

@@ -165,6 +165,8 @@ export async function submitStorefrontFinancing(input: CommonSubmissionInput & {
   tradeInValue?: number
   apr?: number
   loanTerm?: number
+  financingPlanId?: string
+  vehiclePrice?: number
   vehicleId?: string
   consent: boolean
   privacyAcknowledged: boolean

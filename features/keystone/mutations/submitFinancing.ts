@@ -3,6 +3,8 @@ import { buildFinancingLeadContent } from './financingPrivacy'
 import { dollarsToCents, financingReference } from './financingUtils'
 import { publicSubmissionIdempotencyKey, runPublicSubmission } from './publicSubmissionPolicy'
 import { SubmissionError } from './submissionErrors'
+import { loadActiveFinancingPlans } from './publicFinancingPlans'
+import { simulate } from '../../lib/financing/simulate'
 import {
   finiteNumber,
   requiredText,
@@ -12,41 +14,53 @@ import {
   validPhone,
 } from './submissionUtils'
 
-const LOAN_TERMS = new Set([36, 48, 60, 72, 84])
+const LEGACY_LOAN_TERMS = new Set([12, 18, 24, 36, 48, 60, 72, 84])
+const MAX_AMOUNT = 100_000_000_000 // pesos
 
 function budgetRange(amount: number) {
-  if (amount < 20000) return 'under-20k'
-  if (amount < 30000) return '20-30k'
-  if (amount < 40000) return '30-40k'
-  if (amount < 50000) return '40-50k'
-  if (amount < 75000) return '50-75k'
-  if (amount < 100000) return '75-100k'
+  if (amount < 20_000_000) return 'under-20k'
+  if (amount < 100_000_000) return '20-30k'
   return 'over-100k'
 }
 
 export async function submitFinancing(_root: unknown, { data }: { data: any }, context: any) {
-  const fullName = requiredText(data.fullName, 'Full name', 200)
+  const fullName = requiredText(data.fullName, 'Nombre completo', 200)
   const email = validEmail(data.email)
   const phone = validPhone(data.phone)
-  const employmentStatus = requiredText(data.employmentStatus, 'Employment status', 100)
-  const creditTier = requiredText(data.creditTier, 'Credit range', 100)
-  const annualIncome = finiteNumber(data.annualIncome, 'Annual income', { min: 1, max: 100_000_000 })
-  const requestedAmount = data.requestedAmount == null
+  const employmentStatus = requiredText(data.employmentStatus, 'Situación laboral', 100)
+  const creditTier = requiredText(data.creditTier, 'Situación crediticia', 100)
+  const annualIncome = finiteNumber(data.annualIncome, 'Ingresos', { min: 1, max: MAX_AMOUNT })
+  let requestedAmount = data.requestedAmount == null
     ? null
-    : finiteNumber(data.requestedAmount, 'Requested amount', { min: 0, max: 10_000_000 })
-  const monthlyPayment = data.monthlyPayment == null
+    : finiteNumber(data.requestedAmount, 'Monto a financiar', { min: 0, max: MAX_AMOUNT })
+  let monthlyPayment = data.monthlyPayment == null
     ? null
-    : finiteNumber(data.monthlyPayment, 'Monthly payment', { min: 0, max: 1_000_000 })
-  const downPayment = finiteNumber(data.downPayment || 0, 'Down payment', { min: 0, max: 10_000_000 })
-  const tradeInValue = finiteNumber(data.tradeInValue || 0, 'Trade-in value', { min: 0, max: 10_000_000 })
-  const apr = finiteNumber(data.apr || 0, 'APR', { min: 0, max: 40 })
-  const loanTerm = finiteNumber(data.loanTerm || 0, 'Loan term', { min: 0, max: 120, integer: true })
-  if (loanTerm && !LOAN_TERMS.has(loanTerm)) throw new SubmissionError('Loan term is unsupported.')
+    : finiteNumber(data.monthlyPayment, 'Cuota', { min: 0, max: MAX_AMOUNT })
+  const downPayment = finiteNumber(data.downPayment || 0, 'Anticipo', { min: 0, max: MAX_AMOUNT })
+  const tradeInValue = finiteNumber(data.tradeInValue || 0, 'Valor del usado', { min: 0, max: MAX_AMOUNT })
+  let apr = finiteNumber(data.apr || 0, 'Tasa', { min: 0, max: 1000 })
+  const loanTerm = finiteNumber(data.loanTerm || 0, 'Plazo', { min: 0, max: 120, integer: true })
   if (data.consent !== true) {
-    throw new SubmissionError('Contact consent is required.')
+    throw new SubmissionError('Tenés que aceptar que te contactemos.')
   }
   if (data.privacyAcknowledged !== true) {
-    throw new SubmissionError('Privacy acknowledgement is required.')
+    throw new SubmissionError('Tenés que aceptar el aviso de privacidad.')
+  }
+  // Plan elegido en el simulador: se valida contra los planes vigentes y se recalcula en el servidor.
+  const financingPlanId = data.financingPlanId ? String(data.financingPlanId) : ''
+  let plan: Awaited<ReturnType<typeof loadActiveFinancingPlans>>[number] | null = null
+  if (financingPlanId) {
+    plan = (await loadActiveFinancingPlans(context)).find((item: any) => item.id === financingPlanId) || null
+    if (!plan) throw new SubmissionError('El plan elegido ya no está vigente. Volvé a simular.')
+    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError('Elegí un plazo disponible para el plan.')
+    const price = finiteNumber(data.vehiclePrice, 'Precio del vehículo', { min: 1, max: MAX_AMOUNT })
+    const result = simulate(plan as any, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm })
+    if (!result.ok) throw new SubmissionError(result.reason)
+    requestedAmount = result.financedCents / 100
+    monthlyPayment = result.firstInstallmentCents / 100
+    apr = plan.tnaBps / 100
+  } else if (loanTerm && !LEGACY_LOAN_TERMS.has(loanTerm)) {
+    throw new SubmissionError('El plazo elegido no es válido.')
   }
   const privacyAcknowledged = true
 
@@ -72,6 +86,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
       tradeInValue,
       apr,
       loanTerm,
+      financingPlanId: financingPlanId || null,
       vehicleId: data.vehicleId || null,
       consent: true,
       privacyAcknowledged,
@@ -80,6 +95,13 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
     aggregateId: result => String(result.applicationId),
     handler: async (transactionContext, { rooftopId }) => {
       const vehicle = await resolveAvailableVehicle(transactionContext, data.vehicleId, rooftopId)
+      // Si la solicitud es por un auto del inventario, el precio sale de la publicación (no del navegador).
+      if (plan && vehicle && Number(vehicle.priceCents) > 0) {
+        const result = simulate(plan as any, { priceCents: Math.round(Number(vehicle.priceCents)), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm })
+        if (!result.ok) throw new SubmissionError(result.reason)
+        requestedAmount = result.financedCents / 100
+        monthlyPayment = result.firstInstallmentCents / 100
+      }
       const sudo = transactionContext.sudo()
       const existing = await sudo.query.FinancingApplication.findMany({
         where: { idempotencyKey: { equals: idempotencyKey } },
@@ -120,7 +142,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
       const rooftop = { connect: { id: rooftopId } }
       const vehicleSummary = vehicle
         ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})`
-        : 'No vehicle selected'
+        : 'Sin vehículo elegido'
       const { notes, taskDescription } = buildFinancingLeadContent({
         vehicleSummary,
         requestedAmount,
@@ -129,6 +151,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
         tradeInValue,
         apr,
         loanTerm,
+        plan: plan ? { bankName: plan.bankName, name: plan.name, tnaBps: plan.tnaBps, cftBps: plan.cftBps, amortization: plan.amortization } : null,
       })
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
@@ -154,7 +177,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
           tasks: {
             create: [{
               rooftop,
-              title: `F&I follow-up: ${fullName}`,
+              title: `Seguimiento de financiación: ${fullName}`,
               description: taskDescription,
               priority: 'high',
               completed: false,
@@ -183,6 +206,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
           aprBasisPoints,
           loanTermMonths: loanTerm || null,
         },
+        plan: plan ? { id: plan.id, bankName: plan.bankName, name: plan.name, tnaBps: plan.tnaBps, teaBps: plan.teaBps, cftBps: plan.cftBps, amortization: plan.amortization, estimateOnly: true } : null,
         vehicle: vehicle ? {
           id: vehicle.id,
           vin: vehicle.vin,
