@@ -14,6 +14,7 @@ import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 const NAV = [
   { href: '/', label: 'Inicio' },
   { href: '/inventory', label: 'Inventario' },
+  { href: '/ofertas', label: 'Ofertas' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vendé tu auto' },
   { href: '/nosotros', label: 'Nosotros' },
@@ -23,6 +24,7 @@ const NAV = [
 const MENU = [
   { href: '/', label: 'Inicio' },
   { href: '/inventory', label: 'Inventario' },
+  { href: '/ofertas', label: 'Ofertas progresivas' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vendé tu auto' },
   { href: '/test-drive', label: 'Prueba de manejo' },

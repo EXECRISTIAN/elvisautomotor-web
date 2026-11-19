@@ -3140,6 +3140,133 @@ input BankRelateToOneForCreateInput {
   connect: BankWhereUniqueInput
 }
 
+type ProgressiveOffer {
+  id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  number: Int
+  title: String
+  vehicle: Vehicle
+  photo: ImageFieldOutput
+  photoUrl: String
+  startsAt: DateTime
+  startPriceCents: Float
+  stepCents: Float
+  stepEvery: Int
+  stepUnit: String
+  stepMinutes: Int
+  floorPriceCents: Float
+  status: String
+  soldAt: DateTime
+  financing: String
+  conditions: String
+  includesTransfer: String
+  noAppointment: String
+}
+
+input ProgressiveOfferWhereUniqueInput {
+  id: ID
+}
+
+input ProgressiveOfferWhereInput {
+  AND: [ProgressiveOfferWhereInput!]
+  OR: [ProgressiveOfferWhereInput!]
+  NOT: [ProgressiveOfferWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeFilter
+  updatedAt: DateTimeFilter
+  number: IntNullableFilter
+  title: StringFilter
+  vehicle: VehicleWhereInput
+  photoUrl: StringFilter
+  startsAt: DateTimeFilter
+  startPriceCents: FloatFilter
+  stepCents: FloatFilter
+  stepEvery: IntFilter
+  stepUnit: StringFilter
+  stepMinutes: IntNullableFilter
+  floorPriceCents: FloatFilter
+  status: StringFilter
+  soldAt: DateTimeNullableFilter
+  financing: StringFilter
+  conditions: StringFilter
+  includesTransfer: StringNullableFilter
+  noAppointment: StringNullableFilter
+}
+
+input ProgressiveOfferOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+  number: OrderDirection
+  title: OrderDirection
+  photoUrl: OrderDirection
+  startsAt: OrderDirection
+  startPriceCents: OrderDirection
+  stepCents: OrderDirection
+  stepEvery: OrderDirection
+  stepUnit: OrderDirection
+  stepMinutes: OrderDirection
+  floorPriceCents: OrderDirection
+  status: OrderDirection
+  soldAt: OrderDirection
+  financing: OrderDirection
+  conditions: OrderDirection
+  includesTransfer: OrderDirection
+  noAppointment: OrderDirection
+}
+
+input ProgressiveOfferUpdateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  number: Int
+  title: String
+  vehicle: VehicleRelateToOneForUpdateInput
+  photo: ImageFieldInput
+  photoUrl: String
+  startsAt: DateTime
+  startPriceCents: Float
+  stepCents: Float
+  stepEvery: Int
+  stepUnit: String
+  stepMinutes: Int
+  floorPriceCents: Float
+  status: String
+  soldAt: DateTime
+  financing: String
+  conditions: String
+  includesTransfer: String
+  noAppointment: String
+}
+
+input ProgressiveOfferUpdateArgs {
+  where: ProgressiveOfferWhereUniqueInput!
+  data: ProgressiveOfferUpdateInput!
+}
+
+input ProgressiveOfferCreateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  number: Int
+  title: String
+  vehicle: VehicleRelateToOneForCreateInput
+  photo: ImageFieldInput
+  photoUrl: String
+  startsAt: DateTime
+  startPriceCents: Float
+  stepCents: Float
+  stepEvery: Int
+  stepUnit: String
+  stepMinutes: Int
+  floorPriceCents: Float
+  status: String
+  soldAt: DateTime
+  financing: String
+  conditions: String
+  includesTransfer: String
+  noAppointment: String
+}
+
 type ServiceAppointment {
   id: ID!
   createdAt: DateTime
@@ -8777,6 +8904,12 @@ type Mutation {
   updateFinancingPlans(data: [FinancingPlanUpdateArgs!]!): [FinancingPlan]
   deleteFinancingPlan(where: FinancingPlanWhereUniqueInput!): FinancingPlan
   deleteFinancingPlans(where: [FinancingPlanWhereUniqueInput!]!): [FinancingPlan]
+  createProgressiveOffer(data: ProgressiveOfferCreateInput!): ProgressiveOffer
+  createProgressiveOffers(data: [ProgressiveOfferCreateInput!]!): [ProgressiveOffer]
+  updateProgressiveOffer(where: ProgressiveOfferWhereUniqueInput!, data: ProgressiveOfferUpdateInput!): ProgressiveOffer
+  updateProgressiveOffers(data: [ProgressiveOfferUpdateArgs!]!): [ProgressiveOffer]
+  deleteProgressiveOffer(where: ProgressiveOfferWhereUniqueInput!): ProgressiveOffer
+  deleteProgressiveOffers(where: [ProgressiveOfferWhereUniqueInput!]!): [ProgressiveOffer]
   createServiceAppointment(data: ServiceAppointmentCreateInput!): ServiceAppointment
   createServiceAppointments(data: [ServiceAppointmentCreateInput!]!): [ServiceAppointment]
   updateServiceAppointment(where: ServiceAppointmentWhereUniqueInput!, data: ServiceAppointmentUpdateInput!): ServiceAppointment
@@ -9291,6 +9424,9 @@ type Query {
   financingPlan(where: FinancingPlanWhereUniqueInput!): FinancingPlan
   financingPlans(where: FinancingPlanWhereInput! = {}, orderBy: [FinancingPlanOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FinancingPlanWhereUniqueInput): [FinancingPlan!]
   financingPlansCount(where: FinancingPlanWhereInput! = {}): Int
+  progressiveOffer(where: ProgressiveOfferWhereUniqueInput!): ProgressiveOffer
+  progressiveOffers(where: ProgressiveOfferWhereInput! = {}, orderBy: [ProgressiveOfferOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProgressiveOfferWhereUniqueInput): [ProgressiveOffer!]
+  progressiveOffersCount(where: ProgressiveOfferWhereInput! = {}): Int
   serviceAppointment(where: ServiceAppointmentWhereUniqueInput!): ServiceAppointment
   serviceAppointments(where: ServiceAppointmentWhereInput! = {}, orderBy: [ServiceAppointmentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ServiceAppointmentWhereUniqueInput): [ServiceAppointment!]
   serviceAppointmentsCount(where: ServiceAppointmentWhereInput! = {}): Int
@@ -9465,6 +9601,8 @@ type Query {
   publicInventoryVehicle(id: ID!): PublicInventoryVehicle
   publicInventoryVehicleRecord(id: ID!): PublicInventoryVehicle
   publicInventoryCount(where: JSON): Int!
+  publicFinancingPlans: [PublicFinancingPlan!]!
+  publicProgressiveOffers: [PublicProgressiveOffer!]!
   publicInventoryFeed(rooftop: String, condition: String, createdSince: String, updatedSince: String, take: Int, skip: Int): JSON!
   storefrontProfile(rooftopSlug: String): StorefrontProfilePayload!
   paymentReturnStatus(reference: String!): PaymentReturnStatus
@@ -9666,6 +9804,7 @@ type PublicInventoryVehicle {
   transmission: String
   engine: String
   isFeatured: Boolean
+  progressiveOffer: Boolean
   mileage: Int
   price: Float
   status: String
@@ -9789,6 +9928,42 @@ type SubmitTradeInPayload {
   photoToken: String
 }
 
+type PublicFinancingPlan {
+  id: ID!
+  bankName: String!
+  name: String!
+  tnaBps: Int!
+  teaBps: Int
+  cftBps: Int
+  termsMonths: [Int!]!
+  minAmountCents: Float
+  maxAmountCents: Float
+  maxFinancedBps: Int
+  amortization: String!
+  validUntil: DateTime
+  extraCosts: String!
+  requirements: String!
+}
+
+type PublicProgressiveOffer {
+  id: ID!
+  number: Int
+  title: String!
+  imageUrl: String
+  vehicleId: ID
+  startsAt: DateTime!
+  startPriceCents: Float!
+  stepCents: Float!
+  stepMinutes: Int!
+  floorPriceCents: Float!
+  status: String!
+  phase: String!
+  financing: String!
+  conditions: String!
+  includesTransfer: Boolean!
+  walkIn: Boolean!
+}
+
 type AttachTradeInPhotoPayload {
   ok: Boolean!
   errorCode: String
@@ -9809,6 +9984,8 @@ input SubmitFinancingInput {
   tradeInValue: Float
   apr: Float
   loanTerm: Int
+  financingPlanId: ID
+  vehiclePrice: Float
   vehicleId: ID
   consent: Boolean!
   privacyAcknowledged: Boolean

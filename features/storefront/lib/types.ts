@@ -11,6 +11,7 @@ export interface Vehicle {
   transmission?: string | null
   engine?: string
   isFeatured?: boolean
+  progressiveOffer?: boolean
   mileage: number
   price: number
   status: string

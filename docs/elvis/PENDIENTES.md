@@ -26,6 +26,8 @@
 - Vendelo en Elvis con hasta 8 fotos y sin tasación automática inventada.
 - Financiación: bancos y planes cargables, simulador estimativo y solicitud. **Faltan cargar los planes reales de los bancos** (hoy se cargan desde Panel → Tablas → Bancos / Planes de financiación).
 
+- Ofertas progresivas: página /ofertas, sección en el inicio, filtro en inventario, precio y cuenta regresiva en vivo, baja por hora o por día. Se cargan desde Panel → Tablas → Ofertas progresivas (falta pantalla propia del panel). Ejemplo N7 en `perfil-elvis.sql`.
+
 ## Etapas restantes
 3. Panel administrativo en español y simplificado — EN CURSO. Hecho: menú, marca, formato es-AR/ARS/km, Configuración, Inventario, Consultas, Clientes, Usados ofrecidos, Pruebas de manejo, Solicitudes de crédito. Falta (parte 3): Operaciones, Personal/roles, Resumen, Estadísticas, Organización, Catálogo, Reportes, pantallas de ingreso.
 4. Financiación bancaria — HECHO en la web; falta pantalla propia en el panel (hoy se usa Tablas).

@@ -10,6 +10,7 @@ export type VehicleInventoryFilters = {
   condition?: string
   fuelType?: string
   transmission?: string
+  progressiveOffer?: string
 }
 
 export type VehicleInventorySortKey =
@@ -21,7 +22,7 @@ export type VehicleInventorySortKey =
   | string
 
 export const EMPTY_INVENTORY_FILTERS = {
-  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMax: '', condition: '', fuelType: '', transmission: '',
+  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMax: '', condition: '', fuelType: '', transmission: '', progressiveOffer: '',
 }
 
 /** Read the inventory filters and sort from the URL. The server render and the client both use this. */
@@ -41,6 +42,7 @@ export function inventoryQueryFromSearch(search: string) {
       condition: params.get('condition') || '',
       fuelType: params.get('fuelType') || '',
       transmission: params.get('transmission') || '',
+      progressiveOffer: params.get('progressiveOffer') || '',
     },
     sortBy: params.get('sort') || 'year-desc',
     page: params.get('page'),
@@ -113,6 +115,7 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   const transmission = filters.transmission?.trim() || ''
   if (fuelType) where.AND.push({ fuelType: { equals: fuelType } })
   if (transmission) where.AND.push({ transmission: { equals: transmission } })
+  if (filters.progressiveOffer === 'true') where.AND.push({ progressiveOffer: { equals: true } })
 
   return where
 }

@@ -10,6 +10,7 @@ import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 const SHOP = [
   { href: '/inventory', label: 'Inventario' },
+  { href: '/ofertas', label: 'Ofertas progresivas' },
   { href: '/compare', label: 'Comparar' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vendé tu auto' },

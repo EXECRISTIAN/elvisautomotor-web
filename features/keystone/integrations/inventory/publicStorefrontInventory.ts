@@ -1,4 +1,5 @@
 import { storefrontRooftopSlug } from '../../tenantRecords'
+import { activeProgressiveOfferVehicleIds } from '../../mutations/publicProgressiveOffers'
 import { activeReservationWhere } from '../../mutations/reservationHold'
 import { assertCurrentInventoryApproval, assertPublishableInventory } from '../../lifecycle/inventoryPublication'
 
@@ -40,6 +41,8 @@ function readWhere(where: PublicInventoryOptions['where']) {
       } else if (key === 'fuelType' || key === 'transmission') {
         const option = String(value?.equals || '').trim().toLocaleLowerCase()
         if (option) filters[key] = option
+      } else if (key === 'progressiveOffer') {
+        if (value?.equals === true) filters.progressiveOffer = true
       } else if (key === 'isFeatured') {
         if (value?.equals === true) filters.isFeatured = true
       } else if (key === 'condition') {
@@ -155,7 +158,8 @@ async function queryPublicInventory(context: any, options: PublicInventoryOption
       }
     })
     const filters = readWhere(options.where)
-    const matching = approved.map(({ vehicle }: any) => vehicle).filter((vehicle: any) => matches(vehicle, filters)).sort((a: any, b: any) => compare(a, b, options.orderBy))
+    const offerIds = await activeProgressiveOfferVehicleIds(context)
+    const matching = approved.map(({ vehicle }: any) => vehicle).filter((vehicle: any) => matches(vehicle, filters) && (!filters.progressiveOffer || offerIds.has(vehicle.id))).sort((a: any, b: any) => compare(a, b, options.orderBy))
     const skip = Math.max(0, Math.min(10_000, Number.isSafeInteger(options.skip) ? Number(options.skip) : 0))
     const take = Math.max(0, Math.min(100, Number.isSafeInteger(options.take) ? Number(options.take) : 50))
     const page = matching.slice(skip, skip + take)
@@ -185,6 +189,7 @@ async function queryPublicInventory(context: any, options: PublicInventoryOption
         transmission: vehicle.transmission || null,
         engine: vehicle.engine || '',
         isFeatured: Boolean(vehicle.isFeatured),
+        progressiveOffer: offerIds.has(vehicle.id),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
         status: reserved.has(vehicle.id) ? 'reserved' : vehicle.status,
@@ -284,6 +289,7 @@ export async function publicInventoryVehicleRecord(_root: unknown, { id }: { id:
     transmission: vehicle.transmission || null,
     engine: vehicle.engine || '',
     isFeatured: false,
+    progressiveOffer: false,
     mileage: vehicle.mileage,
     price: null,
     status: vehicle.status,

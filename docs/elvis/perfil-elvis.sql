@@ -27,3 +27,12 @@ INSERT INTO "Bank" (id, name, active, website, notes, "providerKey") VALUES
   ('bank_nacion', 'Banco Nación', true, 'https://www.bna.com.ar', '', 'manual'),
   ('bank_provincia', 'Banco Provincia', true, 'https://www.bancoprovincia.com.ar', '', 'manual')
 ON CONFLICT (id) DO NOTHING;
+
+-- Ejemplo real: Oferta progresiva N7 (10/11/2026). Se usa como modelo para cargar las próximas
+-- desde Panel → Tablas → Ofertas progresivas (o la pantalla propia del panel cuando esté).
+INSERT INTO "ProgressiveOffer" (id, number, title, "photoUrl", "startsAt", "startPriceCents", "stepCents", "stepEvery", "stepUnit", "stepMinutes", "floorPriceCents", status, financing, conditions, "includesTransfer", "noAppointment")
+VALUES ('offer_n7', 7, 'Chevrolet Meriva 2010 nafta', '/images/ofertas/meriva-n7.webp', '2026-11-10 12:01:00+00', 1000000000, 100000000, 1, 'hours', 60, 0, 'active',
+  'Contado o hasta 90% financiado si tenés Banco Provincia aprobado. Anticipo mínimo $500.000 y cuotas. Se entrega con la primera cuota.',
+  'Ideal mecánico, chapista, reventa o tentador del destino. Vehículo tomado en Plan Canje, sin inspección y sin garantía. Podés revisarlo completo con un mecánico de tu confianza.',
+  'included', 'walk-in')
+ON CONFLICT (id) DO NOTHING;

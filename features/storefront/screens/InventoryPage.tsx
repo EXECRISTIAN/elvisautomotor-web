@@ -334,6 +334,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
     })
   }
   if (filters.mileageMax) chips.push({ key: 'mileage', label: `Hasta ${miles(filters.mileageMax)}`, clear: () => handleFilterChange('mileageMax', '') })
+  if (filters.progressiveOffer === 'true') chips.push({ key: 'progressiveOffer', label: 'Oferta progresiva', clear: () => handleFilterChange('progressiveOffer', '') })
   if (filters.fuelType) chips.push({ key: 'fuelType', label: fuelLabel(filters.fuelType) || filters.fuelType, clear: () => handleFilterChange('fuelType', '') })
   if (filters.transmission) chips.push({ key: 'transmission', label: transmissionLabel(filters.transmission) || filters.transmission, clear: () => handleFilterChange('transmission', '') })
 
@@ -529,6 +530,11 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   className="sf-input sf-figure"
                 />
               </div>
+
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[length:var(--sf-text-sm)] font-semibold">
+                <input type="checkbox" checked={filters.progressiveOffer === 'true'} onChange={(e) => handleFilterChange('progressiveOffer', e.target.checked ? 'true' : '')} />
+                Solo oferta progresiva
+              </label>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">

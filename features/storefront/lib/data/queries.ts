@@ -20,10 +20,13 @@ export const GET_VEHICLES = `
       transmission
       engine
       isFeatured
+      progressiveOffer
         fuelType
         transmission
         engine
         isFeatured
+      progressiveOffer
+        progressiveOffer
         mileage
         price
         status
@@ -57,6 +60,7 @@ export const GET_VEHICLE_BY_ID = `
       transmission
       engine
       isFeatured
+      progressiveOffer
       mileage
       price
       status
@@ -91,6 +95,7 @@ export const GET_VEHICLE_RECORD_BY_ID = `
       transmission
       engine
       isFeatured
+      progressiveOffer
       mileage
       price
       status

@@ -134,6 +134,7 @@ export function VehicleCard({
           <VehiclePhotoPlaceholder />
         )}
         <span className="sf-chip sf-chip-dark absolute left-2.5 top-2.5">{vehicleConditionLabel(vehicle.condition)}</span>
+        {vehicle.progressiveOffer && <span className="sf-chip absolute right-2.5 top-2.5" style={{ background: 'var(--sf-gold-gradient)', color: 'var(--sf-accent-ink)' }}>Oferta progresiva</span>}
         <span className="sf-stall absolute bottom-2.5 left-2.5">#{vehicle.stockNumber}</span>
         {representative && <span className="sf-chip sf-chip-dark absolute bottom-2.5 right-2.5">Foto ilustrativa</span>}
       </Link>

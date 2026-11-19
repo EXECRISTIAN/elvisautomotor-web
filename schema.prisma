@@ -136,44 +136,45 @@ model Model {
 }
 
 model Vehicle {
-  id                    String                   @id @default(cuid())
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @default(now()) @updatedAt
-  rooftop               Rooftop                  @relation("Vehicle_rooftop", fields: [rooftopId], references: [id])
-  rooftopId             String                   @map("rooftop")
-  vin                   String                   @unique @default("")
-  stockNumber           String                   @unique @default("")
-  year                  Int
-  make                  String                   @default("")
-  model                 String                   @default("")
-  trim                  String                   @default("")
-  exteriorColor         String                   @default("")
-  interiorColor         String                   @default("")
-  fuelType              String?
-  transmission          String?
-  engine                String                   @default("")
-  isFeatured            Boolean                  @default(false)
-  mileage               Int?
-  purchasePriceCents    Float?
-  listPriceCents        Float?
-  priceCents            Float?
-  condition             String?
-  status                String?                  @default("available")
-  description           String                   @default("")
-  features              Json?                    @default("[]")
-  metadata              Json?                    @default("{}")
-  images                VehicleImage[]           @relation("VehicleImage_vehicle")
-  deals                 Deal[]                   @relation("Deal_vehicle")
-  leads                 Lead[]                   @relation("Lead_interestedVehicle")
-  testDrives            TestDrive[]              @relation("TestDrive_vehicle")
-  conditionReports      VehicleConditionReport[] @relation("VehicleConditionReport_vehicle")
-  history               VehicleHistory?          @relation("Vehicle_history", fields: [historyId], references: [id])
-  historyId             String?                  @unique @map("history")
-  priceHistory          PriceHistory[]           @relation("PriceHistory_vehicle")
-  inventoryStock        InventoryStock?          @relation("InventoryStock_vehicle")
-  acquisition           InventoryAcquisition?    @relation("InventoryAcquisition_vehicle")
-  salesVisits           SalesVisit[]             @relation("SalesVisit_vehicle")
-  financingApplications FinancingApplication[]   @relation("FinancingApplication_vehicle")
+  id                            String                   @id @default(cuid())
+  createdAt                     DateTime                 @default(now())
+  updatedAt                     DateTime                 @default(now()) @updatedAt
+  rooftop                       Rooftop                  @relation("Vehicle_rooftop", fields: [rooftopId], references: [id])
+  rooftopId                     String                   @map("rooftop")
+  vin                           String                   @unique @default("")
+  stockNumber                   String                   @unique @default("")
+  year                          Int
+  make                          String                   @default("")
+  model                         String                   @default("")
+  trim                          String                   @default("")
+  exteriorColor                 String                   @default("")
+  interiorColor                 String                   @default("")
+  fuelType                      String?
+  transmission                  String?
+  engine                        String                   @default("")
+  isFeatured                    Boolean                  @default(false)
+  mileage                       Int?
+  purchasePriceCents            Float?
+  listPriceCents                Float?
+  priceCents                    Float?
+  condition                     String?
+  status                        String?                  @default("available")
+  description                   String                   @default("")
+  features                      Json?                    @default("[]")
+  metadata                      Json?                    @default("{}")
+  images                        VehicleImage[]           @relation("VehicleImage_vehicle")
+  deals                         Deal[]                   @relation("Deal_vehicle")
+  leads                         Lead[]                   @relation("Lead_interestedVehicle")
+  testDrives                    TestDrive[]              @relation("TestDrive_vehicle")
+  conditionReports              VehicleConditionReport[] @relation("VehicleConditionReport_vehicle")
+  history                       VehicleHistory?          @relation("Vehicle_history", fields: [historyId], references: [id])
+  historyId                     String?                  @unique @map("history")
+  priceHistory                  PriceHistory[]           @relation("PriceHistory_vehicle")
+  inventoryStock                InventoryStock?          @relation("InventoryStock_vehicle")
+  acquisition                   InventoryAcquisition?    @relation("InventoryAcquisition_vehicle")
+  salesVisits                   SalesVisit[]             @relation("SalesVisit_vehicle")
+  financingApplications         FinancingApplication[]   @relation("FinancingApplication_vehicle")
+  from_ProgressiveOffer_vehicle ProgressiveOffer[]       @relation("ProgressiveOffer_vehicle")
 
   @@index([rooftopId])
 }
@@ -556,6 +557,37 @@ model FinancingPlan {
   sortOrder      Int?      @default(0)
 
   @@index([bankId])
+}
+
+model ProgressiveOffer {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now()) @updatedAt
+  number           Int?
+  title            String    @default("")
+  vehicle          Vehicle?  @relation("ProgressiveOffer_vehicle", fields: [vehicleId], references: [id])
+  vehicleId        String?   @map("vehicle")
+  photo_id         String?
+  photo_filesize   Int?
+  photo_width      Int?
+  photo_height     Int?
+  photo_extension  String?
+  photoUrl         String    @default("")
+  startsAt         DateTime
+  startPriceCents  Float
+  stepCents        Float
+  stepEvery        Int       @default(1)
+  stepUnit         String    @default("hours")
+  stepMinutes      Int?      @default(60)
+  floorPriceCents  Float     @default(0)
+  status           String    @default("active")
+  soldAt           DateTime?
+  financing        String    @default("")
+  conditions       String    @default("")
+  includesTransfer String?   @default("included")
+  noAppointment    String?   @default("walk-in")
+
+  @@index([vehicleId])
 }
 
 model ServiceAppointment {

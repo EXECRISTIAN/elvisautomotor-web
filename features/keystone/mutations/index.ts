@@ -13,6 +13,7 @@ import { submitTestDrive } from './submitTestDrive';
 import { submitTradeIn } from './submitTradeIn';
 import { attachTradeInPhoto } from './tradeInPhotos';
 import { publicFinancingPlans } from './publicFinancingPlans';
+import { publicProgressiveOffers } from './publicProgressiveOffers';
 import { submitFinancing } from './submitFinancing';
 import { submitServiceBooking } from './submitServiceBooking';
 import { publicSubmissionResolver } from './publicSubmissionResolver';
@@ -129,6 +130,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         transmission: String
         engine: String
         isFeatured: Boolean
+        progressiveOffer: Boolean
         mileage: Int
         price: Float
         status: String
@@ -263,6 +265,25 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         validUntil: DateTime
         extraCosts: String!
         requirements: String!
+      }
+
+      type PublicProgressiveOffer {
+        id: ID!
+        number: Int
+        title: String!
+        imageUrl: String
+        vehicleId: ID
+        startsAt: DateTime!
+        startPriceCents: Float!
+        stepCents: Float!
+        stepMinutes: Int!
+        floorPriceCents: Float!
+        status: String!
+        phase: String!
+        financing: String!
+        conditions: String!
+        includesTransfer: Boolean!
+        walkIn: Boolean!
       }
 
       type AttachTradeInPhotoPayload {
@@ -676,6 +697,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         publicInventoryVehicleRecord(id: ID!): PublicInventoryVehicle
         publicInventoryCount(where: JSON): Int!
         publicFinancingPlans: [PublicFinancingPlan!]!
+        publicProgressiveOffers: [PublicProgressiveOffer!]!
         publicInventoryFeed(rooftop: String, condition: String, createdSince: String, updatedSince: String, take: Int, skip: Int): JSON!
         storefrontProfile(rooftopSlug: String): StorefrontProfilePayload!
         paymentReturnStatus(reference: String!): PaymentReturnStatus
@@ -828,6 +850,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         publicInventoryVehicleRecord,
         publicInventoryCount,
         publicFinancingPlans,
+        publicProgressiveOffers,
         publicInventoryFeed,
         storefrontProfile,
         paymentReturnStatus,

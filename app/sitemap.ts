@@ -5,7 +5,7 @@ import { storefrontOrigin } from '@/features/storefront/lib/data/site-origin'
 
 export const dynamic = 'force-dynamic'
 
-const PAGES = ['/', '/inventory', '/financing', '/trade-in', '/test-drive', '/nosotros', '/contact']
+const PAGES = ['/', '/inventory', '/ofertas', '/financing', '/trade-in', '/test-drive', '/nosotros', '/contact']
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [origin, ids] = await Promise.all([storefrontOrigin(), listedVehicleIds()])

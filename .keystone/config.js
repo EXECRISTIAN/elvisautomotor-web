@@ -466,7 +466,7 @@ module.exports = __toCommonJS(keystone_exports);
 
 // features/keystone/index.ts
 var import_auth = require("@keystone-6/auth");
-var import_core74 = require("@keystone-6/core");
+var import_core75 = require("@keystone-6/core");
 var import_config = require("dotenv/config");
 
 // features/keystone/models/User.ts
@@ -3805,6 +3805,36 @@ var import_fields24 = require("@keystone-6/core/fields");
 function parseTerms(value) {
   return [...new Set(String(value || "").split(/[^\d]+/).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 120))].sort((a, b) => a - b);
 }
+function formatBpsPercent(bps2) {
+  if (bps2 == null || !Number.isFinite(bps2)) return "-";
+  return `${(bps2 / 100).toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} %`;
+}
+function simulate(plan, input2) {
+  const price = Math.round(input2.priceCents);
+  const down = Math.round(input2.downPaymentCents);
+  const n = input2.termMonths;
+  if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: "Indic\xE1 el precio del veh\xEDculo." };
+  if (!Number.isFinite(down) || down < 0) return { ok: false, reason: "El anticipo no es v\xE1lido." };
+  if (down >= price) return { ok: false, reason: "El anticipo cubre el precio total: no hace falta financiar." };
+  if (!plan.termsMonths.includes(n)) return { ok: false, reason: "Eleg\xED un plazo disponible para este plan." };
+  const financed = price - down;
+  if (plan.maxFinancedBps != null && financed > Math.floor(price * plan.maxFinancedBps / 1e4)) {
+    const minDown = price - Math.floor(price * plan.maxFinancedBps / 1e4);
+    return { ok: false, reason: `Este plan financia hasta el ${formatBpsPercent(plan.maxFinancedBps)} del precio. Anticipo m\xEDnimo: ${(minDown / 100).toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 })}.` };
+  }
+  if (plan.minAmountCents != null && financed < plan.minAmountCents) return { ok: false, reason: "El monto a financiar es menor al m\xEDnimo de este plan." };
+  if (plan.maxAmountCents != null && financed > plan.maxAmountCents) return { ok: false, reason: "El monto a financiar supera el m\xE1ximo de este plan." };
+  const i = plan.tnaBps / 1e4 / 12;
+  if (plan.amortization === "aleman") {
+    const principal = financed / n;
+    const first = principal + financed * i;
+    const last = principal + principal * i;
+    const total = financed + financed * i * (n + 1) / 2;
+    return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(first), lastInstallmentCents: Math.round(last), totalPaidCents: Math.round(total), termMonths: n };
+  }
+  const installment = i === 0 ? financed / n : financed * i / (1 - Math.pow(1 + i, -n));
+  return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(installment), lastInstallmentCents: Math.round(installment), totalPaidCents: Math.round(installment * n), termMonths: n };
+}
 
 // features/keystone/models/FinancingPlan.ts
 var bps = (label2, description, isRequired = false) => (0, import_fields24.integer)({ label: label2, validation: { isRequired, min: 0, max: 1e5 }, ui: { description } });
@@ -3870,11 +3900,87 @@ var FinancingPlan = (0, import_core19.list)({
   }
 });
 
-// features/keystone/models/ServiceAppointment.ts
+// features/keystone/models/ProgressiveOffer.ts
 var import_core20 = require("@keystone-6/core");
-var import_access29 = require("@keystone-6/core/access");
 var import_fields25 = require("@keystone-6/core/fields");
-var ServiceAppointment = (0, import_core20.list)({
+var ProgressiveOffer = (0, import_core20.list)({
+  access: {
+    operation: {
+      query: permissions.canManageInventory,
+      create: permissions.canManageInventory,
+      update: permissions.canManageInventory,
+      delete: permissions.canManageInventory
+    }
+  },
+  hooks: {
+    resolveInput: ({ resolvedData, item }) => {
+      const every = resolvedData.stepEvery ?? item?.stepEvery ?? 1;
+      const unit = resolvedData.stepUnit ?? item?.stepUnit ?? "hours";
+      const factor = unit === "days" ? 1440 : unit === "minutes" ? 1 : 60;
+      return { ...resolvedData, stepMinutes: Math.max(1, Number(every) * factor) };
+    },
+    validate: ({ resolvedData, item, addValidationError, operation }) => {
+      if (operation === "delete") return;
+      const start = resolvedData.startPriceCents ?? item?.startPriceCents;
+      const floor = resolvedData.floorPriceCents ?? item?.floorPriceCents ?? 0;
+      if (start != null && floor > start) addValidationError("El precio final no puede ser mayor al precio inicial.");
+    }
+  },
+  ui: {
+    label: "Ofertas progresivas",
+    singular: "Oferta progresiva",
+    plural: "Ofertas progresivas",
+    listView: { initialColumns: ["number", "title", "startsAt", "startPriceCents", "status"] }
+  },
+  fields: {
+    ...trackingFields,
+    number: (0, import_fields25.integer)({ label: "N\xFAmero de oferta", ui: { description: 'Ej.: 7 para "Oferta progresiva N7"' } }),
+    title: (0, import_fields25.text)({ label: "Veh\xEDculo (t\xEDtulo)", validation: { isRequired: true }, ui: { description: "Ej.: Chevrolet Meriva 2010 nafta" } }),
+    vehicle: (0, import_fields25.relationship)({ ref: "Vehicle", label: "Veh\xEDculo del inventario (opcional)", ui: { displayMode: "select", labelField: "stockNumber" } }),
+    photo: (0, import_fields25.image)({ storage: "my_images", label: "Foto" }),
+    photoUrl: (0, import_fields25.text)({ label: "Foto (URL)", ui: { description: "Alternativa a subir la foto: una URL https o una ruta /images/..." } }),
+    startsAt: (0, import_fields25.timestamp)({ label: "Empieza", validation: { isRequired: true } }),
+    startPriceCents: (0, import_fields25.float)({ label: "Precio inicial (centavos)", validation: { isRequired: true, min: 0 } }),
+    stepCents: (0, import_fields25.float)({ label: "Baja por paso (centavos)", validation: { isRequired: true, min: 0 } }),
+    stepEvery: (0, import_fields25.integer)({ label: "Baja cada\u2026", defaultValue: 1, validation: { isRequired: true, min: 1, max: 365 } }),
+    stepUnit: (0, import_fields25.select)({
+      label: "\u2026unidad",
+      type: "string",
+      defaultValue: "hours",
+      validation: { isRequired: true },
+      options: [
+        { label: "Horas", value: "hours" },
+        { label: "D\xEDas", value: "days" },
+        { label: "Minutos", value: "minutes" }
+      ]
+    }),
+    // Calculado a partir de "Baja cada…" y la unidad.
+    stepMinutes: (0, import_fields25.integer)({ label: "Intervalo en minutos (autom\xE1tico)", defaultValue: 60, ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" } } }),
+    floorPriceCents: (0, import_fields25.float)({ label: "Precio final (centavos, 0 = gratis)", defaultValue: 0, validation: { isRequired: true, min: 0 } }),
+    status: (0, import_fields25.select)({
+      label: "Estado",
+      type: "string",
+      defaultValue: "active",
+      validation: { isRequired: true },
+      options: [
+        { label: "Activa / programada", value: "active" },
+        { label: "Vendida", value: "sold" },
+        { label: "Cancelada", value: "cancelled" }
+      ]
+    }),
+    soldAt: (0, import_fields25.timestamp)({ label: "Vendida el" }),
+    financing: (0, import_fields25.text)({ label: "Financiaci\xF3n", ui: { displayMode: "textarea", description: "Ej.: Contado o hasta 90% financiado con Banco Provincia aprobado. Anticipo m\xEDnimo $500.000." } }),
+    conditions: (0, import_fields25.text)({ label: "Condiciones y aclaraciones", ui: { displayMode: "textarea", description: "Ej.: Tomado en Plan Canje, sin inspecci\xF3n y sin garant\xEDa. Precio con transferencia incluida." } }),
+    includesTransfer: (0, import_fields25.select)({ label: "Transferencia", type: "string", defaultValue: "included", options: [{ label: "Incluida (se entrega transferido)", value: "included" }, { label: "No incluida", value: "excluded" }] }),
+    noAppointment: (0, import_fields25.select)({ label: "Turno", type: "string", defaultValue: "walk-in", options: [{ label: "Se puede venir sin turno", value: "walk-in" }, { label: "Con turno", value: "appointment" }] })
+  }
+});
+
+// features/keystone/models/ServiceAppointment.ts
+var import_core21 = require("@keystone-6/core");
+var import_access30 = require("@keystone-6/core/access");
+var import_fields26 = require("@keystone-6/core/fields");
+var ServiceAppointment = (0, import_core21.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -3906,10 +4012,10 @@ var ServiceAppointment = (0, import_core20.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    requestedBy: (0, import_fields25.relationship)({ ref: "User", access: { read: import_access29.denyAll, create: import_access29.denyAll, update: import_access29.denyAll } }),
+    requestedBy: (0, import_fields26.relationship)({ ref: "User", access: { read: import_access30.denyAll, create: import_access30.denyAll, update: import_access30.denyAll } }),
     // Customer and Vehicle
-    lead: (0, import_fields25.relationship)({
-      access: { create: import_access29.denyAll, update: import_access29.denyAll },
+    lead: (0, import_fields26.relationship)({
+      access: { create: import_access30.denyAll, update: import_access30.denyAll },
       ref: "Lead.serviceAppointments",
       ui: {
         displayMode: "select",
@@ -3917,7 +4023,7 @@ var ServiceAppointment = (0, import_core20.list)({
       },
       label: "Customer Lead"
     }),
-    customer: (0, import_fields25.relationship)({
+    customer: (0, import_fields26.relationship)({
       ref: "User.customerAppointments",
       ui: {
         displayMode: "select",
@@ -3925,29 +4031,29 @@ var ServiceAppointment = (0, import_core20.list)({
       },
       label: "Customer"
     }),
-    servicePackage: (0, import_fields25.relationship)({
+    servicePackage: (0, import_fields26.relationship)({
       ref: "ServicePackage",
       ui: { displayMode: "select", labelField: "name" },
       label: "Service Package"
     }),
-    vehicleVin: (0, import_fields25.text)(),
-    transportationNeed: (0, import_fields25.select)({ type: "string", options: ["none", "waiter", "shuttle", "loaner", "rental", "drop-off"].map((value) => ({ label: value, value })), defaultValue: "none" }),
+    vehicleVin: (0, import_fields26.text)(),
+    transportationNeed: (0, import_fields26.select)({ type: "string", options: ["none", "waiter", "shuttle", "loaner", "rental", "drop-off"].map((value) => ({ label: value, value })), defaultValue: "none" }),
     // Derived from appointmentDate by the booking and reschedule commands.
-    capacitySlot: (0, import_fields25.text)({ access: { create: import_access29.denyAll, update: import_access29.denyAll } }),
-    customerVehicleDescription: (0, import_fields25.text)({
+    capacitySlot: (0, import_fields26.text)({ access: { create: import_access30.denyAll, update: import_access30.denyAll } }),
+    customerVehicleDescription: (0, import_fields26.text)({
       label: "Customer Vehicle",
       ui: {
         description: "Description of customer vehicle (Year Make Model)"
       }
     }),
     // Appointment Details
-    appointmentDate: (0, import_fields25.timestamp)({
+    appointmentDate: (0, import_fields26.timestamp)({
       // Moves go through rescheduleServiceAppointment so the hourly slot capacity is enforced.
-      access: { update: import_access29.denyAll },
+      access: { update: import_access30.denyAll },
       label: "Appointment Date",
       validation: { isRequired: true }
     }),
-    serviceType: (0, import_fields25.select)({
+    serviceType: (0, import_fields26.select)({
       type: "string",
       options: [
         { label: "Maintenance", value: "maintenance" },
@@ -3959,14 +4065,14 @@ var ServiceAppointment = (0, import_core20.list)({
       ],
       label: "Service Type"
     }),
-    description: (0, import_fields25.text)({
+    description: (0, import_fields26.text)({
       ui: {
         displayMode: "textarea",
         description: "Customer complaint or service requested"
       },
       label: "Description"
     }),
-    estimatedDuration: (0, import_fields25.integer)({
+    estimatedDuration: (0, import_fields26.integer)({
       validation: { min: 0 },
       label: "Estimated Duration (Minutes)",
       ui: {
@@ -3974,7 +4080,7 @@ var ServiceAppointment = (0, import_core20.list)({
       }
     }),
     // Assignment
-    assignedTech: (0, import_fields25.relationship)({
+    assignedTech: (0, import_fields26.relationship)({
       ref: "User.techAppointments",
       ui: {
         displayMode: "select",
@@ -3983,7 +4089,7 @@ var ServiceAppointment = (0, import_core20.list)({
       label: "Assigned Technician"
     }),
     // Status
-    status: (0, import_fields25.select)({
+    status: (0, import_fields26.select)({
       access: { update: () => false },
       type: "string",
       options: [
@@ -3998,7 +4104,7 @@ var ServiceAppointment = (0, import_core20.list)({
       label: "Status"
     }),
     // Vehicle Info at Service
-    mileageIn: (0, import_fields25.integer)({
+    mileageIn: (0, import_fields26.integer)({
       validation: { min: 0 },
       label: "Mileage In",
       ui: {
@@ -4006,7 +4112,7 @@ var ServiceAppointment = (0, import_core20.list)({
       }
     }),
     // Notes
-    advisorNotes: (0, import_fields25.text)({
+    advisorNotes: (0, import_fields26.text)({
       ui: {
         displayMode: "textarea",
         description: "Service advisor notes"
@@ -4014,7 +4120,7 @@ var ServiceAppointment = (0, import_core20.list)({
       label: "Advisor Notes"
     }),
     // Relationship to Service Order
-    serviceOrder: (0, import_fields25.relationship)({
+    serviceOrder: (0, import_fields26.relationship)({
       access: { update: () => false },
       ref: "ServiceOrder.appointment",
       ui: {
@@ -4027,8 +4133,8 @@ var ServiceAppointment = (0, import_core20.list)({
 });
 
 // features/keystone/models/ServiceOrder.ts
-var import_core21 = require("@keystone-6/core");
-var import_fields26 = require("@keystone-6/core/fields");
+var import_core22 = require("@keystone-6/core");
+var import_fields27 = require("@keystone-6/core/fields");
 var import_schema5 = require("@graphql-ts/schema");
 
 // features/keystone/lifecycle/serviceOrderLifecycle.ts
@@ -4101,7 +4207,7 @@ function buildServiceOrderEvidenceSnapshot(order2) {
 }
 
 // features/keystone/models/ServiceOrder.ts
-var ServiceOrder = (0, import_core21.list)({
+var ServiceOrder = (0, import_core22.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4158,7 +4264,7 @@ var ServiceOrder = (0, import_core21.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Link to Appointment
-    appointment: (0, import_fields26.relationship)({
+    appointment: (0, import_fields27.relationship)({
       ref: "ServiceAppointment.serviceOrder",
       ui: {
         displayMode: "select"
@@ -4166,30 +4272,30 @@ var ServiceOrder = (0, import_core21.list)({
       label: "Appointment"
     }),
     // Work Description
-    concern: (0, import_fields26.text)({ label: "Customer Concern", ui: { displayMode: "textarea" } }),
-    cause: (0, import_fields26.text)({ label: "Verified Cause", ui: { displayMode: "textarea" } }),
-    correction: (0, import_fields26.text)({ label: "Correction", ui: { displayMode: "textarea" } }),
-    payType: (0, import_fields26.select)({ type: "string", options: ["customer", "warranty", "internal"].map((value) => ({ label: value, value })), defaultValue: "customer" }),
-    authorizationStatus: (0, import_fields26.select)({ type: "string", options: ["pending", "authorized", "declined"].map((value) => ({ label: value, value })), defaultValue: "pending" }),
-    authorizationEvidence: (0, import_fields26.json)({ defaultValue: {} }),
-    inspectionEvidence: (0, import_fields26.json)({ defaultValue: [] }),
-    declinedWork: (0, import_fields26.json)({ defaultValue: [] }),
-    invoiceNumber: (0, import_fields26.text)(),
-    diagnosis: (0, import_fields26.text)({
+    concern: (0, import_fields27.text)({ label: "Customer Concern", ui: { displayMode: "textarea" } }),
+    cause: (0, import_fields27.text)({ label: "Verified Cause", ui: { displayMode: "textarea" } }),
+    correction: (0, import_fields27.text)({ label: "Correction", ui: { displayMode: "textarea" } }),
+    payType: (0, import_fields27.select)({ type: "string", options: ["customer", "warranty", "internal"].map((value) => ({ label: value, value })), defaultValue: "customer" }),
+    authorizationStatus: (0, import_fields27.select)({ type: "string", options: ["pending", "authorized", "declined"].map((value) => ({ label: value, value })), defaultValue: "pending" }),
+    authorizationEvidence: (0, import_fields27.json)({ defaultValue: {} }),
+    inspectionEvidence: (0, import_fields27.json)({ defaultValue: [] }),
+    declinedWork: (0, import_fields27.json)({ defaultValue: [] }),
+    invoiceNumber: (0, import_fields27.text)(),
+    diagnosis: (0, import_fields27.text)({
       ui: {
         displayMode: "textarea",
         description: "Initial diagnosis and findings"
       },
       label: "Diagnosis"
     }),
-    workPerformed: (0, import_fields26.text)({
+    workPerformed: (0, import_fields27.text)({
       ui: {
         displayMode: "textarea",
         description: "Detailed description of work completed"
       },
       label: "Work Performed"
     }),
-    recommendations: (0, import_fields26.text)({
+    recommendations: (0, import_fields27.text)({
       ui: {
         displayMode: "textarea",
         description: "Recommended future service"
@@ -4197,10 +4303,10 @@ var ServiceOrder = (0, import_core21.list)({
       label: "Recommendations"
     }),
     // Line Items
-    laborOperations: (0, import_fields26.relationship)({ ref: "ServiceLaborOperation.serviceOrder", many: true }),
-    partsMovements: (0, import_fields26.relationship)({ ref: "PartsMovement.serviceOrder", many: true }),
-    paymentTransactions: (0, import_fields26.relationship)({ ref: "PaymentTransaction.serviceOrder", many: true, access: { read: permissions.canViewReports, create: () => false, update: () => false } }),
-    lineItems: (0, import_fields26.relationship)({
+    laborOperations: (0, import_fields27.relationship)({ ref: "ServiceLaborOperation.serviceOrder", many: true }),
+    partsMovements: (0, import_fields27.relationship)({ ref: "PartsMovement.serviceOrder", many: true }),
+    paymentTransactions: (0, import_fields27.relationship)({ ref: "PaymentTransaction.serviceOrder", many: true, access: { read: permissions.canViewReports, create: () => false, update: () => false } }),
+    lineItems: (0, import_fields27.relationship)({
       ref: "RepairOrderLineItem.serviceOrder",
       many: true,
       ui: {
@@ -4212,21 +4318,21 @@ var ServiceOrder = (0, import_core21.list)({
       label: "Line Items"
     }),
     // Totals (can be calculated from line items or entered manually)
-    laborTotalCents: (0, import_fields26.float)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
-    partsTotalCents: (0, import_fields26.float)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
-    laborTotal: (0, import_fields26.virtual)({
+    laborTotalCents: (0, import_fields27.float)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
+    partsTotalCents: (0, import_fields27.float)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
+    laborTotal: (0, import_fields27.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.laborTotalCents == null ? null : item.laborTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    partsTotal: (0, import_fields26.virtual)({
+    partsTotal: (0, import_fields27.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.partsTotalCents == null ? null : item.partsTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    subtotal: (0, import_fields26.virtual)({
+    subtotal: (0, import_fields27.virtual)({
       field: import_schema5.graphql.field({
         type: import_schema5.graphql.Float,
         async resolve(item) {
@@ -4239,22 +4345,22 @@ var ServiceOrder = (0, import_core21.list)({
         itemView: { fieldMode: "read" }
       }
     }),
-    taxCents: (0, import_fields26.float)({ label: "Tax (cents)" }),
-    grandTotalCents: (0, import_fields26.float)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
-    tax: (0, import_fields26.virtual)({
+    taxCents: (0, import_fields27.float)({ label: "Tax (cents)" }),
+    grandTotalCents: (0, import_fields27.float)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
+    tax: (0, import_fields27.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.taxCents == null ? null : item.taxCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    grandTotal: (0, import_fields26.virtual)({
+    grandTotal: (0, import_fields27.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.grandTotalCents == null ? null : item.grandTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
     // Status
-    status: (0, import_fields26.select)({
+    status: (0, import_fields27.select)({
       type: "string",
       options: [
         { label: "Estimate", value: "estimate" },
@@ -4272,21 +4378,21 @@ var ServiceOrder = (0, import_core21.list)({
       }
     }),
     // Timestamps
-    completedAt: (0, import_fields26.timestamp)({
+    completedAt: (0, import_fields27.timestamp)({
       label: "Completed At",
       ui: {
         description: "When the service was completed"
       }
     }),
-    lockedAt: (0, import_fields26.timestamp)({
+    lockedAt: (0, import_fields27.timestamp)({
       label: "Evidence Locked At",
       ui: { itemView: { fieldMode: "read" } }
     }),
-    settledAt: (0, import_fields26.timestamp)({
+    settledAt: (0, import_fields27.timestamp)({
       label: "External Settlement Recorded At",
       ui: { itemView: { fieldMode: "read" } }
     }),
-    evidenceSnapshot: (0, import_fields26.json)({
+    evidenceSnapshot: (0, import_fields27.json)({
       access: { create: () => false, update: () => false },
       defaultValue: {},
       label: "Immutable Service Evidence",
@@ -4296,10 +4402,10 @@ var ServiceOrder = (0, import_core21.list)({
 });
 
 // features/keystone/models/RepairOrderLineItem.ts
-var import_core22 = require("@keystone-6/core");
-var import_fields27 = require("@keystone-6/core/fields");
+var import_core23 = require("@keystone-6/core");
+var import_fields28 = require("@keystone-6/core/fields");
 var import_schema6 = require("@graphql-ts/schema");
-var RepairOrderLineItem = (0, import_core22.list)({
+var RepairOrderLineItem = (0, import_core23.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4342,7 +4448,7 @@ var RepairOrderLineItem = (0, import_core22.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Service Order relationship
-    serviceOrder: (0, import_fields27.relationship)({
+    serviceOrder: (0, import_fields28.relationship)({
       ref: "ServiceOrder.lineItems",
       ui: {
         displayMode: "select"
@@ -4350,7 +4456,7 @@ var RepairOrderLineItem = (0, import_core22.list)({
       label: "Service Order"
     }),
     // Item Details
-    itemType: (0, import_fields27.select)({
+    itemType: (0, import_fields28.select)({
       type: "string",
       options: [
         { label: "Labor", value: "labor" },
@@ -4360,21 +4466,21 @@ var RepairOrderLineItem = (0, import_core22.list)({
       validation: { isRequired: true },
       label: "Item Type"
     }),
-    description: (0, import_fields27.text)({
+    description: (0, import_fields28.text)({
       validation: { isRequired: true },
       label: "Description",
       ui: {
         description: "Description of labor or part"
       }
     }),
-    partNumber: (0, import_fields27.text)({
+    partNumber: (0, import_fields28.text)({
       label: "Part Number",
       ui: {
         description: "Part number if applicable"
       }
     }),
     // Quantity and Pricing
-    quantity: (0, import_fields27.float)({
+    quantity: (0, import_fields28.float)({
       validation: { isRequired: true },
       defaultValue: 1,
       label: "Quantity",
@@ -4382,22 +4488,22 @@ var RepairOrderLineItem = (0, import_core22.list)({
         description: "Quantity or hours"
       }
     }),
-    unitPriceCents: (0, import_fields27.float)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
-    priceCents: (0, import_fields27.float)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
-    costCents: (0, import_fields27.float)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
-    unitPrice: (0, import_fields27.virtual)({
+    unitPriceCents: (0, import_fields28.float)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
+    priceCents: (0, import_fields28.float)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
+    costCents: (0, import_fields28.float)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
+    unitPrice: (0, import_fields28.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.unitPriceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    price: (0, import_fields27.virtual)({
+    price: (0, import_fields28.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    cost: (0, import_fields27.virtual)({
+    cost: (0, import_fields28.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.costCents == null ? null : item.costCents / 100;
       } }),
@@ -4407,10 +4513,10 @@ var RepairOrderLineItem = (0, import_core22.list)({
 });
 
 // features/keystone/models/ServicePackage.ts
-var import_core23 = require("@keystone-6/core");
-var import_fields28 = require("@keystone-6/core/fields");
+var import_core24 = require("@keystone-6/core");
+var import_fields29 = require("@keystone-6/core/fields");
 var import_schema7 = require("@graphql-ts/schema");
-var ServicePackage = (0, import_core23.list)({
+var ServicePackage = (0, import_core24.list)({
   access: {
     operation: {
       query: () => true,
@@ -4437,28 +4543,28 @@ var ServicePackage = (0, import_core23.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Package Details
-    name: (0, import_fields28.text)({
+    name: (0, import_fields29.text)({
       validation: { isRequired: true },
       label: "Package Name",
       ui: {
         description: "e.g., Oil Change, Tire Rotation, Brake Service"
       }
     }),
-    description: (0, import_fields28.text)({
+    description: (0, import_fields29.text)({
       ui: {
         displayMode: "textarea"
       },
       label: "Description"
     }),
     // Pricing and Duration
-    priceCents: (0, import_fields28.float)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
-    price: (0, import_fields28.virtual)({
+    priceCents: (0, import_fields29.float)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
+    price: (0, import_fields29.virtual)({
       field: import_schema7.graphql.field({ type: import_schema7.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    estimatedDuration: (0, import_fields28.integer)({
+    estimatedDuration: (0, import_fields29.integer)({
       validation: { min: 0 },
       label: "Estimated Duration (Minutes)",
       ui: {
@@ -4466,7 +4572,7 @@ var ServicePackage = (0, import_core23.list)({
       }
     }),
     // Included Services
-    includedServices: (0, import_fields28.json)({
+    includedServices: (0, import_fields29.json)({
       defaultValue: [],
       label: "Included Services",
       ui: {
@@ -4477,8 +4583,8 @@ var ServicePackage = (0, import_core23.list)({
 });
 
 // features/keystone/models/PartsInventory.ts
-var import_core24 = require("@keystone-6/core");
-var import_fields29 = require("@keystone-6/core/fields");
+var import_core25 = require("@keystone-6/core");
+var import_fields30 = require("@keystone-6/core/fields");
 var import_schema8 = require("@graphql-ts/schema");
 
 // features/keystone/models/prismaSchema.ts
@@ -4504,7 +4610,7 @@ function prismaModelDirectives(...directives) {
 }
 
 // features/keystone/models/PartsInventory.ts
-var PartsInventory = (0, import_core24.list)({
+var PartsInventory = (0, import_core25.list)({
   db: prismaModelDirectives('@@unique([rooftopId, partNumber], map: "PartsInventory_rooftop_partNumber_key")'),
   access: {
     operation: {
@@ -4531,27 +4637,27 @@ var PartsInventory = (0, import_core24.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Part Details
-    partNumber: (0, import_fields29.text)({
+    partNumber: (0, import_fields30.text)({
       validation: { isRequired: true },
       label: "Part Number"
     }),
-    description: (0, import_fields29.text)({
+    description: (0, import_fields30.text)({
       validation: { isRequired: true },
       label: "Description"
     }),
     // Inventory
-    binLocation: (0, import_fields29.text)(),
+    binLocation: (0, import_fields30.text)(),
     // Stock quantities change only through recorded parts movements.
-    committedQuantity: (0, import_fields29.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
-    onOrderQuantity: (0, import_fields29.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
-    movements: (0, import_fields29.relationship)({ ref: "PartsMovement.part", many: true, access: { create: () => false, update: () => false } }),
-    quantity: (0, import_fields29.integer)({
+    committedQuantity: (0, import_fields30.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
+    onOrderQuantity: (0, import_fields30.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
+    movements: (0, import_fields30.relationship)({ ref: "PartsMovement.part", many: true, access: { create: () => false, update: () => false } }),
+    quantity: (0, import_fields30.integer)({
       validation: { isRequired: true },
       defaultValue: 0,
       access: { create: () => false, update: () => false },
       label: "Quantity in Stock"
     }),
-    minimumQuantity: (0, import_fields29.integer)({
+    minimumQuantity: (0, import_fields30.integer)({
       validation: { min: 0 },
       label: "Minimum Quantity",
       ui: {
@@ -4559,28 +4665,28 @@ var PartsInventory = (0, import_core24.list)({
       }
     }),
     // Pricing
-    costCents: (0, import_fields29.float)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
-    priceCents: (0, import_fields29.float)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
-    cost: (0, import_fields29.virtual)({
+    costCents: (0, import_fields30.float)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
+    priceCents: (0, import_fields30.float)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
+    cost: (0, import_fields30.virtual)({
       field: import_schema8.graphql.field({ type: import_schema8.graphql.Float, resolve(item) {
         return item.costCents == null ? null : item.costCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    price: (0, import_fields29.virtual)({
+    price: (0, import_fields30.virtual)({
       field: import_schema8.graphql.field({ type: import_schema8.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
     // Supplier
-    supplier: (0, import_fields29.text)({
+    supplier: (0, import_fields30.text)({
       label: "Supplier",
       ui: {
         description: "Parts supplier name"
       }
     }),
-    supplierPartNumber: (0, import_fields29.text)({
+    supplierPartNumber: (0, import_fields30.text)({
       label: "Supplier Part Number",
       ui: {
         description: "Supplier-specific part number"
@@ -4590,8 +4696,8 @@ var PartsInventory = (0, import_core24.list)({
 });
 
 // features/keystone/models/DealershipProfile.ts
-var import_core25 = require("@keystone-6/core");
-var import_fields30 = require("@keystone-6/core/fields");
+var import_core26 = require("@keystone-6/core");
+var import_fields31 = require("@keystone-6/core/fields");
 
 // features/platform/store-settings/lib/icon-registry.ts
 var LOGO_ICONS = [
@@ -4956,7 +5062,7 @@ function sanitizeStoreLogoSvg(svg) {
 
 // features/keystone/models/DealershipProfile.ts
 var canManageStoreSettings = (args) => permissions.canManageSettings(args) || permissions.canManageOnboarding(args) || permissions.canManageDealerships(args);
-var DealershipProfile = (0, import_core25.list)({
+var DealershipProfile = (0, import_core26.list)({
   isSingleton: true,
   access: {
     operation: {
@@ -4971,45 +5077,45 @@ var DealershipProfile = (0, import_core25.list)({
   },
   fields: {
     ...trackingFields,
-    name: (0, import_fields30.text)({ validation: { isRequired: true } }),
-    shortName: (0, import_fields30.text)({ validation: { isRequired: true } }),
-    salesEmail: (0, import_fields30.text)({ defaultValue: "" }),
-    serviceEmail: (0, import_fields30.text)({ defaultValue: "" }),
-    phone: (0, import_fields30.text)({ defaultValue: "" }),
-    whatsappNumber: (0, import_fields30.text)({
+    name: (0, import_fields31.text)({ validation: { isRequired: true } }),
+    shortName: (0, import_fields31.text)({ validation: { isRequired: true } }),
+    salesEmail: (0, import_fields31.text)({ defaultValue: "" }),
+    serviceEmail: (0, import_fields31.text)({ defaultValue: "" }),
+    phone: (0, import_fields31.text)({ defaultValue: "" }),
+    whatsappNumber: (0, import_fields31.text)({
       defaultValue: "",
       label: "WhatsApp",
       ui: { description: "N\xFAmero con c\xF3digo de pa\xEDs, sin espacios ni signos. Ej.: 5491122334455" },
       validation: { match: { regex: /^$|^\d{8,15}$/, explanation: "Us\xE1 solo d\xEDgitos, con c\xF3digo de pa\xEDs (8 a 15 d\xEDgitos)." } }
     }),
-    addressLine1: (0, import_fields30.text)({ defaultValue: "" }),
-    addressLine2: (0, import_fields30.text)({ defaultValue: "" }),
-    city: (0, import_fields30.text)({ defaultValue: "" }),
-    state: (0, import_fields30.text)({ defaultValue: "" }),
-    postalCode: (0, import_fields30.text)({ defaultValue: "" }),
-    hoursMonFri: (0, import_fields30.text)({ defaultValue: "" }),
-    hoursSaturday: (0, import_fields30.text)({ defaultValue: "" }),
-    hoursSunday: (0, import_fields30.text)({ defaultValue: "" }),
-    websiteUrl: (0, import_fields30.text)({ defaultValue: "" }),
-    currencyCode: (0, import_fields30.text)({ validation: { isRequired: true }, defaultValue: "ARS" }),
-    salesTaxRateBps: (0, import_fields30.integer)({
+    addressLine1: (0, import_fields31.text)({ defaultValue: "" }),
+    addressLine2: (0, import_fields31.text)({ defaultValue: "" }),
+    city: (0, import_fields31.text)({ defaultValue: "" }),
+    state: (0, import_fields31.text)({ defaultValue: "" }),
+    postalCode: (0, import_fields31.text)({ defaultValue: "" }),
+    hoursMonFri: (0, import_fields31.text)({ defaultValue: "" }),
+    hoursSaturday: (0, import_fields31.text)({ defaultValue: "" }),
+    hoursSunday: (0, import_fields31.text)({ defaultValue: "" }),
+    websiteUrl: (0, import_fields31.text)({ defaultValue: "" }),
+    currencyCode: (0, import_fields31.text)({ validation: { isRequired: true }, defaultValue: "ARS" }),
+    salesTaxRateBps: (0, import_fields31.integer)({
       label: "Sales tax rate (basis points)",
       defaultValue: 0,
       validation: { isRequired: true, min: 0, max: 1e4 },
       ui: { description: "Default deal sales tax rate; 415 is 4.15%" }
     }),
-    docFeeCents: (0, import_fields30.float)({
+    docFeeCents: (0, import_fields31.float)({
       label: "Documentation fee (cents)",
       defaultValue: 0,
       validation: { isRequired: true, min: 0 },
       ui: { description: "Default documentation fee added to new deal worksheets" }
     }),
-    homepageTitle: (0, import_fields30.text)({ defaultValue: "" }),
-    homepageDescription: (0, import_fields30.text)({
+    homepageTitle: (0, import_fields31.text)({ defaultValue: "" }),
+    homepageDescription: (0, import_fields31.text)({
       defaultValue: "",
       ui: { displayMode: "textarea" }
     }),
-    logoIcon: (0, import_fields30.text)({
+    logoIcon: (0, import_fields31.text)({
       defaultValue: "",
       ui: {
         displayMode: "textarea",
@@ -5029,7 +5135,7 @@ var DealershipProfile = (0, import_core25.list)({
         }
       }
     }),
-    logoColor: (0, import_fields30.text)({
+    logoColor: (0, import_fields31.text)({
       defaultValue: "0",
       ui: { description: "Normalized storefront brand hue rotation from 0 through 359 degrees" },
       hooks: {
@@ -5043,11 +5149,11 @@ var DealershipProfile = (0, import_core25.list)({
 });
 
 // features/keystone/models/FinancingApplication.ts
-var import_core26 = require("@keystone-6/core");
-var import_access36 = require("@keystone-6/core/access");
-var import_fields31 = require("@keystone-6/core/fields");
+var import_core27 = require("@keystone-6/core");
+var import_access37 = require("@keystone-6/core/access");
+var import_fields32 = require("@keystone-6/core/fields");
 var privateRead = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var FinancingApplication = (0, import_core26.list)({
+var FinancingApplication = (0, import_core27.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5072,14 +5178,14 @@ var FinancingApplication = (0, import_core26.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields31.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    idempotencyKey: (0, import_fields31.text)({
+    reference: (0, import_fields32.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    idempotencyKey: (0, import_fields32.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access36.denyAll, create: () => false, update: () => false },
+      access: { read: import_access37.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields31.select)({
+    status: (0, import_fields32.select)({
       type: "string",
       options: [
         { label: "Submitted", value: "submitted" },
@@ -5092,39 +5198,39 @@ var FinancingApplication = (0, import_core26.list)({
       defaultValue: "submitted",
       validation: { isRequired: true }
     }),
-    lead: (0, import_fields31.relationship)({ ref: "Lead.financingApplications" }),
-    vehicle: (0, import_fields31.relationship)({ ref: "Vehicle.financingApplications" }),
-    applicantName: (0, import_fields31.text)({ access: privateRead, validation: { isRequired: true } }),
-    applicantEmail: (0, import_fields31.text)({ access: privateRead, validation: { isRequired: true } }),
-    applicantPhone: (0, import_fields31.text)({ access: privateRead, validation: { isRequired: true } }),
-    employmentStatus: (0, import_fields31.text)({ access: privateRead, validation: { isRequired: true } }),
-    annualIncomeCents: (0, import_fields31.float)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
-    selfReportedCreditTier: (0, import_fields31.text)({ access: privateRead, validation: { isRequired: true } }),
-    requestedAmountCents: (0, import_fields31.float)({ validation: { min: 0 } }),
-    plannedMonthlyPaymentCents: (0, import_fields31.float)({ validation: { min: 0 } }),
-    plannedDownPaymentCents: (0, import_fields31.float)({ validation: { min: 0 } }),
-    tradeInValueCents: (0, import_fields31.float)({ validation: { min: 0 } }),
-    aprBasisPoints: (0, import_fields31.integer)({ validation: { min: 0 } }),
-    loanTermMonths: (0, import_fields31.integer)({ validation: { min: 0 } }),
-    consentAt: (0, import_fields31.timestamp)({ validation: { isRequired: true } }),
-    submittedAt: (0, import_fields31.timestamp)({ validation: { isRequired: true } }),
-    lockedAt: (0, import_fields31.timestamp)({ validation: { isRequired: true } }),
-    immutableSnapshot: (0, import_fields31.json)({
+    lead: (0, import_fields32.relationship)({ ref: "Lead.financingApplications" }),
+    vehicle: (0, import_fields32.relationship)({ ref: "Vehicle.financingApplications" }),
+    applicantName: (0, import_fields32.text)({ access: privateRead, validation: { isRequired: true } }),
+    applicantEmail: (0, import_fields32.text)({ access: privateRead, validation: { isRequired: true } }),
+    applicantPhone: (0, import_fields32.text)({ access: privateRead, validation: { isRequired: true } }),
+    employmentStatus: (0, import_fields32.text)({ access: privateRead, validation: { isRequired: true } }),
+    annualIncomeCents: (0, import_fields32.float)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
+    selfReportedCreditTier: (0, import_fields32.text)({ access: privateRead, validation: { isRequired: true } }),
+    requestedAmountCents: (0, import_fields32.float)({ validation: { min: 0 } }),
+    plannedMonthlyPaymentCents: (0, import_fields32.float)({ validation: { min: 0 } }),
+    plannedDownPaymentCents: (0, import_fields32.float)({ validation: { min: 0 } }),
+    tradeInValueCents: (0, import_fields32.float)({ validation: { min: 0 } }),
+    aprBasisPoints: (0, import_fields32.integer)({ validation: { min: 0 } }),
+    loanTermMonths: (0, import_fields32.integer)({ validation: { min: 0 } }),
+    consentAt: (0, import_fields32.timestamp)({ validation: { isRequired: true } }),
+    submittedAt: (0, import_fields32.timestamp)({ validation: { isRequired: true } }),
+    lockedAt: (0, import_fields32.timestamp)({ validation: { isRequired: true } }),
+    immutableSnapshot: (0, import_fields32.json)({
       access: privateRead,
       defaultValue: {},
       ui: { itemView: { fieldMode: "read" } }
     }),
-    submissions: (0, import_fields31.relationship)({ ref: "LenderSubmission.application", many: true }),
-    decisions: (0, import_fields31.relationship)({ ref: "LenderDecision.application", many: true })
+    submissions: (0, import_fields32.relationship)({ ref: "LenderSubmission.application", many: true }),
+    decisions: (0, import_fields32.relationship)({ ref: "LenderDecision.application", many: true })
   }
 });
 
 // features/keystone/models/LenderSubmission.ts
-var import_core27 = require("@keystone-6/core");
-var import_access38 = require("@keystone-6/core/access");
-var import_fields32 = require("@keystone-6/core/fields");
+var import_core28 = require("@keystone-6/core");
+var import_access39 = require("@keystone-6/core/access");
+var import_fields33 = require("@keystone-6/core/fields");
 var restricted = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderSubmission = (0, import_core27.list)({
+var LenderSubmission = (0, import_core28.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5145,15 +5251,15 @@ var LenderSubmission = (0, import_core27.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    application: (0, import_fields32.relationship)({ ref: "FinancingApplication.submissions" }),
-    providerKey: (0, import_fields32.text)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields32.text)({
+    application: (0, import_fields33.relationship)({ ref: "FinancingApplication.submissions" }),
+    providerKey: (0, import_fields33.text)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields33.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access38.denyAll, create: () => false, update: () => false },
+      access: { read: import_access39.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields32.select)({
+    status: (0, import_fields33.select)({
       type: "string",
       options: [
         { label: "Queued", value: "queued" },
@@ -5163,21 +5269,21 @@ var LenderSubmission = (0, import_core27.list)({
       defaultValue: "queued",
       validation: { isRequired: true }
     }),
-    externalReference: (0, import_fields32.text)({ db: { isNullable: true } }),
-    requestSnapshot: (0, import_fields32.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    responseSummary: (0, import_fields32.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    errorCode: (0, import_fields32.text)({ db: { isNullable: true } }),
-    queuedAt: (0, import_fields32.timestamp)({ validation: { isRequired: true } }),
-    submittedAt: (0, import_fields32.timestamp)()
+    externalReference: (0, import_fields33.text)({ db: { isNullable: true } }),
+    requestSnapshot: (0, import_fields33.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    responseSummary: (0, import_fields33.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    errorCode: (0, import_fields33.text)({ db: { isNullable: true } }),
+    queuedAt: (0, import_fields33.timestamp)({ validation: { isRequired: true } }),
+    submittedAt: (0, import_fields33.timestamp)()
   }
 });
 
 // features/keystone/models/LenderDecision.ts
-var import_core28 = require("@keystone-6/core");
-var import_access40 = require("@keystone-6/core/access");
-var import_fields33 = require("@keystone-6/core/fields");
+var import_core29 = require("@keystone-6/core");
+var import_access41 = require("@keystone-6/core/access");
+var import_fields34 = require("@keystone-6/core/fields");
 var restricted2 = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderDecision = (0, import_core28.list)({
+var LenderDecision = (0, import_core29.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5202,17 +5308,17 @@ var LenderDecision = (0, import_core28.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    application: (0, import_fields33.relationship)({ ref: "FinancingApplication.decisions" }),
-    submission: (0, import_fields33.relationship)({ ref: "LenderSubmission" }),
-    idempotencyKey: (0, import_fields33.text)({
+    application: (0, import_fields34.relationship)({ ref: "FinancingApplication.decisions" }),
+    submission: (0, import_fields34.relationship)({ ref: "LenderSubmission" }),
+    idempotencyKey: (0, import_fields34.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access40.denyAll, create: () => false, update: () => false },
+      access: { read: import_access41.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    providerKey: (0, import_fields33.text)({ validation: { isRequired: true } }),
-    externalReference: (0, import_fields33.text)({ db: { isNullable: true } }),
-    decision: (0, import_fields33.select)({
+    providerKey: (0, import_fields34.text)({ validation: { isRequired: true } }),
+    externalReference: (0, import_fields34.text)({ db: { isNullable: true } }),
+    decision: (0, import_fields34.select)({
       type: "string",
       options: [
         { label: "Approved", value: "approved" },
@@ -5223,23 +5329,23 @@ var LenderDecision = (0, import_core28.list)({
       ],
       validation: { isRequired: true }
     }),
-    approvedAmountCents: (0, import_fields33.float)({ validation: { min: 0 } }),
-    aprBasisPoints: (0, import_fields33.integer)({ validation: { min: 0 } }),
-    termMonths: (0, import_fields33.integer)({ validation: { min: 0 } }),
-    monthlyPaymentCents: (0, import_fields33.float)({ validation: { min: 0 } }),
-    reasonCodes: (0, import_fields33.json)({ access: restricted2, defaultValue: [] }),
-    immutableSnapshot: (0, import_fields33.json)({ access: restricted2, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    decidedAt: (0, import_fields33.timestamp)({ validation: { isRequired: true } }),
-    recordedBy: (0, import_fields33.relationship)({ ref: "User" }),
-    selectedForDeals: (0, import_fields33.relationship)({ ref: "Deal.selectedLenderDecision", many: true, access: restricted2 })
+    approvedAmountCents: (0, import_fields34.float)({ validation: { min: 0 } }),
+    aprBasisPoints: (0, import_fields34.integer)({ validation: { min: 0 } }),
+    termMonths: (0, import_fields34.integer)({ validation: { min: 0 } }),
+    monthlyPaymentCents: (0, import_fields34.float)({ validation: { min: 0 } }),
+    reasonCodes: (0, import_fields34.json)({ access: restricted2, defaultValue: [] }),
+    immutableSnapshot: (0, import_fields34.json)({ access: restricted2, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    decidedAt: (0, import_fields34.timestamp)({ validation: { isRequired: true } }),
+    recordedBy: (0, import_fields34.relationship)({ ref: "User" }),
+    selectedForDeals: (0, import_fields34.relationship)({ ref: "Deal.selectedLenderDecision", many: true, access: restricted2 })
   }
 });
 
 // features/keystone/models/DealerGroup.ts
-var import_core29 = require("@keystone-6/core");
-var import_access42 = require("@keystone-6/core/access");
-var import_fields34 = require("@keystone-6/core/fields");
-var DealerGroup = (0, import_core29.list)({
+var import_core30 = require("@keystone-6/core");
+var import_access43 = require("@keystone-6/core/access");
+var import_fields35 = require("@keystone-6/core/fields");
+var DealerGroup = (0, import_core30.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5255,13 +5361,13 @@ var DealerGroup = (0, import_core29.list)({
   ui: { listView: { initialColumns: ["name", "slug", "status", "rooftops"] } },
   fields: {
     ...trackingFields,
-    name: (0, import_fields34.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
-    slug: (0, import_fields34.text)({
+    name: (0, import_fields35.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
+    slug: (0, import_fields35.text)({
       isIndexed: "unique",
       validation: { isRequired: true, length: { min: 2, max: 120 }, match: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ } }
     }),
-    legalName: (0, import_fields34.text)({ validation: { length: { max: 240 } } }),
-    status: (0, import_fields34.select)({
+    legalName: (0, import_fields35.text)({ validation: { length: { max: 240 } } }),
+    status: (0, import_fields35.select)({
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5271,17 +5377,17 @@ var DealerGroup = (0, import_core29.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    rooftops: (0, import_fields34.relationship)({ ref: "Rooftop.dealerGroup", many: true, access: { update: import_access42.denyAll } }),
-    memberships: (0, import_fields34.relationship)({ ref: "DealerGroupMembership.dealerGroup", many: true, access: { update: import_access42.denyAll } }),
-    membershipAuditEvents: (0, import_fields34.relationship)({ ref: "MembershipAuditEvent.dealerGroup", many: true, access: { update: import_access42.denyAll } })
+    rooftops: (0, import_fields35.relationship)({ ref: "Rooftop.dealerGroup", many: true, access: { update: import_access43.denyAll } }),
+    memberships: (0, import_fields35.relationship)({ ref: "DealerGroupMembership.dealerGroup", many: true, access: { update: import_access43.denyAll } }),
+    membershipAuditEvents: (0, import_fields35.relationship)({ ref: "MembershipAuditEvent.dealerGroup", many: true, access: { update: import_access43.denyAll } })
   }
 });
 
 // features/keystone/models/Rooftop.ts
-var import_core30 = require("@keystone-6/core");
-var import_access44 = require("@keystone-6/core/access");
-var import_fields35 = require("@keystone-6/core/fields");
-var Rooftop = (0, import_core30.list)({
+var import_core31 = require("@keystone-6/core");
+var import_access45 = require("@keystone-6/core/access");
+var import_fields36 = require("@keystone-6/core/fields");
+var Rooftop = (0, import_core31.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5314,18 +5420,18 @@ var Rooftop = (0, import_core30.list)({
   ui: { listView: { initialColumns: ["code", "name", "dealerGroup", "status", "timezone"] } },
   fields: {
     ...trackingFields,
-    rooftopKey: (0, import_fields35.text)({
+    rooftopKey: (0, import_fields36.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access44.denyAll, update: import_access44.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access45.denyAll, update: import_access45.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    code: (0, import_fields35.text)({ validation: { isRequired: true, length: { min: 1, max: 40 } }, access: { update: import_access44.denyAll } }),
-    name: (0, import_fields35.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
-    publicSlug: (0, import_fields35.text)({
+    code: (0, import_fields36.text)({ validation: { isRequired: true, length: { min: 1, max: 40 } }, access: { update: import_access45.denyAll } }),
+    name: (0, import_fields36.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
+    publicSlug: (0, import_fields36.text)({
       isIndexed: "unique",
       validation: { isRequired: true, length: { min: 2, max: 120 }, match: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ } }
     }),
-    status: (0, import_fields35.select)({
+    status: (0, import_fields36.select)({
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5335,19 +5441,19 @@ var Rooftop = (0, import_core30.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    timezone: (0, import_fields35.text)({ defaultValue: "America/New_York", validation: { isRequired: true } }),
-    currencyCode: (0, import_fields35.text)({ defaultValue: "USD", validation: { isRequired: true, length: { min: 3, max: 3 } } }),
-    dealerGroup: (0, import_fields35.relationship)({ ref: "DealerGroup.rooftops", access: { update: import_access44.denyAll } }),
-    memberships: (0, import_fields35.relationship)({ ref: "RooftopMembership.rooftop", many: true, access: { update: import_access44.denyAll } }),
-    membershipAuditEvents: (0, import_fields35.relationship)({ ref: "MembershipAuditEvent.rooftop", many: true, access: { update: import_access44.denyAll } })
+    timezone: (0, import_fields36.text)({ defaultValue: "America/New_York", validation: { isRequired: true } }),
+    currencyCode: (0, import_fields36.text)({ defaultValue: "USD", validation: { isRequired: true, length: { min: 3, max: 3 } } }),
+    dealerGroup: (0, import_fields36.relationship)({ ref: "DealerGroup.rooftops", access: { update: import_access45.denyAll } }),
+    memberships: (0, import_fields36.relationship)({ ref: "RooftopMembership.rooftop", many: true, access: { update: import_access45.denyAll } }),
+    membershipAuditEvents: (0, import_fields36.relationship)({ ref: "MembershipAuditEvent.rooftop", many: true, access: { update: import_access45.denyAll } })
   }
 });
 
 // features/keystone/models/DealerGroupMembership.ts
-var import_core31 = require("@keystone-6/core");
-var import_access46 = require("@keystone-6/core/access");
-var import_fields36 = require("@keystone-6/core/fields");
-var DealerGroupMembership = (0, import_core31.list)({
+var import_core32 = require("@keystone-6/core");
+var import_access47 = require("@keystone-6/core/access");
+var import_fields37 = require("@keystone-6/core/fields");
+var DealerGroupMembership = (0, import_core32.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5380,16 +5486,16 @@ var DealerGroupMembership = (0, import_core31.list)({
   ui: { hideCreate: true, hideDelete: true, itemView: { defaultFieldMode: "read" }, listView: { initialColumns: ["user", "dealerGroup", "role", "status", "accessAllRooftops"] } },
   fields: {
     ...trackingFields,
-    membershipKey: (0, import_fields36.text)({
+    membershipKey: (0, import_fields37.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access46.denyAll, update: import_access46.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access47.denyAll, update: import_access47.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    user: (0, import_fields36.relationship)({ ref: "User.dealerGroupMemberships", access: { update: import_access46.denyAll } }),
-    dealerGroup: (0, import_fields36.relationship)({ ref: "DealerGroup.memberships", access: { update: import_access46.denyAll } }),
-    role: (0, import_fields36.relationship)({ ref: "Role.dealerGroupMemberships", access: { update: import_access46.denyAll } }),
-    status: (0, import_fields36.select)({
-      access: { update: import_access46.denyAll },
+    user: (0, import_fields37.relationship)({ ref: "User.dealerGroupMemberships", access: { update: import_access47.denyAll } }),
+    dealerGroup: (0, import_fields37.relationship)({ ref: "DealerGroup.memberships", access: { update: import_access47.denyAll } }),
+    role: (0, import_fields37.relationship)({ ref: "Role.dealerGroupMemberships", access: { update: import_access47.denyAll } }),
+    status: (0, import_fields37.select)({
+      access: { update: import_access47.denyAll },
       type: "string",
       options: [
         { label: "Invited", value: "invited" },
@@ -5400,17 +5506,17 @@ var DealerGroupMembership = (0, import_core31.list)({
       defaultValue: "invited",
       validation: { isRequired: true }
     }),
-    accessAllRooftops: (0, import_fields36.checkbox)({ defaultValue: false, access: { update: import_access46.denyAll } }),
-    invitedBy: (0, import_fields36.relationship)({ ref: "User" }),
-    joinedAt: (0, import_fields36.timestamp)()
+    accessAllRooftops: (0, import_fields37.checkbox)({ defaultValue: false, access: { update: import_access47.denyAll } }),
+    invitedBy: (0, import_fields37.relationship)({ ref: "User" }),
+    joinedAt: (0, import_fields37.timestamp)()
   }
 });
 
 // features/keystone/models/RooftopMembership.ts
-var import_core32 = require("@keystone-6/core");
-var import_access48 = require("@keystone-6/core/access");
-var import_fields37 = require("@keystone-6/core/fields");
-var RooftopMembership = (0, import_core32.list)({
+var import_core33 = require("@keystone-6/core");
+var import_access49 = require("@keystone-6/core/access");
+var import_fields38 = require("@keystone-6/core/fields");
+var RooftopMembership = (0, import_core33.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5446,16 +5552,16 @@ var RooftopMembership = (0, import_core32.list)({
   ui: { hideCreate: true, hideDelete: true, itemView: { defaultFieldMode: "read" }, listView: { initialColumns: ["user", "rooftop", "role", "status"] } },
   fields: {
     ...trackingFields,
-    membershipKey: (0, import_fields37.text)({
+    membershipKey: (0, import_fields38.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access48.denyAll, update: import_access48.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access49.denyAll, update: import_access49.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    user: (0, import_fields37.relationship)({ ref: "User.rooftopMemberships", access: { update: import_access48.denyAll } }),
-    rooftop: (0, import_fields37.relationship)({ ref: "Rooftop.memberships", access: { update: import_access48.denyAll } }),
-    role: (0, import_fields37.relationship)({ ref: "Role.rooftopMemberships", access: { update: import_access48.denyAll } }),
-    status: (0, import_fields37.select)({
-      access: { update: import_access48.denyAll },
+    user: (0, import_fields38.relationship)({ ref: "User.rooftopMemberships", access: { update: import_access49.denyAll } }),
+    rooftop: (0, import_fields38.relationship)({ ref: "Rooftop.memberships", access: { update: import_access49.denyAll } }),
+    role: (0, import_fields38.relationship)({ ref: "Role.rooftopMemberships", access: { update: import_access49.denyAll } }),
+    status: (0, import_fields38.select)({
+      access: { update: import_access49.denyAll },
       type: "string",
       options: [
         { label: "Invited", value: "invited" },
@@ -5466,15 +5572,15 @@ var RooftopMembership = (0, import_core32.list)({
       defaultValue: "invited",
       validation: { isRequired: true }
     }),
-    invitedBy: (0, import_fields37.relationship)({ ref: "User" }),
-    joinedAt: (0, import_fields37.timestamp)()
+    invitedBy: (0, import_fields38.relationship)({ ref: "User" }),
+    joinedAt: (0, import_fields38.timestamp)()
   }
 });
 
 // features/keystone/models/MembershipAuditEvent.ts
-var import_core33 = require("@keystone-6/core");
-var import_fields38 = require("@keystone-6/core/fields");
-var MembershipAuditEvent = (0, import_core33.list)({
+var import_core34 = require("@keystone-6/core");
+var import_fields39 = require("@keystone-6/core/fields");
+var MembershipAuditEvent = (0, import_core34.list)({
   access: {
     operation: {
       query: permissions.canManageDealerships,
@@ -5490,7 +5596,7 @@ var MembershipAuditEvent = (0, import_core33.list)({
   },
   fields: {
     ...trackingFields,
-    scopeType: (0, import_fields38.select)({
+    scopeType: (0, import_fields39.select)({
       type: "string",
       options: [
         { label: "Dealer Group", value: "dealer-group" },
@@ -5498,7 +5604,7 @@ var MembershipAuditEvent = (0, import_core33.list)({
       ],
       validation: { isRequired: true }
     }),
-    action: (0, import_fields38.select)({
+    action: (0, import_fields39.select)({
       type: "string",
       options: [
         { label: "Created", value: "created" },
@@ -5507,23 +5613,23 @@ var MembershipAuditEvent = (0, import_core33.list)({
       ],
       validation: { isRequired: true }
     }),
-    dealerGroup: (0, import_fields38.relationship)({ ref: "DealerGroup.membershipAuditEvents" }),
-    rooftop: (0, import_fields38.relationship)({ ref: "Rooftop.membershipAuditEvents" }),
-    targetUser: (0, import_fields38.relationship)({ ref: "User.membershipAuditEvents" }),
-    actor: (0, import_fields38.relationship)({ ref: "User.performedMembershipAuditEvents" }),
-    membershipId: (0, import_fields38.text)({ validation: { isRequired: true } }),
-    previousSnapshot: (0, import_fields38.json)({ defaultValue: null }),
-    nextSnapshot: (0, import_fields38.json)({ defaultValue: {} }),
-    reason: (0, import_fields38.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
-    occurredAt: (0, import_fields38.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
+    dealerGroup: (0, import_fields39.relationship)({ ref: "DealerGroup.membershipAuditEvents" }),
+    rooftop: (0, import_fields39.relationship)({ ref: "Rooftop.membershipAuditEvents" }),
+    targetUser: (0, import_fields39.relationship)({ ref: "User.membershipAuditEvents" }),
+    actor: (0, import_fields39.relationship)({ ref: "User.performedMembershipAuditEvents" }),
+    membershipId: (0, import_fields39.text)({ validation: { isRequired: true } }),
+    previousSnapshot: (0, import_fields39.json)({ defaultValue: null }),
+    nextSnapshot: (0, import_fields39.json)({ defaultValue: {} }),
+    reason: (0, import_fields39.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
+    occurredAt: (0, import_fields39.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
   }
 });
 
 // features/keystone/models/InventoryAcquisition.ts
-var import_core34 = require("@keystone-6/core");
-var import_access51 = require("@keystone-6/core/access");
-var import_fields39 = require("@keystone-6/core/fields");
-var InventoryAcquisition = (0, import_core34.list)({
+var import_core35 = require("@keystone-6/core");
+var import_access52 = require("@keystone-6/core/access");
+var import_fields40 = require("@keystone-6/core/fields");
+var InventoryAcquisition = (0, import_core35.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5542,14 +5648,14 @@ var InventoryAcquisition = (0, import_core34.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields39.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    idempotencyKey: (0, import_fields39.text)({
+    reference: (0, import_fields40.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    idempotencyKey: (0, import_fields40.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access51.denyAll, create: () => false, update: () => false },
+      access: { read: import_access52.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields39.select)({
+    status: (0, import_fields40.select)({
       type: "string",
       options: [
         { label: "Appraised", value: "appraised" },
@@ -5563,7 +5669,7 @@ var InventoryAcquisition = (0, import_core34.list)({
       defaultValue: "appraised",
       validation: { isRequired: true }
     }),
-    acquisitionSource: (0, import_fields39.select)({
+    acquisitionSource: (0, import_fields40.select)({
       type: "string",
       options: [
         { label: "Trade-in", value: "trade-in" },
@@ -5575,31 +5681,31 @@ var InventoryAcquisition = (0, import_core34.list)({
       ],
       validation: { isRequired: true }
     }),
-    sourceReference: (0, import_fields39.text)({ validation: { length: { max: 200 } } }),
-    vin: (0, import_fields39.text)({ validation: { isRequired: true, length: { min: 17, max: 17 } } }),
-    year: (0, import_fields39.integer)({ validation: { isRequired: true, min: 1900, max: 2200 } }),
-    make: (0, import_fields39.text)({ validation: { isRequired: true } }),
-    model: (0, import_fields39.text)({ validation: { isRequired: true } }),
-    odometer: (0, import_fields39.integer)({ validation: { min: 0 } }),
-    appraisalCents: (0, import_fields39.float)({ validation: { isRequired: true, min: 0 } }),
-    purchaseCents: (0, import_fields39.float)({ validation: { min: 0 } }),
-    reconEstimateCents: (0, import_fields39.float)({ validation: { min: 0 } }),
-    vehicle: (0, import_fields39.relationship)({ ref: "Vehicle.acquisition", access: { update: import_access51.denyAll } }),
-    immutablePurchaseSnapshot: (0, import_fields39.json)({ defaultValue: null, access: { create: () => false, update: () => false } }),
-    purchasedAt: (0, import_fields39.timestamp)(),
-    arrivedAt: (0, import_fields39.timestamp)(),
-    frontlineAt: (0, import_fields39.timestamp)(),
-    requestedBy: (0, import_fields39.relationship)({ ref: "User" }),
-    lastTransitionedBy: (0, import_fields39.relationship)({ ref: "User" }),
-    stock: (0, import_fields39.relationship)({ ref: "InventoryStock.acquisition", access: { update: import_access51.denyAll } }),
-    events: (0, import_fields39.relationship)({ ref: "InventoryAcquisitionEvent.acquisition", many: true })
+    sourceReference: (0, import_fields40.text)({ validation: { length: { max: 200 } } }),
+    vin: (0, import_fields40.text)({ validation: { isRequired: true, length: { min: 17, max: 17 } } }),
+    year: (0, import_fields40.integer)({ validation: { isRequired: true, min: 1900, max: 2200 } }),
+    make: (0, import_fields40.text)({ validation: { isRequired: true } }),
+    model: (0, import_fields40.text)({ validation: { isRequired: true } }),
+    odometer: (0, import_fields40.integer)({ validation: { min: 0 } }),
+    appraisalCents: (0, import_fields40.float)({ validation: { isRequired: true, min: 0 } }),
+    purchaseCents: (0, import_fields40.float)({ validation: { min: 0 } }),
+    reconEstimateCents: (0, import_fields40.float)({ validation: { min: 0 } }),
+    vehicle: (0, import_fields40.relationship)({ ref: "Vehicle.acquisition", access: { update: import_access52.denyAll } }),
+    immutablePurchaseSnapshot: (0, import_fields40.json)({ defaultValue: null, access: { create: () => false, update: () => false } }),
+    purchasedAt: (0, import_fields40.timestamp)(),
+    arrivedAt: (0, import_fields40.timestamp)(),
+    frontlineAt: (0, import_fields40.timestamp)(),
+    requestedBy: (0, import_fields40.relationship)({ ref: "User" }),
+    lastTransitionedBy: (0, import_fields40.relationship)({ ref: "User" }),
+    stock: (0, import_fields40.relationship)({ ref: "InventoryStock.acquisition", access: { update: import_access52.denyAll } }),
+    events: (0, import_fields40.relationship)({ ref: "InventoryAcquisitionEvent.acquisition", many: true })
   }
 });
 
 // features/keystone/models/InventoryAcquisitionEvent.ts
-var import_core35 = require("@keystone-6/core");
-var import_fields40 = require("@keystone-6/core/fields");
-var InventoryAcquisitionEvent = (0, import_core35.list)({
+var import_core36 = require("@keystone-6/core");
+var import_fields41 = require("@keystone-6/core/fields");
+var InventoryAcquisitionEvent = (0, import_core36.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5617,25 +5723,25 @@ var InventoryAcquisitionEvent = (0, import_core35.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    acquisition: (0, import_fields40.relationship)({
+    acquisition: (0, import_fields41.relationship)({
       ref: "InventoryAcquisition.events",
       db: {
         extendPrismaSchema: (field) => field.replace(/acquisition InventoryAcquisition\?/g, "acquisition InventoryAcquisition").replace(/acquisitionId String\?/g, "acquisitionId String")
       }
     }),
-    fromStatus: (0, import_fields40.text)(),
-    toStatus: (0, import_fields40.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields40.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
-    evidence: (0, import_fields40.json)({ defaultValue: {} }),
-    actor: (0, import_fields40.relationship)({ ref: "User" }),
-    occurredAt: (0, import_fields40.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
+    fromStatus: (0, import_fields41.text)(),
+    toStatus: (0, import_fields41.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields41.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
+    evidence: (0, import_fields41.json)({ defaultValue: {} }),
+    actor: (0, import_fields41.relationship)({ ref: "User" }),
+    occurredAt: (0, import_fields41.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
   }
 });
 
 // features/keystone/models/DomainAuditEvent.ts
-var import_core36 = require("@keystone-6/core");
-var import_fields41 = require("@keystone-6/core/fields");
-var DomainAuditEvent = (0, import_core36.list)({
+var import_core37 = require("@keystone-6/core");
+var import_fields42 = require("@keystone-6/core/fields");
+var DomainAuditEvent = (0, import_core37.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -5653,24 +5759,24 @@ var DomainAuditEvent = (0, import_core36.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    eventKey: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    requestHash: (0, import_fields41.text)({ validation: { isRequired: true }, access: { create: () => false, update: () => false } }),
-    aggregateType: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: true }),
-    aggregateId: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: true }),
-    action: (0, import_fields41.text)({ validation: { isRequired: true } }),
-    beforeSnapshot: (0, import_fields41.json)({ defaultValue: null }),
-    afterSnapshot: (0, import_fields41.json)({ defaultValue: null }),
-    metadata: (0, import_fields41.json)({ defaultValue: {} }),
-    actor: (0, import_fields41.relationship)({ ref: "User.domainAuditEvents" }),
-    occurredAt: (0, import_fields41.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
+    eventKey: (0, import_fields42.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    requestHash: (0, import_fields42.text)({ validation: { isRequired: true }, access: { create: () => false, update: () => false } }),
+    aggregateType: (0, import_fields42.text)({ validation: { isRequired: true }, isIndexed: true }),
+    aggregateId: (0, import_fields42.text)({ validation: { isRequired: true }, isIndexed: true }),
+    action: (0, import_fields42.text)({ validation: { isRequired: true } }),
+    beforeSnapshot: (0, import_fields42.json)({ defaultValue: null }),
+    afterSnapshot: (0, import_fields42.json)({ defaultValue: null }),
+    metadata: (0, import_fields42.json)({ defaultValue: {} }),
+    actor: (0, import_fields42.relationship)({ ref: "User.domainAuditEvents" }),
+    occurredAt: (0, import_fields42.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
   }
 });
 
 // features/keystone/models/InventoryStock.ts
-var import_core37 = require("@keystone-6/core");
-var import_access55 = require("@keystone-6/core/access");
-var import_fields42 = require("@keystone-6/core/fields");
-var InventoryStock = (0, import_core37.list)({
+var import_core38 = require("@keystone-6/core");
+var import_access56 = require("@keystone-6/core/access");
+var import_fields43 = require("@keystone-6/core/fields");
+var InventoryStock = (0, import_core38.list)({
   access: {
     operation: { query: permissions.canViewInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5679,36 +5785,36 @@ var InventoryStock = (0, import_core37.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    vehicle: (0, import_fields42.relationship)({
+    vehicle: (0, import_fields43.relationship)({
       ref: "Vehicle.inventoryStock",
-      access: { update: import_access55.denyAll },
+      access: { update: import_access56.denyAll },
       db: { extendPrismaSchema: (field) => field.replace(/vehicle Vehicle\?/g, "vehicle Vehicle").replace(/vehicleId String\?/g, "vehicleId String") }
     }),
-    acquisition: (0, import_fields42.relationship)({ ref: "InventoryAcquisition.stock", access: { update: import_access55.denyAll } }),
-    stockNumber: (0, import_fields42.text)({ validation: { isRequired: true } }),
-    stockKey: (0, import_fields42.text)({ validation: { isRequired: true }, isIndexed: "unique", access: { read: import_access55.denyAll, create: import_access55.denyAll, update: import_access55.denyAll }, ui: { itemView: { fieldMode: "hidden" } } }),
-    locationCode: (0, import_fields42.text)({ validation: { isRequired: true } }),
-    locationLabel: (0, import_fields42.text)(),
-    stockedAt: (0, import_fields42.timestamp)({ validation: { isRequired: true } }),
-    frontlineAt: (0, import_fields42.timestamp)(),
-    purchaseCostCents: (0, import_fields42.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    reconCostCents: (0, import_fields42.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    otherCostCents: (0, import_fields42.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    totalCostCents: (0, import_fields42.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    reconStatus: (0, import_fields42.select)({ type: "string", options: ["not-started", "in-progress", "completed"].map((value) => ({ label: value, value })), defaultValue: "not-started" }),
-    merchandisingStatus: (0, import_fields42.select)({ type: "string", options: ["draft", "submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "draft" }),
-    approvedRevisionHash: (0, import_fields42.text)({ defaultValue: "", access: { create: import_access55.denyAll, update: import_access55.denyAll, read: permissions.canViewInventory }, label: "Approved marketing revision", ui: { itemView: { fieldMode: "read" } } }),
-    feedStatus: (0, import_fields42.select)({ type: "string", options: ["not-published", "succeeded", "partial", "failed"].map((value) => ({ label: value, value })), defaultValue: "not-published" }),
-    events: (0, import_fields42.relationship)({ ref: "InventoryStockEvent.stock", many: true }),
-    reconWorkItems: (0, import_fields42.relationship)({ ref: "InventoryReconWorkItem.stock", many: true }),
-    merchandisingVersions: (0, import_fields42.relationship)({ ref: "InventoryMerchandisingVersion.stock", many: true })
+    acquisition: (0, import_fields43.relationship)({ ref: "InventoryAcquisition.stock", access: { update: import_access56.denyAll } }),
+    stockNumber: (0, import_fields43.text)({ validation: { isRequired: true } }),
+    stockKey: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: "unique", access: { read: import_access56.denyAll, create: import_access56.denyAll, update: import_access56.denyAll }, ui: { itemView: { fieldMode: "hidden" } } }),
+    locationCode: (0, import_fields43.text)({ validation: { isRequired: true } }),
+    locationLabel: (0, import_fields43.text)(),
+    stockedAt: (0, import_fields43.timestamp)({ validation: { isRequired: true } }),
+    frontlineAt: (0, import_fields43.timestamp)(),
+    purchaseCostCents: (0, import_fields43.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    reconCostCents: (0, import_fields43.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    otherCostCents: (0, import_fields43.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    totalCostCents: (0, import_fields43.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    reconStatus: (0, import_fields43.select)({ type: "string", options: ["not-started", "in-progress", "completed"].map((value) => ({ label: value, value })), defaultValue: "not-started" }),
+    merchandisingStatus: (0, import_fields43.select)({ type: "string", options: ["draft", "submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "draft" }),
+    approvedRevisionHash: (0, import_fields43.text)({ defaultValue: "", access: { create: import_access56.denyAll, update: import_access56.denyAll, read: permissions.canViewInventory }, label: "Approved marketing revision", ui: { itemView: { fieldMode: "read" } } }),
+    feedStatus: (0, import_fields43.select)({ type: "string", options: ["not-published", "succeeded", "partial", "failed"].map((value) => ({ label: value, value })), defaultValue: "not-published" }),
+    events: (0, import_fields43.relationship)({ ref: "InventoryStockEvent.stock", many: true }),
+    reconWorkItems: (0, import_fields43.relationship)({ ref: "InventoryReconWorkItem.stock", many: true }),
+    merchandisingVersions: (0, import_fields43.relationship)({ ref: "InventoryMerchandisingVersion.stock", many: true })
   }
 });
 
 // features/keystone/models/InventoryStockEvent.ts
-var import_core38 = require("@keystone-6/core");
-var import_fields43 = require("@keystone-6/core/fields");
-var InventoryStockEvent = (0, import_core38.list)({
+var import_core39 = require("@keystone-6/core");
+var import_fields44 = require("@keystone-6/core/fields");
+var InventoryStockEvent = (0, import_core39.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5717,21 +5823,21 @@ var InventoryStockEvent = (0, import_core38.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields43.relationship)({ ref: "InventoryStock.events", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    eventKey: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    eventType: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: true }),
-    reason: (0, import_fields43.text)({ validation: { isRequired: true, length: { max: 500 } } }),
-    amountCents: (0, import_fields43.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    evidence: (0, import_fields43.json)({ defaultValue: {} }),
-    actor: (0, import_fields43.relationship)({ ref: "User" }),
-    occurredAt: (0, import_fields43.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
+    stock: (0, import_fields44.relationship)({ ref: "InventoryStock.events", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    eventKey: (0, import_fields44.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    eventType: (0, import_fields44.text)({ validation: { isRequired: true }, isIndexed: true }),
+    reason: (0, import_fields44.text)({ validation: { isRequired: true, length: { max: 500 } } }),
+    amountCents: (0, import_fields44.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    evidence: (0, import_fields44.json)({ defaultValue: {} }),
+    actor: (0, import_fields44.relationship)({ ref: "User" }),
+    occurredAt: (0, import_fields44.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
   }
 });
 
 // features/keystone/models/InventoryReconWorkItem.ts
-var import_core39 = require("@keystone-6/core");
-var import_fields44 = require("@keystone-6/core/fields");
-var InventoryReconWorkItem = (0, import_core39.list)({
+var import_core40 = require("@keystone-6/core");
+var import_fields45 = require("@keystone-6/core/fields");
+var InventoryReconWorkItem = (0, import_core40.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5740,23 +5846,23 @@ var InventoryReconWorkItem = (0, import_core39.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields44.relationship)({ ref: "InventoryStock.reconWorkItems", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    title: (0, import_fields44.text)({ validation: { isRequired: true, length: { max: 200 } } }),
-    category: (0, import_fields44.select)({ type: "string", options: ["mechanical", "body", "detail", "tires", "inspection", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    status: (0, import_fields44.select)({ type: "string", options: ["open", "in-progress", "completed", "cancelled"].map((value) => ({ label: value, value })), defaultValue: "open" }),
-    estimatedCostCents: (0, import_fields44.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    actualCostCents: (0, import_fields44.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    vendorName: (0, import_fields44.text)({ validation: { length: { max: 200 } } }),
-    assignedTo: (0, import_fields44.relationship)({ ref: "User" }),
-    dueAt: (0, import_fields44.timestamp)(),
-    completedAt: (0, import_fields44.timestamp)()
+    stock: (0, import_fields45.relationship)({ ref: "InventoryStock.reconWorkItems", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    title: (0, import_fields45.text)({ validation: { isRequired: true, length: { max: 200 } } }),
+    category: (0, import_fields45.select)({ type: "string", options: ["mechanical", "body", "detail", "tires", "inspection", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    status: (0, import_fields45.select)({ type: "string", options: ["open", "in-progress", "completed", "cancelled"].map((value) => ({ label: value, value })), defaultValue: "open" }),
+    estimatedCostCents: (0, import_fields45.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    actualCostCents: (0, import_fields45.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    vendorName: (0, import_fields45.text)({ validation: { length: { max: 200 } } }),
+    assignedTo: (0, import_fields45.relationship)({ ref: "User" }),
+    dueAt: (0, import_fields45.timestamp)(),
+    completedAt: (0, import_fields45.timestamp)()
   }
 });
 
 // features/keystone/models/InventoryMerchandisingVersion.ts
-var import_core40 = require("@keystone-6/core");
-var import_fields45 = require("@keystone-6/core/fields");
-var InventoryMerchandisingVersion = (0, import_core40.list)({
+var import_core41 = require("@keystone-6/core");
+var import_fields46 = require("@keystone-6/core/fields");
+var InventoryMerchandisingVersion = (0, import_core41.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5765,23 +5871,23 @@ var InventoryMerchandisingVersion = (0, import_core40.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields45.relationship)({ ref: "InventoryStock.merchandisingVersions", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    version: (0, import_fields45.integer)({ validation: { isRequired: true, min: 1 } }),
-    versionKey: (0, import_fields45.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    status: (0, import_fields45.select)({ type: "string", options: ["submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "submitted" }),
-    snapshot: (0, import_fields45.json)({ defaultValue: {} }),
-    submittedBy: (0, import_fields45.relationship)({ ref: "User" }),
-    submittedAt: (0, import_fields45.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    decidedBy: (0, import_fields45.relationship)({ ref: "User" }),
-    decidedAt: (0, import_fields45.timestamp)(),
-    decisionReason: (0, import_fields45.text)({ validation: { length: { max: 500 } } })
+    stock: (0, import_fields46.relationship)({ ref: "InventoryStock.merchandisingVersions", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    version: (0, import_fields46.integer)({ validation: { isRequired: true, min: 1 } }),
+    versionKey: (0, import_fields46.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    status: (0, import_fields46.select)({ type: "string", options: ["submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "submitted" }),
+    snapshot: (0, import_fields46.json)({ defaultValue: {} }),
+    submittedBy: (0, import_fields46.relationship)({ ref: "User" }),
+    submittedAt: (0, import_fields46.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    decidedBy: (0, import_fields46.relationship)({ ref: "User" }),
+    decidedAt: (0, import_fields46.timestamp)(),
+    decisionReason: (0, import_fields46.text)({ validation: { length: { max: 500 } } })
   }
 });
 
 // features/keystone/models/InventoryFeedRun.ts
-var import_core41 = require("@keystone-6/core");
-var import_fields46 = require("@keystone-6/core/fields");
-var InventoryFeedRun = (0, import_core41.list)({
+var import_core42 = require("@keystone-6/core");
+var import_fields47 = require("@keystone-6/core/fields");
+var InventoryFeedRun = (0, import_core42.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5790,25 +5896,25 @@ var InventoryFeedRun = (0, import_core41.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    runKey: (0, import_fields46.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    channelKey: (0, import_fields46.text)({ validation: { isRequired: true }, isIndexed: true }),
-    status: (0, import_fields46.select)({ type: "string", options: ["succeeded", "partial", "failed"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    attemptedCount: (0, import_fields46.integer)({ validation: { isRequired: true, min: 0 } }),
-    succeededCount: (0, import_fields46.integer)({ validation: { isRequired: true, min: 0 } }),
-    failedCount: (0, import_fields46.integer)({ validation: { isRequired: true, min: 0 } }),
-    requestSnapshot: (0, import_fields46.json)({ defaultValue: {} }),
-    responseSummary: (0, import_fields46.json)({ defaultValue: {} }),
-    startedAt: (0, import_fields46.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields46.timestamp)({ validation: { isRequired: true } }),
-    recordedBy: (0, import_fields46.relationship)({ ref: "User" }),
-    errors: (0, import_fields46.relationship)({ ref: "InventoryFeedError.run", many: true })
+    runKey: (0, import_fields47.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    channelKey: (0, import_fields47.text)({ validation: { isRequired: true }, isIndexed: true }),
+    status: (0, import_fields47.select)({ type: "string", options: ["succeeded", "partial", "failed"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    attemptedCount: (0, import_fields47.integer)({ validation: { isRequired: true, min: 0 } }),
+    succeededCount: (0, import_fields47.integer)({ validation: { isRequired: true, min: 0 } }),
+    failedCount: (0, import_fields47.integer)({ validation: { isRequired: true, min: 0 } }),
+    requestSnapshot: (0, import_fields47.json)({ defaultValue: {} }),
+    responseSummary: (0, import_fields47.json)({ defaultValue: {} }),
+    startedAt: (0, import_fields47.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields47.timestamp)({ validation: { isRequired: true } }),
+    recordedBy: (0, import_fields47.relationship)({ ref: "User" }),
+    errors: (0, import_fields47.relationship)({ ref: "InventoryFeedError.run", many: true })
   }
 });
 
 // features/keystone/models/InventoryFeedError.ts
-var import_core42 = require("@keystone-6/core");
-var import_fields47 = require("@keystone-6/core/fields");
-var InventoryFeedError = (0, import_core42.list)({
+var import_core43 = require("@keystone-6/core");
+var import_fields48 = require("@keystone-6/core/fields");
+var InventoryFeedError = (0, import_core43.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5817,20 +5923,20 @@ var InventoryFeedError = (0, import_core42.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    run: (0, import_fields47.relationship)({ ref: "InventoryFeedRun.errors", db: { extendPrismaSchema: (field) => field.replace(/run InventoryFeedRun\?/g, "run InventoryFeedRun").replace(/runId String\?/g, "runId String") } }),
-    stock: (0, import_fields47.relationship)({ ref: "InventoryStock" }),
-    errorCode: (0, import_fields47.text)({ validation: { isRequired: true } }),
-    message: (0, import_fields47.text)({ validation: { isRequired: true, length: { max: 1e3 } } }),
-    rowReference: (0, import_fields47.text)({ validation: { length: { max: 200 } } }),
-    evidence: (0, import_fields47.json)({ defaultValue: {} })
+    run: (0, import_fields48.relationship)({ ref: "InventoryFeedRun.errors", db: { extendPrismaSchema: (field) => field.replace(/run InventoryFeedRun\?/g, "run InventoryFeedRun").replace(/runId String\?/g, "runId String") } }),
+    stock: (0, import_fields48.relationship)({ ref: "InventoryStock" }),
+    errorCode: (0, import_fields48.text)({ validation: { isRequired: true } }),
+    message: (0, import_fields48.text)({ validation: { isRequired: true, length: { max: 1e3 } } }),
+    rowReference: (0, import_fields48.text)({ validation: { length: { max: 200 } } }),
+    evidence: (0, import_fields48.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/Customer.ts
-var import_core43 = require("@keystone-6/core");
-var import_access62 = require("@keystone-6/core/access");
-var import_fields48 = require("@keystone-6/core/fields");
-var Customer = (0, import_core43.list)({
+var import_core44 = require("@keystone-6/core");
+var import_access63 = require("@keystone-6/core/access");
+var import_fields49 = require("@keystone-6/core/fields");
+var Customer = (0, import_core44.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5851,15 +5957,15 @@ var Customer = (0, import_core43.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    firstName: (0, import_fields48.text)({ validation: { isRequired: true } }),
-    lastName: (0, import_fields48.text)({ validation: { isRequired: true } }),
-    primaryEmail: (0, import_fields48.text)(),
-    primaryPhone: (0, import_fields48.text)(),
-    normalizedEmail: (0, import_fields48.text)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, isIndexed: true }),
-    normalizedPhone: (0, import_fields48.text)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, isIndexed: true }),
-    identityKey: (0, import_fields48.text)({ access: { read: import_access62.denyAll, create: import_access62.denyAll, update: import_access62.denyAll }, isIndexed: "unique", validation: { isRequired: true } }),
-    status: (0, import_fields48.select)({
-      access: { create: import_access62.denyAll, update: import_access62.denyAll },
+    firstName: (0, import_fields49.text)({ validation: { isRequired: true } }),
+    lastName: (0, import_fields49.text)({ validation: { isRequired: true } }),
+    primaryEmail: (0, import_fields49.text)(),
+    primaryPhone: (0, import_fields49.text)(),
+    normalizedEmail: (0, import_fields49.text)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, isIndexed: true }),
+    normalizedPhone: (0, import_fields49.text)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, isIndexed: true }),
+    identityKey: (0, import_fields49.text)({ access: { read: import_access63.denyAll, create: import_access63.denyAll, update: import_access63.denyAll }, isIndexed: "unique", validation: { isRequired: true } }),
+    status: (0, import_fields49.select)({
+      access: { create: import_access63.denyAll, update: import_access63.denyAll },
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5868,14 +5974,14 @@ var Customer = (0, import_core43.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    emailConsent: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    smsConsent: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    phoneConsent: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    emailSuppressed: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    smsSuppressed: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    phoneSuppressed: (0, import_fields48.checkbox)({ access: { create: import_access62.denyAll, update: import_access62.denyAll }, defaultValue: false }),
-    preferredChannel: (0, import_fields48.select)({
-      access: { create: import_access62.denyAll, update: import_access62.denyAll },
+    emailConsent: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    smsConsent: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    phoneConsent: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    emailSuppressed: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    smsSuppressed: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    phoneSuppressed: (0, import_fields49.checkbox)({ access: { create: import_access63.denyAll, update: import_access63.denyAll }, defaultValue: false }),
+    preferredChannel: (0, import_fields49.select)({
+      access: { create: import_access63.denyAll, update: import_access63.denyAll },
       type: "string",
       options: [
         { label: "Email", value: "email" },
@@ -5886,28 +5992,28 @@ var Customer = (0, import_core43.list)({
       defaultValue: "none",
       validation: { isRequired: true }
     }),
-    contactPreferenceUpdatedAt: (0, import_fields48.timestamp)({ access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    suppressionReason: (0, import_fields48.text)({ access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    suppressionSource: (0, import_fields48.text)({ access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
+    contactPreferenceUpdatedAt: (0, import_fields49.timestamp)({ access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    suppressionReason: (0, import_fields49.text)({ access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    suppressionSource: (0, import_fields49.text)({ access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
     // The storefront login that proved ownership of primaryEmail. Written only by
     // confirmCustomerEmailVerification (customerEmailVerification.ts); never from submitted data.
-    account: (0, import_fields48.relationship)({ ref: "User", access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    household: (0, import_fields48.relationship)({ ref: "CustomerHousehold.members", access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    contactPreferenceEvents: (0, import_fields48.relationship)({ ref: "CustomerContactPreferenceEvent.customer", many: true, access: { update: import_access62.denyAll } }),
-    salesVisits: (0, import_fields48.relationship)({ ref: "SalesVisit.customer", many: true, access: { update: import_access62.denyAll } }),
-    mergedAt: (0, import_fields48.timestamp)({ access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    mergedInto: (0, import_fields48.relationship)({ ref: "Customer.mergedCustomers", access: { create: import_access62.denyAll, update: import_access62.denyAll } }),
-    mergedCustomers: (0, import_fields48.relationship)({ ref: "Customer.mergedInto", many: true, access: { update: import_access62.denyAll } }),
-    leads: (0, import_fields48.relationship)({ ref: "Lead.customer", many: true, access: { update: import_access62.denyAll } }),
-    mergeEventsAsSurvivor: (0, import_fields48.relationship)({ ref: "CustomerMergeEvent.survivor", many: true, access: { update: import_access62.denyAll } }),
-    mergeEventsAsDuplicate: (0, import_fields48.relationship)({ ref: "CustomerMergeEvent.duplicate", many: true, access: { update: import_access62.denyAll } })
+    account: (0, import_fields49.relationship)({ ref: "User", access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    household: (0, import_fields49.relationship)({ ref: "CustomerHousehold.members", access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    contactPreferenceEvents: (0, import_fields49.relationship)({ ref: "CustomerContactPreferenceEvent.customer", many: true, access: { update: import_access63.denyAll } }),
+    salesVisits: (0, import_fields49.relationship)({ ref: "SalesVisit.customer", many: true, access: { update: import_access63.denyAll } }),
+    mergedAt: (0, import_fields49.timestamp)({ access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    mergedInto: (0, import_fields49.relationship)({ ref: "Customer.mergedCustomers", access: { create: import_access63.denyAll, update: import_access63.denyAll } }),
+    mergedCustomers: (0, import_fields49.relationship)({ ref: "Customer.mergedInto", many: true, access: { update: import_access63.denyAll } }),
+    leads: (0, import_fields49.relationship)({ ref: "Lead.customer", many: true, access: { update: import_access63.denyAll } }),
+    mergeEventsAsSurvivor: (0, import_fields49.relationship)({ ref: "CustomerMergeEvent.survivor", many: true, access: { update: import_access63.denyAll } }),
+    mergeEventsAsDuplicate: (0, import_fields49.relationship)({ ref: "CustomerMergeEvent.duplicate", many: true, access: { update: import_access63.denyAll } })
   }
 });
 
 // features/keystone/models/CustomerMergeEvent.ts
-var import_core44 = require("@keystone-6/core");
-var import_fields49 = require("@keystone-6/core/fields");
-var CustomerMergeEvent = (0, import_core44.list)({
+var import_core45 = require("@keystone-6/core");
+var import_fields50 = require("@keystone-6/core/fields");
+var CustomerMergeEvent = (0, import_core45.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -5925,20 +6031,20 @@ var CustomerMergeEvent = (0, import_core44.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    survivor: (0, import_fields49.relationship)({ ref: "Customer.mergeEventsAsSurvivor", db: { extendPrismaSchema: (field) => field.replace(/survivor Customer\?/g, "survivor Customer").replace(/survivorId String\?/g, "survivorId String") } }),
-    duplicate: (0, import_fields49.relationship)({ ref: "Customer.mergeEventsAsDuplicate", db: { extendPrismaSchema: (field) => field.replace(/duplicate Customer\?/g, "duplicate Customer").replace(/duplicateId String\?/g, "duplicateId String") } }),
-    actor: (0, import_fields49.relationship)({ ref: "User.customerMergeEvents", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
-    reason: (0, import_fields49.text)({ validation: { isRequired: true } }),
-    mergedAt: (0, import_fields49.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    movedLeadIds: (0, import_fields49.json)({ defaultValue: [] }),
-    evidenceSnapshot: (0, import_fields49.json)({ defaultValue: {} })
+    survivor: (0, import_fields50.relationship)({ ref: "Customer.mergeEventsAsSurvivor", db: { extendPrismaSchema: (field) => field.replace(/survivor Customer\?/g, "survivor Customer").replace(/survivorId String\?/g, "survivorId String") } }),
+    duplicate: (0, import_fields50.relationship)({ ref: "Customer.mergeEventsAsDuplicate", db: { extendPrismaSchema: (field) => field.replace(/duplicate Customer\?/g, "duplicate Customer").replace(/duplicateId String\?/g, "duplicateId String") } }),
+    actor: (0, import_fields50.relationship)({ ref: "User.customerMergeEvents", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
+    reason: (0, import_fields50.text)({ validation: { isRequired: true } }),
+    mergedAt: (0, import_fields50.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    movedLeadIds: (0, import_fields50.json)({ defaultValue: [] }),
+    evidenceSnapshot: (0, import_fields50.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/LeadAssignmentEvent.ts
-var import_core45 = require("@keystone-6/core");
-var import_fields50 = require("@keystone-6/core/fields");
-var LeadAssignmentEvent = (0, import_core45.list)({
+var import_core46 = require("@keystone-6/core");
+var import_fields51 = require("@keystone-6/core/fields");
+var LeadAssignmentEvent = (0, import_core46.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5956,21 +6062,21 @@ var LeadAssignmentEvent = (0, import_core45.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    lead: (0, import_fields50.relationship)({ ref: "Lead.assignmentEvents", db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") } }),
-    fromUser: (0, import_fields50.relationship)({ ref: "User.leadAssignmentsFrom" }),
-    toUser: (0, import_fields50.relationship)({ ref: "User.leadAssignmentsTo", db: { extendPrismaSchema: (field) => field.replace(/toUser User\?/g, "toUser User").replace(/toUserId String\?/g, "toUserId String") } }),
-    actor: (0, import_fields50.relationship)({ ref: "User.performedLeadAssignments", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
-    reason: (0, import_fields50.text)({ validation: { isRequired: true } }),
-    routeKey: (0, import_fields50.text)(),
-    assignedAt: (0, import_fields50.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    firstResponseDueAt: (0, import_fields50.timestamp)()
+    lead: (0, import_fields51.relationship)({ ref: "Lead.assignmentEvents", db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") } }),
+    fromUser: (0, import_fields51.relationship)({ ref: "User.leadAssignmentsFrom" }),
+    toUser: (0, import_fields51.relationship)({ ref: "User.leadAssignmentsTo", db: { extendPrismaSchema: (field) => field.replace(/toUser User\?/g, "toUser User").replace(/toUserId String\?/g, "toUserId String") } }),
+    actor: (0, import_fields51.relationship)({ ref: "User.performedLeadAssignments", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
+    reason: (0, import_fields51.text)({ validation: { isRequired: true } }),
+    routeKey: (0, import_fields51.text)(),
+    assignedAt: (0, import_fields51.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    firstResponseDueAt: (0, import_fields51.timestamp)()
   }
 });
 
 // features/keystone/models/LeadRoutingRule.ts
-var import_core46 = require("@keystone-6/core");
-var import_fields51 = require("@keystone-6/core/fields");
-var LeadRoutingRule = (0, import_core46.list)({
+var import_core47 = require("@keystone-6/core");
+var import_fields52 = require("@keystone-6/core/fields");
+var LeadRoutingRule = (0, import_core47.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -6003,16 +6109,16 @@ var LeadRoutingRule = (0, import_core46.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    name: (0, import_fields51.text)({ validation: { isRequired: true } }),
-    routeKey: (0, import_fields51.text)({
+    name: (0, import_fields52.text)({ validation: { isRequired: true } }),
+    routeKey: (0, import_fields52.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
       access: { create: () => false, update: () => false },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" } }
     }),
-    active: (0, import_fields51.checkbox)({ defaultValue: true }),
-    priority: (0, import_fields51.integer)({ defaultValue: 100, validation: { isRequired: true, min: 0, max: 1e4 } }),
-    source: (0, import_fields51.select)({
+    active: (0, import_fields52.checkbox)({ defaultValue: true }),
+    priority: (0, import_fields52.integer)({ defaultValue: 100, validation: { isRequired: true, min: 0, max: 1e4 } }),
+    source: (0, import_fields52.select)({
       type: "string",
       options: [
         { label: "Any source", value: "any" },
@@ -6027,15 +6133,15 @@ var LeadRoutingRule = (0, import_core46.list)({
       defaultValue: "any",
       validation: { isRequired: true }
     }),
-    assignee: (0, import_fields51.relationship)({ ref: "User.leadRoutingRules", db: { extendPrismaSchema: (field) => field.replace(/assignee User\?/g, "assignee User").replace(/assigneeId String\?/g, "assigneeId String") } }),
-    firstResponseMinutes: (0, import_fields51.integer)({ defaultValue: 30, validation: { isRequired: true, min: 1, max: 10080 } })
+    assignee: (0, import_fields52.relationship)({ ref: "User.leadRoutingRules", db: { extendPrismaSchema: (field) => field.replace(/assignee User\?/g, "assignee User").replace(/assigneeId String\?/g, "assigneeId String") } }),
+    firstResponseMinutes: (0, import_fields52.integer)({ defaultValue: 30, validation: { isRequired: true, min: 1, max: 10080 } })
   }
 });
 
 // features/keystone/models/CustomerContactPreferenceEvent.ts
-var import_core47 = require("@keystone-6/core");
-var import_fields52 = require("@keystone-6/core/fields");
-var CustomerContactPreferenceEvent = (0, import_core47.list)({
+var import_core48 = require("@keystone-6/core");
+var import_fields53 = require("@keystone-6/core/fields");
+var CustomerContactPreferenceEvent = (0, import_core48.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6049,25 +6155,25 @@ var CustomerContactPreferenceEvent = (0, import_core47.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    customer: (0, import_fields52.relationship)({
+    customer: (0, import_fields53.relationship)({
       ref: "Customer.contactPreferenceEvents",
       db: { extendPrismaSchema: (field) => field.replace(/customer Customer\?/g, "customer Customer").replace(/customerId String\?/g, "customerId String") }
     }),
-    actor: (0, import_fields52.relationship)({
+    actor: (0, import_fields53.relationship)({
       ref: "User.customerContactPreferenceEvents",
       db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") }
     }),
-    source: (0, import_fields52.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields52.text)({ validation: { isRequired: true } }),
-    occurredAt: (0, import_fields52.timestamp)({ validation: { isRequired: true } }),
-    preferenceSnapshot: (0, import_fields52.json)({ defaultValue: {} })
+    source: (0, import_fields53.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields53.text)({ validation: { isRequired: true } }),
+    occurredAt: (0, import_fields53.timestamp)({ validation: { isRequired: true } }),
+    preferenceSnapshot: (0, import_fields53.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/CustomerHousehold.ts
-var import_core48 = require("@keystone-6/core");
-var import_fields53 = require("@keystone-6/core/fields");
-var CustomerHousehold = (0, import_core48.list)({
+var import_core49 = require("@keystone-6/core");
+var import_fields54 = require("@keystone-6/core/fields");
+var CustomerHousehold = (0, import_core49.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6081,16 +6187,16 @@ var CustomerHousehold = (0, import_core48.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    householdKey: (0, import_fields53.text)({ isIndexed: "unique", validation: { isRequired: true } }),
-    displayName: (0, import_fields53.text)({ validation: { isRequired: true } }),
-    members: (0, import_fields53.relationship)({ ref: "Customer.household", many: true })
+    householdKey: (0, import_fields54.text)({ isIndexed: "unique", validation: { isRequired: true } }),
+    displayName: (0, import_fields54.text)({ validation: { isRequired: true } }),
+    members: (0, import_fields54.relationship)({ ref: "Customer.household", many: true })
   }
 });
 
 // features/keystone/models/SalesVisit.ts
-var import_core49 = require("@keystone-6/core");
-var import_fields54 = require("@keystone-6/core/fields");
-var SalesVisit = (0, import_core49.list)({
+var import_core50 = require("@keystone-6/core");
+var import_fields55 = require("@keystone-6/core/fields");
+var SalesVisit = (0, import_core50.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6104,21 +6210,21 @@ var SalesVisit = (0, import_core49.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    lead: (0, import_fields54.relationship)({
+    lead: (0, import_fields55.relationship)({
       ref: "Lead.salesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") }
     }),
-    customer: (0, import_fields54.relationship)({
+    customer: (0, import_fields55.relationship)({
       ref: "Customer.salesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/customer Customer\?/g, "customer Customer").replace(/customerId String\?/g, "customerId String") }
     }),
-    vehicle: (0, import_fields54.relationship)({ ref: "Vehicle.salesVisits" }),
-    assignedSalesperson: (0, import_fields54.relationship)({
+    vehicle: (0, import_fields55.relationship)({ ref: "Vehicle.salesVisits" }),
+    assignedSalesperson: (0, import_fields55.relationship)({
       ref: "User.assignedSalesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/assignedSalesperson User\?/g, "assignedSalesperson User").replace(/assignedSalespersonId String\?/g, "assignedSalespersonId String") }
     }),
-    manager: (0, import_fields54.relationship)({ ref: "User.managedSalesVisits" }),
-    kind: (0, import_fields54.select)({
+    manager: (0, import_fields55.relationship)({ ref: "User.managedSalesVisits" }),
+    kind: (0, import_fields55.select)({
       type: "string",
       options: [
         { label: "Sales appointment", value: "appointment" },
@@ -6126,7 +6232,7 @@ var SalesVisit = (0, import_core49.list)({
       ],
       validation: { isRequired: true }
     }),
-    status: (0, import_fields54.select)({
+    status: (0, import_fields55.select)({
       type: "string",
       options: [
         { label: "Scheduled", value: "scheduled" },
@@ -6138,19 +6244,19 @@ var SalesVisit = (0, import_core49.list)({
       ],
       validation: { isRequired: true }
     }),
-    scheduledAt: (0, import_fields54.timestamp)(),
-    arrivedAt: (0, import_fields54.timestamp)(),
-    managerTurnAt: (0, import_fields54.timestamp)(),
-    completedAt: (0, import_fields54.timestamp)(),
-    outcome: (0, import_fields54.text)(),
-    notes: (0, import_fields54.text)({ ui: { displayMode: "textarea" } })
+    scheduledAt: (0, import_fields55.timestamp)(),
+    arrivedAt: (0, import_fields55.timestamp)(),
+    managerTurnAt: (0, import_fields55.timestamp)(),
+    completedAt: (0, import_fields55.timestamp)(),
+    outcome: (0, import_fields55.text)(),
+    notes: (0, import_fields55.text)({ ui: { displayMode: "textarea" } })
   }
 });
 
 // features/keystone/models/FinanceProduct.ts
-var import_core50 = require("@keystone-6/core");
-var import_fields55 = require("@keystone-6/core/fields");
-var FinanceProduct = (0, import_core50.list)({
+var import_core51 = require("@keystone-6/core");
+var import_fields56 = require("@keystone-6/core/fields");
+var FinanceProduct = (0, import_core51.list)({
   db: prismaModelDirectives('@@unique([rooftopId, code], map: "FinanceProduct_rooftop_code_key")'),
   access: {
     operation: {
@@ -6171,21 +6277,21 @@ var FinanceProduct = (0, import_core50.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    code: (0, import_fields55.text)({ validation: { isRequired: true } }),
-    name: (0, import_fields55.text)({ validation: { isRequired: true } }),
-    category: (0, import_fields55.select)({ type: "string", options: ["service-contract", "gap", "maintenance", "appearance", "tire-wheel", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    providerKey: (0, import_fields55.text)({ validation: { isRequired: true } }),
-    active: (0, import_fields55.checkbox)({ defaultValue: true }),
-    quotes: (0, import_fields55.relationship)({ ref: "FinanceProductQuote.product", many: true }),
-    retailPriceCents: (0, import_fields55.float)({ validation: { isRequired: true, min: 0 } }),
-    costCents: (0, import_fields55.float)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
+    code: (0, import_fields56.text)({ validation: { isRequired: true } }),
+    name: (0, import_fields56.text)({ validation: { isRequired: true } }),
+    category: (0, import_fields56.select)({ type: "string", options: ["service-contract", "gap", "maintenance", "appearance", "tire-wheel", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    providerKey: (0, import_fields56.text)({ validation: { isRequired: true } }),
+    active: (0, import_fields56.checkbox)({ defaultValue: true }),
+    quotes: (0, import_fields56.relationship)({ ref: "FinanceProductQuote.product", many: true }),
+    retailPriceCents: (0, import_fields56.float)({ validation: { isRequired: true, min: 0 } }),
+    costCents: (0, import_fields56.float)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
   }
 });
 
 // features/keystone/models/FinanceMenuVersion.ts
-var import_core51 = require("@keystone-6/core");
-var import_fields56 = require("@keystone-6/core/fields");
-var FinanceMenuVersion = (0, import_core51.list)({
+var import_core52 = require("@keystone-6/core");
+var import_fields57 = require("@keystone-6/core/fields");
+var FinanceMenuVersion = (0, import_core52.list)({
   db: prismaModelDirectives('@@unique([dealId, version], map: "FinanceMenuVersion_deal_version_key")'),
   access: { operation: { query: permissions.canManageFinancing, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageFinancing") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "deal", listKey: "Deal" }]) },
@@ -6193,24 +6299,24 @@ var FinanceMenuVersion = (0, import_core51.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields56.relationship)({ ref: "Deal.financeMenuVersions", db: requiredRelationshipDb("deal") }),
-    version: (0, import_fields56.integer)({ validation: { isRequired: true, min: 1 } }),
-    status: (0, import_fields56.select)({ type: "string", options: ["presented", "accepted", "declined", "superseded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    optionsSnapshot: (0, import_fields56.json)({ defaultValue: [] }),
-    selectedProductCodes: (0, import_fields56.json)({ defaultValue: [] }),
-    declinedProductCodes: (0, import_fields56.json)({ defaultValue: [] }),
-    disclosureAcknowledgment: (0, import_fields56.text)(),
-    presentedAt: (0, import_fields56.timestamp)({ validation: { isRequired: true } }),
-    decidedAt: (0, import_fields56.timestamp)(),
-    cancellations: (0, import_fields56.relationship)({ ref: "FinanceProductCancellation.menu", many: true }),
-    idempotencyKey: (0, import_fields56.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    deal: (0, import_fields57.relationship)({ ref: "Deal.financeMenuVersions", db: requiredRelationshipDb("deal") }),
+    version: (0, import_fields57.integer)({ validation: { isRequired: true, min: 1 } }),
+    status: (0, import_fields57.select)({ type: "string", options: ["presented", "accepted", "declined", "superseded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    optionsSnapshot: (0, import_fields57.json)({ defaultValue: [] }),
+    selectedProductCodes: (0, import_fields57.json)({ defaultValue: [] }),
+    declinedProductCodes: (0, import_fields57.json)({ defaultValue: [] }),
+    disclosureAcknowledgment: (0, import_fields57.text)(),
+    presentedAt: (0, import_fields57.timestamp)({ validation: { isRequired: true } }),
+    decidedAt: (0, import_fields57.timestamp)(),
+    cancellations: (0, import_fields57.relationship)({ ref: "FinanceProductCancellation.menu", many: true }),
+    idempotencyKey: (0, import_fields57.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/FinanceComplianceCheck.ts
-var import_core52 = require("@keystone-6/core");
-var import_fields57 = require("@keystone-6/core/fields");
-var FinanceComplianceCheck = (0, import_core52.list)({
+var import_core53 = require("@keystone-6/core");
+var import_fields58 = require("@keystone-6/core/fields");
+var FinanceComplianceCheck = (0, import_core53.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6232,11 +6338,11 @@ var FinanceComplianceCheck = (0, import_core52.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields57.relationship)({
+    deal: (0, import_fields58.relationship)({
       ref: "Deal.financeComplianceChecks",
       db: requiredRelationshipDb("deal")
     }),
-    checkType: (0, import_fields57.select)({
+    checkType: (0, import_fields58.select)({
       type: "string",
       options: ["identity", "ofac", "red-flag", "privacy"].map((value) => ({
         label: value,
@@ -6244,8 +6350,8 @@ var FinanceComplianceCheck = (0, import_core52.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields57.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields57.select)({
+    providerKey: (0, import_fields58.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields58.select)({
       type: "string",
       options: ["requested", "completed", "failed", "manual-review"].map((value) => ({
         label: value,
@@ -6253,12 +6359,12 @@ var FinanceComplianceCheck = (0, import_core52.list)({
       })),
       validation: { isRequired: true }
     }),
-    resultCode: (0, import_fields57.text)(),
-    requestSnapshot: (0, import_fields57.json)({ defaultValue: {} }),
-    resultSnapshot: (0, import_fields57.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields57.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields57.timestamp)(),
-    idempotencyKey: (0, import_fields57.text)({
+    resultCode: (0, import_fields58.text)(),
+    requestSnapshot: (0, import_fields58.json)({ defaultValue: {} }),
+    resultSnapshot: (0, import_fields58.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields58.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields58.timestamp)(),
+    idempotencyKey: (0, import_fields58.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6266,9 +6372,9 @@ var FinanceComplianceCheck = (0, import_core52.list)({
 });
 
 // features/keystone/models/FinanceContractPackage.ts
-var import_core53 = require("@keystone-6/core");
-var import_fields58 = require("@keystone-6/core/fields");
-var FinanceContractPackage = (0, import_core53.list)({
+var import_core54 = require("@keystone-6/core");
+var import_fields59 = require("@keystone-6/core/fields");
+var FinanceContractPackage = (0, import_core54.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceContractPackage_deal_key")'),
   access: {
     operation: {
@@ -6291,11 +6397,11 @@ var FinanceContractPackage = (0, import_core53.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields58.relationship)({
+    deal: (0, import_fields59.relationship)({
       ref: "Deal.financeContractPackages",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields58.select)({
+    status: (0, import_fields59.select)({
       type: "string",
       options: ["preparing", "ready", "awaiting-external-handoff", "sent", "viewed", "signed", "declined", "void"].map((value) => ({
         label: value,
@@ -6303,15 +6409,15 @@ var FinanceContractPackage = (0, import_core53.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields58.text)({ validation: { isRequired: true } }),
-    envelopeReference: (0, import_fields58.text)(),
-    requiredDocuments: (0, import_fields58.json)({ defaultValue: [] }),
-    documentChecklist: (0, import_fields58.json)({ defaultValue: [] }),
-    immutableStatusEvidence: (0, import_fields58.json)({ defaultValue: {} }),
-    sentAt: (0, import_fields58.timestamp)(),
-    signedAt: (0, import_fields58.timestamp)(),
-    lastWebhookAt: (0, import_fields58.timestamp)(),
-    idempotencyKey: (0, import_fields58.text)({
+    providerKey: (0, import_fields59.text)({ validation: { isRequired: true } }),
+    envelopeReference: (0, import_fields59.text)(),
+    requiredDocuments: (0, import_fields59.json)({ defaultValue: [] }),
+    documentChecklist: (0, import_fields59.json)({ defaultValue: [] }),
+    immutableStatusEvidence: (0, import_fields59.json)({ defaultValue: {} }),
+    sentAt: (0, import_fields59.timestamp)(),
+    signedAt: (0, import_fields59.timestamp)(),
+    lastWebhookAt: (0, import_fields59.timestamp)(),
+    idempotencyKey: (0, import_fields59.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6319,9 +6425,9 @@ var FinanceContractPackage = (0, import_core53.list)({
 });
 
 // features/keystone/models/FinanceFundingCase.ts
-var import_core54 = require("@keystone-6/core");
-var import_fields59 = require("@keystone-6/core/fields");
-var FinanceFundingCase = (0, import_core54.list)({
+var import_core55 = require("@keystone-6/core");
+var import_fields60 = require("@keystone-6/core/fields");
+var FinanceFundingCase = (0, import_core55.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceFundingCase_deal_key")'),
   access: {
     operation: {
@@ -6344,11 +6450,11 @@ var FinanceFundingCase = (0, import_core54.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields59.relationship)({
+    deal: (0, import_fields60.relationship)({
       ref: "Deal.financeFundingCases",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields59.select)({
+    status: (0, import_fields60.select)({
       type: "string",
       options: ["pending", "exception", "clear-to-fund", "funded", "cancelled"].map((value) => ({
         label: value,
@@ -6356,12 +6462,12 @@ var FinanceFundingCase = (0, import_core54.list)({
       })),
       validation: { isRequired: true }
     }),
-    checklist: (0, import_fields59.json)({ defaultValue: [] }),
-    exceptions: (0, import_fields59.json)({ defaultValue: [] }),
-    fundingReference: (0, import_fields59.text)(),
-    fundedAt: (0, import_fields59.timestamp)(),
-    immutableEvidence: (0, import_fields59.json)({ defaultValue: {} }),
-    idempotencyKey: (0, import_fields59.text)({
+    checklist: (0, import_fields60.json)({ defaultValue: [] }),
+    exceptions: (0, import_fields60.json)({ defaultValue: [] }),
+    fundingReference: (0, import_fields60.text)(),
+    fundedAt: (0, import_fields60.timestamp)(),
+    immutableEvidence: (0, import_fields60.json)({ defaultValue: {} }),
+    idempotencyKey: (0, import_fields60.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6369,9 +6475,9 @@ var FinanceFundingCase = (0, import_core54.list)({
 });
 
 // features/keystone/models/FinanceProductQuote.ts
-var import_core55 = require("@keystone-6/core");
-var import_fields60 = require("@keystone-6/core/fields");
-var FinanceProductQuote = (0, import_core55.list)({
+var import_core56 = require("@keystone-6/core");
+var import_fields61 = require("@keystone-6/core/fields");
+var FinanceProductQuote = (0, import_core56.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6395,16 +6501,16 @@ var FinanceProductQuote = (0, import_core55.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields60.relationship)({
+    deal: (0, import_fields61.relationship)({
       ref: "Deal.financeProductQuotes",
       db: requiredRelationshipDb("deal")
     }),
-    product: (0, import_fields60.relationship)({
+    product: (0, import_fields61.relationship)({
       ref: "FinanceProduct.quotes",
       db: requiredRelationshipDb("product")
     }),
-    providerKey: (0, import_fields60.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields60.select)({
+    providerKey: (0, import_fields61.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields61.select)({
       type: "string",
       options: ["requested", "quoted", "failed"].map((value) => ({
         label: value,
@@ -6412,8 +6518,8 @@ var FinanceProductQuote = (0, import_core55.list)({
       })),
       validation: { isRequired: true }
     }),
-    retailPriceCents: (0, import_fields60.float)({ validation: { min: 0 } }),
-    costCents: (0, import_fields60.float)({
+    retailPriceCents: (0, import_fields61.float)({ validation: { min: 0 } }),
+    costCents: (0, import_fields61.float)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6421,12 +6527,12 @@ var FinanceProductQuote = (0, import_core55.list)({
         update: () => false
       }
     }),
-    evidenceReference: (0, import_fields60.text)(),
-    requestSnapshot: (0, import_fields60.json)({ defaultValue: {} }),
-    resultSnapshot: (0, import_fields60.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields60.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields60.timestamp)(),
-    idempotencyKey: (0, import_fields60.text)({
+    evidenceReference: (0, import_fields61.text)(),
+    requestSnapshot: (0, import_fields61.json)({ defaultValue: {} }),
+    resultSnapshot: (0, import_fields61.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields61.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields61.timestamp)(),
+    idempotencyKey: (0, import_fields61.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6434,9 +6540,9 @@ var FinanceProductQuote = (0, import_core55.list)({
 });
 
 // features/keystone/models/FinanceProductCancellation.ts
-var import_core56 = require("@keystone-6/core");
-var import_fields61 = require("@keystone-6/core/fields");
-var FinanceProductCancellation = (0, import_core56.list)({
+var import_core57 = require("@keystone-6/core");
+var import_fields62 = require("@keystone-6/core/fields");
+var FinanceProductCancellation = (0, import_core57.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6460,16 +6566,16 @@ var FinanceProductCancellation = (0, import_core56.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields61.relationship)({
+    deal: (0, import_fields62.relationship)({
       ref: "Deal.financeProductCancellations",
       db: requiredRelationshipDb("deal")
     }),
-    menu: (0, import_fields61.relationship)({
+    menu: (0, import_fields62.relationship)({
       ref: "FinanceMenuVersion.cancellations",
       db: requiredRelationshipDb("menu")
     }),
-    productCode: (0, import_fields61.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields61.select)({
+    productCode: (0, import_fields62.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields62.select)({
       type: "string",
       options: ["requested", "completed", "denied"].map((value) => ({
         label: value,
@@ -6477,12 +6583,12 @@ var FinanceProductCancellation = (0, import_core56.list)({
       })),
       validation: { isRequired: true }
     }),
-    reason: (0, import_fields61.text)({ validation: { isRequired: true } }),
-    refundCents: (0, import_fields61.float)({ validation: { min: 0 } }),
-    evidence: (0, import_fields61.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields61.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields61.timestamp)(),
-    idempotencyKey: (0, import_fields61.text)({
+    reason: (0, import_fields62.text)({ validation: { isRequired: true } }),
+    refundCents: (0, import_fields62.float)({ validation: { min: 0 } }),
+    evidence: (0, import_fields62.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields62.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields62.timestamp)(),
+    idempotencyKey: (0, import_fields62.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6490,9 +6596,9 @@ var FinanceProductCancellation = (0, import_core56.list)({
 });
 
 // features/keystone/models/DeliveryCase.ts
-var import_core57 = require("@keystone-6/core");
-var import_fields62 = require("@keystone-6/core/fields");
-var DeliveryCase = (0, import_core57.list)({
+var import_core58 = require("@keystone-6/core");
+var import_fields63 = require("@keystone-6/core/fields");
+var DeliveryCase = (0, import_core58.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "DeliveryCase_deal_key")'),
   access: {
     operation: {
@@ -6514,11 +6620,11 @@ var DeliveryCase = (0, import_core57.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields62.relationship)({
+    deal: (0, import_fields63.relationship)({
       ref: "Deal.deliveryCases",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields62.select)({
+    status: (0, import_fields63.select)({
       type: "string",
       options: ["scheduled", "arrived", "ready", "delivered", "cancelled"].map((value) => ({
         label: value,
@@ -6526,17 +6632,17 @@ var DeliveryCase = (0, import_core57.list)({
       })),
       validation: { isRequired: true }
     }),
-    appointmentAt: (0, import_fields62.timestamp)(),
-    arrivedAt: (0, import_fields62.timestamp)(),
-    checklist: (0, import_fields62.json)({ defaultValue: [] }),
-    customerAcknowledgment: (0, import_fields62.text)(),
-    acknowledgedAt: (0, import_fields62.timestamp)(),
-    deliverySnapshot: (0, import_fields62.json)({ defaultValue: {} }),
-    idempotencyKey: (0, import_fields62.text)({
+    appointmentAt: (0, import_fields63.timestamp)(),
+    arrivedAt: (0, import_fields63.timestamp)(),
+    checklist: (0, import_fields63.json)({ defaultValue: [] }),
+    customerAcknowledgment: (0, import_fields63.text)(),
+    acknowledgedAt: (0, import_fields63.timestamp)(),
+    deliverySnapshot: (0, import_fields63.json)({ defaultValue: {} }),
+    idempotencyKey: (0, import_fields63.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     }),
-    weOweItems: (0, import_fields62.relationship)({
+    weOweItems: (0, import_fields63.relationship)({
       ref: "WeOweItem.deliveryCase",
       many: true
     })
@@ -6544,9 +6650,9 @@ var DeliveryCase = (0, import_core57.list)({
 });
 
 // features/keystone/models/WeOweItem.ts
-var import_core58 = require("@keystone-6/core");
-var import_fields63 = require("@keystone-6/core/fields");
-var WeOweItem = (0, import_core58.list)({
+var import_core59 = require("@keystone-6/core");
+var import_fields64 = require("@keystone-6/core/fields");
+var WeOweItem = (0, import_core59.list)({
   access: {
     operation: {
       query: permissions.canAccessDeals,
@@ -6571,12 +6677,12 @@ var WeOweItem = (0, import_core58.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deliveryCase: (0, import_fields63.relationship)({
+    deliveryCase: (0, import_fields64.relationship)({
       ref: "DeliveryCase.weOweItems",
       db: requiredRelationshipDb("deliveryCase")
     }),
-    description: (0, import_fields63.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields63.select)({
+    description: (0, import_fields64.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields64.select)({
       type: "string",
       options: ["open", "fulfilled", "waived"].map((value) => ({
         label: value,
@@ -6584,12 +6690,12 @@ var WeOweItem = (0, import_core58.list)({
       })),
       validation: { isRequired: true }
     }),
-    promisedAt: (0, import_fields63.timestamp)({ validation: { isRequired: true } }),
-    owner: (0, import_fields63.relationship)({
+    promisedAt: (0, import_fields64.timestamp)({ validation: { isRequired: true } }),
+    owner: (0, import_fields64.relationship)({
       ref: "User",
       db: requiredRelationshipDb("owner")
     }),
-    estimatedCostCents: (0, import_fields63.float)({
+    estimatedCostCents: (0, import_fields64.float)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6597,10 +6703,10 @@ var WeOweItem = (0, import_core58.list)({
         update: () => false
       }
     }),
-    fulfillmentEvidence: (0, import_fields63.text)(),
-    customerAcknowledgment: (0, import_fields63.text)(),
-    fulfilledAt: (0, import_fields63.timestamp)(),
-    idempotencyKey: (0, import_fields63.text)({
+    fulfillmentEvidence: (0, import_fields64.text)(),
+    customerAcknowledgment: (0, import_fields64.text)(),
+    fulfilledAt: (0, import_fields64.timestamp)(),
+    idempotencyKey: (0, import_fields64.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6608,9 +6714,9 @@ var WeOweItem = (0, import_core58.list)({
 });
 
 // features/keystone/models/ServiceLaborOperation.ts
-var import_core59 = require("@keystone-6/core");
-var import_fields64 = require("@keystone-6/core/fields");
-var ServiceLaborOperation = (0, import_core59.list)({
+var import_core60 = require("@keystone-6/core");
+var import_fields65 = require("@keystone-6/core/fields");
+var ServiceLaborOperation = (0, import_core60.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6635,13 +6741,13 @@ var ServiceLaborOperation = (0, import_core59.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    serviceOrder: (0, import_fields64.relationship)({
+    serviceOrder: (0, import_fields65.relationship)({
       ref: "ServiceOrder.laborOperations",
       db: requiredRelationshipDb("serviceOrder")
     }),
-    operationCode: (0, import_fields64.text)({ validation: { isRequired: true } }),
-    description: (0, import_fields64.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields64.select)({
+    operationCode: (0, import_fields65.text)({ validation: { isRequired: true } }),
+    description: (0, import_fields65.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields65.select)({
       type: "string",
       options: ["open", "dispatched", "in-progress", "paused", "completed", "cancelled"].map((value) => ({
         label: value,
@@ -6649,13 +6755,13 @@ var ServiceLaborOperation = (0, import_core59.list)({
       })),
       validation: { isRequired: true }
     }),
-    technician: (0, import_fields64.relationship)({ ref: "User" }),
-    soldHours: (0, import_fields64.float)({ validation: { min: 0 } }),
-    actualMinutes: (0, import_fields64.integer)({ validation: { min: 0 } }),
-    timePunches: (0, import_fields64.json)({ defaultValue: [] }),
-    startedAt: (0, import_fields64.timestamp)(),
-    completedAt: (0, import_fields64.timestamp)(),
-    idempotencyKey: (0, import_fields64.text)({
+    technician: (0, import_fields65.relationship)({ ref: "User" }),
+    soldHours: (0, import_fields65.float)({ validation: { min: 0 } }),
+    actualMinutes: (0, import_fields65.integer)({ validation: { min: 0 } }),
+    timePunches: (0, import_fields65.json)({ defaultValue: [] }),
+    startedAt: (0, import_fields65.timestamp)(),
+    completedAt: (0, import_fields65.timestamp)(),
+    idempotencyKey: (0, import_fields65.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6663,9 +6769,9 @@ var ServiceLaborOperation = (0, import_core59.list)({
 });
 
 // features/keystone/models/PartsMovement.ts
-var import_core60 = require("@keystone-6/core");
-var import_fields65 = require("@keystone-6/core/fields");
-var PartsMovement = (0, import_core60.list)({
+var import_core61 = require("@keystone-6/core");
+var import_fields66 = require("@keystone-6/core/fields");
+var PartsMovement = (0, import_core61.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6689,12 +6795,12 @@ var PartsMovement = (0, import_core60.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    part: (0, import_fields65.relationship)({
+    part: (0, import_fields66.relationship)({
       ref: "PartsInventory.movements",
       db: requiredRelationshipDb("part")
     }),
-    serviceOrder: (0, import_fields65.relationship)({ ref: "ServiceOrder.partsMovements" }),
-    movementType: (0, import_fields65.select)({
+    serviceOrder: (0, import_fields66.relationship)({ ref: "ServiceOrder.partsMovements" }),
+    movementType: (0, import_fields66.select)({
       type: "string",
       options: ["receipt", "issue", "return", "adjustment", "count", "commit", "release", "po-order", "po-cancel"].map((value) => ({
         label: value,
@@ -6702,15 +6808,15 @@ var PartsMovement = (0, import_core60.list)({
       })),
       validation: { isRequired: true }
     }),
-    quantityDelta: (0, import_fields65.integer)({ validation: { isRequired: true } }),
-    onHandAfter: (0, import_fields65.integer)({ validation: { min: 0 } }),
-    committedAfter: (0, import_fields65.integer)({ validation: { min: 0 } }),
-    onOrderAfter: (0, import_fields65.integer)({ validation: { min: 0 } }),
-    reference: (0, import_fields65.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields65.text)({ validation: { isRequired: true } }),
-    evidence: (0, import_fields65.json)({ defaultValue: {} }),
-    occurredAt: (0, import_fields65.timestamp)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields65.text)({
+    quantityDelta: (0, import_fields66.integer)({ validation: { isRequired: true } }),
+    onHandAfter: (0, import_fields66.integer)({ validation: { min: 0 } }),
+    committedAfter: (0, import_fields66.integer)({ validation: { min: 0 } }),
+    onOrderAfter: (0, import_fields66.integer)({ validation: { min: 0 } }),
+    reference: (0, import_fields66.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields66.text)({ validation: { isRequired: true } }),
+    evidence: (0, import_fields66.json)({ defaultValue: {} }),
+    occurredAt: (0, import_fields66.timestamp)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields66.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6718,9 +6824,9 @@ var PartsMovement = (0, import_core60.list)({
 });
 
 // features/keystone/models/PartsPurchaseOrder.ts
-var import_core61 = require("@keystone-6/core");
-var import_fields66 = require("@keystone-6/core/fields");
-var PartsPurchaseOrder = (0, import_core61.list)({
+var import_core62 = require("@keystone-6/core");
+var import_fields67 = require("@keystone-6/core/fields");
+var PartsPurchaseOrder = (0, import_core62.list)({
   db: prismaModelDirectives('@@unique([rooftopId, reference], map: "PartsPurchaseOrder_rooftop_reference_key")'),
   access: {
     operation: {
@@ -6738,9 +6844,9 @@ var PartsPurchaseOrder = (0, import_core61.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields66.text)({ validation: { isRequired: true } }),
-    supplier: (0, import_fields66.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields66.select)({
+    reference: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    supplier: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields67.select)({
       type: "string",
       options: ["draft", "ordered", "partially-received", "received", "cancelled"].map((value) => ({
         label: value,
@@ -6748,10 +6854,10 @@ var PartsPurchaseOrder = (0, import_core61.list)({
       })),
       validation: { isRequired: true }
     }),
-    lines: (0, import_fields66.json)({ defaultValue: [] }),
-    orderedAt: (0, import_fields66.timestamp)(),
-    receivedAt: (0, import_fields66.timestamp)(),
-    idempotencyKey: (0, import_fields66.text)({
+    lines: (0, import_fields67.json)({ defaultValue: [] }),
+    orderedAt: (0, import_fields67.timestamp)(),
+    receivedAt: (0, import_fields67.timestamp)(),
+    idempotencyKey: (0, import_fields67.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6759,10 +6865,10 @@ var PartsPurchaseOrder = (0, import_core61.list)({
 });
 
 // features/keystone/models/AccountingMapping.ts
-var import_core62 = require("@keystone-6/core");
-var import_fields67 = require("@keystone-6/core/fields");
+var import_core63 = require("@keystone-6/core");
+var import_fields68 = require("@keystone-6/core/fields");
 var canManageAccounting = (args) => permissions.canManageDealerships(args) && permissions.canViewReports(args);
-var AccountingMapping = (0, import_core62.list)({
+var AccountingMapping = (0, import_core63.list)({
   db: prismaModelDirectives('@@unique([rooftopId, sourceType, sourceCode, providerKey], map: "AccountingMapping_rooftop_source_provider_key")'),
   access: {
     operation: {
@@ -6788,22 +6894,22 @@ var AccountingMapping = (0, import_core62.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    sourceType: (0, import_fields67.select)({
+    sourceType: (0, import_fields68.select)({
       type: "string",
       options: ["deal", "service", "parts", "payment"].map((value) => ({ label: value, value })),
       validation: { isRequired: true }
     }),
-    sourceCode: (0, import_fields67.text)({ validation: { isRequired: true } }),
-    debitAccount: (0, import_fields67.text)({ validation: { isRequired: true } }),
-    creditAccount: (0, import_fields67.text)({ validation: { isRequired: true } }),
-    providerKey: (0, import_fields67.text)({ validation: { isRequired: true }, defaultValue: "operator-recorded" })
+    sourceCode: (0, import_fields68.text)({ validation: { isRequired: true } }),
+    debitAccount: (0, import_fields68.text)({ validation: { isRequired: true } }),
+    creditAccount: (0, import_fields68.text)({ validation: { isRequired: true } }),
+    providerKey: (0, import_fields68.text)({ validation: { isRequired: true }, defaultValue: "operator-recorded" })
   }
 });
 
 // features/keystone/models/AccountingBatch.ts
-var import_core63 = require("@keystone-6/core");
-var import_fields68 = require("@keystone-6/core/fields");
-var AccountingBatch = (0, import_core63.list)({
+var import_core64 = require("@keystone-6/core");
+var import_fields69 = require("@keystone-6/core/fields");
+var AccountingBatch = (0, import_core64.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -6820,7 +6926,7 @@ var AccountingBatch = (0, import_core63.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    sourceType: (0, import_fields68.select)({
+    sourceType: (0, import_fields69.select)({
       type: "string",
       options: ["deal", "service", "parts", "payment"].map((value) => ({
         label: value,
@@ -6828,8 +6934,8 @@ var AccountingBatch = (0, import_core63.list)({
       })),
       validation: { isRequired: true }
     }),
-    sourceId: (0, import_fields68.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields68.select)({
+    sourceId: (0, import_fields69.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields69.select)({
       type: "string",
       options: ["staged", "posting", "posted", "failed", "reconciled", "locked"].map((value) => ({
         label: value,
@@ -6837,29 +6943,29 @@ var AccountingBatch = (0, import_core63.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields68.text)({ validation: { isRequired: true } }),
-    lines: (0, import_fields68.json)({ defaultValue: [] }),
-    totalDebitCents: (0, import_fields68.float)({ validation: {
+    providerKey: (0, import_fields69.text)({ validation: { isRequired: true } }),
+    lines: (0, import_fields69.json)({ defaultValue: [] }),
+    totalDebitCents: (0, import_fields69.float)({ validation: {
       isRequired: true,
       min: 0
     } }),
-    totalCreditCents: (0, import_fields68.float)({ validation: {
+    totalCreditCents: (0, import_fields69.float)({ validation: {
       isRequired: true,
       min: 0
     } }),
-    attemptCount: (0, import_fields68.integer)({
+    attemptCount: (0, import_fields69.integer)({
       validation: {
         isRequired: true,
         min: 0
       },
       defaultValue: 0
     }),
-    externalReference: (0, import_fields68.text)(),
-    lastErrorCode: (0, import_fields68.text)(),
-    postedAt: (0, import_fields68.timestamp)(),
-    reconciledAt: (0, import_fields68.timestamp)(),
-    lockedAt: (0, import_fields68.timestamp)(),
-    idempotencyKey: (0, import_fields68.text)({
+    externalReference: (0, import_fields69.text)(),
+    lastErrorCode: (0, import_fields69.text)(),
+    postedAt: (0, import_fields69.timestamp)(),
+    reconciledAt: (0, import_fields69.timestamp)(),
+    lockedAt: (0, import_fields69.timestamp)(),
+    idempotencyKey: (0, import_fields69.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6867,9 +6973,9 @@ var AccountingBatch = (0, import_core63.list)({
 });
 
 // features/keystone/models/AccountingProviderResponse.ts
-var import_core64 = require("@keystone-6/core");
-var import_fields69 = require("@keystone-6/core/fields");
-var AccountingProviderResponse = (0, import_core64.list)({
+var import_core65 = require("@keystone-6/core");
+var import_fields70 = require("@keystone-6/core/fields");
+var AccountingProviderResponse = (0, import_core65.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -6890,17 +6996,17 @@ var AccountingProviderResponse = (0, import_core64.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    batch: (0, import_fields69.relationship)({
+    batch: (0, import_fields70.relationship)({
       ref: "AccountingBatch",
       db: requiredRelationshipDb("batch")
     }),
-    providerKey: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    requestFingerprint: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    responseCode: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    externalReference: (0, import_fields69.text)(),
-    immutableResponse: (0, import_fields69.json)({ defaultValue: {} }),
-    receivedAt: (0, import_fields69.timestamp)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields69.text)({
+    providerKey: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    requestFingerprint: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    responseCode: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    externalReference: (0, import_fields70.text)(),
+    immutableResponse: (0, import_fields70.json)({ defaultValue: {} }),
+    receivedAt: (0, import_fields70.timestamp)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields70.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6908,9 +7014,9 @@ var AccountingProviderResponse = (0, import_core64.list)({
 });
 
 // features/keystone/models/PaymentTransaction.ts
-var import_core65 = require("@keystone-6/core");
-var import_fields70 = require("@keystone-6/core/fields");
-var PaymentTransaction = (0, import_core65.list)({
+var import_core66 = require("@keystone-6/core");
+var import_fields71 = require("@keystone-6/core/fields");
+var PaymentTransaction = (0, import_core66.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6926,35 +7032,35 @@ var PaymentTransaction = (0, import_core65.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields70.relationship)({ ref: "Deal.paymentTransactions" }),
-    serviceOrder: (0, import_fields70.relationship)({ ref: "ServiceOrder.paymentTransactions" }),
+    deal: (0, import_fields71.relationship)({ ref: "Deal.paymentTransactions" }),
+    serviceOrder: (0, import_fields71.relationship)({ ref: "ServiceOrder.paymentTransactions" }),
     // A storefront vehicle reservation: the shopper's refundable deposit, tied to the lead it created.
-    lead: (0, import_fields70.relationship)({ ref: "Lead.paymentTransactions" }),
-    sourceType: (0, import_fields70.select)({ type: "string", options: ["deal", "service", "reservation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    amountCents: (0, import_fields70.float)({ validation: { isRequired: true, min: 1 } }),
-    currency: (0, import_fields70.text)({ validation: { isRequired: true }, defaultValue: "usd" }),
-    providerKey: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    lead: (0, import_fields71.relationship)({ ref: "Lead.paymentTransactions" }),
+    sourceType: (0, import_fields71.select)({ type: "string", options: ["deal", "service", "reservation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    amountCents: (0, import_fields71.float)({ validation: { isRequired: true, min: 1 } }),
+    currency: (0, import_fields71.text)({ validation: { isRequired: true }, defaultValue: "usd" }),
+    providerKey: (0, import_fields71.text)({ validation: { isRequired: true } }),
     // How an operator-recorded payment was taken (cash, check, card, wire, ACH, financing); empty for processor payments.
-    paymentMethod: (0, import_fields70.text)({ defaultValue: "" }),
-    paymentProvider: (0, import_fields70.relationship)({ ref: "PaymentProvider.transactions" }),
-    providerTransactionId: (0, import_fields70.text)(),
-    providerSessionId: (0, import_fields70.text)(),
-    checkoutUrl: (0, import_fields70.text)(),
-    status: (0, import_fields70.select)({ type: "string", options: ["creating", "pending", "authorized", "captured", "failed", "canceled", "partially-refunded", "refunded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    capturedCents: (0, import_fields70.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    refundedCents: (0, import_fields70.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    failureCode: (0, import_fields70.text)(),
-    reconciliationReference: (0, import_fields70.text)(),
-    reconciledAt: (0, import_fields70.timestamp)(),
-    version: (0, import_fields70.integer)({ validation: { isRequired: true, min: 1 }, defaultValue: 1 }),
-    idempotencyKey: (0, import_fields70.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    paymentMethod: (0, import_fields71.text)({ defaultValue: "" }),
+    paymentProvider: (0, import_fields71.relationship)({ ref: "PaymentProvider.transactions" }),
+    providerTransactionId: (0, import_fields71.text)(),
+    providerSessionId: (0, import_fields71.text)(),
+    checkoutUrl: (0, import_fields71.text)(),
+    status: (0, import_fields71.select)({ type: "string", options: ["creating", "pending", "authorized", "captured", "failed", "canceled", "partially-refunded", "refunded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    capturedCents: (0, import_fields71.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    refundedCents: (0, import_fields71.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    failureCode: (0, import_fields71.text)(),
+    reconciliationReference: (0, import_fields71.text)(),
+    reconciledAt: (0, import_fields71.timestamp)(),
+    version: (0, import_fields71.integer)({ validation: { isRequired: true, min: 1 }, defaultValue: 1 }),
+    idempotencyKey: (0, import_fields71.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/PaymentRefund.ts
-var import_core66 = require("@keystone-6/core");
-var import_fields71 = require("@keystone-6/core/fields");
-var PaymentRefund = (0, import_core66.list)({
+var import_core67 = require("@keystone-6/core");
+var import_fields72 = require("@keystone-6/core/fields");
+var PaymentRefund = (0, import_core67.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6964,20 +7070,20 @@ var PaymentRefund = (0, import_core66.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    transaction: (0, import_fields71.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
-    amountCents: (0, import_fields71.float)({ validation: { isRequired: true, min: 1 } }),
-    reason: (0, import_fields71.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields71.select)({ type: "string", options: ["creating", "pending", "succeeded", "failed", "canceled"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    providerRefundId: (0, import_fields71.text)(),
-    failureCode: (0, import_fields71.text)(),
-    idempotencyKey: (0, import_fields71.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    transaction: (0, import_fields72.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
+    amountCents: (0, import_fields72.float)({ validation: { isRequired: true, min: 1 } }),
+    reason: (0, import_fields72.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields72.select)({ type: "string", options: ["creating", "pending", "succeeded", "failed", "canceled"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    providerRefundId: (0, import_fields72.text)(),
+    failureCode: (0, import_fields72.text)(),
+    idempotencyKey: (0, import_fields72.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/PaymentProviderEvent.ts
-var import_core67 = require("@keystone-6/core");
-var import_fields72 = require("@keystone-6/core/fields");
-var PaymentProviderEvent = (0, import_core67.list)({
+var import_core68 = require("@keystone-6/core");
+var import_fields73 = require("@keystone-6/core/fields");
+var PaymentProviderEvent = (0, import_core68.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6987,21 +7093,21 @@ var PaymentProviderEvent = (0, import_core67.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    transaction: (0, import_fields72.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
-    refund: (0, import_fields72.relationship)({ ref: "PaymentRefund" }),
-    providerKey: (0, import_fields72.text)({ validation: { isRequired: true } }),
-    providerEventId: (0, import_fields72.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    eventType: (0, import_fields72.text)({ validation: { isRequired: true } }),
-    payloadDigest: (0, import_fields72.text)({ validation: { isRequired: true } }),
-    signatureTimestamp: (0, import_fields72.timestamp)({ validation: { isRequired: true } }),
-    receivedAt: (0, import_fields72.timestamp)({ validation: { isRequired: true } })
+    transaction: (0, import_fields73.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
+    refund: (0, import_fields73.relationship)({ ref: "PaymentRefund" }),
+    providerKey: (0, import_fields73.text)({ validation: { isRequired: true } }),
+    providerEventId: (0, import_fields73.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    eventType: (0, import_fields73.text)({ validation: { isRequired: true } }),
+    payloadDigest: (0, import_fields73.text)({ validation: { isRequired: true } }),
+    signatureTimestamp: (0, import_fields73.timestamp)({ validation: { isRequired: true } }),
+    receivedAt: (0, import_fields73.timestamp)({ validation: { isRequired: true } })
   }
 });
 
 // features/keystone/models/PaymentProvider.ts
-var import_core68 = require("@keystone-6/core");
-var import_fields73 = require("@keystone-6/core/fields");
-var PaymentProvider = (0, import_core68.list)({
+var import_core69 = require("@keystone-6/core");
+var import_fields74 = require("@keystone-6/core/fields");
+var PaymentProvider = (0, import_core69.list)({
   access: {
     operation: {
       query: ({ session }) => permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }),
@@ -7011,10 +7117,10 @@ var PaymentProvider = (0, import_core68.list)({
     }
   },
   fields: {
-    name: (0, import_fields73.text)({
+    name: (0, import_fields74.text)({
       validation: { isRequired: true }
     }),
-    code: (0, import_fields73.text)({
+    code: (0, import_fields74.text)({
       isIndexed: "unique",
       validation: {
         isRequired: true,
@@ -7024,53 +7130,53 @@ var PaymentProvider = (0, import_core68.list)({
         }
       }
     }),
-    isInstalled: (0, import_fields73.checkbox)({
+    isInstalled: (0, import_fields74.checkbox)({
       defaultValue: true
     }),
-    credentials: (0, import_fields73.json)({
+    credentials: (0, import_fields74.json)({
       defaultValue: {}
     }),
-    metadata: (0, import_fields73.json)({
+    metadata: (0, import_fields74.json)({
       defaultValue: {}
     }),
     // Adapter function fields
-    createPaymentFunction: (0, import_fields73.text)({
+    createPaymentFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to create payments"
       }
     }),
-    capturePaymentFunction: (0, import_fields73.text)({
+    capturePaymentFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to capture payments"
       }
     }),
-    refundPaymentFunction: (0, import_fields73.text)({
+    refundPaymentFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to refund payments"
       }
     }),
-    getPaymentStatusFunction: (0, import_fields73.text)({
+    getPaymentStatusFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to check payment status"
       }
     }),
-    generatePaymentLinkFunction: (0, import_fields73.text)({
+    generatePaymentLinkFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to generate payment dashboard links"
       }
     }),
-    handleWebhookFunction: (0, import_fields73.text)({
+    handleWebhookFunction: (0, import_fields74.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to handle provider webhooks"
       }
     }),
-    transactions: (0, import_fields73.relationship)({
+    transactions: (0, import_fields74.relationship)({
       ref: "PaymentTransaction.paymentProvider",
       many: true
     }),
@@ -7079,84 +7185,84 @@ var PaymentProvider = (0, import_core68.list)({
 });
 
 // features/keystone/models/SavedReport.ts
-var import_core69 = require("@keystone-6/core");
-var import_fields74 = require("@keystone-6/core/fields");
-var SavedReport = (0, import_core69.list)({
+var import_core70 = require("@keystone-6/core");
+var import_fields75 = require("@keystone-6/core/fields");
+var SavedReport = (0, import_core70.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "owner", listKey: "User", kind: "user" }]) },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    owner: (0, import_fields74.relationship)({ ref: "User", db: requiredRelationshipDb("owner") }),
-    name: (0, import_fields74.text)({ validation: { isRequired: true } }),
-    reportType: (0, import_fields74.select)({ type: "string", options: ["operations", "audit", "accounting-exceptions", "payment-reconciliation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    filters: (0, import_fields74.json)({ defaultValue: {} }),
-    exportFormat: (0, import_fields74.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    schedule: (0, import_fields74.select)({ type: "string", options: ["manual", "daily", "weekly", "monthly"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    active: (0, import_fields74.checkbox)({ defaultValue: true }),
-    nextRunAt: (0, import_fields74.timestamp)(),
-    idempotencyKey: (0, import_fields74.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    owner: (0, import_fields75.relationship)({ ref: "User", db: requiredRelationshipDb("owner") }),
+    name: (0, import_fields75.text)({ validation: { isRequired: true } }),
+    reportType: (0, import_fields75.select)({ type: "string", options: ["operations", "audit", "accounting-exceptions", "payment-reconciliation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    filters: (0, import_fields75.json)({ defaultValue: {} }),
+    exportFormat: (0, import_fields75.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    schedule: (0, import_fields75.select)({ type: "string", options: ["manual", "daily", "weekly", "monthly"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    active: (0, import_fields75.checkbox)({ defaultValue: true }),
+    nextRunAt: (0, import_fields75.timestamp)(),
+    idempotencyKey: (0, import_fields75.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/ReportRun.ts
-var import_core70 = require("@keystone-6/core");
-var import_fields75 = require("@keystone-6/core/fields");
-var ReportRun = (0, import_core70.list)({
+var import_core71 = require("@keystone-6/core");
+var import_fields76 = require("@keystone-6/core/fields");
+var ReportRun = (0, import_core71.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "savedReport", listKey: "SavedReport" }]) },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    savedReport: (0, import_fields75.relationship)({ ref: "SavedReport", db: requiredRelationshipDb("savedReport") }),
-    status: (0, import_fields75.select)({ type: "string", options: ["queued", "completed", "failed", "expired"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    exportFormat: (0, import_fields75.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    savedReport: (0, import_fields76.relationship)({ ref: "SavedReport", db: requiredRelationshipDb("savedReport") }),
+    status: (0, import_fields76.select)({ type: "string", options: ["queued", "completed", "failed", "expired"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    exportFormat: (0, import_fields76.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
     // Runs keep their result for 30 days (expiresAt); after that the snapshot is no longer served.
-    resultSnapshot: (0, import_fields75.json)({ defaultValue: {}, access: { read: ({ item }) => !item?.expiresAt || new Date(item.expiresAt).getTime() > Date.now() } }),
-    resultDigest: (0, import_fields75.text)(),
-    errorCode: (0, import_fields75.text)(),
-    completedAt: (0, import_fields75.timestamp)(),
-    expiresAt: (0, import_fields75.timestamp)(),
-    idempotencyKey: (0, import_fields75.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    resultSnapshot: (0, import_fields76.json)({ defaultValue: {}, access: { read: ({ item }) => !item?.expiresAt || new Date(item.expiresAt).getTime() > Date.now() } }),
+    resultDigest: (0, import_fields76.text)(),
+    errorCode: (0, import_fields76.text)(),
+    completedAt: (0, import_fields76.timestamp)(),
+    expiresAt: (0, import_fields76.timestamp)(),
+    idempotencyKey: (0, import_fields76.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/RetentionPolicy.ts
-var import_core71 = require("@keystone-6/core");
-var import_fields76 = require("@keystone-6/core/fields");
-var RetentionPolicy = (0, import_core71.list)({
+var import_core72 = require("@keystone-6/core");
+var import_fields77 = require("@keystone-6/core/fields");
+var RetentionPolicy = (0, import_core72.list)({
   db: prismaModelDirectives('@@unique([rooftopId, category], map: "RetentionPolicy_rooftop_category_key")'),
   access: { operation: { query: permissions.canManageDealerships, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageDealerships") } },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    category: (0, import_fields76.select)({ type: "string", options: ["customer-intake", "report-export", "provider-payload", "audit-evidence"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    retentionDays: (0, import_fields76.integer)({ validation: { isRequired: true, min: 1 } }),
-    legalHold: (0, import_fields76.checkbox)({ defaultValue: false }),
-    rationale: (0, import_fields76.text)({ validation: { isRequired: true } }),
-    lastSweptAt: (0, import_fields76.timestamp)(),
-    idempotencyKey: (0, import_fields76.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    category: (0, import_fields77.select)({ type: "string", options: ["customer-intake", "report-export", "provider-payload", "audit-evidence"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    retentionDays: (0, import_fields77.integer)({ validation: { isRequired: true, min: 1 } }),
+    legalHold: (0, import_fields77.checkbox)({ defaultValue: false }),
+    rationale: (0, import_fields77.text)({ validation: { isRequired: true } }),
+    lastSweptAt: (0, import_fields77.timestamp)(),
+    idempotencyKey: (0, import_fields77.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/AuthenticationThrottle.ts
-var import_core72 = require("@keystone-6/core");
-var import_fields77 = require("@keystone-6/core/fields");
-var AuthenticationThrottle = (0, import_core72.list)({
+var import_core73 = require("@keystone-6/core");
+var import_fields78 = require("@keystone-6/core/fields");
+var AuthenticationThrottle = (0, import_core73.list)({
   access: { operation: { query: () => false, create: () => false, update: () => false, delete: () => false } },
   graphql: { omit: true },
   ui: { isHidden: true },
   fields: {
     ...trackingFields,
-    keyHash: (0, import_fields77.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    purpose: (0, import_fields77.text)({ validation: { isRequired: true } }),
-    failureCount: (0, import_fields77.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    windowStartedAt: (0, import_fields77.timestamp)({ validation: { isRequired: true } }),
-    blockedUntil: (0, import_fields77.timestamp)({ isIndexed: true }),
-    updatedAt: (0, import_fields77.timestamp)({
+    keyHash: (0, import_fields78.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    purpose: (0, import_fields78.text)({ validation: { isRequired: true } }),
+    failureCount: (0, import_fields78.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    windowStartedAt: (0, import_fields78.timestamp)({ validation: { isRequired: true } }),
+    blockedUntil: (0, import_fields78.timestamp)({ isIndexed: true }),
+    updatedAt: (0, import_fields78.timestamp)({
       access: { create: () => false, update: () => false },
       defaultValue: { kind: "now" },
       db: { isNullable: false, updatedAt: true },
@@ -7167,10 +7273,10 @@ var AuthenticationThrottle = (0, import_core72.list)({
 });
 
 // features/keystone/models/ApiKey.ts
-var import_fields78 = require("@keystone-6/core/fields");
-var import_core73 = require("@keystone-6/core");
+var import_fields79 = require("@keystone-6/core/fields");
+var import_core74 = require("@keystone-6/core");
 var isHumanSession = ({ session }) => isSignedIn({ session }) && !session?.apiKeyId && !session?.apiKeyScopes;
-var ApiKey = (0, import_core73.list)({
+var ApiKey = (0, import_core74.list)({
   access: {
     operation: {
       query: isHumanSession,
@@ -7205,13 +7311,13 @@ var ApiKey = (0, import_core73.list)({
     }
   },
   fields: {
-    name: (0, import_fields78.text)({
+    name: (0, import_fields79.text)({
       validation: { isRequired: true },
       ui: {
         description: "A descriptive name for this API key (e.g. 'Inventory syndication')"
       }
     }),
-    tokenSecret: (0, import_fields78.password)({
+    tokenSecret: (0, import_fields79.password)({
       access: { read: () => false },
       validation: { isRequired: true },
       ui: {
@@ -7221,7 +7327,7 @@ var ApiKey = (0, import_core73.list)({
         description: "Secure API key token (hashed and never displayed)"
       }
     }),
-    tokenPreview: (0, import_fields78.text)({
+    tokenPreview: (0, import_fields79.text)({
       access: { update: () => false },
       ui: {
         createView: { fieldMode: "hidden" },
@@ -7230,13 +7336,13 @@ var ApiKey = (0, import_core73.list)({
         description: "Preview of the API key (actual key is hidden)"
       }
     }),
-    scopes: (0, import_fields78.json)({
+    scopes: (0, import_fields79.json)({
       defaultValue: [],
       ui: {
         description: "Array of scopes for this API key"
       }
     }),
-    status: (0, import_fields78.select)({
+    status: (0, import_fields79.select)({
       type: "enum",
       options: [
         { label: "Active", value: "active" },
@@ -7248,12 +7354,12 @@ var ApiKey = (0, import_core73.list)({
         description: "Current status of this API key"
       }
     }),
-    expiresAt: (0, import_fields78.timestamp)({
+    expiresAt: (0, import_fields79.timestamp)({
       ui: {
         description: "When this API key expires (optional - leave blank for no expiration)"
       }
     }),
-    lastUsedAt: (0, import_fields78.timestamp)({
+    lastUsedAt: (0, import_fields79.timestamp)({
       access: { create: () => false, update: () => false },
       ui: {
         createView: { fieldMode: "hidden" },
@@ -7261,7 +7367,7 @@ var ApiKey = (0, import_core73.list)({
         description: "Last time this API key was used"
       }
     }),
-    usageCount: (0, import_fields78.json)({
+    usageCount: (0, import_fields79.json)({
       access: { create: () => false, update: () => false },
       defaultValue: { total: 0, daily: {} },
       ui: {
@@ -7270,14 +7376,14 @@ var ApiKey = (0, import_core73.list)({
         description: "Usage statistics for this API key"
       }
     }),
-    restrictedToIPs: (0, import_fields78.json)({
+    restrictedToIPs: (0, import_fields79.json)({
       defaultValue: [],
       ui: {
         description: "Optional: Restrict this key to specific IP addresses (array of IPs)"
       }
     }),
     ...trackingFields,
-    user: (0, import_fields78.relationship)({
+    user: (0, import_fields79.relationship)({
       access: { create: () => false, update: () => false },
       ref: "User.apiKeys",
       ui: {
@@ -7316,6 +7422,7 @@ var rawModels = {
   TradeInPhoto,
   Bank,
   FinancingPlan,
+  ProgressiveOffer,
   ServiceAppointment,
   ServiceOrder,
   RepairOrderLineItem,
@@ -7392,8 +7499,8 @@ function createRule(access) {
   if (typeof operation?.create === "function") return operation.create;
   return void 0;
 }
-async function createAllowed(listKey, list74, args) {
-  const rule = createRule(list74.access);
+async function createAllowed(listKey, list75, args) {
+  const rule = createRule(list75.access);
   if (!rule) return true;
   try {
     return Boolean(await rule({ session: args.session, context: args.context, listKey, operation: "create" }));
@@ -7403,16 +7510,16 @@ async function createAllowed(listKey, list74, args) {
 }
 function withCreateAwareUi(lists) {
   const out = {};
-  for (const [listKey, list74] of Object.entries(lists)) {
-    if (list74.ui?.hideCreate !== void 0 || !createRule(list74.access)) {
-      out[listKey] = list74;
+  for (const [listKey, list75] of Object.entries(lists)) {
+    if (list75.ui?.hideCreate !== void 0 || !createRule(list75.access)) {
+      out[listKey] = list75;
       continue;
     }
     out[listKey] = {
-      ...list74,
+      ...list75,
       ui: {
-        ...list74.ui,
-        hideCreate: async (args) => !await createAllowed(listKey, list74, args)
+        ...list75.ui,
+        hideCreate: async (args) => !await createAllowed(listKey, list75, args)
       }
     };
   }
@@ -7430,8 +7537,8 @@ function updateFilterRule(access) {
   return typeof filter?.update === "function" ? filter.update : void 0;
 }
 var itemModeCache = /* @__PURE__ */ new WeakMap();
-async function itemUpdateAllowed(listKey, list74, args) {
-  const operation = updateOperationRule(list74.access);
+async function itemUpdateAllowed(listKey, list75, args) {
+  const operation = updateOperationRule(list75.access);
   if (operation) {
     try {
       if (!await operation({ session: args.session, context: args.context, listKey, operation: "update" })) return false;
@@ -7439,7 +7546,7 @@ async function itemUpdateAllowed(listKey, list74, args) {
       return false;
     }
   }
-  const filterRule = updateFilterRule(list74.access);
+  const filterRule = updateFilterRule(list75.access);
   if (!filterRule || args.item?.id == null) return true;
   try {
     const filter = await filterRule({ session: args.session, context: args.context, listKey, operation: "update" });
@@ -7454,21 +7561,21 @@ async function itemUpdateAllowed(listKey, list74, args) {
 }
 function withItemViewAwareUi(lists) {
   const out = {};
-  for (const [listKey, list74] of Object.entries(lists)) {
-    const itemView = list74.ui?.itemView ?? {};
-    if (itemView.defaultFieldMode !== void 0 || !updateOperationRule(list74.access) && !updateFilterRule(list74.access)) {
-      out[listKey] = list74;
+  for (const [listKey, list75] of Object.entries(lists)) {
+    const itemView = list75.ui?.itemView ?? {};
+    if (itemView.defaultFieldMode !== void 0 || !updateOperationRule(list75.access) && !updateFilterRule(list75.access)) {
+      out[listKey] = list75;
       continue;
     }
     out[listKey] = {
-      ...list74,
+      ...list75,
       ui: {
-        ...list74.ui,
+        ...list75.ui,
         itemView: {
           ...itemView,
           // Called once per field; one decision per request and item.
           defaultFieldMode: (args) => {
-            const decide = () => itemUpdateAllowed(listKey, list74, args).then((ok) => ok ? "edit" : "read");
+            const decide = () => itemUpdateAllowed(listKey, list75, args).then((ok) => ok ? "edit" : "read");
             if (!args.context || typeof args.context !== "object") return decide();
             const key7 = JSON.stringify([listKey, String(args.item?.id), String(args.session?.itemId ?? ""), String(args.session?.listKey ?? "")]);
             const scope = args.context;
@@ -7491,8 +7598,8 @@ function deleteRule(access) {
   if (typeof operation?.delete === "function") return operation.delete;
   return void 0;
 }
-async function deleteAllowed(listKey, list74, args) {
-  const rule = deleteRule(list74.access);
+async function deleteAllowed(listKey, list75, args) {
+  const rule = deleteRule(list75.access);
   if (!rule) return true;
   try {
     return Boolean(await rule({ session: args.session, context: args.context, listKey, operation: "delete" }));
@@ -7502,16 +7609,16 @@ async function deleteAllowed(listKey, list74, args) {
 }
 function withDeleteAwareUi(lists) {
   const out = {};
-  for (const [listKey, list74] of Object.entries(lists)) {
-    if (list74.ui?.hideDelete !== void 0 || !deleteRule(list74.access)) {
-      out[listKey] = list74;
+  for (const [listKey, list75] of Object.entries(lists)) {
+    if (list75.ui?.hideDelete !== void 0 || !deleteRule(list75.access)) {
+      out[listKey] = list75;
       continue;
     }
     out[listKey] = {
-      ...list74,
+      ...list75,
       ui: {
-        ...list74.ui,
-        hideDelete: async (args) => !await deleteAllowed(listKey, list74, args)
+        ...list75.ui,
+        hideDelete: async (args) => !await deleteAllowed(listKey, list75, args)
       }
     };
   }
@@ -7561,7 +7668,7 @@ function localScheduleIso(date4, hours, minutes, timezone) {
     second: "2-digit",
     hourCycle: "h23"
   });
-  const parts = (timestamp55) => Object.fromEntries(format.formatToParts(timestamp55).filter((p2) => p2.type !== "literal").map((p2) => [p2.type, Number(p2.value)]));
+  const parts = (timestamp56) => Object.fromEntries(format.formatToParts(timestamp56).filter((p2) => p2.type !== "literal").map((p2) => [p2.type, Number(p2.value)]));
   const candidates = /* @__PURE__ */ new Set();
   for (const delta of [-36, -24, -12, 0, 12, 24, 36]) {
     const sample = civil + delta * 36e5;
@@ -7590,15 +7697,15 @@ async function loadInventoryPublication(tx, stockId) {
 function merchandisingSnapshot(stock) {
   const v = stock.vehicle;
   if (!v) throw new Error("Inventory vehicle is missing");
-  const images = (v.images || []).map((image6) => ({
-    id: String(image6.id),
-    imagePath: String(image6.imagePath || ""),
-    imageId: image6.image_id || null,
-    imageExtension: image6.image_extension || null,
-    caption: String(image6.caption || ""),
-    category: image6.category || null,
-    isPrimary: Boolean(image6.isPrimary),
-    sortOrder: image6.sortOrder ?? 0
+  const images = (v.images || []).map((image7) => ({
+    id: String(image7.id),
+    imagePath: String(image7.imagePath || ""),
+    imageId: image7.image_id || null,
+    imageExtension: image7.image_extension || null,
+    caption: String(image7.caption || ""),
+    category: image7.category || null,
+    isPrimary: Boolean(image7.isPrimary),
+    sortOrder: image7.sortOrder ?? 0
   })).sort((a, b) => a.id.localeCompare(b.id));
   return {
     schemaVersion: 2,
@@ -7622,20 +7729,20 @@ function merchandisingSnapshot(stock) {
     ...v.fuelType ? { fuelType: v.fuelType } : {},
     ...v.transmission ? { transmission: v.transmission } : {},
     ...v.engine ? { engine: v.engine } : {},
-    primaryImagePath: images.find((image6) => image6.isPrimary)?.imagePath || images[0]?.imagePath || ""
+    primaryImagePath: images.find((image7) => image7.isPrimary)?.imagePath || images[0]?.imagePath || ""
   };
 }
 function photoArrangementUnchanged(current, imageIds) {
-  const byId = new Map(current.map((image6) => [String(image6.id), image6]));
+  const byId = new Map(current.map((image7) => [String(image7.id), image7]));
   if (current.length !== imageIds.length || byId.size !== imageIds.length) return false;
   return imageIds.every((id, index) => {
-    const image6 = byId.get(id);
-    return Boolean(image6) && (image6.sortOrder ?? 0) === index && Boolean(image6.isPrimary) === (index === 0);
+    const image7 = byId.get(id);
+    return Boolean(image7) && (image7.sortOrder ?? 0) === index && Boolean(image7.isPrimary) === (index === 0);
   });
 }
 function assertMerchandisingContent(stock) {
   const snapshot2 = merchandisingSnapshot(stock);
-  if (!snapshot2.description || !Number.isInteger(snapshot2.priceCents) || snapshot2.priceCents <= 0 || !snapshot2.images.some((image6) => image6.imagePath || image6.imageId)) {
+  if (!snapshot2.description || !Number.isInteger(snapshot2.priceCents) || snapshot2.priceCents <= 0 || !snapshot2.images.some((image7) => image7.imagePath || image7.imageId)) {
     throw new Error("Merchandising submission requires price, description, and at least one image");
   }
   if (!["available", "service"].includes(stock.vehicle.status)) throw new Error("Only active inventory can be reviewed");
@@ -7687,15 +7794,15 @@ function inventoryPublicListingState(stock) {
 
 // features/keystone/mutations/submissionUtils.ts
 function requiredText(value, label2, maxLength = 500) {
-  const text79 = String(value || "").trim();
-  if (!text79) throw new SubmissionError(`${label2} is required.`);
-  if (text79.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
-  return text79;
+  const text80 = String(value || "").trim();
+  if (!text80) throw new SubmissionError(`${label2} is required.`);
+  if (text80.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
+  return text80;
 }
 function optionalText(value, maxLength = 4e3, label2 = "Value") {
-  const text79 = String(value || "").trim();
-  if (text79.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
-  return text79;
+  const text80 = String(value || "").trim();
+  if (text80.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
+  return text80;
 }
 function validEmail(value) {
   const email = requiredText(value, "Email", 320).toLowerCase();
@@ -7752,7 +7859,7 @@ function parseScheduledTime(dateValue, timeValue, label2 = "Appointment", timezo
   return { iso: scheduled.toISOString(), date: date4, time };
 }
 var PUBLIC_SUBMISSION_VEHICLE_QUERY = `
-  id vin stockNumber year make model trim exteriorColor interiorColor mileage condition description priceCents listPriceCents features status
+  id vin stockNumber year make model trim exteriorColor interiorColor mileage fuelType transmission engine condition description priceCents listPriceCents features status
   images { id imagePath image { id extension } caption category isPrimary sortOrder }
   rooftop { id status dealerGroup { id status } }
   inventoryStock {
@@ -7786,10 +7893,10 @@ async function resolveAvailableVehicle(context, vehicleId, rooftopId) {
   });
   if (!vehicle || vehicle.inventoryStock?.id !== candidate.inventoryStock.id || vehicle.status !== "available" || vehicle.rooftop?.id !== rooftopId || vehicle.rooftop?.status !== "active" || vehicle.rooftop?.dealerGroup?.status !== "active" || vehicle.inventoryStock?.rooftop?.id !== rooftopId || vehicle.inventoryStock?.rooftop?.status !== "active" || vehicle.inventoryStock?.rooftop?.dealerGroup?.status !== "active" || vehicle.inventoryStock?.rooftop?.dealerGroup?.id !== vehicle.rooftop?.dealerGroup?.id || vehicle.inventoryStock?.reconStatus !== "completed" || vehicle.inventoryStock?.merchandisingStatus !== "approved" || !vehicle.inventoryStock?.approvedRevisionHash || !vehicle.inventoryStock?.frontlineAt) unavailableVehicle();
   try {
-    const revisionVehicle = { ...vehicle, images: (vehicle.images || []).map((image6) => ({
-      ...image6,
-      image_id: image6.image?.id ?? null,
-      image_extension: image6.image?.extension ?? null
+    const revisionVehicle = { ...vehicle, images: (vehicle.images || []).map((image7) => ({
+      ...image7,
+      image_id: image7.image?.id ?? null,
+      image_extension: image7.image?.extension ?? null
     })) };
     assertPublishableInventory({ ...vehicle.inventoryStock, vehicle: revisionVehicle });
   } catch {
@@ -7799,9 +7906,9 @@ async function resolveAvailableVehicle(context, vehicleId, rooftopId) {
 }
 function formatCurrency(value) {
   const number = Number(value || 0);
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "USD",
+    currency: "ARS",
     maximumFractionDigits: 0
   }).format(number);
 }
@@ -9352,9 +9459,9 @@ async function payServiceInvoice(_root, { serviceOrderId }, context) {
 // features/keystone/lib/requestReceiptEmail.ts
 function formatRequestedTime(iso, timeZone) {
   const zone = timeZone || "UTC";
-  const text79 = new Intl.DateTimeFormat("en-US", { timeZone: zone, dateStyle: "full", timeStyle: "short" }).format(new Date(iso));
+  const text80 = new Intl.DateTimeFormat("en-US", { timeZone: zone, dateStyle: "full", timeStyle: "short" }).format(new Date(iso));
   const label2 = new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "short" }).formatToParts(new Date(iso)).find((part) => part.type === "timeZoneName")?.value || zone;
-  return `${text79} ${label2}`;
+  return `${text80} ${label2}`;
 }
 function publicBaseUrl(context) {
   const configured = process.env.SMTP_STORE_LINK;
@@ -9688,23 +9795,131 @@ async function submitTradeIn(_root, { data }, context) {
   return { ...outcome, photoToken };
 }
 
+// features/keystone/mutations/publicFinancingPlans.ts
+async function loadActiveFinancingPlans(context, now = /* @__PURE__ */ new Date()) {
+  const plans = await context.sudo().prisma.financingPlan.findMany({
+    where: {
+      active: true,
+      bank: { is: { active: true } },
+      AND: [
+        { OR: [{ validFrom: null }, { validFrom: { lte: now } }] },
+        { OR: [{ validUntil: null }, { validUntil: { gte: now } }] }
+      ]
+    },
+    include: { bank: { select: { name: true, providerKey: true } } },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    take: 50
+  });
+  return plans.map((plan) => ({
+    id: plan.id,
+    bankName: plan.bank?.name || "",
+    providerKey: plan.bank?.providerKey || "manual",
+    name: plan.name,
+    tnaBps: plan.tnaBps,
+    teaBps: plan.teaBps ?? null,
+    cftBps: plan.cftBps ?? null,
+    termsMonths: parseTerms(plan.termsMonths),
+    minAmountCents: plan.minAmountCents ?? null,
+    maxAmountCents: plan.maxAmountCents ?? null,
+    maxFinancedBps: plan.maxFinancedBps ?? null,
+    amortization: plan.amortization === "aleman" ? "aleman" : "frances",
+    validUntil: plan.validUntil ?? null,
+    extraCosts: plan.extraCosts || "",
+    requirements: plan.requirements || ""
+  })).filter((plan) => plan.tnaBps != null && plan.termsMonths.length > 0);
+}
+async function publicFinancingPlans(_root, _args, context) {
+  const plans = await loadActiveFinancingPlans(context);
+  return plans.map(({ providerKey: _providerKey, ...plan }) => plan);
+}
+
+// features/lib/progressiveOffer.ts
+function offerSchedule(offer) {
+  const start = new Date(offer.startsAt);
+  const steps = [];
+  const stepMs = Math.max(1, offer.stepMinutes) * 6e4;
+  const step = Math.max(0, offer.stepCents);
+  let price = offer.startPriceCents;
+  for (let i = 0; i < 500; i++) {
+    steps.push({ at: new Date(start.getTime() + i * stepMs), priceCents: price });
+    if (price <= offer.floorPriceCents || step === 0) break;
+    price = Math.max(offer.floorPriceCents, price - step);
+  }
+  return steps;
+}
+function offerState(offer, now = /* @__PURE__ */ new Date()) {
+  if (offer.status === "sold") return { phase: "sold", priceCents: null };
+  if (offer.status === "cancelled") return { phase: "cancelled", priceCents: null };
+  const steps = offerSchedule(offer);
+  if (now < steps[0].at) return { phase: "upcoming", priceCents: steps[0].priceCents, startsAt: steps[0].at };
+  let index = 0;
+  while (index + 1 < steps.length && steps[index + 1].at <= now) index++;
+  const current = steps[index];
+  const next = steps[index + 1] ?? null;
+  if (!next) return { phase: "final", priceCents: current.priceCents };
+  return { phase: "live", priceCents: current.priceCents, nextDropAt: next.at, nextPriceCents: next.priceCents };
+}
+
+// features/keystone/mutations/publicProgressiveOffers.ts
+async function loadPublicProgressiveOffers(context, now = /* @__PURE__ */ new Date()) {
+  const since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1e3);
+  const offers = await context.sudo().query.ProgressiveOffer.findMany({
+    where: { status: { not: { equals: "cancelled" } } },
+    orderBy: [{ startsAt: "desc" }],
+    take: 30,
+    query: "id number title photoUrl photo { url } startsAt startPriceCents stepCents stepMinutes floorPriceCents status soldAt financing conditions includesTransfer noAppointment vehicle { id status }"
+  });
+  return offers.map((offer) => {
+    const state = offerState(offer, now);
+    return {
+      id: offer.id,
+      number: offer.number ?? null,
+      title: offer.title,
+      imageUrl: offer.photo?.url || offer.photoUrl || null,
+      vehicleId: offer.vehicle?.id || null,
+      startsAt: offer.startsAt,
+      startPriceCents: offer.startPriceCents,
+      stepCents: offer.stepCents,
+      stepMinutes: offer.stepMinutes,
+      floorPriceCents: offer.floorPriceCents,
+      status: offer.status,
+      phase: state.phase,
+      financing: offer.financing || "",
+      conditions: offer.conditions || "",
+      includesTransfer: offer.includesTransfer !== "excluded",
+      walkIn: offer.noAppointment !== "appointment",
+      _endedAt: offer.soldAt ? new Date(offer.soldAt) : null
+    };
+  }).filter((offer) => offer.phase !== "sold" || offer._endedAt && offer._endedAt >= since || new Date(offer.startsAt) >= since).filter((offer) => offer.phase !== "final" || new Date(offer.startsAt) >= since).map(({ _endedAt, ...offer }) => offer);
+}
+async function publicProgressiveOffers(_root, _args, context) {
+  return loadPublicProgressiveOffers(context);
+}
+async function activeProgressiveOfferVehicleIds(context, now = /* @__PURE__ */ new Date()) {
+  const offers = await loadPublicProgressiveOffers(context, now);
+  return new Set(offers.filter((o) => (o.phase === "upcoming" || o.phase === "live") && o.vehicleId).map((o) => o.vehicleId));
+}
+
 // features/keystone/mutations/financingPrivacy.ts
 function buildFinancingLeadContent(input2) {
-  const requestedAmount = input2.requestedAmount == null ? "Requested amount: Not provided (no calculator amount was recorded)." : `Requested amount: ${formatCurrency(input2.requestedAmount)}`;
-  const paymentEstimate = input2.monthlyPayment == null ? "Payment estimate: Not provided." : `Estimated payment: ${formatCurrency(input2.monthlyPayment)} / month for ${input2.loanTerm || "unknown"} months at ${input2.apr || "unknown"}% APR`;
+  const pct = (bps2) => bps2 == null ? "no informado" : `${(bps2 / 100).toLocaleString("es-AR")} %`;
+  const requestedAmount = input2.requestedAmount == null ? "Monto a financiar: no informado." : `Monto a financiar: ${formatCurrency(input2.requestedAmount)}`;
+  const paymentEstimate = input2.monthlyPayment == null ? "Cuota estimada: no calculada." : `Cuota estimada (simulaci\xF3n): ${formatCurrency(input2.monthlyPayment)} en ${input2.loanTerm || "?"} cuotas`;
+  const plan = input2.plan ? `Plan elegido: ${input2.plan.bankName} \u2014 ${input2.plan.name} (TNA ${pct(input2.plan.tnaBps)}, CFT ${pct(input2.plan.cftBps)}, sistema ${input2.plan.amortization === "aleman" ? "alem\xE1n" : "franc\xE9s"})` : "Plan: sin elegir (consulta general de financiaci\xF3n).";
   const notes = [
-    "Finance options inquiry submitted from storefront.",
-    `Selected vehicle: ${input2.vehicleSummary}`,
+    "Consulta de financiaci\xF3n enviada desde la web.",
+    `Veh\xEDculo: ${input2.vehicleSummary}`,
+    plan,
     requestedAmount,
     paymentEstimate,
-    `Planned down payment: ${formatCurrency(input2.downPayment)}`,
-    `Trade-in credit: ${formatCurrency(input2.tradeInValue)}`,
-    "Customer consented to contact about financing options. Eligibility details must be handled only through an approved restricted lender workflow; this CRM note is not a credit application or decision."
+    `Anticipo: ${formatCurrency(input2.downPayment)}`,
+    `Valor del usado entregado: ${formatCurrency(input2.tradeInValue)}`,
+    "El cliente acept\xF3 ser contactado. La simulaci\xF3n es estimativa; las condiciones finales dependen de la entidad y de la aprobaci\xF3n crediticia."
   ].join("\n");
   const taskDescription = [
-    `Review finance options inquiry. Selected vehicle: ${input2.vehicleSummary}.`,
-    input2.requestedAmount == null ? "Requested amount was not provided." : `Requested amount: ${formatCurrency(input2.requestedAmount)}.`,
-    "Use an approved restricted lender workflow for any eligibility or credit data."
+    `Revisar consulta de financiaci\xF3n. Veh\xEDculo: ${input2.vehicleSummary}.`,
+    input2.plan ? `Plan: ${input2.plan.bankName} \u2014 ${input2.plan.name}.` : "Sin plan elegido.",
+    input2.requestedAmount == null ? "Monto no informado." : `Monto: ${formatCurrency(input2.requestedAmount)}.`
   ].join(" ");
   return { notes, taskDescription };
 }
@@ -9730,35 +9945,46 @@ function dollarsToCents(value, label2, required11 = false) {
 }
 
 // features/keystone/mutations/submitFinancing.ts
-var LOAN_TERMS = /* @__PURE__ */ new Set([36, 48, 60, 72, 84]);
+var LEGACY_LOAN_TERMS = /* @__PURE__ */ new Set([12, 18, 24, 36, 48, 60, 72, 84]);
+var MAX_AMOUNT = 1e11;
 function budgetRange(amount) {
-  if (amount < 2e4) return "under-20k";
-  if (amount < 3e4) return "20-30k";
-  if (amount < 4e4) return "30-40k";
-  if (amount < 5e4) return "40-50k";
-  if (amount < 75e3) return "50-75k";
-  if (amount < 1e5) return "75-100k";
+  if (amount < 2e7) return "under-20k";
+  if (amount < 1e8) return "20-30k";
   return "over-100k";
 }
 async function submitFinancing(_root, { data }, context) {
-  const fullName = requiredText(data.fullName, "Full name", 200);
+  const fullName = requiredText(data.fullName, "Nombre completo", 200);
   const email = validEmail(data.email);
   const phone = validPhone(data.phone);
-  const employmentStatus = requiredText(data.employmentStatus, "Employment status", 100);
-  const creditTier = requiredText(data.creditTier, "Credit range", 100);
-  const annualIncome = finiteNumber(data.annualIncome, "Annual income", { min: 1, max: 1e8 });
-  const requestedAmount = data.requestedAmount == null ? null : finiteNumber(data.requestedAmount, "Requested amount", { min: 0, max: 1e7 });
-  const monthlyPayment = data.monthlyPayment == null ? null : finiteNumber(data.monthlyPayment, "Monthly payment", { min: 0, max: 1e6 });
-  const downPayment = finiteNumber(data.downPayment || 0, "Down payment", { min: 0, max: 1e7 });
-  const tradeInValue = finiteNumber(data.tradeInValue || 0, "Trade-in value", { min: 0, max: 1e7 });
-  const apr = finiteNumber(data.apr || 0, "APR", { min: 0, max: 40 });
-  const loanTerm = finiteNumber(data.loanTerm || 0, "Loan term", { min: 0, max: 120, integer: true });
-  if (loanTerm && !LOAN_TERMS.has(loanTerm)) throw new SubmissionError("Loan term is unsupported.");
+  const employmentStatus = requiredText(data.employmentStatus, "Situaci\xF3n laboral", 100);
+  const creditTier = requiredText(data.creditTier, "Situaci\xF3n crediticia", 100);
+  const annualIncome = finiteNumber(data.annualIncome, "Ingresos", { min: 1, max: MAX_AMOUNT });
+  let requestedAmount = data.requestedAmount == null ? null : finiteNumber(data.requestedAmount, "Monto a financiar", { min: 0, max: MAX_AMOUNT });
+  let monthlyPayment = data.monthlyPayment == null ? null : finiteNumber(data.monthlyPayment, "Cuota", { min: 0, max: MAX_AMOUNT });
+  const downPayment = finiteNumber(data.downPayment || 0, "Anticipo", { min: 0, max: MAX_AMOUNT });
+  const tradeInValue = finiteNumber(data.tradeInValue || 0, "Valor del usado", { min: 0, max: MAX_AMOUNT });
+  let apr = finiteNumber(data.apr || 0, "Tasa", { min: 0, max: 1e3 });
+  const loanTerm = finiteNumber(data.loanTerm || 0, "Plazo", { min: 0, max: 120, integer: true });
   if (data.consent !== true) {
-    throw new SubmissionError("Contact consent is required.");
+    throw new SubmissionError("Ten\xE9s que aceptar que te contactemos.");
   }
   if (data.privacyAcknowledged !== true) {
-    throw new SubmissionError("Privacy acknowledgement is required.");
+    throw new SubmissionError("Ten\xE9s que aceptar el aviso de privacidad.");
+  }
+  const financingPlanId = data.financingPlanId ? String(data.financingPlanId) : "";
+  let plan = null;
+  if (financingPlanId) {
+    plan = (await loadActiveFinancingPlans(context)).find((item) => item.id === financingPlanId) || null;
+    if (!plan) throw new SubmissionError("El plan elegido ya no est\xE1 vigente. Volv\xE9 a simular.");
+    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError("Eleg\xED un plazo disponible para el plan.");
+    const price = finiteNumber(data.vehiclePrice, "Precio del veh\xEDculo", { min: 1, max: MAX_AMOUNT });
+    const result2 = simulate(plan, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm });
+    if (!result2.ok) throw new SubmissionError(result2.reason);
+    requestedAmount = result2.financedCents / 100;
+    monthlyPayment = result2.firstInstallmentCents / 100;
+    apr = plan.tnaBps / 100;
+  } else if (loanTerm && !LEGACY_LOAN_TERMS.has(loanTerm)) {
+    throw new SubmissionError("El plazo elegido no es v\xE1lido.");
   }
   const privacyAcknowledged = true;
   const idempotencyKey6 = publicSubmissionIdempotencyKey(data.idempotencyKey);
@@ -9782,6 +10008,7 @@ async function submitFinancing(_root, { data }, context) {
       tradeInValue,
       apr,
       loanTerm,
+      financingPlanId: financingPlanId || null,
       vehicleId: data.vehicleId || null,
       consent: true,
       privacyAcknowledged
@@ -9790,6 +10017,12 @@ async function submitFinancing(_root, { data }, context) {
     aggregateId: (result2) => String(result2.applicationId),
     handler: async (transactionContext, { rooftopId }) => {
       const vehicle = await resolveAvailableVehicle(transactionContext, data.vehicleId, rooftopId);
+      if (plan && vehicle && Number(vehicle.priceCents) > 0) {
+        const result2 = simulate(plan, { priceCents: Math.round(Number(vehicle.priceCents)), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm });
+        if (!result2.ok) throw new SubmissionError(result2.reason);
+        requestedAmount = result2.financedCents / 100;
+        monthlyPayment = result2.firstInstallmentCents / 100;
+      }
       const sudo = transactionContext.sudo();
       const existing = await sudo.query.FinancingApplication.findMany({
         where: { idempotencyKey: { equals: idempotencyKey6 } },
@@ -9827,7 +10060,7 @@ async function submitFinancing(_root, { data }, context) {
       const annualIncomeCents = dollarsToCents(annualIncome, "Annual income", true);
       const aprBasisPoints = Math.round(apr * 100);
       const rooftop = { connect: { id: rooftopId } };
-      const vehicleSummary = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "No vehicle selected";
+      const vehicleSummary = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "Sin veh\xEDculo elegido";
       const { notes, taskDescription } = buildFinancingLeadContent({
         vehicleSummary,
         requestedAmount,
@@ -9835,7 +10068,8 @@ async function submitFinancing(_root, { data }, context) {
         downPayment,
         tradeInValue,
         apr,
-        loanTerm
+        loanTerm,
+        plan: plan ? { bankName: plan.bankName, name: plan.name, tnaBps: plan.tnaBps, cftBps: plan.cftBps, amortization: plan.amortization } : null
       });
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
@@ -9861,7 +10095,7 @@ async function submitFinancing(_root, { data }, context) {
           tasks: {
             create: [{
               rooftop,
-              title: `F&I follow-up: ${fullName}`,
+              title: `Seguimiento de financiaci\xF3n: ${fullName}`,
               description: taskDescription,
               priority: "high",
               completed: false,
@@ -9890,6 +10124,7 @@ async function submitFinancing(_root, { data }, context) {
           aprBasisPoints,
           loanTermMonths: loanTerm || null
         },
+        plan: plan ? { id: plan.id, bankName: plan.bankName, name: plan.name, tnaBps: plan.tnaBps, teaBps: plan.teaBps, cftBps: plan.cftBps, amortization: plan.amortization, estimateOnly: true } : null,
         vehicle: vehicle ? {
           id: vehicle.id,
           vin: vehicle.vin,
@@ -10123,7 +10358,7 @@ function publicSubmissionResolver(service) {
 }
 
 // features/keystone/mutations/storefrontProfile.ts
-function text73(value) {
+function text74(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 function phoneHref(phone) {
@@ -10143,33 +10378,33 @@ async function storefrontProfile(_root, { rooftopSlug }, context) {
       homepageTitle homepageDescription logoIcon logoColor
     `
   });
-  const fullName = text73(profile?.name);
-  const shortName = text73(profile?.shortName);
-  const phone = text73(profile?.phone);
-  const locality = [profile?.city, profile?.state, profile?.postalCode].map(text73).filter(Boolean).join(", ");
+  const fullName = text74(profile?.name);
+  const shortName = text74(profile?.shortName);
+  const phone = text74(profile?.phone);
+  const locality = [profile?.city, profile?.state, profile?.postalCode].map(text74).filter(Boolean).join(", ");
   return {
     configured: Boolean(profile && fullName && shortName),
     rooftopId,
     rooftopSlug: publicSlug,
     fullName,
     shortName,
-    salesEmail: text73(profile?.salesEmail),
-    serviceEmail: text73(profile?.serviceEmail),
+    salesEmail: text74(profile?.salesEmail),
+    serviceEmail: text74(profile?.serviceEmail),
     phoneDisplay: phone,
     phoneHref: phoneHref(phone),
-    whatsappNumber: text73(profile?.whatsappNumber).replace(/\D/g, ""),
-    addressLine1: text73(profile?.addressLine1),
-    addressLine2: [text73(profile?.addressLine2), locality].filter(Boolean).join(" \xB7 "),
-    hoursMonFri: text73(profile?.hoursMonFri),
-    hoursSaturday: text73(profile?.hoursSaturday),
-    hoursSunday: text73(profile?.hoursSunday),
-    websiteUrl: text73(profile?.websiteUrl),
-    currencyCode: text73(profile?.currencyCode).toUpperCase(),
-    homepageTitle: text73(profile?.homepageTitle),
-    homepageDescription: text73(profile?.homepageDescription),
-    logoIcon: sanitizeStoreLogoSvg(text73(profile?.logoIcon)),
+    whatsappNumber: text74(profile?.whatsappNumber).replace(/\D/g, ""),
+    addressLine1: text74(profile?.addressLine1),
+    addressLine2: [text74(profile?.addressLine2), locality].filter(Boolean).join(" \xB7 "),
+    hoursMonFri: text74(profile?.hoursMonFri),
+    hoursSaturday: text74(profile?.hoursSaturday),
+    hoursSunday: text74(profile?.hoursSunday),
+    websiteUrl: text74(profile?.websiteUrl),
+    currencyCode: text74(profile?.currencyCode).toUpperCase(),
+    homepageTitle: text74(profile?.homepageTitle),
+    homepageDescription: text74(profile?.homepageDescription),
+    logoIcon: sanitizeStoreLogoSvg(text74(profile?.logoIcon)),
     logoColor: normalizeStoreLogoColor(profile?.logoColor),
-    timezone: text73(rooftop?.timezone)
+    timezone: text74(rooftop?.timezone)
   };
 }
 
@@ -10216,36 +10451,36 @@ function financingProviderKeys() {
 }
 
 // features/keystone/lifecycle/financePrerequisites.ts
-var text74 = import_zod.z.string().trim().min(1).max(1e3);
+var text75 = import_zod.z.string().trim().min(1).max(1e3);
 var date = import_zod.z.date().refine((value) => Number.isFinite(value.getTime()));
-var parent = import_zod.z.object({ id: text74, dealId: text74, rooftopId: text74, updatedAt: date });
-var documents = import_zod.z.array(import_zod.z.object({ code: text74, status: text74 })).max(100);
+var parent = import_zod.z.object({ id: text75, dealId: text75, rooftopId: text75, updatedAt: date });
+var documents = import_zod.z.array(import_zod.z.object({ code: text75, status: text75 })).max(100);
 var contractSchema = parent.extend({
   status: import_zod.z.literal("signed"),
-  providerKey: text74,
-  envelopeReference: text74,
-  requiredDocuments: import_zod.z.array(text74).min(1).max(100),
+  providerKey: text75,
+  envelopeReference: text75,
+  requiredDocuments: import_zod.z.array(text75).min(1).max(100),
   documentChecklist: documents,
   signedAt: date,
-  immutableStatusEvidence: import_zod.z.object({ evidenceReference: text74 }).passthrough()
+  immutableStatusEvidence: import_zod.z.object({ evidenceReference: text75 }).passthrough()
 });
 var menuSchema = parent.extend({
   version: import_zod.z.number().int().positive(),
   status: import_zod.z.enum(["accepted", "declined"]),
-  optionsSnapshot: import_zod.z.array(import_zod.z.object({ code: text74 }).passthrough()).max(100),
-  selectedProductCodes: import_zod.z.array(text74).max(100),
-  declinedProductCodes: import_zod.z.array(text74).max(100),
-  disclosureAcknowledgment: text74,
+  optionsSnapshot: import_zod.z.array(import_zod.z.object({ code: text75 }).passthrough()).max(100),
+  selectedProductCodes: import_zod.z.array(text75).max(100),
+  declinedProductCodes: import_zod.z.array(text75).max(100),
+  disclosureAcknowledgment: text75,
   decidedAt: date
 });
 var checkSchema = parent.extend({
   checkType: import_zod.z.enum(["identity", "ofac", "red-flag", "privacy"]),
-  providerKey: text74,
+  providerKey: text75,
   status: import_zod.z.literal("completed"),
   requestedAt: date,
   completedAt: date,
   requestSnapshot: import_zod.z.unknown(),
-  resultSnapshot: import_zod.z.object({ evidenceReference: text74 }).passthrough()
+  resultSnapshot: import_zod.z.object({ evidenceReference: text75 }).passthrough()
 });
 var COMPLIANCE_CHECK_TYPES = ["identity", "ofac", "red-flag", "privacy"];
 var COMPLIANCE_CHECK_LABELS = { identity: "identity", ofac: "OFAC", "red-flag": "red-flag", privacy: "privacy notice" };
@@ -10335,17 +10570,17 @@ async function readCurrentPrerequisites(tx, deal) {
   const snapshot2 = { version: 1, contract: revision(inspection.contract), menu: { ...revision(inspection.menu), version: inspection.menu.version }, compliance };
   return { snapshot: snapshot2, digest: domainEventRequestHash(snapshot2) };
 }
-var reviewSchema = import_zod.z.object({ eventKey: text74, actorId: text74, afterSnapshot: import_zod.z.object({
+var reviewSchema = import_zod.z.object({ eventKey: text75, actorId: text75, afterSnapshot: import_zod.z.object({
   version: import_zod.z.literal(1),
   purpose: import_zod.z.literal("funding-delivery-prerequisite-review"),
-  actorId: text74,
+  actorId: text75,
   binding: import_zod.z.unknown(),
-  digest: text74,
+  digest: text75,
   snapshot: import_zod.z.unknown(),
-  policyReference: text74,
-  policyVersion: text74,
-  reviewerAuthorityReference: text74,
-  reviewReference: text74
+  policyReference: text75,
+  policyVersion: text75,
+  reviewerAuthorityReference: text75,
+  reviewReference: text75
 }) });
 async function assertReviewedPrerequisites(tx, deal, expected) {
   const binding = await fundingBinding(tx, deal);
@@ -12082,14 +12317,14 @@ var SERVICE_LINKED_TYPES = /* @__PURE__ */ new Set(["issue", "return", "commit",
 var PARTS_MOVEMENT_TYPES = ["receipt", "issue", "return", "adjustment", "count", "commit", "release", "po-order", "po-cancel"];
 var OPEN_ORDER_STATUSES = ["estimate", "approved", "in-progress"];
 function required3(value, label2, max = 1e3) {
-  const text79 = String(value ?? "").trim();
-  if (!text79 || text79.length > max) throw new Error(`${label2} is required`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (!text80 || text80.length > max) throw new Error(`${label2} is required`);
+  return text80;
 }
 function optionalText2(value, label2, max = 200) {
-  const text79 = String(value ?? "").trim();
-  if (text79.length > max) throw new Error(`${label2} is too long`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (text80.length > max) throw new Error(`${label2} is too long`);
+  return text80;
 }
 var idempotency = (value) => required3(value, "Idempotency key", 200);
 function assertServicePermission(context) {
@@ -12714,7 +12949,7 @@ function optionalLegacyVin(value) {
   if (!/^[A-Z0-9]{11,17}$/.test(vin)) throw new Error("Legacy VIN must be an 11\u201317 character identifier");
   return vin;
 }
-function integer39(value, label2, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
+function integer40(value, label2, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   const result2 = Number(value);
   if (!Number.isInteger(result2) || result2 < minimum || result2 > maximum) {
     throw new Error(`${label2} must be an integer between ${minimum} and ${maximum}`);
@@ -12732,8 +12967,8 @@ function normalizeIntake(input2) {
   const vin = normalizeVin(input2.vin);
   const legacyVin = optionalLegacyVin(input2.legacyVin);
   const stockNumber = normalizeStockNumber(input2.stockNumber);
-  const year = integer39(input2.year, "Model year", 1900, 2200);
-  const mileage = input2.mileage == null ? null : integer39(input2.mileage, "Mileage");
+  const year = integer40(input2.year, "Model year", 1900, 2200);
+  const mileage = input2.mileage == null ? null : integer40(input2.mileage, "Mileage");
   const purchasePriceCents = nonNegativeCents(input2.purchasePriceCents, "Purchase price");
   const listPriceCents = nonNegativeCents(input2.listPriceCents, "List price");
   const priceCents = nonNegativeCents(input2.priceCents, "Retail price");
@@ -12946,7 +13181,7 @@ async function intakeInventoryVehicleInTransaction(transactionContext, rawInput,
   const vehicle = existingVehicle ? await prisma.vehicle.update({ where: { id: existingVehicle.id }, data: vehicleValues, select: { id: true } }) : await prisma.vehicle.create({ data: vehicleValues, select: { id: true } });
   let imageCreated = false;
   if (input2.imagePath) {
-    const existingImage = existingVehicle?.images.find((image6) => image6.imagePath === input2.imagePath);
+    const existingImage = existingVehicle?.images.find((image7) => image7.imagePath === input2.imagePath);
     const imageValues = {
       rooftopId: input2.rooftopId,
       vehicleId: vehicle.id,
@@ -13186,11 +13421,11 @@ var PAYMENT_FUNCTION_FIELDS = [
   "generatePaymentLinkFunction",
   "handleWebhookFunction"
 ];
-function text75(value, fallback = "", max = 500) {
+function text76(value, fallback = "", max = 500) {
   return String(value ?? fallback).trim().slice(0, max);
 }
 function required4(value, label2, max = 200) {
-  const normalized = text75(value, "", max);
+  const normalized = text76(value, "", max);
   if (!normalized) throw new Error(`${label2} is required`);
   return normalized;
 }
@@ -13200,12 +13435,12 @@ function cents(value, label2) {
   return amount;
 }
 function slug(value, fallback, label2) {
-  const normalized = text75(value, fallback, 120).toLowerCase();
+  const normalized = text76(value, fallback, 120).toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalized)) throw new Error(`${label2} must use lowercase letters, numbers and hyphens`);
   return normalized;
 }
 function optionalEmail(value, label2) {
-  const email = text75(value, "", 320).toLowerCase();
+  const email = text76(value, "", 320).toLowerCase();
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(`${label2} is invalid`);
   return email;
 }
@@ -13248,30 +13483,30 @@ var ROLE_PERMISSION_KEYS = [
 ];
 function profileData(input2) {
   const name = required4(input2.name, "Dealership name");
-  const currencyCode = text75(input2.currencyCode, "USD", 3).toUpperCase();
+  const currencyCode = text76(input2.currencyCode, "USD", 3).toUpperCase();
   if (currencyCode !== "USD") throw new Error("Currency must be USD");
-  const websiteUrl = text75(input2.websiteUrl, "", 500);
+  const websiteUrl = text76(input2.websiteUrl, "", 500);
   if (websiteUrl && !/^https?:\/\//.test(websiteUrl)) throw new Error("Website URL must start with http:// or https://");
   return {
     name,
-    shortName: text75(input2.shortName, name, 200),
+    shortName: text76(input2.shortName, name, 200),
     salesEmail: optionalEmail(input2.salesEmail, "Sales email"),
     serviceEmail: optionalEmail(input2.serviceEmail, "Service email"),
-    phone: text75(input2.phone, "", 50),
-    addressLine1: text75(input2.addressLine1, "", 200),
-    addressLine2: text75(input2.addressLine2, "", 200),
-    city: text75(input2.city, "", 100),
-    state: text75(input2.state, "", 100),
-    postalCode: text75(input2.postalCode, "", 30),
-    hoursMonFri: text75(input2.hoursMonFri, "", 100),
-    hoursSaturday: text75(input2.hoursSaturday, "", 100),
-    hoursSunday: text75(input2.hoursSunday, "", 100),
+    phone: text76(input2.phone, "", 50),
+    addressLine1: text76(input2.addressLine1, "", 200),
+    addressLine2: text76(input2.addressLine2, "", 200),
+    city: text76(input2.city, "", 100),
+    state: text76(input2.state, "", 100),
+    postalCode: text76(input2.postalCode, "", 30),
+    hoursMonFri: text76(input2.hoursMonFri, "", 100),
+    hoursSaturday: text76(input2.hoursSaturday, "", 100),
+    hoursSunday: text76(input2.hoursSunday, "", 100),
     websiteUrl,
     currencyCode,
-    homepageTitle: text75(input2.homepageTitle, "", 200),
-    homepageDescription: text75(input2.homepageDescription, "", 1e3),
-    logoIcon: text75(input2.logoIcon, "", 2e4) || DEFAULT_STORE_LOGO_ICON,
-    logoColor: normalizeStoreLogoColor(text75(input2.logoColor, "", 100) || DEFAULT_STORE_LOGO_COLOR)
+    homepageTitle: text76(input2.homepageTitle, "", 200),
+    homepageDescription: text76(input2.homepageDescription, "", 1e3),
+    logoIcon: text76(input2.logoIcon, "", 2e4) || DEFAULT_STORE_LOGO_ICON,
+    logoColor: normalizeStoreLogoColor(text76(input2.logoColor, "", 100) || DEFAULT_STORE_LOGO_COLOR)
   };
 }
 async function ensureDealership(input2, context) {
@@ -13279,7 +13514,7 @@ async function ensureDealership(input2, context) {
   const profile = profileData(input2);
   const groupSlug = slug(input2.groupSlug, "sams-motor-company", "Dealer group slug");
   const rooftopSlug = slug(input2.rooftopSlug, "main", "Rooftop slug");
-  const rooftopCode = text75(input2.rooftopCode, "MAIN", 40).toUpperCase();
+  const rooftopCode = text76(input2.rooftopCode, "MAIN", 40).toUpperCase();
   if (!/^[A-Z0-9][A-Z0-9-]*$/.test(rooftopCode)) throw new Error("Rooftop code must use letters, numbers or hyphens");
   return context.transaction(async (tx) => {
     const sudo = tx.withSession(context.session).sudo();
@@ -13328,7 +13563,7 @@ async function ensureDealership(input2, context) {
         name: profile.name,
         publicSlug: rooftopSlug,
         status: "active",
-        timezone: text75(input2.timezone, "America/New_York", 100),
+        timezone: text76(input2.timezone, "America/New_York", 100),
         currencyCode: profile.currencyCode,
         dealerGroup: { connect: { id: dealerGroupId } }
       }
@@ -13387,7 +13622,7 @@ var BODY_STYLES = /* @__PURE__ */ new Set(["sedan", "suv", "truck", "coupe", "ha
 async function ensureModel(input2, context) {
   const name = required4(input2.name, "Model name", 100);
   const makeName = required4(input2.make, `Make for ${name}`, 100);
-  const bodyStyle = text75(input2.bodyStyle, "", 30);
+  const bodyStyle = text76(input2.bodyStyle, "", 30);
   if (bodyStyle && !BODY_STYLES.has(bodyStyle)) throw new Error(`Unsupported body style for ${name}`);
   const baseYear = input2.baseYear == null ? null : Number(input2.baseYear);
   if (baseYear !== null && (!Number.isInteger(baseYear) || baseYear < 1886 || baseYear > 2200)) throw new Error(`Invalid base year for ${name}`);
@@ -13407,33 +13642,33 @@ async function ensureVehicle(input2, context) {
   if (!permissions.canManageInventory({ session: context.session })) throw new Error("Inventory management permission is required");
   const rooftopId = await activeRooftopId(input2, context);
   const vin = required4(input2.vin, "VIN", 17).toUpperCase();
-  const name = `${text75(input2.year)} ${text75(input2.make)} ${text75(input2.model)}`.trim();
-  const features = Array.isArray(input2.features) ? input2.features.slice(0, 100).map((value) => text75(value, "", 200)) : [];
+  const name = `${text76(input2.year)} ${text76(input2.make)} ${text76(input2.model)}`.trim();
+  const features = Array.isArray(input2.features) ? input2.features.slice(0, 100).map((value) => text76(value, "", 200)) : [];
   const intake = await context.transaction(
     (tx) => intakeInventoryVehicleInTransaction(tx, {
       rooftopId,
       idempotencyKey: `onboarding:${vin}`,
       reason: "Onboarding",
-      acquisitionSource: text75(input2.acquisitionSource, "dealer-transfer", 40),
+      acquisitionSource: text76(input2.acquisitionSource, "dealer-transfer", 40),
       sourceReference: "onboarding",
       vin,
       stockNumber: required4(input2.stockNumber, `Stock number for ${vin}`, 100),
       year: Number(input2.year),
       make: required4(input2.make, `Make for ${vin}`, 100),
       model: required4(input2.model, `Model for ${vin}`, 100),
-      trim: text75(input2.trim, "", 100),
-      exteriorColor: text75(input2.exteriorColor, "", 100),
-      interiorColor: text75(input2.interiorColor, "", 100),
+      trim: text76(input2.trim, "", 100),
+      exteriorColor: text76(input2.exteriorColor, "", 100),
+      interiorColor: text76(input2.interiorColor, "", 100),
       mileage: Number(input2.mileage || 0),
       purchasePriceCents: cents(input2.purchasePriceCents, `Purchase price for ${vin}`),
       listPriceCents: cents(input2.listPriceCents, `List price for ${vin}`),
       priceCents: cents(input2.priceCents, `Price for ${vin}`),
-      condition: text75(input2.condition, "used", 30),
-      description: text75(input2.description, "", 4e3),
+      condition: text76(input2.condition, "used", 30),
+      description: text76(input2.description, "", 4e3),
       features,
-      imagePath: text75(input2.imagePath, "", 500),
-      locationCode: text75(input2.locationCode, "FRONTLINE", 80),
-      locationLabel: text75(input2.locationLabel, "Front line", 200)
+      imagePath: text76(input2.imagePath, "", 500),
+      locationCode: text76(input2.locationCode, "FRONTLINE", 80),
+      locationLabel: text76(input2.locationLabel, "Front line", 200)
     }, {
       actorId: context.session.itemId,
       mode: "onboarding-ready",
@@ -13451,7 +13686,7 @@ async function ensureServicePackage(input2, context) {
     take: 1
   });
   if (existing[0]) return { id: existing[0].id, name, reused: true };
-  const description = text75(input2.description, "", 2e3);
+  const description = text76(input2.description, "", 2e3);
   const estimatedDuration = Number(input2.estimatedDuration || 0);
   if (!Number.isInteger(estimatedDuration) || estimatedDuration < 0) throw new Error(`Invalid duration for ${name}`);
   const service = await context.db.ServicePackage.createOne({
@@ -13473,11 +13708,11 @@ async function ensurePart(input2, context) {
     rooftopId,
     partNumber,
     description: required4(input2.description, `Description for ${partNumber}`),
-    binLocation: text75(input2.binLocation, "", 100),
+    binLocation: text76(input2.binLocation, "", 100),
     minimumQuantity: Number(input2.minimumQuantity || 0),
     costCents: cents(input2.costCents, `Cost for ${partNumber}`),
     priceCents: cents(input2.priceCents, `Price for ${partNumber}`),
-    supplier: text75(input2.supplier, "", 200)
+    supplier: text76(input2.supplier, "", 200)
   };
   const part = await configurePart(null, { data: { ...config2, idempotencyKey: setupKey(rooftopId, "part", partNumber, config2) } }, context);
   const quantity = Number(input2.quantity || 0);
@@ -13504,7 +13739,7 @@ async function ensureFinanceProduct(input2, context) {
     code,
     name: required4(input2.name, `Name for ${code}`),
     category: required4(input2.category, `Category for ${code}`, 50),
-    providerKey: text75(input2.providerKey, "operator-recorded", 80),
+    providerKey: text76(input2.providerKey, "operator-recorded", 80),
     retailPriceCents: cents(input2.retailPriceCents, `Retail price for ${code}`),
     costCents: cents(input2.costCents, `Cost for ${code}`),
     active: input2.active !== false
@@ -13517,7 +13752,7 @@ async function ensureLeadRoutingRule(input2, context) {
   const config2 = {
     rooftopId,
     name: required4(input2.name, "Rule name"),
-    source: text75(input2.source, "any", 40),
+    source: text76(input2.source, "any", 40),
     assigneeId: String(context.session.itemId),
     priority: Number(input2.priority ?? 100),
     firstResponseMinutes: Number(input2.firstResponseMinutes ?? 30),
@@ -13536,7 +13771,7 @@ async function ensureAccountingMapping(input2, context) {
     sourceCode: required4(input2.sourceCode, "Source code", 80),
     debitAccount: required4(input2.debitAccount, "Debit account", 100),
     creditAccount: required4(input2.creditAccount, "Credit account", 100),
-    providerKey: text75(input2.providerKey, "operator-recorded", 80)
+    providerKey: text76(input2.providerKey, "operator-recorded", 80)
   };
   const mapping = await configureAccountingMapping(null, {
     data: { ...config2, idempotencyKey: setupKey(rooftopId, "accounting", `${config2.sourceType}-${config2.sourceCode}`, config2) }
@@ -13548,7 +13783,7 @@ async function ensurePaymentProvider(input2, context) {
   const code = required4(input2.code, `Code for ${name}`, 100);
   if (!/^pp_[A-Za-z0-9_-]+$/.test(code)) throw new Error(`Invalid payment provider code for ${name}`);
   const functions = Object.fromEntries(PAYMENT_FUNCTION_FIELDS.map((field) => {
-    const adapter = text75(input2[field], "", 50);
+    const adapter = text76(input2[field], "", 50);
     if (!PAYMENT_ADAPTERS.has(adapter)) throw new Error(`${name} must use a registered payment adapter`);
     return [field, adapter];
   }));
@@ -13563,7 +13798,7 @@ async function ensurePaymentProvider(input2, context) {
 async function ensureRole(input2, context) {
   if (!permissions.canManageRoles({ session: context.session })) throw new Error("Role management permission is required");
   const name = required4(input2.role, "Role name");
-  const code = text75(input2.code, name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), 100);
+  const code = text76(input2.code, name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), 100);
   const granted = rolePermissions(code);
   const data = {
     name,
@@ -14035,10 +14270,10 @@ async function changeDealerMembership(_root, { data }, context) {
 var RETENTION_CATEGORIES = ["customer-intake", "report-export", "provider-payload", "audit-evidence"];
 var MAX_RETENTION_DAYS = 36500;
 function requiredText2(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (!text79) throw new Error(`${label2} is required`);
-  if (text79.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (!text80) throw new Error(`${label2} is required`);
+  if (text80.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
+  return text80;
 }
 function parseExpected(value) {
   if (value == null || value === "") return null;
@@ -15188,10 +15423,10 @@ async function inventoryWorkspace(_root, args, context) {
     }
   }) : [];
   const byId = new Map(rows.map((row) => [row.id, row]));
-  const photoUrls = new Map(await Promise.all(rows.flatMap((row) => (row.vehicle?.images || []).map(async (image6) => {
-    if (image6.imagePath) return [image6.id, image6.imagePath];
-    if (!image6.image_id || !image6.image_extension) return [image6.id, null];
-    return [image6.id, await context.images("my_images").getUrl(image6.image_id, image6.image_extension).catch(() => null)];
+  const photoUrls = new Map(await Promise.all(rows.flatMap((row) => (row.vehicle?.images || []).map(async (image7) => {
+    if (image7.imagePath) return [image7.id, image7.imagePath];
+    if (!image7.image_id || !image7.image_extension) return [image7.id, null];
+    return [image7.id, await context.images("my_images").getUrl(image7.image_id, image7.image_extension).catch(() => null)];
   }))));
   const publications = ids.length ? await context.sudo().prisma.inventoryStock.findMany({
     where: { id: { in: ids } },
@@ -15207,7 +15442,7 @@ async function inventoryWorkspace(_root, args, context) {
       id: row.id,
       rooftop: row.rooftop,
       vehicle: (() => {
-        const images = row.vehicle.images.map((image6) => ({ id: image6.id, url: photoUrls.get(image6.id) ?? null, isPrimary: image6.isPrimary, sortOrder: image6.sortOrder ?? 0, uploaded: Boolean(image6.image_id) })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
+        const images = row.vehicle.images.map((image7) => ({ id: image7.id, url: photoUrls.get(image7.id) ?? null, isPrimary: image7.isPrimary, sortOrder: image7.sortOrder ?? 0, uploaded: Boolean(image7.image_id) })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
         return { ...row.vehicle, primaryImagePath: images[0]?.url ?? null, images };
       })(),
       acquisition: row.acquisition ?? null,
@@ -15270,7 +15505,7 @@ function assertActiveInventory(status) {
 }
 
 // features/keystone/mutations/inventoryStockCommands.ts
-function text76(value, label2, max = 500) {
+function text77(value, label2, max = 500) {
   const result2 = String(value || "").trim();
   if (!result2 || result2.length > max) throw new Error(`${label2} is required and must be at most ${max} characters`);
   return result2;
@@ -15336,10 +15571,10 @@ async function establishInventoryStockCommand(_root, { data }, context) {
   await assertSessionRooftopPermission(context, rooftopId, "canManageInventory");
   const stockNumber = normalizeStockNumber(data.stockNumber || vehicle.stockNumber);
   const stockKey = inventoryStockKey(rooftopId, stockNumber);
-  const locationCode = text76(data.locationCode, "Location code", 80).toUpperCase();
+  const locationCode = text77(data.locationCode, "Location code", 80).toUpperCase();
   const locationLabel = String(data.locationLabel || "").trim().slice(0, 200);
   const idempotencyKey6 = commandKey3(data.idempotencyKey);
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const acquisitionId = data.acquisitionId ? String(data.acquisitionId) : vehicle.acquisition?.id ?? null;
   if (data.acquisitionId && acquisitionId !== vehicle.acquisition?.id) throw new Error("Acquisition must be attached to the same vehicle");
   const purchaseCostCents = nonNegativeCents(data.purchaseCostCents ?? vehicle.acquisition?.purchaseCents ?? 0, "Purchase cost");
@@ -15377,10 +15612,10 @@ async function receiveAcquisitionIntoStock(data, context) {
   await assertSessionRooftopPermission(context, rooftopId, "canManageInventory");
   const stockNumber = normalizeStockNumber(data.stockNumber);
   const stockKey = inventoryStockKey(rooftopId, stockNumber);
-  const locationCode = text76(data.locationCode, "Location code", 80).toUpperCase();
+  const locationCode = text77(data.locationCode, "Location code", 80).toUpperCase();
   const locationLabel = String(data.locationLabel || "").trim().slice(0, 200);
   const idempotencyKey6 = commandKey3(data.idempotencyKey);
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const condition = String(data.condition || "used").trim();
   if (!VEHICLE_CONDITIONS.includes(condition)) throw new Error("Condition must be new, used or certified");
   const trim = optionalText3(data.trim, "Trim", 100);
@@ -15444,9 +15679,9 @@ async function receiveAcquisitionIntoStock(data, context) {
 async function moveInventoryStockCommand(_root, { data }, context) {
   requireInventory(context);
   const stock = await accessibleStock(context, String(data.stockId || ""));
-  const locationCode = text76(data.locationCode, "Location code", 80).toUpperCase();
+  const locationCode = text77(data.locationCode, "Location code", 80).toUpperCase();
   const locationLabel = String(data.locationLabel || "").trim().slice(0, 200);
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt);
   const eventKey = `inventory-stock-move:${commandKey3(data.idempotencyKey)}`;
   const evidence = { stockId: stock.id, toLocationCode: locationCode, locationLabel, expectedUpdatedAt: expectedUpdatedAt.toISOString(), reason };
@@ -15467,7 +15702,7 @@ async function recordInventoryCostCommand(_root, { data }, context) {
   if (!["reconditioning", "transport", "auction-fee", "detail", "other"].includes(costType)) throw new Error("Unsupported inventory cost type");
   const amountCents = nonNegativeCents(data.amountCents, "Cost amount");
   if (amountCents === 0) throw new Error("Cost amount must be greater than zero");
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const eventKey = `inventory-stock-cost:${commandKey3(data.idempotencyKey)}`;
   const evidence = { stockId: stock.id, costType, amountCents, reference: String(data.reference || "").trim().slice(0, 200) || null, reason };
   const reused = await context.transaction(async (tx) => {
@@ -15486,7 +15721,7 @@ async function openInventoryReconWorkItemCommand(_root, { data }, context) {
   requireInventory(context);
   const stock = await accessibleStock(context, String(data.stockId || ""));
   assertActiveInventory(stock.vehicle?.status);
-  const title = text76(data.title, "Work item title", 200);
+  const title = text77(data.title, "Work item title", 200);
   const category = String(data.category || "");
   if (!["mechanical", "body", "detail", "tires", "inspection", "other"].includes(category)) throw new Error("Unsupported reconditioning category");
   const estimatedCostCents = data.estimatedCostCents == null ? null : nonNegativeCents(data.estimatedCostCents, "Estimated cost");
@@ -15498,7 +15733,7 @@ async function openInventoryReconWorkItemCommand(_root, { data }, context) {
   const idempotencyKey6 = commandKey3(data.idempotencyKey);
   const eventKey = `inventory-recon-create:${idempotencyKey6}`;
   const itemId = (0, import_node_crypto7.randomUUID)();
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const evidence = { stockId: stock.id, title, category, estimatedCostCents, vendorName, assignedToId, dueAt: dueAt?.toISOString() ?? null, reason };
   const resolvedId = await context.transaction(async (tx) => {
     await tx.prisma.$queryRaw`SELECT 1 AS "locked" FROM pg_advisory_xact_lock(hashtextextended(${`command:${eventKey}`}, 0))`;
@@ -15527,7 +15762,7 @@ async function transitionInventoryReconWorkItemCommand(_root, { data }, context)
   const actualCostCents = data.actualCostCents == null ? null : nonNegativeCents(data.actualCostCents, "Actual cost");
   if (toStatus === "completed" && actualCostCents == null) throw new Error("Completed work requires actual cost evidence");
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt);
-  const reason = text76(data.reason, "Audit reason");
+  const reason = text77(data.reason, "Audit reason");
   const eventKey = `inventory-recon-transition:${commandKey3(data.idempotencyKey)}`;
   const evidence = { workItemId: item.id, stockId: item.stock.id, toStatus, actualCostCents, expectedUpdatedAt: expectedUpdatedAt.toISOString(), reason };
   const priorEvent2 = await context.sudo().prisma.domainAuditEvent.findUnique({ where: { eventKey }, select: { id: true } });
@@ -15907,7 +16142,7 @@ async function addInventoryVehiclePhotoCommand(_root, { data }, context) {
       if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photo-added", reason, evidence)) return { id: stock.id, reused: true };
       const existing = await tx.prisma.vehicleImage.findMany({ where: { vehicleId: stock.vehicle.id }, select: { isPrimary: true, sortOrder: true } });
       if (existing.length >= MAX_PHOTOS_PER_UNIT) throw new Error(`A unit can have at most ${MAX_PHOTOS_PER_UNIT} photos`);
-      const sortOrder = existing.reduce((max, image6) => Math.max(max, image6.sortOrder ?? 0), -1) + 1;
+      const sortOrder = existing.reduce((max, image7) => Math.max(max, image7.sortOrder ?? 0), -1) + 1;
       const created = await tx.prisma.vehicleImage.create({
         data: {
           rooftopId: stock.rooftop.id,
@@ -15921,7 +16156,7 @@ async function addInventoryVehiclePhotoCommand(_root, { data }, context) {
           caption: `${stock.vehicle.year} ${stock.vehicle.make} ${stock.vehicle.model}`,
           category: "exterior",
           sortOrder,
-          isPrimary: !existing.some((image6) => image6.isPrimary)
+          isPrimary: !existing.some((image7) => image7.isPrimary)
         },
         select: { id: true }
       });
@@ -15949,7 +16184,7 @@ async function arrangeInventoryVehiclePhotosCommand(_root, { data }, context) {
     await lockInventoryStock(tx, stock.id);
     if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photos-arranged", reason, evidence)) return true;
     const current = await tx.prisma.vehicleImage.findMany({ where: { vehicleId: stock.vehicle.id }, select: { id: true, sortOrder: true, isPrimary: true } });
-    const currentIds = new Set(current.map((image6) => image6.id));
+    const currentIds = new Set(current.map((image7) => image7.id));
     if (current.length !== imageIds.length || imageIds.some((id) => !currentIds.has(id))) throw new Error("Photos changed; reload and try again");
     if (photoArrangementUnchanged(current, imageIds)) return false;
     await tx.prisma.vehicleImage.updateMany({ where: { vehicleId: stock.vehicle.id, isPrimary: true, id: { not: imageIds[0] } }, data: { isPrimary: false } });
@@ -15971,15 +16206,15 @@ async function removeInventoryVehiclePhotoCommand(_root, { data }, context) {
   const command = await context.transaction(async (tx) => {
     await lockInventoryStock(tx, stock.id);
     if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photo-removed", reason, evidence)) return { reused: true, stored: null };
-    const image6 = await tx.prisma.vehicleImage.findFirst({ where: { id: imageId, vehicleId: stock.vehicle.id }, select: { id: true, isPrimary: true, image_id: true, image_extension: true } });
-    if (!image6) throw new Error("Photo not found; reload and try again");
-    await tx.prisma.vehicleImage.delete({ where: { id: image6.id } });
-    if (image6.isPrimary) {
+    const image7 = await tx.prisma.vehicleImage.findFirst({ where: { id: imageId, vehicleId: stock.vehicle.id }, select: { id: true, isPrimary: true, image_id: true, image_extension: true } });
+    if (!image7) throw new Error("Photo not found; reload and try again");
+    await tx.prisma.vehicleImage.delete({ where: { id: image7.id } });
+    if (image7.isPrimary) {
       const next = await tx.prisma.vehicleImage.findFirst({ where: { vehicleId: stock.vehicle.id }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true } });
       if (next) await tx.prisma.vehicleImage.update({ where: { id: next.id }, data: { isPrimary: true } });
     }
     await returnListingToDraft(tx, stock, context.session.itemId);
-    return { reused: false, stored: image6.image_id && image6.image_extension ? { id: image6.image_id, extension: image6.image_extension } : null };
+    return { reused: false, stored: image7.image_id && image7.image_extension ? { id: image7.image_id, extension: image7.image_extension } : null };
   }, { timeout: 3e4 });
   if (command.stored) await context.images(PHOTO_STORAGE2).deleteAtSource(command.stored.id, command.stored.extension).catch(() => {
   });
@@ -16736,7 +16971,7 @@ var CADENCES = {
 function requireManager(context) {
   if (!context.session?.itemId || !permissions.canManageLeads({ session: context.session })) throw new Error("Lead management permission is required");
 }
-function text77(value, label2, max = 1e3) {
+function text78(value, label2, max = 1e3) {
   const result2 = String(value || "").trim();
   if (!result2 || result2.length > max) throw new Error(`${label2} is required and must be at most ${max} characters`);
   return result2;
@@ -16759,8 +16994,8 @@ async function updateCustomerCommunicationPreferences(_root, { data }, context) 
   requireManager(context);
   const customerId = String(data.customerId || "");
   const expectedUpdatedAt = date3(data.expectedUpdatedAt, "Customer expectedUpdatedAt");
-  const source = text77(data.source, "Preference source", 120);
-  const reason = text77(data.reason, "Preference reason", 1e3);
+  const source = text78(data.source, "Preference source", 120);
+  const reason = text78(data.reason, "Preference reason", 1e3);
   const preferredChannel = String(data.preferredChannel || "none");
   if (!["email", "sms", "phone", "none"].includes(preferredChannel)) throw new Error("Preferred channel is invalid");
   const snapshot2 = {
@@ -16836,7 +17071,7 @@ async function enrollLeadCadence(_root, { data }, context) {
   const cadenceKey = String(data.cadenceKey || "");
   const cadence = CADENCES[cadenceKey]?.[0];
   if (!cadence) throw new Error("Cadence key is not registered");
-  const campaignKey = text77(data.campaignKey, "Campaign key", 160).toLowerCase().replace(/[^a-z0-9:_-]+/g, "-");
+  const campaignKey = text78(data.campaignKey, "Campaign key", 160).toLowerCase().replace(/[^a-z0-9:_-]+/g, "-");
   const eventKey = `lead-cadence:${key6(data.idempotencyKey)}`;
   const lead = await context.query.Lead.findOne({
     where: { id: leadId },
@@ -16962,7 +17197,7 @@ async function linkCustomerHousehold(_root, { data }, context) {
   const customerIds = [String(data.primaryCustomerId || ""), String(data.memberCustomerId || "")];
   if (!customerIds[0] || !customerIds[1] || customerIds[0] === customerIds[1]) throw new Error("Two different customers are required");
   const expected = [date3(data.primaryExpectedUpdatedAt, "Primary expectedUpdatedAt"), date3(data.memberExpectedUpdatedAt, "Member expectedUpdatedAt")];
-  const displayName = text77(data.displayName, "Household display name", 200);
+  const displayName = text78(data.displayName, "Household display name", 200);
   const eventKey = `customer-household:${key6(data.idempotencyKey)}`;
   const customers = await context.query.Customer.findMany({ where: { id: { in: customerIds } }, query: "id status rooftop { id } household { id }" });
   if (customers.length !== 2 || customers.some((customer) => customer.status !== "active")) throw new Error("Customers not found or not accessible");
@@ -17076,7 +17311,7 @@ async function manageSalesVisit(_root, { data }, context) {
       if (!VISIT_TRANSITIONS[visibleVisit.status]?.includes(target)) throw new Error(`Invalid sales visit transition: ${visibleVisit.status} -> ${target}`);
       const changed = await tx.prisma.salesVisit.updateMany({
         where: { id: requestedVisitId, rooftopId, status: visibleVisit.status, updatedAt: expectedUpdatedAt },
-        data: { status: target, ...target === "arrived" ? { arrivedAt: now } : {}, ...target === "manager-turn" ? { managerId: String(data.managerId || context.session.itemId), managerTurnAt: now } : {}, ...target === "completed" ? { completedAt: now, outcome: text77(data.outcome, "Visit outcome", 300) } : {}, notes: String(data.notes || "").trim().slice(0, 4e3) || void 0 }
+        data: { status: target, ...target === "arrived" ? { arrivedAt: now } : {}, ...target === "manager-turn" ? { managerId: String(data.managerId || context.session.itemId), managerTurnAt: now } : {}, ...target === "completed" ? { completedAt: now, outcome: text78(data.outcome, "Visit outcome", 300) } : {}, notes: String(data.notes || "").trim().slice(0, 4e3) || void 0 }
       });
       if (changed.count !== 1) throw new Error("Sales visit changed concurrently; reload and retry");
       visit = await tx.prisma.salesVisit.findUniqueOrThrow({ where: { id: requestedVisitId } });
@@ -17108,15 +17343,15 @@ function idempotencyKey4(value) {
   return key7;
 }
 function requiredText4(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (!text79) throw new Error(`${label2} is required`);
-  if (text79.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (!text80) throw new Error(`${label2} is required`);
+  if (text80.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
+  return text80;
 }
 function optionalText5(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (text79.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (text80.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
+  return text80;
 }
 function contactPoints(emailValue, phoneValue) {
   const email = optionalText5(emailValue, "Email", 320).toLowerCase();
@@ -17279,15 +17514,15 @@ function idempotencyKey5(value) {
   return key7;
 }
 function requiredText5(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (!text79) throw new Error(`${label2} is required`);
-  if (text79.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (!text80) throw new Error(`${label2} is required`);
+  if (text80.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
+  return text80;
 }
 function optionalText6(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (text79.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (text80.length > max) throw new Error(`${label2} must be ${max} characters or fewer`);
+  return text80;
 }
 async function lockAndReplay3(tx, eventKey) {
   await tx.prisma.$queryRaw`SELECT 1 AS "locked" FROM pg_advisory_xact_lock(hashtextextended(${`command:${eventKey}`}, 0))`;
@@ -17595,9 +17830,9 @@ async function recordReservationRefundInTransaction(tx, transactionId) {
 // features/keystone/mutations/paymentOperations.ts
 var paymentReturnSecret3 = () => process.env.SESSION_SECRET || "";
 var required9 = (value, name, max = 500) => {
-  const text79 = String(value || "").trim();
-  if (!text79 || text79.length > max) throw new Error(`${name} is required`);
-  return text79;
+  const text80 = String(value || "").trim();
+  if (!text80 || text80.length > max) throw new Error(`${name} is required`);
+  return text80;
 };
 var positiveCents = (value, name) => {
   const amount = Number(value);
@@ -17857,8 +18092,8 @@ function normalizedHeaders(headers) {
   );
 }
 function signatureTimestamp(headers, fallbackSeconds) {
-  const timestamp55 = (headers["stripe-signature"] || "").split(",").map((part) => part.trim().split("=", 2)).find(([key7]) => key7 === "t")?.[1];
-  const seconds = timestamp55 && /^\d+$/.test(timestamp55) ? Number(timestamp55) : fallbackSeconds;
+  const timestamp56 = (headers["stripe-signature"] || "").split(",").map((part) => part.trim().split("=", 2)).find(([key7]) => key7 === "t")?.[1];
+  const seconds = timestamp56 && /^\d+$/.test(timestamp56) ? Number(timestamp56) : fallbackSeconds;
   return new Date(seconds * 1e3);
 }
 async function handlePaymentProviderWebhook(root, { providerId, event: event2, headers }, context) {
@@ -17912,9 +18147,9 @@ var handlePaymentProviderWebhook_default = handlePaymentProviderWebhook;
 // features/keystone/mutations/reportingOperations.ts
 var import_node_crypto12 = require("node:crypto");
 var required10 = (value, name, max = 500) => {
-  const text79 = String(value || "").trim();
-  if (!text79 || text79.length > max) throw new Error(`${name} is required`);
-  return text79;
+  const text80 = String(value || "").trim();
+  if (!text80 || text80.length > max) throw new Error(`${name} is required`);
+  return text80;
 };
 function canReport(context) {
   if (!context.session?.itemId || !permissions.canViewReports({ session: context.session })) throw new Error("Reporting permission is required");
@@ -18101,21 +18336,21 @@ function normalizeReportFilters(reportType, raw) {
   for (const [key7, value] of Object.entries(raw || {})) {
     if (value === void 0 || value === null || String(value).trim() === "") continue;
     if (!allowed.includes(key7)) throw new Error(allowed.length ? `${key7} is not a filter for ${reportType} reports` : `${reportType} reports do not take filters`);
-    const text79 = String(value).trim();
+    const text80 = String(value).trim();
     if (key7 === "sinceDays") {
-      const days = Number(text79);
+      const days = Number(text80);
       if (!Number.isInteger(days) || days < 1 || days > 366) throw new Error("Days must be a whole number from 1 to 366");
       filters.sinceDays = days;
     } else if (key7 === "status") {
       const options = reportType === "accounting-exceptions" ? ACCOUNTING_EXCEPTION_STATUSES : PAYMENT_STATUSES;
-      if (!options.includes(text79)) throw new Error("Status filter is invalid");
-      filters.status = text79;
+      if (!options.includes(text80)) throw new Error("Status filter is invalid");
+      filters.status = text80;
     } else if (key7 === "reconciled") {
-      if (!["yes", "no"].includes(text79)) throw new Error("Reconciled filter is invalid");
-      filters.reconciled = text79;
+      if (!["yes", "no"].includes(text80)) throw new Error("Reconciled filter is invalid");
+      filters.reconciled = text80;
     } else {
-      if (text79.length > 100) throw new Error(`${key7} filter is too long`);
-      filters[key7] = text79;
+      if (text80.length > 100) throw new Error(`${key7} filter is too long`);
+      filters[key7] = text80;
     }
   }
   return filters;
@@ -18184,7 +18419,7 @@ function reportCsv(value) {
     for (const [key7, item] of Object.entries(current)) visit(item, path ? `${path}.${key7}` : key7);
   };
   visit(value, "");
-  const quote = (text79) => `"${text79.replaceAll('"', '""')}"`;
+  const quote = (text80) => `"${text80.replaceAll('"', '""')}"`;
   return ["path,value", ...rows.map(([path, value2]) => `${quote(path)},${quote(value2)}`)].join("\n");
 }
 async function buildReportRunSnapshot(saved, context) {
@@ -18545,14 +18780,14 @@ function commandKey4(value) {
   return key7;
 }
 function optionalText7(value, label2, max) {
-  const text79 = String(value ?? "").trim();
-  if (text79.length > max) throw new Error(`${label2} must be at most ${max} characters`);
-  return text79;
+  const text80 = String(value ?? "").trim();
+  if (text80.length > max) throw new Error(`${label2} must be at most ${max} characters`);
+  return text80;
 }
 function requiredText6(value, label2, max) {
-  const text79 = optionalText7(value, label2, max);
-  if (!text79) throw new Error(`${label2} is required`);
-  return text79;
+  const text80 = optionalText7(value, label2, max);
+  if (!text80) throw new Error(`${label2} is required`);
+  return text80;
 }
 function isUniqueViolation(error) {
   return Boolean(error && typeof error === "object" && error.code === "P2002");
@@ -18717,7 +18952,7 @@ function keystoneItemResult(listKey, command) {
 }
 
 // features/keystone/mutations/cashDealDeposits.ts
-function text78(value, label2, max) {
+function text79(value, label2, max) {
   const result2 = String(value ?? "").trim();
   if (!result2) throw new Error(`${label2} is required`);
   if (result2.length > max) throw new Error(`${label2} is too long`);
@@ -18728,12 +18963,12 @@ function failed2(result2) {
 }
 async function recordCashDealDepositCommand(_root, { data }, context) {
   if (!context.session?.itemId || !permissions.canManageFinancing({ session: context.session })) throw new Error("Financing permission is required");
-  const dealId = text78(data?.dealId, "Deal", 100);
-  const idempotencyKey6 = text78(data?.idempotencyKey, "Idempotency key", 200);
+  const dealId = text79(data?.dealId, "Deal", 100);
+  const idempotencyKey6 = text79(data?.idempotencyKey, "Idempotency key", 200);
   const amountCents = Number(data?.amountCents);
   if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > Number.MAX_SAFE_INTEGER) throw new Error("Enter an amount greater than $0");
   const paymentMethod = dealPaymentMethod(data?.paymentMethod);
-  const receiptReference = text78(data?.receiptReference, "Receipt reference", 200);
+  const receiptReference = text79(data?.receiptReference, "Receipt reference", 200);
   const visible = await context.query.Deal.findOne({ where: { id: dealId }, query: "id rooftop { id }" });
   if (!visible?.rooftop?.id) throw new Error("Deal not found or not accessible");
   await assertSessionRooftopPermission(context, visible.rooftop.id, "canManageFinancing");
@@ -18819,12 +19054,12 @@ async function recordCashDealDepositCommand(_root, { data }, context) {
 var recordCashDealDeposit = operatorCommand(recordCashDealDepositCommand);
 async function recordServiceCounterPaymentCommand(_root, { data }, context) {
   if (!context.session?.itemId || !permissions.canManagePayments({ session: context.session })) throw new Error("Payment permission is required");
-  const serviceOrderId = text78(data?.serviceOrderId, "Repair order", 100);
-  const idempotencyKey6 = text78(data?.idempotencyKey, "Idempotency key", 200);
+  const serviceOrderId = text79(data?.serviceOrderId, "Repair order", 100);
+  const idempotencyKey6 = text79(data?.idempotencyKey, "Idempotency key", 200);
   const amountCents = Number(data?.amountCents);
   if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > Number.MAX_SAFE_INTEGER) throw new Error("Enter an amount greater than $0");
   const paymentMethod = dealPaymentMethod(data?.paymentMethod);
-  const receiptReference = text78(data?.receiptReference, "Receipt reference", 200);
+  const receiptReference = text79(data?.receiptReference, "Receipt reference", 200);
   const visible = await context.query.ServiceOrder.findOne({ where: { id: serviceOrderId }, query: "id rooftop { id }" });
   if (!visible?.rooftop?.id) throw new Error("Repair order not found or not accessible");
   await assertSessionRooftopPermission(context, visible.rooftop.id, "canManagePayments");
@@ -18960,6 +19195,8 @@ function readWhere(where) {
       } else if (key7 === "fuelType" || key7 === "transmission") {
         const option = String(value?.equals || "").trim().toLocaleLowerCase();
         if (option) filters[key7] = option;
+      } else if (key7 === "progressiveOffer") {
+        if (value?.equals === true) filters.progressiveOffer = true;
       } else if (key7 === "isFeatured") {
         if (value?.equals === true) filters.isFeatured = true;
       } else if (key7 === "condition") {
@@ -19020,7 +19257,7 @@ async function loadPublicInventoryImageUrls(sudo, imageIds) {
   const ids = [...new Set(imageIds.filter(Boolean))];
   if (!ids.length) return /* @__PURE__ */ new Map();
   const images = await sudo.query.VehicleImage.findMany({ where: { id: { in: ids } }, query: "id image { url }" });
-  return new Map(images.map((image6) => [image6.id, image6.image?.url || null]));
+  return new Map(images.map((image7) => [image7.id, image7.image?.url || null]));
 }
 async function queryPublicInventory(context, options = {}) {
   const slug2 = await storefrontRooftopSlug(context);
@@ -19065,7 +19302,8 @@ async function queryPublicInventory(context, options = {}) {
       }
     });
     const filters = readWhere(options.where);
-    const matching = approved.map(({ vehicle }) => vehicle).filter((vehicle) => matches(vehicle, filters)).sort((a, b) => compare(a, b, options.orderBy));
+    const offerIds = await activeProgressiveOfferVehicleIds(context);
+    const matching = approved.map(({ vehicle }) => vehicle).filter((vehicle) => matches(vehicle, filters) && (!filters.progressiveOffer || offerIds.has(vehicle.id))).sort((a, b) => compare(a, b, options.orderBy));
     const skip = Math.max(0, Math.min(1e4, Number.isSafeInteger(options.skip) ? Number(options.skip) : 0));
     const take = Math.max(0, Math.min(100, Number.isSafeInteger(options.take) ? Number(options.take) : 50));
     const page2 = matching.slice(skip, skip + take);
@@ -19074,7 +19312,7 @@ async function queryPublicInventory(context, options = {}) {
       where: { rooftopId, OR: page2.map((vehicle) => activeReservationWhere(vehicle.id)) },
       select: { lead: { select: { interestedVehicleId: true } } }
     })).map((row) => row.lead?.interestedVehicleId).filter(Boolean));
-    const imageIds = page2.flatMap((vehicle) => (vehicle.images || []).map((image6) => image6.id));
+    const imageIds = page2.flatMap((vehicle) => (vehicle.images || []).map((image7) => image7.id));
     const imageUrlById = await loadPublicInventoryImageUrls(sudo, imageIds);
     return {
       totalCount: matching.length,
@@ -19091,18 +19329,19 @@ async function queryPublicInventory(context, options = {}) {
         transmission: vehicle.transmission || null,
         engine: vehicle.engine || "",
         isFeatured: Boolean(vehicle.isFeatured),
+        progressiveOffer: offerIds.has(vehicle.id),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
         status: reserved.has(vehicle.id) ? "reserved" : vehicle.status,
         condition: vehicle.condition,
         features: vehicle.features,
         description: vehicle.description,
-        images: (vehicle.images || []).map((image6) => ({
-          id: image6.id,
-          imagePath: image6.imagePath,
-          image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null,
-          isPrimary: image6.isPrimary,
-          sortOrder: image6.sortOrder
+        images: (vehicle.images || []).map((image7) => ({
+          id: image7.id,
+          imagePath: image7.imagePath,
+          image: image7.image_id ? { url: imageUrlById.get(image7.id) || null } : null,
+          isPrimary: image7.isPrimary,
+          sortOrder: image7.sortOrder
         })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
       }))
     };
@@ -19157,7 +19396,7 @@ async function publicInventoryVehicleRecord(_root, { id }, context) {
   } catch {
     return null;
   }
-  const imageUrlById = await loadPublicInventoryImageUrls(sudo, (vehicle.images || []).map((image6) => image6.id));
+  const imageUrlById = await loadPublicInventoryImageUrls(sudo, (vehicle.images || []).map((image7) => image7.id));
   const sold = vehicle.status === "sold";
   return {
     id: vehicle.id,
@@ -19172,18 +19411,19 @@ async function publicInventoryVehicleRecord(_root, { id }, context) {
     transmission: vehicle.transmission || null,
     engine: vehicle.engine || "",
     isFeatured: false,
+    progressiveOffer: false,
     mileage: vehicle.mileage,
     price: null,
     status: vehicle.status,
     condition: vehicle.condition,
     features: vehicle.features,
     description: vehicle.description,
-    images: (vehicle.images || []).map((image6) => ({
-      id: image6.id,
-      imagePath: image6.imagePath,
-      image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null,
-      isPrimary: image6.isPrimary,
-      sortOrder: image6.sortOrder
+    images: (vehicle.images || []).map((image7) => ({
+      id: image7.id,
+      imagePath: image7.imagePath,
+      image: image7.image_id ? { url: imageUrlById.get(image7.id) || null } : null,
+      isPrimary: image7.isPrimary,
+      sortOrder: image7.sortOrder
     })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
   };
 }
@@ -19248,15 +19488,15 @@ async function getPublicInventoryFeed(context, input2) {
           return [];
         }
       });
-      const imageIds = valid.flatMap((stock) => (stock.vehicle?.images || []).map((image6) => image6.id));
+      const imageIds = valid.flatMap((stock) => (stock.vehicle?.images || []).map((image7) => image7.id));
       const imageUrlById = await loadPublicInventoryImageUrls(sudo, imageIds);
       return valid.map((stock) => ({
         ...stock,
         vehicle: {
           ...stock.vehicle,
-          images: (stock.vehicle.images || []).map((image6) => ({
-            ...image6,
-            image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null
+          images: (stock.vehicle.images || []).map((image7) => ({
+            ...image7,
+            image: image7.image_id ? { url: imageUrlById.get(image7.id) || null } : null
           }))
         }
       }));
@@ -19293,7 +19533,7 @@ function absoluteUrl(baseUrl, path) {
 function normalizeStock(stock, baseUrl, currency) {
   const vehicle = stock.vehicle;
   const price = vehicle.priceCents == null ? vehicle.price ?? vehicle.listPrice ?? 0 : vehicle.priceCents / 100;
-  const primaryImage = vehicle.images?.find((image6) => image6.isPrimary) || vehicle.images?.[0];
+  const primaryImage = vehicle.images?.find((image7) => image7.isPrimary) || vehicle.images?.[0];
   return {
     id: vehicle.id,
     vin: vehicle.vin,
@@ -19312,13 +19552,13 @@ function normalizeStock(stock, baseUrl, currency) {
     description: vehicle.description,
     features: vehicle.features || [],
     primaryImageUrl: primaryImage?.imagePath || primaryImage?.image?.url || null,
-    images: (vehicle.images || []).map((image6) => ({
-      id: image6.id,
-      url: image6.imagePath || image6.image?.url || null,
-      caption: image6.caption,
-      category: image6.category,
-      isPrimary: image6.isPrimary,
-      sortOrder: image6.sortOrder
+    images: (vehicle.images || []).map((image7) => ({
+      id: image7.id,
+      url: image7.imagePath || image7.image?.url || null,
+      caption: image7.caption,
+      category: image7.category,
+      isPrimary: image7.isPrimary,
+      sortOrder: image7.sortOrder
     })),
     publication: {
       stockedAt: stock.stockedAt,
@@ -19442,6 +19682,7 @@ function extendGraphqlSchema(baseSchema) {
         transmission: String
         engine: String
         isFeatured: Boolean
+        progressiveOffer: Boolean
         mileage: Int
         price: Float
         status: String
@@ -19561,6 +19802,42 @@ function extendGraphqlSchema(baseSchema) {
         photoToken: String
       }
 
+      type PublicFinancingPlan {
+        id: ID!
+        bankName: String!
+        name: String!
+        tnaBps: Int!
+        teaBps: Int
+        cftBps: Int
+        termsMonths: [Int!]!
+        minAmountCents: Float
+        maxAmountCents: Float
+        maxFinancedBps: Int
+        amortization: String!
+        validUntil: DateTime
+        extraCosts: String!
+        requirements: String!
+      }
+
+      type PublicProgressiveOffer {
+        id: ID!
+        number: Int
+        title: String!
+        imageUrl: String
+        vehicleId: ID
+        startsAt: DateTime!
+        startPriceCents: Float!
+        stepCents: Float!
+        stepMinutes: Int!
+        floorPriceCents: Float!
+        status: String!
+        phase: String!
+        financing: String!
+        conditions: String!
+        includesTransfer: Boolean!
+        walkIn: Boolean!
+      }
+
       type AttachTradeInPhotoPayload {
         ok: Boolean!
         errorCode: String
@@ -19581,6 +19858,8 @@ function extendGraphqlSchema(baseSchema) {
         tradeInValue: Float
         apr: Float
         loanTerm: Int
+        financingPlanId: ID
+        vehiclePrice: Float
         vehicleId: ID
         consent: Boolean!
         privacyAcknowledged: Boolean
@@ -19969,6 +20248,8 @@ function extendGraphqlSchema(baseSchema) {
         publicInventoryVehicle(id: ID!): PublicInventoryVehicle
         publicInventoryVehicleRecord(id: ID!): PublicInventoryVehicle
         publicInventoryCount(where: JSON): Int!
+        publicFinancingPlans: [PublicFinancingPlan!]!
+        publicProgressiveOffers: [PublicProgressiveOffer!]!
         publicInventoryFeed(rooftop: String, condition: String, createdSince: String, updatedSince: String, take: Int, skip: Int): JSON!
         storefrontProfile(rooftopSlug: String): StorefrontProfilePayload!
         paymentReturnStatus(reference: String!): PaymentReturnStatus
@@ -20120,6 +20401,8 @@ function extendGraphqlSchema(baseSchema) {
         publicInventoryVehicle,
         publicInventoryVehicleRecord,
         publicInventoryCount,
+        publicFinancingPlans,
+        publicProgressiveOffers,
         publicInventoryFeed,
         storefrontProfile,
         paymentReturnStatus,
@@ -20569,7 +20852,7 @@ var { withAuth } = (0, import_auth.createAuth)({
   sessionData: sessionDataFields
 });
 var keystone_default = withAuth(
-  (0, import_core74.config)({
+  (0, import_core75.config)({
     db: {
       provider: "postgresql",
       url: pooledDatabaseUrl(databaseURL),

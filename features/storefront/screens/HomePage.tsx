@@ -10,6 +10,8 @@ import { WhatsAppButton } from '../components/WhatsAppButton'
 import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
 import { createStorefrontBusiness } from '../lib/business'
+import { loadProgressiveOffers } from '../lib/data/progressive-offers'
+import { ProgressiveOfferCard } from '../components/ProgressiveOfferCard'
 import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
 
 const HERO_PHOTO = '/images/showroom-dusk.jpg'
@@ -55,7 +57,8 @@ function SectionTitle({ eyebrow, title, id }: { eyebrow: string; title: string; 
 }
 
 export async function HomePage() {
-  const [featured, settings] = await Promise.all([getFeaturedVehicles(), loadStorefrontBusiness()])
+  const [featured, settings, offers] = await Promise.all([getFeaturedVehicles(), loadStorefrontBusiness(), loadProgressiveOffers()])
+  const liveOffers = offers.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming').slice(0, 2)
   const business = settings.status === 'ready' ? settings.business : createStorefrontBusiness()
   const vehicles = featured.status === 'ready' ? featured.value.slice(0, 4) : []
   const words = business.shortName.trim().split(/\s+/)
@@ -143,6 +146,21 @@ export async function HomePage() {
           )}
         </Container>
       </section>
+
+      {/* ---------- Ofertas progresivas ---------- */}
+      {liveOffers.length > 0 && (
+        <section className="py-16" aria-labelledby="offers-title">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <SectionTitle eyebrow="Oferta progresiva" title="El precio baja hasta que alguien se lo lleva" id="offers-title" />
+              <Link href="/ofertas" className="sf-btn sf-btn-outline rounded-[8px]">Ver ofertas <ArrowRight className="size-4" aria-hidden="true" /></Link>
+            </div>
+            <div className="mt-8 space-y-6">
+              {liveOffers.map((offer) => <ProgressiveOfferCard key={offer.id} offer={offer} />)}
+            </div>
+          </Container>
+        </section>
+      )}
 
       {/* ---------- Marcas 0 km ---------- */}
       <section className="elv-band py-10" aria-labelledby="brands-title">
