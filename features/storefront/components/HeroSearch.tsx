@@ -8,10 +8,10 @@ import { formatPrice } from '../lib/format'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 const CONDITIONS = [
-  { value: '', label: 'Any' },
-  { value: 'new', label: 'New' },
-  { value: 'used', label: 'Pre-owned' },
-  { value: 'certified', label: 'Certified' },
+  { value: '', label: 'Cualquiera' },
+  { value: 'new', label: '0 km' },
+  { value: 'used', label: 'Usado' },
+  { value: 'certified', label: 'Certificado' },
 ]
 
 const PRICES = [15000, 20000, 25000, 30000, 40000, 50000, 75000]
@@ -52,18 +52,18 @@ export function HeroSearch() {
     <form
       onSubmit={s.onSubmit}
       role="search"
-      aria-label="Search inventory"
+      aria-label="Buscar en el inventario"
       className="sf-hero-search grid grid-cols-[1.15fr_1.1fr_1.1fr_auto] items-center rounded-[var(--sf-radius-lg)] p-2"
     >
       <label className="sf-hero-field">
         <CalendarDays className="size-5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span className="sf-hero-field-label">Year make model</span>
+          <span className="sf-hero-field-label">Año, marca o modelo</span>
           <input
             type="search"
             value={s.query}
             onChange={(e) => s.setQuery(e.target.value)}
-            placeholder="Any"
+            placeholder="Cualquiera"
             className="sf-hero-field-input"
           />
         </span>
@@ -71,20 +71,20 @@ export function HeroSearch() {
       <label className="sf-hero-field">
         <Gem className="size-5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span className="sf-hero-field-label">Condition</span>
-          <PlatformSelect aria-label="Condition" value={s.condition} onValueChange={s.setCondition} className="sf-hero-field-input sf-hero-trigger" options={CONDITIONS} />
+          <span className="sf-hero-field-label">Condición</span>
+          <PlatformSelect aria-label="Condición" value={s.condition} onValueChange={s.setCondition} className="sf-hero-field-input sf-hero-trigger" options={CONDITIONS} />
         </span>
       </label>
       <label className="sf-hero-field">
         <DollarSign className="size-5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span className="sf-hero-field-label">Price</span>
-          <PlatformSelect aria-label="Max price" value={s.priceMax} onValueChange={s.setPriceMax} className="sf-hero-field-input sf-hero-trigger" options={[{ value: '', label: 'Max Price' }, ...PRICES.map((value) => ({ value: String(value), label: formatPrice(value, currencyCode) }))]} />
+          <span className="sf-hero-field-label">Precio</span>
+          <PlatformSelect aria-label="Precio máximo" value={s.priceMax} onValueChange={s.setPriceMax} className="sf-hero-field-input sf-hero-trigger" options={[{ value: '', label: 'Precio máximo' }, ...PRICES.map((value) => ({ value: String(value), label: formatPrice(value, currencyCode) }))]} />
         </span>
       </label>
       <button type="submit" className="sf-btn sf-btn-primary h-10 w-[17rem] gap-3 rounded-[6px] text-[1rem] font-medium">
         <Search className="size-5" strokeWidth={1.75} aria-hidden="true" />
-        Search inventory
+        Buscar en el inventario
       </button>
     </form>
   )
@@ -96,30 +96,30 @@ export function HeroSearchCompact() {
   const s = useHeroSearch()
 
   return (
-    <form onSubmit={s.onSubmit} role="search" aria-label="Search inventory" className="flex items-stretch gap-1">
+    <form onSubmit={s.onSubmit} role="search" aria-label="Buscar en el inventario" className="flex items-stretch gap-1">
       <label className="sf-line-field">
         <Search className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-        <span className="sr-only">Year, make or model</span>
+        <span className="sr-only">Año, marca o modelo</span>
         <input
           type="text"
           enterKeyHint="search"
           value={s.query}
           onChange={(e) => s.setQuery(e.target.value)}
-          placeholder="Any make"
+          placeholder="Cualquier marca"
           className="sf-line-field-input"
         />
       </label>
       <label className="sf-line-field">
         <CarFront className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-        <span className="sr-only">Condition</span>
-        <PlatformSelect aria-label="Condition" value={s.condition} onValueChange={s.setCondition} className="sf-line-field-input sf-line-trigger" options={[{ value: '', label: 'Any type' }, ...CONDITIONS.slice(1)]} />
+        <span className="sr-only">Condición</span>
+        <PlatformSelect aria-label="Condición" value={s.condition} onValueChange={s.setCondition} className="sf-line-field-input sf-line-trigger" options={[{ value: '', label: 'Cualquier tipo' }, ...CONDITIONS.slice(1)]} />
       </label>
       <label className="sf-line-field">
         <Tag className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-        <span className="sr-only">Max price</span>
-        <PlatformSelect aria-label="Max price" value={s.priceMax} onValueChange={s.setPriceMax} className="sf-line-field-input sf-line-trigger" options={[{ value: '', label: 'Max price' }, ...PRICES.map((value) => ({ value: String(value), label: formatPrice(value, currencyCode) }))]} />
+        <span className="sr-only">Precio máximo</span>
+        <PlatformSelect aria-label="Precio máximo" value={s.priceMax} onValueChange={s.setPriceMax} className="sf-line-field-input sf-line-trigger" options={[{ value: '', label: 'Precio máximo' }, ...PRICES.map((value) => ({ value: String(value), label: formatPrice(value, currencyCode) }))]} />
       </label>
-      <button type="submit" className="grid size-11 shrink-0 place-items-center rounded-[2px]" style={{ background: 'var(--sf-accent-fill)', color: 'var(--sf-accent-ink)' }} aria-label="Search inventory">
+      <button type="submit" className="grid size-11 shrink-0 place-items-center rounded-[2px]" style={{ background: 'var(--sf-accent-fill)', color: 'var(--sf-accent-ink)' }} aria-label="Buscar en el inventario">
         <Search className="size-5" strokeWidth={1.75} aria-hidden="true" />
       </button>
     </form>

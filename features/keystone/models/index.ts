@@ -14,6 +14,7 @@ import { TestDrive } from './TestDrive';
 import { Deal } from './Deal';
 import { DealApproval } from './DealApproval';
 import { TradeIn } from './TradeIn';
+import { TradeInPhoto } from './TradeInPhoto';
 import { ServiceAppointment } from './ServiceAppointment';
 import { ServiceOrder } from './ServiceOrder';
 import { RepairOrderLineItem } from './RepairOrderLineItem';
@@ -86,6 +87,7 @@ const rawModels = {
   Deal,
   DealApproval,
   TradeIn,
+  TradeInPhoto,
   ServiceAppointment,
   ServiceOrder,
   RepairOrderLineItem,

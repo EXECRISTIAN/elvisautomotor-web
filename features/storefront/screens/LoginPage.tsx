@@ -15,15 +15,15 @@ export function LoginPage() {
   return (
     <section className="w-full max-w-sm">
       <h1 className="sf-display text-center text-[length:var(--sf-text-2xl)]">
-        {view === 'signin' ? 'Sign in' : 'Create account'}
+        {view === 'signin' ? 'Iniciar sesión' : 'Crear cuenta'}
       </h1>
 
-      <div role="group" aria-label="Account access" className="sf-track sf-track-block mt-6">
+      <div role="group" aria-label="Acceso a tu cuenta" className="sf-track sf-track-block mt-6">
         <button type="button" onClick={() => setView('signin')} aria-pressed={view === 'signin'} className="sf-pill min-h-11">
-          Sign in
+          Iniciar sesión
         </button>
         <button type="button" onClick={() => setView('signup')} aria-pressed={view === 'signup'} className="sf-pill min-h-11">
-          Create account
+          Crear cuenta
         </button>
       </div>
 
@@ -36,7 +36,7 @@ export function LoginPage() {
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-3">
-                <label htmlFor="signin-password" className="sf-label">Password</label>
+                <label htmlFor="signin-password" className="sf-label">Contraseña</label>
                 <Link href="/account/reset" className="sf-link -my-3 inline-flex min-h-11 items-center text-[length:var(--sf-text-xs)]">
                   Forgot password?
                 </Link>
@@ -45,13 +45,13 @@ export function LoginPage() {
             </div>
             {signinState.error && <div role="alert" className="sf-notice" data-tone="bad">{signinState.error}</div>}
             <button type="submit" disabled={signinPending} className="sf-btn sf-btn-primary w-full">
-              {signinPending ? 'Signing in…' : 'Sign in'}
+              {signinPending ? 'Ingresando…' : 'Iniciar sesión'}
             </button>
           </form>
         ) : (
           <form action={signupAction} className="space-y-4">
             <div>
-              <label htmlFor="signup-name" className="sf-label">Full name</label>
+              <label htmlFor="signup-name" className="sf-label">Nombre completo</label>
               <input id="signup-name" name="name" autoComplete="name" required maxLength={200} className="sf-input" />
             </div>
             <div>
@@ -59,12 +59,12 @@ export function LoginPage() {
               <input id="signup-email" name="email" type="email" autoComplete="email" required className="sf-input" />
             </div>
             <div>
-              <label htmlFor="signup-password" className="sf-label">Password</label>
+              <label htmlFor="signup-password" className="sf-label">Contraseña</label>
               <input id="signup-password" name="password" type="password" autoComplete="new-password" required minLength={8} className="sf-input" />
             </div>
             {signupState.error && <div role="alert" className="sf-notice" data-tone="bad">{signupState.error}</div>}
             <button type="submit" disabled={signupPending} className="sf-btn sf-btn-primary w-full">
-              {signupPending ? 'Creating account…' : 'Create account'}
+              {signupPending ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
           </form>
         )}

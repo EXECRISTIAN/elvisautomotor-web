@@ -13,7 +13,7 @@ const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 
 // "Closed Sundays" when the store is shut that day, "No times left today" once today's slots have passed.
 export function closedDayLabel(availability: Extract<DayAvailability, { status: 'closed' }>) {
-  return availability.reason === 'past' ? 'No times left today.' : `Closed ${availability.weekday}s.`
+  return availability.reason === 'past' ? 'No quedan horarios para hoy.' : `Cerrado ese día (${availability.weekday}).`
 }
 
 const TIME_PATTERN = /(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)/gi

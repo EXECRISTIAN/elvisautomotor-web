@@ -27,18 +27,18 @@ export function ComparisonBar() {
           className="sf-band pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-[var(--sf-radius-md)] py-1.5 pl-4 pr-1.5"
           style={{ boxShadow: 'var(--sf-shadow-float)' }}
           role="region"
-          aria-label="Compare"
+          aria-label="Comparar"
         >
           <p className="min-w-0 flex-1 truncate text-[length:var(--sf-text-sm)]">
             <span className="sf-figure font-semibold">{count}</span>
-            <span style={{ color: 'var(--sf-on-dark-2)' }}> of 4 selected</span>
+            <span style={{ color: 'var(--sf-on-dark-2)' }}> de 4 seleccionados</span>
           </p>
           <div className="flex shrink-0 gap-1.5">
             <button type="button" onClick={() => clearComparison()} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">
               Clear
             </button>
             <Link href="/compare" className="sf-btn sf-btn-primary sf-btn-sm min-h-10">
-              Compare
+              Comparar
             </Link>
           </div>
         </div>

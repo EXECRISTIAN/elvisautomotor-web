@@ -18,7 +18,7 @@ const REFERENCE_PREFIX: Record<CustomerRequestKind, string> = {
 export function customerRequestStatusLabel(kind: string, status: string) {
   if (kind.toLowerCase() === 'service' && status === 'scheduled') return 'Confirmation pending'
   const label = status.trim().replaceAll('-', ' ')
-  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'Status unavailable'
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'Estado no disponible'
 }
 
 export function customerRequestReference(

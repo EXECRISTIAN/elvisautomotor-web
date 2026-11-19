@@ -10,8 +10,8 @@ export function PageNotFound() {
           Page not found
         </h1>
         <div className="flex flex-wrap gap-2">
-          <Link href="/" className="sf-btn sf-btn-primary">Home</Link>
-          <Link href="/inventory" className="sf-btn sf-btn-ghost">Inventory</Link>
+          <Link href="/" className="sf-btn sf-btn-primary">Inicio</Link>
+          <Link href="/inventory" className="sf-btn sf-btn-ghost">Inventario</Link>
         </div>
       </div>
     </Container>

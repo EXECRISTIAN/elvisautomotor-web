@@ -17,7 +17,7 @@ export function EmailLinkPanel({ link }: { link: CustomerEmailLink | null }) {
     setResult(null)
     startTransition(async () => {
       const response = await sendCustomerEmailVerification()
-      setResult(response.ok ? { tone: 'ok', text: response.message || 'Verification email sent.' } : { tone: 'bad', text: response.error })
+      setResult(response.ok ? { tone: 'ok', text: response.message || 'Te enviamos el email de verificación.' } : { tone: 'bad', text: response.error })
     })
   }
 
@@ -26,19 +26,19 @@ export function EmailLinkPanel({ link }: { link: CustomerEmailLink | null }) {
       <h2 id="email-link-title" className="sf-title-line">
         <span className="sf-dot" data-tone={link.verified ? 'ok' : 'warn'} aria-hidden="true" />
         <span className="sf-heading text-[length:var(--sf-text-md)]">
-          {link.verified ? 'Email verified' : 'Email not verified'}
+          {link.verified ? 'Email verificado' : 'Email sin verificar'}
         </span>
       </h2>
       {/* Only the address may break anywhere; the sentence wraps at words. */}
       <p className="sf-muted pl-4 text-[length:var(--sf-text-sm)]">
-        {link.verified ? 'Requests made with ' : 'Verify '}
+        {link.verified ? 'Las solicitudes hechas con ' : 'Verificá '}
         <span className="break-all">{link.email}</span>
-        {link.verified ? ' are linked to this account.' : ' to link requests made with it before you signed in.'}
+        {link.verified ? ' están vinculadas a esta cuenta.' : ' para vincular las solicitudes que hiciste antes de iniciar sesión.'}
       </p>
       {result && <Notice tone={result.tone}>{result.text}</Notice>}
       <button type="button" onClick={send} disabled={pending} className={`sf-btn sf-btn-sm min-h-10 ${link.verified ? 'sf-btn-ghost' : 'sf-btn-primary'}`}>
         <MailCheck className="size-4" aria-hidden="true" />
-        {pending ? 'Sending' : link.verified ? 'Link new requests' : 'Send verification email'}
+        {pending ? 'Enviando' : link.verified ? 'Vincular solicitudes nuevas' : 'Enviar email de verificación'}
       </button>
     </section>
   )

@@ -11,6 +11,7 @@ import { reserveVehicle } from './reserveVehicle';
 import { payServiceInvoice } from './payServiceInvoice';
 import { submitTestDrive } from './submitTestDrive';
 import { submitTradeIn } from './submitTradeIn';
+import { attachTradeInPhoto } from './tradeInPhotos';
 import { submitFinancing } from './submitFinancing';
 import { submitServiceBooking } from './submitServiceBooking';
 import { publicSubmissionResolver } from './publicSubmissionResolver';
@@ -224,6 +225,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         condition: String!
         ownership: String!
         payoffAmount: Float
+        notes: String
         interestedVehicleId: ID
         rooftopSlug: String
         idempotencyKey: String!
@@ -242,6 +244,14 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         providerRequestSent: Boolean
         vehicle: PublicSubmissionVehicle
         reused: Boolean
+        photoToken: String
+      }
+
+      type AttachTradeInPhotoPayload {
+        ok: Boolean!
+        errorCode: String
+        errorMessage: String
+        count: Int
       }
 
       input SubmitFinancingInput {
@@ -675,6 +685,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         reserveVehicle(data: ReserveVehicleInput!): ReserveVehiclePayload!
         submitTestDrive(data: SubmitTestDriveInput!): SubmitTestDrivePayload!
         submitTradeIn(data: SubmitTradeInInput!): SubmitTradeInPayload!
+        attachTradeInPhoto(tradeInId: ID!, photoToken: String!, photo: ImageFieldInput!): AttachTradeInPhotoPayload!
         submitFinancing(data: SubmitFinancingInput!): SubmitFinancingPayload!
         submitServiceBooking(data: SubmitServiceBookingInput!): SubmitServiceBookingPayload!
         transitionDeal(id: ID!, toStatus: String!, notes: String, idempotencyKey: String!): Deal
@@ -824,6 +835,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         reserveVehicle: publicSubmissionResolver(reserveVehicle),
         submitTestDrive: publicSubmissionResolver(submitTestDrive),
         submitTradeIn: publicSubmissionResolver(submitTradeIn),
+        attachTradeInPhoto: publicSubmissionResolver(attachTradeInPhoto),
         submitFinancing: publicSubmissionResolver(submitFinancing),
         submitServiceBooking: publicSubmissionResolver(submitServiceBooking),
         transitionDeal,

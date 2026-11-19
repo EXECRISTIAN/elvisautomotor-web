@@ -10,7 +10,7 @@ export function VehiclePhotoPlaceholder({ className = '' }: { className?: string
         <circle cx="26" cy="32" r="7" />
         <circle cx="70" cy="32" r="7" />
       </svg>
-      <span className="text-[length:var(--sf-text-xs)] font-semibold">No photo</span>
+      <span className="text-[length:var(--sf-text-xs)] font-semibold">Sin foto</span>
     </div>
   )
 }

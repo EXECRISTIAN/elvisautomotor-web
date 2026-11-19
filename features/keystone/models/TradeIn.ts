@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { relationship, text, select, integer, image, virtual } from '@keystone-6/core/fields'
+import { relationship, text, select, integer, image, virtual, timestamp } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions, rules, TRADE_IN_ACCESS_PERMISSIONS } from '../access'
@@ -127,6 +127,17 @@ export const TradeIn = list({
       storage: 'my_images',
       label: 'Main Photo',
     }),
+    photos: relationship({
+      ref: 'TradeInPhoto.tradeIn',
+      many: true,
+      label: 'Fotos del cliente',
+      access: { create: denyAll, update: denyAll },
+      ui: { displayMode: 'count' },
+    }),
+    // Código temporal para que el cliente adjunte fotos justo después de enviar el formulario.
+    // Se guarda solo el hash (nunca el código) y vence a la hora.
+    photoTokenHash: text({ access: { read: denyAll, create: denyAll, update: denyAll }, ui: { itemView: { fieldMode: 'hidden' }, listView: { fieldMode: 'hidden' }, createView: { fieldMode: 'hidden' } } }),
+    photoTokenExpiresAt: timestamp({ access: { read: denyAll, create: denyAll, update: denyAll }, ui: { itemView: { fieldMode: 'hidden' }, listView: { fieldMode: 'hidden' }, createView: { fieldMode: 'hidden' } } }),
 
     // Relationships
     lead: relationship({

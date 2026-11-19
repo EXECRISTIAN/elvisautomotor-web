@@ -159,10 +159,10 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
 
       const result = data.publicInventoryVehicles
       if (!result || !Array.isArray(result.items) || !Number.isSafeInteger(result.totalCount) || result.totalCount < 0) {
-        throw new Error('Inventory response is incomplete.')
+        throw new Error('La respuesta del inventario está incompleta.')
       }
       const resolution = resolveInventoryPage(currentPage, result.totalCount, result.items.length)
-      if (resolution.status === 'invalid-response') throw new Error('Inventory page does not match its verified result count.')
+      if (resolution.status === 'invalid-response') throw new Error('La página del inventario no coincide con los resultados.')
 
       if (resolution.status === 'out-of-range') {
         pageTransitionPending = true

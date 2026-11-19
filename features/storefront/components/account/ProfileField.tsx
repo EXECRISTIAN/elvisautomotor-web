@@ -28,7 +28,7 @@ export function ProfileField({
         {!state.error && state.success && !pending && <div role="status" className="sf-notice" data-tone="ok">{state.success}</div>}
       </div>
       <button type="submit" disabled={pending} className="sf-btn sf-btn-ghost self-start md:mt-6">
-        {pending ? 'Saving…' : 'Save'}
+        {pending ? 'Guardando…' : 'Guardar'}
       </button>
     </form>
   )

@@ -27,10 +27,10 @@ export function VerifyEmailConfirm({ token }: { token: string }) {
     <div className="space-y-4">
       {state && <Notice tone={state.tone}>{state.text}</Notice>}
       {state?.tone === 'ok' ? (
-        <Link href="/account" className="sf-btn sf-btn-primary">View requests</Link>
+        <Link href="/account" className="sf-btn sf-btn-primary">Ver solicitudes</Link>
       ) : (
         <button type="button" onClick={confirm} disabled={pending} className="sf-btn sf-btn-primary">
-          {pending ? 'Confirming' : 'Confirm email'}
+          {pending ? 'Confirmando' : 'Confirmar email'}
         </button>
       )}
     </div>

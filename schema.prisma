@@ -466,21 +466,21 @@ model DealApproval {
 }
 
 model TradeIn {
-  id                  String   @id @default(cuid())
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @default(now()) @updatedAt
-  rooftop             Rooftop  @relation("TradeIn_rooftop", fields: [rooftopId], references: [id])
-  rooftopId           String   @map("rooftop")
-  vin                 String   @default("")
-  year                String   @default("")
-  make                String   @default("")
-  model               String   @default("")
-  trim                String   @default("")
+  id                  String         @id @default(cuid())
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @default(now()) @updatedAt
+  rooftop             Rooftop        @relation("TradeIn_rooftop", fields: [rooftopId], references: [id])
+  rooftopId           String         @map("rooftop")
+  vin                 String         @default("")
+  year                String         @default("")
+  make                String         @default("")
+  model               String         @default("")
+  trim                String         @default("")
   mileage             Int?
   condition           String?
-  exteriorCondition   String   @default("")
-  interiorCondition   String   @default("")
-  mechanicalIssues    String   @default("")
+  exteriorCondition   String         @default("")
+  interiorCondition   String         @default("")
+  mechanicalIssues    String         @default("")
   kbbValueCents       Int?
   offerAmountCents    Int?
   mainPhoto_id        String?
@@ -488,15 +488,37 @@ model TradeIn {
   mainPhoto_width     Int?
   mainPhoto_height    Int?
   mainPhoto_extension String?
-  lead                Lead?    @relation("TradeIn_lead", fields: [leadId], references: [id])
-  leadId              String?  @map("lead")
-  deal                Deal?    @relation("Deal_tradeInVehicle")
-  appraisedBy         User?    @relation("TradeIn_appraisedBy", fields: [appraisedById], references: [id])
-  appraisedById       String?  @map("appraisedBy")
+  photos              TradeInPhoto[] @relation("TradeInPhoto_tradeIn")
+  photoTokenHash      String         @default("")
+  photoTokenExpiresAt DateTime?
+  lead                Lead?          @relation("TradeIn_lead", fields: [leadId], references: [id])
+  leadId              String?        @map("lead")
+  deal                Deal?          @relation("Deal_tradeInVehicle")
+  appraisedBy         User?          @relation("TradeIn_appraisedBy", fields: [appraisedById], references: [id])
+  appraisedById       String?        @map("appraisedBy")
 
   @@index([rooftopId])
   @@index([leadId])
   @@index([appraisedById])
+}
+
+model TradeInPhoto {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  rooftop         Rooftop  @relation("TradeInPhoto_rooftop", fields: [rooftopId], references: [id])
+  rooftopId       String   @map("rooftop")
+  tradeIn         TradeIn? @relation("TradeInPhoto_tradeIn", fields: [tradeInId], references: [id])
+  tradeInId       String?  @map("tradeIn")
+  image_id        String?
+  image_filesize  Int?
+  image_width     Int?
+  image_height    Int?
+  image_extension String?
+  sortOrder       Int?     @default(0)
+
+  @@index([rooftopId])
+  @@index([tradeInId])
 }
 
 model ServiceAppointment {
@@ -791,6 +813,7 @@ model Rooftop {
   from_Deal_rooftop                           Deal[]                           @relation("Deal_rooftop")
   from_DealApproval_rooftop                   DealApproval[]                   @relation("DealApproval_rooftop")
   from_TradeIn_rooftop                        TradeIn[]                        @relation("TradeIn_rooftop")
+  from_TradeInPhoto_rooftop                   TradeInPhoto[]                   @relation("TradeInPhoto_rooftop")
   from_ServiceAppointment_rooftop             ServiceAppointment[]             @relation("ServiceAppointment_rooftop")
   from_ServiceOrder_rooftop                   ServiceOrder[]                   @relation("ServiceOrder_rooftop")
   from_RepairOrderLineItem_rooftop            RepairOrderLineItem[]            @relation("RepairOrderLineItem_rooftop")

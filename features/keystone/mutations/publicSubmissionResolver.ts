@@ -23,7 +23,7 @@ export function publicSubmissionResolver(service: SubmissionService) {
       return {
         ok: false,
         errorCode: 'SUBMISSION_FAILED',
-        errorMessage: 'Unable to process this request. Please try again or contact the dealership.',
+        errorMessage: 'No pudimos procesar la solicitud. Intentá de nuevo o comunicate con nosotros.',
       }
     }
   }

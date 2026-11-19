@@ -1,6 +1,7 @@
 import { resolveCustomerInTransaction } from './customerIdentity'
 import { runPublicSubmission } from './publicSubmissionPolicy'
 import { SubmissionError } from './submissionErrors'
+import { issueTradeInPhotoToken } from './tradeInPhotos'
 import {
   finiteNumber,
   formatCurrency,
@@ -14,14 +15,8 @@ import {
 const CONDITIONS = new Set(['excellent', 'good', 'fair', 'poor'])
 const OWNERSHIP = new Set(['own', 'financing', 'lease'])
 
-function preliminaryTradeRange(year: number, mileage: number, condition: string) {
-  const age = new Date().getFullYear() - year
-  let base = 30000 - age * 4500
-  base -= (mileage - age * 12000) * 0.1
-  base *= ({ excellent: 1.1, good: 1, fair: 0.85, poor: 0.7 } as Record<string, number>)[condition]
-  base = Math.max(base, 2000)
-  return { min: Math.round(base * 0.9), max: Math.round(base * 1.1) }
-}
+// Elvis Automotores: no se calcula un "rango preliminar" automático (sería un valor ficticio).
+// La tasación la hace el personal y se informa al cliente por separado.
 
 export async function submitTradeIn(_root: unknown, { data }: { data: any }, context: any) {
   const firstName = requiredText(data.firstName, 'First name', 100)
@@ -40,18 +35,18 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
   const vin = optionalText(data.vin, 17, 'VIN').toUpperCase()
   const condition = requiredText(data.condition, 'Condition', 30)
   const ownership = requiredText(data.ownership, 'Ownership', 30)
-  const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Payoff amount', { min: 0, max: 10_000_000 })
+  const notes = optionalText(data.notes, 2000, 'Información adicional')
+  const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Saldo de prenda', { min: 0, max: 10_000_000_000 })
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
-    throw new SubmissionError('Condition or ownership is invalid.')
+    throw new SubmissionError('El estado o la titularidad no son válidos.')
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
-    throw new SubmissionError('VIN must be a valid 17-character identifier when provided.')
+    throw new SubmissionError('Si cargás el número de chasis, debe tener 17 caracteres.')
   }
 
-  const estimate = preliminaryTradeRange(year, mileage, condition)
   const summary = `${year} ${make} ${model}${trim ? ` ${trim}` : ''}`
 
-  return runPublicSubmission({
+  const outcome: any = await runPublicSubmission({
     context,
     workflow: 'trade-in',
     rooftopSlug: data.rooftopSlug,
@@ -71,6 +66,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
       condition,
       ownership,
       payoffAmount,
+      notes,
       interestedVehicleId: optionalText(data.interestedVehicleId, 100, 'Interested vehicle'),
     },
     aggregateType: 'TradeIn',
@@ -79,7 +75,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
       const vehicle = await resolveAvailableVehicle(transactionContext, data.interestedVehicleId, rooftopId)
       const interested = vehicle
         ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})`
-        : 'No replacement vehicle selected'
+        : 'Ninguno'
       const rooftop = { connect: { id: rooftopId } }
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
@@ -98,7 +94,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
           trim,
           mileage,
           condition,
-          exteriorCondition: 'Storefront appraisal request; detailed exterior inspection pending.',
+          exteriorCondition: notes || 'Solicitud web; falta inspección del exterior.',
           interiorCondition: `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ''}`,
           lead: {
             create: {
@@ -113,10 +109,10 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
               timeframe: 'immediately',
               tradeInVehicle: summary,
               notes: [
-                `Trade-in appraisal request for ${summary}.`,
-                `Automated preliminary range: ${formatCurrency(estimate.min)}–${formatCurrency(estimate.max)}; not a provider-backed valuation or dealership offer.`,
-                `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ''}.`,
-                `Interested inventory: ${interested}.`,
+                `Usado ofrecido desde la web: ${summary}, ${mileage} km.`,
+                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo de prenda informado: ${formatCurrency(payoffAmount)}` : ''}.`,
+                ...(notes ? [`Información del cliente: ${notes}`] : []),
+                `Vehículo de interés: ${interested}.`,
               ].join('\n'),
               ...(vehicle ? { interestedVehicle: { connect: { id: vehicle.id } } } : {}),
             },
@@ -127,12 +123,15 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
       return {
         tradeInId: tradeIn.id,
         leadId: tradeIn.lead.id,
-        estimatedMin: estimate.min,
-        estimatedMax: estimate.max,
-        estimateMode: 'automated-preliminary',
+        estimatedMin: null,
+        estimatedMax: null,
+        estimateMode: 'manual-appraisal',
         providerRequestSent: false,
         vehicle,
       }
     },
   })
+  // El código para adjuntar fotos se emite fuera de la transacción y no queda en la auditoría.
+  const photoToken = !outcome.reused && outcome.tradeInId ? await issueTradeInPhotoToken(context, String(outcome.tradeInId)) : null
+  return { ...outcome, photoToken }
 }

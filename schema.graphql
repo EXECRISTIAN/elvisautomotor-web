@@ -2720,6 +2720,10 @@ type TradeIn {
   kbbValue: Float
   offerAmount: Float
   mainPhoto: ImageFieldOutput
+  photos(where: TradeInPhotoWhereInput! = {}, orderBy: [TradeInPhotoOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TradeInPhotoWhereUniqueInput): [TradeInPhoto!]
+  photosCount(where: TradeInPhotoWhereInput! = {}): Int
+  photoTokenHash: String
+  photoTokenExpiresAt: DateTime
   lead: Lead
   deal: Deal
   appraisedBy: User
@@ -2750,9 +2754,18 @@ input TradeInWhereInput {
   mechanicalIssues: StringFilter
   kbbValueCents: IntNullableFilter
   offerAmountCents: IntNullableFilter
+  photos: TradeInPhotoManyRelationFilter
+  photoTokenHash: StringFilter
+  photoTokenExpiresAt: DateTimeNullableFilter
   lead: LeadWhereInput
   deal: DealWhereInput
   appraisedBy: UserWhereInput
+}
+
+input TradeInPhotoManyRelationFilter {
+  every: TradeInPhotoWhereInput
+  some: TradeInPhotoWhereInput
+  none: TradeInPhotoWhereInput
 }
 
 input TradeInOrderByInput {
@@ -2771,6 +2784,8 @@ input TradeInOrderByInput {
   mechanicalIssues: OrderDirection
   kbbValueCents: OrderDirection
   offerAmountCents: OrderDirection
+  photoTokenHash: OrderDirection
+  photoTokenExpiresAt: OrderDirection
 }
 
 input TradeInUpdateInput {
@@ -2790,9 +2805,19 @@ input TradeInUpdateInput {
   kbbValueCents: Int
   offerAmountCents: Int
   mainPhoto: ImageFieldInput
+  photos: TradeInPhotoRelateToManyForUpdateInput
+  photoTokenHash: String
+  photoTokenExpiresAt: DateTime
   lead: LeadRelateToOneForUpdateInput
   deal: DealRelateToOneForUpdateInput
   appraisedBy: UserRelateToOneForUpdateInput
+}
+
+input TradeInPhotoRelateToManyForUpdateInput {
+  disconnect: [TradeInPhotoWhereUniqueInput!]
+  set: [TradeInPhotoWhereUniqueInput!]
+  create: [TradeInPhotoCreateInput!]
+  connect: [TradeInPhotoWhereUniqueInput!]
 }
 
 input TradeInUpdateArgs {
@@ -2817,9 +2842,73 @@ input TradeInCreateInput {
   kbbValueCents: Int
   offerAmountCents: Int
   mainPhoto: ImageFieldInput
+  photos: TradeInPhotoRelateToManyForCreateInput
+  photoTokenHash: String
+  photoTokenExpiresAt: DateTime
   lead: LeadRelateToOneForCreateInput
   deal: DealRelateToOneForCreateInput
   appraisedBy: UserRelateToOneForCreateInput
+}
+
+input TradeInPhotoRelateToManyForCreateInput {
+  create: [TradeInPhotoCreateInput!]
+  connect: [TradeInPhotoWhereUniqueInput!]
+}
+
+type TradeInPhoto {
+  id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  rooftop: Rooftop
+  tradeIn: TradeIn
+  image: ImageFieldOutput
+  sortOrder: Int
+}
+
+input TradeInPhotoWhereUniqueInput {
+  id: ID
+}
+
+input TradeInPhotoWhereInput {
+  AND: [TradeInPhotoWhereInput!]
+  OR: [TradeInPhotoWhereInput!]
+  NOT: [TradeInPhotoWhereInput!]
+  id: IDFilter
+  createdAt: DateTimeFilter
+  updatedAt: DateTimeFilter
+  rooftop: RooftopWhereInput
+  tradeIn: TradeInWhereInput
+  sortOrder: IntNullableFilter
+}
+
+input TradeInPhotoOrderByInput {
+  id: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+  sortOrder: OrderDirection
+}
+
+input TradeInPhotoUpdateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  rooftop: RooftopRelateToOneForUpdateInput
+  tradeIn: TradeInRelateToOneForUpdateInput
+  image: ImageFieldInput
+  sortOrder: Int
+}
+
+input TradeInPhotoUpdateArgs {
+  where: TradeInPhotoWhereUniqueInput!
+  data: TradeInPhotoUpdateInput!
+}
+
+input TradeInPhotoCreateInput {
+  createdAt: DateTime
+  updatedAt: DateTime
+  rooftop: RooftopRelateToOneForCreateInput
+  tradeIn: TradeInRelateToOneForCreateInput
+  image: ImageFieldInput
+  sortOrder: Int
 }
 
 type ServiceAppointment {
@@ -8452,6 +8541,12 @@ type Mutation {
   updateTradeIns(data: [TradeInUpdateArgs!]!): [TradeIn]
   deleteTradeIn(where: TradeInWhereUniqueInput!): TradeIn
   deleteTradeIns(where: [TradeInWhereUniqueInput!]!): [TradeIn]
+  createTradeInPhoto(data: TradeInPhotoCreateInput!): TradeInPhoto
+  createTradeInPhotos(data: [TradeInPhotoCreateInput!]!): [TradeInPhoto]
+  updateTradeInPhoto(where: TradeInPhotoWhereUniqueInput!, data: TradeInPhotoUpdateInput!): TradeInPhoto
+  updateTradeInPhotos(data: [TradeInPhotoUpdateArgs!]!): [TradeInPhoto]
+  deleteTradeInPhoto(where: TradeInPhotoWhereUniqueInput!): TradeInPhoto
+  deleteTradeInPhotos(where: [TradeInPhotoWhereUniqueInput!]!): [TradeInPhoto]
   createServiceAppointment(data: ServiceAppointmentCreateInput!): ServiceAppointment
   createServiceAppointments(data: [ServiceAppointmentCreateInput!]!): [ServiceAppointment]
   updateServiceAppointment(where: ServiceAppointmentWhereUniqueInput!, data: ServiceAppointmentUpdateInput!): ServiceAppointment
@@ -8786,6 +8881,7 @@ type Mutation {
   reserveVehicle(data: ReserveVehicleInput!): ReserveVehiclePayload!
   submitTestDrive(data: SubmitTestDriveInput!): SubmitTestDrivePayload!
   submitTradeIn(data: SubmitTradeInInput!): SubmitTradeInPayload!
+  attachTradeInPhoto(tradeInId: ID!, photoToken: String!, photo: ImageFieldInput!): AttachTradeInPhotoPayload!
   submitFinancing(data: SubmitFinancingInput!): SubmitFinancingPayload!
   submitServiceBooking(data: SubmitServiceBookingInput!): SubmitServiceBookingPayload!
   transitionDeal(id: ID!, toStatus: String!, notes: String, idempotencyKey: String!): Deal
@@ -8956,6 +9052,9 @@ type Query {
   tradeIn(where: TradeInWhereUniqueInput!): TradeIn
   tradeIns(where: TradeInWhereInput! = {}, orderBy: [TradeInOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TradeInWhereUniqueInput): [TradeIn!]
   tradeInsCount(where: TradeInWhereInput! = {}): Int
+  tradeInPhoto(where: TradeInPhotoWhereUniqueInput!): TradeInPhoto
+  tradeInPhotos(where: TradeInPhotoWhereInput! = {}, orderBy: [TradeInPhotoOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TradeInPhotoWhereUniqueInput): [TradeInPhoto!]
+  tradeInPhotosCount(where: TradeInPhotoWhereInput! = {}): Int
   serviceAppointment(where: ServiceAppointmentWhereUniqueInput!): ServiceAppointment
   serviceAppointments(where: ServiceAppointmentWhereInput! = {}, orderBy: [ServiceAppointmentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ServiceAppointmentWhereUniqueInput): [ServiceAppointment!]
   serviceAppointmentsCount(where: ServiceAppointmentWhereInput! = {}): Int
@@ -9327,6 +9426,10 @@ type PublicInventoryVehicle {
   model: String
   trim: String
   exteriorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
+  isFeatured: Boolean
   mileage: Int
   price: Float
   status: String
@@ -9446,6 +9549,14 @@ type SubmitTradeInPayload {
   providerRequestSent: Boolean
   vehicle: PublicSubmissionVehicle
   reused: Boolean
+  photoToken: String
+}
+
+type AttachTradeInPhotoPayload {
+  ok: Boolean!
+  errorCode: String
+  errorMessage: String
+  count: Int
 }
 
 input SubmitFinancingInput {

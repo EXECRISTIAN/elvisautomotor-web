@@ -107,7 +107,7 @@ export async function sendCustomerEmailVerification(): Promise<AccountActionResu
     )
     return { ok: true, message: `Verification email sent to ${data.requestCustomerEmailVerification.email}.` }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'The verification email could not be sent.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos enviar el email de verificación.') }
   }
 }
 
@@ -120,7 +120,7 @@ export async function confirmCustomerEmail(token: string): Promise<{ ok: true; l
     revalidatePath('/account', 'layout')
     return { ok: true, link: data.confirmCustomerEmailVerification }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'This verification link could not be confirmed.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos confirmar este enlace.') }
   }
 }
 
@@ -133,9 +133,9 @@ export async function cancelCustomerBooking(input: { kind: 'test-drive' | 'servi
       input
     )
     revalidatePath('/account', 'layout')
-    return { ok: true, message: 'Cancelled' }
+    return { ok: true, message: 'Cancelada' }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'This booking could not be cancelled.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos cancelar el turno.') }
   }
 }
 
@@ -148,9 +148,9 @@ export async function rescheduleCustomerBooking(input: { kind: 'test-drive' | 's
       input
     )
     revalidatePath('/account', 'layout')
-    return { ok: true, message: 'Rescheduled' }
+    return { ok: true, message: 'Reprogramada' }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'This booking could not be rescheduled.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos reprogramar el turno.') }
   }
 }
 

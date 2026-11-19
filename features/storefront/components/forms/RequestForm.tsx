@@ -13,7 +13,7 @@ export function RequestLayout({ children, summary }: { children: ReactNode; summ
     <Container className="sf-section">
       <div className="grid gap-[var(--sf-space-xl)] lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start xl:gap-[var(--sf-space-2xl)]">
         <div className="min-w-0">{children}</div>
-        <aside className="hidden lg:sticky lg:top-28 lg:block" aria-label="Request summary">
+        <aside className="hidden lg:sticky lg:top-28 lg:block" aria-label="Resumen de la solicitud">
           {summary}
         </aside>
       </div>
@@ -64,7 +64,7 @@ export function Field({
     <div className={`min-w-0 ${className}`}>
       <label htmlFor={htmlFor} className="sf-label">
         {label}
-        {optional && <span className="sf-faint"> / Optional</span>}
+        {optional && <span className="sf-faint"> / Opcional</span>}
       </label>
       {children}
     </div>
@@ -165,7 +165,7 @@ export function Sticker({
             <div key={row.label} className="sf-sticker-row">
               <dt>{row.label}</dt>
               <dd className={row.strong ? 'font-semibold' : undefined}>
-                {row.value === null || row.value === undefined || row.value === '' ? <span className="sf-faint">Not set</span> : row.value}
+                {row.value === null || row.value === undefined || row.value === '' ? <span className="sf-faint">Sin definir</span> : row.value}
               </dd>
             </div>
           ))}
@@ -202,7 +202,7 @@ export function StickerVehicle({ vehicle, label }: { vehicle: Vehicle; label: st
   )
 }
 
-/* "Request received": status dot on the title line, submitted summary in a sticker, next actions as a button row. */
+/* "Solicitud recibida": status dot on the title line, submitted summary in a sticker, next actions as a button row. */
 export function RequestReceived({
   context,
   reference,
@@ -222,17 +222,17 @@ export function RequestReceived({
         <div className="min-w-0">
           <h1 className="sf-title-line">
             <span className="sf-dot" data-tone="ok" aria-hidden="true" />
-            <span className="sf-display text-[length:var(--sf-text-display)]">Request received</span>
+            <span className="sf-display text-[length:var(--sf-text-display)]">Solicitud recibida</span>
           </h1>
           <p className="sf-muted mt-3 text-[length:var(--sf-text-md)]">{context}</p>
           {reference && (
             <p role="status" className="mt-5 flex flex-wrap items-baseline gap-3">
-              <span className="sf-eyebrow">Reference</span>
+              <span className="sf-eyebrow">Referencia</span>
               <span className="sf-figure text-[length:var(--sf-text-xl)] font-semibold">{reference}</span>
             </p>
           )}
           {note && <p className="sf-muted mt-4 max-w-md text-[length:var(--sf-text-sm)]">{note}</p>}
-          <nav aria-label="Next" className={`mt-[var(--sf-space-lg)] ${ACTION_ROW}`}>
+          <nav aria-label="Siguiente" className={`mt-[var(--sf-space-lg)] ${ACTION_ROW}`}>
             {actions}
           </nav>
         </div>

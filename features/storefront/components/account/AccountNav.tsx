@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 const LINKS = [
-  { href: '/account', label: 'Requests' },
-  { href: '/account/vehicles', label: 'My vehicles' },
-  { href: '/account/service', label: 'Service' },
-  { href: '/account/profile', label: 'Profile' },
+  { href: '/account', label: 'Solicitudes' },
+  { href: '/account/vehicles', label: 'Mis vehículos' },
+  { href: '/account/service', label: 'Taller' },
+  { href: '/account/profile', label: 'Perfil' },
 ]
 
 function isCurrent(pathname: string | null, href: string) {
@@ -22,7 +22,7 @@ export function AccountNav({ children }: { children?: ReactNode }) {
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <nav aria-label="Account" className="sf-track sf-track-block sm:w-auto">
+      <nav aria-label="Cuenta" className="sf-track sf-track-block sm:w-auto">
         {LINKS.map((link) => (
           <Link
             key={link.href}

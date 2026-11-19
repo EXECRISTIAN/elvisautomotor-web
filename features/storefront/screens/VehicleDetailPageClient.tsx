@@ -408,7 +408,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                   <dd>{vehicle.stockNumber}</dd>
                 </div>
                 <div className="sf-sticker-row">
-                  <dt>VIN</dt>
+                  <dt>Chasis (VIN)</dt>
                   <dd className="text-[length:var(--sf-text-xs)]">{vehicle.vin || 'No informado'}</dd>
                 </div>
                 <div className="sf-sticker-row">

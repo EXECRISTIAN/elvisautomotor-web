@@ -34,14 +34,14 @@ export async function PhotoCreditsPage() {
   if (!photos.length) {
     return (
       <>
-        <PageHeader title="Vehicle photography" />
+        <PageHeader title="Fotos de vehículos" />
         <Container className="py-[var(--sf-space-xl)] md:py-[var(--sf-space-2xl)]">
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="sf-title-line font-semibold">
               <span className="sf-dot" aria-hidden="true" />
               No attributed photos listed
             </p>
-            <Link href="/inventory" className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">Inventory</Link>
+            <Link href="/inventory" className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">Inventario</Link>
           </div>
         </Container>
       </>
@@ -51,7 +51,7 @@ export async function PhotoCreditsPage() {
   return (
     <>
       <PageHeader
-        title="Vehicle photography"
+        title="Fotos de vehículos"
         description={`${photos.length} ${photos.length === 1 ? 'photo' : 'photos'} credited`}
       />
       <Container className="py-[var(--sf-space-xl)] md:py-[var(--sf-space-2xl)]">
@@ -67,16 +67,16 @@ export async function PhotoCreditsPage() {
                     <ArrowUpRight className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
                   </a>
                 </dd>
-                <dt className="sf-muted pt-0.5 font-semibold">Author</dt>
+                <dt className="sf-muted pt-0.5 font-semibold">Autor</dt>
                 <dd className="min-w-0 break-words">{photo.author}</dd>
-                <dt className="sf-muted pt-0.5 font-semibold">License</dt>
+                <dt className="sf-muted pt-0.5 font-semibold">Licencia</dt>
                 <dd className="min-w-0">
                   <a href={photo.licenseUrl} target="_blank" rel="license noopener noreferrer" className="sf-link inline-flex items-start gap-1">
                     <span className="min-w-0">{photo.license}</span>
                     <ArrowUpRight className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
                   </a>
                 </dd>
-                <dt className="sf-muted pt-0.5 font-semibold">Changes</dt>
+                <dt className="sf-muted pt-0.5 font-semibold">Cambios</dt>
                 <dd className="sf-muted min-w-0 break-words">{photo.changes}</dd>
               </dl>
             </li>

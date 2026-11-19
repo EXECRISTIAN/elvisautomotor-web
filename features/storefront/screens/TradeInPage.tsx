@@ -7,12 +7,13 @@ import { useSearchParams } from 'next/navigation'
 import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
 import { GET_VEHICLE_BY_ID } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
-import { submitStorefrontTradeIn } from '../actions/submissions'
+import { submitStorefrontTradeIn, uploadStorefrontTradeInPhoto } from '../actions/submissions'
+import { WhatsAppButton } from '../components/WhatsAppButton'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatMileage, formatPrice } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
-import { transitionTradeInStep, TRADE_IN_ESTIMATE_DISCLAIMER } from '../lib/tradeInForm'
+import { transitionTradeInStep } from '../lib/tradeInForm'
 import { fillBlankFields, useCustomerPrefill } from '../lib/useCustomerPrefill'
 import { currencySymbol } from '../lib/format'
 import {
@@ -28,29 +29,47 @@ import {
   type StickerRowData,
 } from '../components/forms/RequestForm'
 
+// Marcas habituales en Argentina (el campo acepta cualquier otra).
 const MAKES = [
-  'Acura', 'Audi', 'BMW', 'Chevrolet', 'Ford', 'Honda', 'Hyundai', 'Kia', 'Lexus', 'Mazda',
-  'Mercedes-Benz', 'Nissan', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen',
+  'Audi', 'BMW', 'Chery', 'Chevrolet', 'Citroën', 'Fiat', 'Ford', 'Honda', 'Hyundai', 'Jeep', 'Kia',
+  'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Peugeot', 'Ram', 'Renault', 'Suzuki', 'Toyota', 'Volkswagen',
 ]
+const MAX_PHOTOS = 8
+
+/** Achica la foto en el navegador (máx. 1600 px, JPEG) para que suba rápido desde el celular. */
+async function shrinkPhoto(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85))
+    return blob ? new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file
+  } catch {
+    return file
+  }
+}
 const currentYear = new Date().getFullYear()
 // Matches the server's accepted range (1980 through next model year).
 const OLDEST_TRADE_YEAR = 1980
 const YEARS = Array.from({ length: currentYear + 1 - OLDEST_TRADE_YEAR + 1 }, (_, i) => currentYear + 1 - i)
 
 const CONDITIONS = [
-  { value: 'excellent', label: 'Excellent' },
-  { value: 'good', label: 'Good' },
-  { value: 'fair', label: 'Fair' },
-  { value: 'poor', label: 'Poor' },
+  { value: 'excellent', label: 'Excelente' },
+  { value: 'good', label: 'Bueno' },
+  { value: 'fair', label: 'Regular' },
+  { value: 'poor', label: 'Malo' },
 ]
 
 const OWNERSHIP = [
-  { value: 'own', label: 'Owned' },
-  { value: 'financing', label: 'Financing' },
-  { value: 'lease', label: 'Lease' },
+  { value: 'own', label: 'Propio, sin deuda' },
+  { value: 'financing', label: 'Con prenda / crédito' },
+  { value: 'lease', label: 'Leasing' },
 ]
 
-const STEPS = ['Vehicle', 'Condition', 'Contact']
+const STEPS = ['Vehículo', 'Estado y fotos', 'Contacto']
 
 const EMPTY = {
   year: '',
@@ -62,6 +81,7 @@ const EMPTY = {
   condition: 'good',
   ownership: 'own',
   payoffAmount: '',
+  notes: '',
   firstName: '',
   lastName: '',
   email: '',
@@ -85,7 +105,10 @@ export function TradeInPage() {
   const [stepError, setStepError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [interestedVehicle, setInterestedVehicle] = useState<Vehicle | null>(null)
-  const [estimate, setEstimate] = useState<{ min: number; max: number } | null>(null)
+  const [photos, setPhotos] = useState<{ id: string; file: File; url: string }[]>([])
+  const [photoNotice, setPhotoNotice] = useState<string | null>(null)
+  const [photoProgress, setPhotoProgress] = useState<string | null>(null)
+  const [uploadedPhotos, setUploadedPhotos] = useState(0)
   const prefill = useCustomerPrefill()
   const contactPrefill = prefill
     ? { firstName: prefill.firstName, lastName: prefill.lastName, email: prefill.email, phone: prefill.phone }
@@ -123,16 +146,24 @@ export function TradeInPage() {
       })
       if (!result.success) throw new Error(result.error)
       setSubmissionReference(customerRequestReference('trade-in', result.data.tradeInId))
-      const { estimatedMin, estimatedMax } = result.data
-      setEstimate(
-        Number.isFinite(estimatedMin) && Number.isFinite(estimatedMax) && Number(estimatedMax) > 0
-          ? { min: Number(estimatedMin), max: Number(estimatedMax) }
-          : null
-      )
+      let uploaded = 0
+      if (photos.length && result.data.tradeInId && result.data.photoToken) {
+        for (const [index, photo] of photos.entries()) {
+          setPhotoProgress(`Subiendo foto ${index + 1} de ${photos.length}…`)
+          const form = new FormData()
+          form.append('tradeInId', result.data.tradeInId)
+          form.append('photoToken', result.data.photoToken)
+          form.append('photo', await shrinkPhoto(photo.file))
+          const upload = await uploadStorefrontTradeInPhoto(form).catch(() => null)
+          if (upload?.success) uploaded += 1
+        }
+        setPhotoProgress(null)
+      }
+      setUploadedPhotos(uploaded)
       setIdempotencyKey(crypto.randomUUID())
       setSubmitted(true)
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'There was an error submitting your trade-in request. Please try again.')
+      setSubmitError(error instanceof Error ? error.message : 'No pudimos enviar tu solicitud. Intentá de nuevo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -164,7 +195,9 @@ export function TradeInPage() {
     setStep(1)
     setFormData(fillBlankFields(EMPTY, contactPrefill))
     setSubmissionReference(null)
-    setEstimate(null)
+    photos.forEach((photo) => URL.revokeObjectURL(photo.url))
+    setPhotos([])
+    setUploadedPhotos(0)
     setStepError(null)
     setSubmitError(null)
     setIdempotencyKey(crypto.randomUUID())
@@ -173,49 +206,41 @@ export function TradeInPage() {
   const mileage = Number(formData.mileage)
   const payoff = Number(formData.payoffAmount)
   const vehicleRows: StickerRowData[] = [
-    { label: 'Vehicle', value: [formData.year, formData.make, formData.model, formData.trim].filter(Boolean).join(' '), strong: true },
-    { label: 'Mileage', value: formData.mileage && Number.isFinite(mileage) ? formatMileage(mileage) : null },
-    ...(formData.vin ? [{ label: 'VIN', value: formData.vin }] : []),
-    { label: 'Condition', value: optionLabel(CONDITIONS, formData.condition) },
-    { label: 'Ownership', value: optionLabel(OWNERSHIP, formData.ownership) },
+    { label: 'Vehículo', value: [formData.year, formData.make, formData.model, formData.trim].filter(Boolean).join(' '), strong: true },
+    { label: 'Kilometraje', value: formData.mileage && Number.isFinite(mileage) ? formatMileage(mileage) : null },
+    ...(formData.vin ? [{ label: 'Chasis', value: formData.vin }] : []),
+    { label: 'Estado', value: optionLabel(CONDITIONS, formData.condition) },
+    { label: 'Titularidad', value: optionLabel(OWNERSHIP, formData.ownership) },
     ...(formData.ownership === 'financing' && formData.payoffAmount && Number.isFinite(payoff)
-      ? [{ label: 'Payoff', value: formatPrice(payoff, business.currencyCode) }]
+      ? [{ label: 'Saldo de prenda', value: formatPrice(payoff, business.currencyCode) }]
       : []),
+    ...(photos.length ? [{ label: 'Fotos', value: String(photos.length) }] : []),
   ]
   const contactName = [formData.firstName, formData.lastName].filter(Boolean).join(' ')
 
   const sticker = (rows: StickerRowData[], meta?: string) => (
-    <Sticker title="Trade-in" meta={meta} rows={rows}>
-      {interestedVehicle && <StickerVehicle vehicle={interestedVehicle} label="Trading toward" />}
+    <Sticker title="Vendelo en Elvis" meta={meta} rows={rows}>
+      {interestedVehicle && <StickerVehicle vehicle={interestedVehicle} label="Para cambiar por" />}
     </Sticker>
   )
 
   if (submitted) {
     return (
       <RequestReceived
-        context="Trade-in"
+        context="Vendelo en Elvis"
         reference={submissionReference}
-        note={estimate
-          ? TRADE_IN_ESTIMATE_DISCLAIMER
-          : 'Any offer, if made, will be shared separately after inspection and dealership review.'}
+        note={`Un asesor revisa los datos${photos.length ? ' y las fotos' : ''} y te contacta con la tasación. No es una oferta automática: el valor final surge de la revisión del vehículo.${photos.length && uploadedPhotos < photos.length ? ` Se subieron ${uploadedPhotos} de ${photos.length} fotos; podés mandar las que faltan por WhatsApp.` : ''}`}
         summary={sticker([
-          ...(estimate
-            ? [{
-                label: 'Preliminary range',
-                value: <span className="sf-figure">{formatPrice(estimate.min, business.currencyCode)} to {formatPrice(estimate.max, business.currencyCode)}</span>,
-                strong: true,
-              }]
-            : []),
           ...vehicleRows,
-          { label: 'Name', value: contactName },
+          { label: 'Nombre', value: contactName },
           { label: 'Email', value: formData.email },
-          { label: 'Phone', value: formData.phone },
+          { label: 'Teléfono', value: formData.phone },
         ], business.shortName || business.fullName)}
         actions={
           <>
-            <Link href="/inventory" className="sf-btn sf-btn-primary">Browse inventory</Link>
-            <button type="button" onClick={reset} className="sf-btn sf-btn-ghost">New trade-in request</button>
-            <Link href="/financing" className="sf-btn sf-btn-ghost">Financing</Link>
+            <Link href="/inventory" className="sf-btn sf-btn-primary">Ver inventario</Link>
+            <WhatsAppButton label="Enviar más fotos por WhatsApp" message={`Hola ${business.shortName}, envío fotos de mi ${[formData.make, formData.model, formData.year].filter(Boolean).join(' ')}${submissionReference ? ` (referencia ${submissionReference})` : ''}.`} className="sf-btn sf-btn-ghost" />
+            <button type="button" onClick={reset} className="sf-btn sf-btn-ghost">Cotizar otro auto</button>
           </>
         }
       />
@@ -224,15 +249,15 @@ export function TradeInPage() {
 
   const summary = sticker(
     step === 3 ? [...vehicleRows, { label: 'Name', value: contactName }] : vehicleRows,
-    `Step ${step}/3`,
+    `Paso ${step}/3`,
   )
 
   return (
     <>
-      <PageHeader title="Trade-in review" />
+      <PageHeader title="Vendelo en Elvis" />
 
       <RequestLayout summary={summary}>
-        <ol className="sf-track mb-[var(--sf-space-lg)]" aria-label="Steps">
+        <ol className="sf-track mb-[var(--sf-space-lg)]" aria-label="Pasos">
           {STEPS.map((label, i) => {
             const n = i + 1
             return (
@@ -263,35 +288,36 @@ export function TradeInPage() {
           />
 
           {step === 1 && (
-            <FormSection title="Your vehicle" first>
+            <FormSection title="Tu vehículo" first>
               <div className="grid gap-4">
-                <Field label="Year" htmlFor="trade-year">
-                  <PlatformSelect id="trade-year" name="year" required value={formData.year} onValueChange={(v) => setFormData((p) => ({ ...p, year: v }))} className="sf-input sf-trigger" placeholder="Select year" searchable options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+                <Field label="Año" htmlFor="trade-year">
+                  <PlatformSelect id="trade-year" name="year" required value={formData.year} onValueChange={(v) => setFormData((p) => ({ ...p, year: v }))} className="sf-input sf-trigger" placeholder="Elegí el año" searchable options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
                 </Field>
-                <Field label="Make" htmlFor="trade-make">
-                  <PlatformSelect id="trade-make" name="make" required value={formData.make} onValueChange={(v) => setFormData((p) => ({ ...p, make: v }))} className="sf-input sf-trigger" placeholder="Select make" searchable options={MAKES.map((m) => ({ value: m, label: m }))} />
+                <Field label="Marca" htmlFor="trade-make">
+                  <input id="trade-make" type="text" required list="trade-make-options" value={formData.make} onChange={(e) => setFormData((p) => ({ ...p, make: e.target.value }))} className="sf-input" placeholder="Ej.: Volkswagen" autoComplete="off" />
+                  <datalist id="trade-make-options">{MAKES.map((m) => <option key={m} value={m} />)}</datalist>
                 </Field>
-                <Field label="Model" htmlFor="trade-model">
-                  <input id="trade-model" type="text" required value={formData.model} onChange={(e) => setFormData((p) => ({ ...p, model: e.target.value }))} className="sf-input" placeholder="e.g. Accord" />
+                <Field label="Modelo" htmlFor="trade-model">
+                  <input id="trade-model" type="text" required value={formData.model} onChange={(e) => setFormData((p) => ({ ...p, model: e.target.value }))} className="sf-input" placeholder="Ej.: Gol Trend" />
                 </Field>
-                <Field label="Trim" htmlFor="trade-trim" optional>
-                  <input id="trade-trim" type="text" value={formData.trim} onChange={(e) => setFormData((p) => ({ ...p, trim: e.target.value }))} className="sf-input" placeholder="e.g. Sport" />
+                <Field label="Versión" htmlFor="trade-trim" optional>
+                  <input id="trade-trim" type="text" value={formData.trim} onChange={(e) => setFormData((p) => ({ ...p, trim: e.target.value }))} className="sf-input" placeholder="Ej.: Highline" />
                 </Field>
-                <Field label="Mileage" htmlFor="trade-mileage">
-                  <input id="trade-mileage" type="number" inputMode="numeric" required min="0" max="2000000" step="1" value={formData.mileage} onChange={(e) => setFormData((p) => ({ ...p, mileage: e.target.value }))} className="sf-input sf-figure" placeholder="e.g. 45,000" />
+                <Field label="Kilometraje" htmlFor="trade-mileage">
+                  <input id="trade-mileage" type="number" inputMode="numeric" required min="0" max="2000000" step="1" value={formData.mileage} onChange={(e) => setFormData((p) => ({ ...p, mileage: e.target.value }))} className="sf-input sf-figure" placeholder="Ej.: 85000" />
                 </Field>
-                <Field label="VIN" htmlFor="trade-vin" optional>
-                  <input id="trade-vin" type="text" value={formData.vin} onChange={(e) => setFormData((p) => ({ ...p, vin: e.target.value }))} className="sf-input sf-figure" placeholder="17 characters" maxLength={17} autoCapitalize="characters" spellCheck={false} />
+                <Field label="Número de chasis (VIN)" htmlFor="trade-vin" optional>
+                  <input id="trade-vin" type="text" value={formData.vin} onChange={(e) => setFormData((p) => ({ ...p, vin: e.target.value }))} className="sf-input sf-figure" placeholder="17 caracteres" maxLength={17} autoCapitalize="characters" spellCheck={false} />
                 </Field>
               </div>
             </FormSection>
           )}
 
           {step === 2 && (
-            <FormSection title="Condition" first>
+            <FormSection title="Estado y fotos" first>
               <div className="space-y-5">
                 <RadioPills
-                  legend="Overall condition"
+                  legend="Estado general"
                   name="condition"
                   required
                   variant="grid"
@@ -301,7 +327,7 @@ export function TradeInPage() {
                   options={CONDITIONS}
                 />
                 <RadioPills
-                  legend="Ownership"
+                  legend="Titularidad"
                   name="ownership"
                   required
                   variant="grid"
@@ -311,30 +337,68 @@ export function TradeInPage() {
                   options={OWNERSHIP}
                 />
                 {formData.ownership === 'financing' && (
-                  <Field label="Estimated payoff" htmlFor="trade-payoff" className="sm:max-w-xs">
+                  <Field label="Saldo aproximado de la prenda" htmlFor="trade-payoff" className="sm:max-w-xs">
                     <div className="relative">
                       <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{currencySymbol(business.currencyCode)}</span>
                       <input id="trade-payoff" type="number" inputMode="decimal" min="0" step="1" value={formData.payoffAmount} onChange={(e) => setFormData((p) => ({ ...p, payoffAmount: e.target.value }))} className="sf-input sf-figure pl-8" />
                     </div>
                   </Field>
                 )}
+                <Field label="Información adicional" htmlFor="trade-notes" optional>
+                  <textarea id="trade-notes" rows={3} maxLength={2000} value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} className="sf-input resize-y" placeholder="Service al día, detalles de chapa, cubiertas, único dueño…" />
+                </Field>
+                <div>
+                  <p className="sf-label">Fotos <span className="sf-faint">/ Opcional, hasta {MAX_PHOTOS}</span></p>
+                  <p className="sf-muted mb-3 text-[length:var(--sf-text-sm)]">Frente, laterales, interior, tablero con el kilometraje y cualquier detalle. Se achican automáticamente antes de enviarse.</p>
+                  {photos.length > 0 && (
+                    <ul className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-6" aria-label="Fotos elegidas">
+                      {photos.map((photo, index) => (
+                        <li key={photo.id} className="relative aspect-square overflow-hidden rounded-[var(--sf-radius-sm)] border" style={{ borderColor: 'var(--sf-rule)' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={photo.url} alt={`Foto ${index + 1}`} className="size-full object-cover" />
+                          <button type="button" onClick={() => { URL.revokeObjectURL(photo.url); setPhotos((current) => current.filter((item) => item.id !== photo.id)) }} className="absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-black/75 text-white" aria-label={`Quitar foto ${index + 1}`}>×</button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {photos.length < MAX_PHOTOS && (
+                    <label className="sf-btn sf-btn-ghost cursor-pointer">
+                      Agregar fotos
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        className="sr-only"
+                        onChange={(event) => {
+                          const files = Array.from(event.target.files || [])
+                          event.target.value = ''
+                          const valid = files.filter((file) => /^image\/(jpeg|png|webp)$/.test(file.type))
+                          const room = MAX_PHOTOS - photos.length
+                          setPhotoNotice(valid.length < files.length ? 'Algunos archivos no son fotos JPG, PNG o WebP y no se agregaron.' : valid.length > room ? `Podés agregar hasta ${MAX_PHOTOS} fotos.` : null)
+                          setPhotos((current) => [...current, ...valid.slice(0, room).map((file) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) }))])
+                        }}
+                      />
+                    </label>
+                  )}
+                  {photoNotice && <p className="sf-error mt-2">{photoNotice}</p>}
+                </div>
               </div>
             </FormSection>
           )}
 
           {step === 3 && (
-            <FormSection title="Contact" first>
+            <FormSection title="Tus datos" first>
               <div className="grid gap-4">
-                <Field label="First name" htmlFor="trade-first-name">
+                <Field label="Nombre" htmlFor="trade-first-name">
                   <input id="trade-first-name" type="text" required autoComplete="given-name" value={formData.firstName} onChange={(e) => setFormData((p) => ({ ...p, firstName: e.target.value }))} className="sf-input" />
                 </Field>
-                <Field label="Last name" htmlFor="trade-last-name">
+                <Field label="Apellido" htmlFor="trade-last-name">
                   <input id="trade-last-name" type="text" required autoComplete="family-name" value={formData.lastName} onChange={(e) => setFormData((p) => ({ ...p, lastName: e.target.value }))} className="sf-input" />
                 </Field>
                 <Field label="Email" htmlFor="trade-email">
                   <input id="trade-email" type="email" required autoComplete="email" value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} className="sf-input" />
                 </Field>
-                <Field label="Phone" htmlFor="trade-phone">
+                <Field label="Teléfono" htmlFor="trade-phone">
                   <input id="trade-phone" type="tel" required autoComplete="tel" value={formData.phone} onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))} className="sf-input" />
                 </Field>
               </div>
@@ -350,11 +414,11 @@ export function TradeInPage() {
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
               {step > 1 && (
                 <button type="button" onClick={() => goBack(step === 3 ? 2 : 1)} className="sf-btn sf-btn-ghost w-full sm:w-auto">
-                  Back
+                  Volver
                 </button>
               )}
               <button type="submit" disabled={step === 3 && isSubmitting} className="sf-btn sf-btn-primary w-full sm:w-auto sm:min-w-56">
-                {step === 3 ? (isSubmitting ? 'Sending…' : 'Send trade-in request') : 'Continue'}
+                {step === 3 ? (isSubmitting ? (photoProgress || 'Enviando…') : 'Enviar para cotizar') : 'Continuar'}
               </button>
             </div>
           </div>

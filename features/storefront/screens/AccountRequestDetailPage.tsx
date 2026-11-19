@@ -19,9 +19,9 @@ import { TRADE_IN_ESTIMATE_DISCLAIMER } from '../lib/tradeInForm'
 function vehicleRows(vehicle: any): StickerRowData[] {
   if (!vehicle) return []
   return [
-    { label: 'Vehicle', value: vehicle.label },
+    { label: 'Vehículo', value: vehicle.label },
     ...(vehicle.stockNumber ? [{ label: 'Stock', value: vehicle.stockNumber }] : []),
-    ...(vehicle.vin ? [{ label: 'VIN', value: vehicle.vin }] : []),
+    ...(vehicle.vin ? [{ label: 'Chasis (VIN)', value: vehicle.vin }] : []),
   ]
 }
 
@@ -36,8 +36,8 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
   if (!result.ok) {
     return (
       <div className="space-y-4">
-        <AccountBack href="/account" label="Requests" />
-        <AccountError title="Request couldn't be loaded." retryHref={parsed ? customerRequestPath(parsed.kind, parsed.id) : '/account'} />
+        <AccountBack href="/account" label="Solicitudes" />
+        <AccountError title="No pudimos cargar la solicitud." retryHref={parsed ? customerRequestPath(parsed.kind, parsed.id) : '/account'} />
       </div>
     )
   }
@@ -45,8 +45,8 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
   if (!parsed || !detail) {
     return (
       <div className="space-y-4">
-        <AccountBack href="/account" label="Requests" />
-        <AccountEmpty>Request not found.</AccountEmpty>
+        <AccountBack href="/account" label="Solicitudes" />
+        <AccountEmpty>No encontramos la solicitud.</AccountEmpty>
       </div>
     )
   }
@@ -54,40 +54,40 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
   const kind = parsed.kind
   const reference = customerFacingReference(kind, detail.id, kind === 'financing' ? detail.reference : null)
   const tz = detail.timezone as string | null
-  const rows: StickerRowData[] = [{ label: 'Reference', value: reference }]
+  const rows: StickerRowData[] = [{ label: 'Referencia', value: reference }]
   let body: React.ReactNode = null
 
   if (kind === 'test-drive') {
     rows.push(
-      { label: 'Time', value: formatDateTime(detail.scheduledAt, tz), strong: true },
+      { label: 'Hora', value: formatDateTime(detail.scheduledAt, tz), strong: true },
       ...vehicleRows(detail.vehicle),
-      { label: 'Submitted', value: formatDateTime(detail.submittedAt, tz) },
-      ...(detail.cancelledAt ? [{ label: 'Cancelled', value: formatDateTime(detail.cancelledAt, tz) }] : []),
+      { label: 'Enviada', value: formatDateTime(detail.submittedAt, tz) },
+      ...(detail.cancelledAt ? [{ label: 'Cancelada', value: formatDateTime(detail.cancelledAt, tz) }] : []),
     )
     body = (
-      <AccountSection title="Manage">
+      <AccountSection title="Gestionar">
         <BookingActions kind="test-drive" id={detail.id} canCancel={Boolean(detail.canCancel)} canReschedule={Boolean(detail.canReschedule)} />
       </AccountSection>
     )
   } else if (kind === 'service') {
     rows.push(
-      { label: 'Time', value: formatDateTime(detail.scheduledAt, tz), strong: true },
-      ...(detail.servicePackage ? [{ label: 'Package', value: detail.servicePackage.name }] : []),
-      ...(detail.servicePackage?.priceCents != null ? [{ label: 'Package price', value: formatCents(detail.servicePackage.priceCents) }] : []),
-      ...(detail.serviceType ? [{ label: 'Service', value: statusLabel(detail.serviceType) }] : []),
-      { label: 'Vehicle', value: detail.vehicleDescription },
-      ...(detail.vehicleVin ? [{ label: 'VIN', value: detail.vehicleVin }] : []),
-      { label: 'Submitted', value: formatDateTime(detail.submittedAt, tz) },
+      { label: 'Hora', value: formatDateTime(detail.scheduledAt, tz), strong: true },
+      ...(detail.servicePackage ? [{ label: 'Paquete', value: detail.servicePackage.name }] : []),
+      ...(detail.servicePackage?.priceCents != null ? [{ label: 'Precio del paquete', value: formatCents(detail.servicePackage.priceCents) }] : []),
+      ...(detail.serviceType ? [{ label: 'Taller', value: statusLabel(detail.serviceType) }] : []),
+      { label: 'Vehículo', value: detail.vehicleDescription },
+      ...(detail.vehicleVin ? [{ label: 'Chasis (VIN)', value: detail.vehicleVin }] : []),
+      { label: 'Enviada', value: formatDateTime(detail.submittedAt, tz) },
     )
     const order = detail.serviceOrder
     body = (
       <>
         {detail.concern && (
-          <AccountSection title="Concern">
+          <AccountSection title="Motivo">
             <p className="whitespace-pre-line text-[length:var(--sf-text-sm)]">{detail.concern}</p>
           </AccountSection>
         )}
-        <AccountSection title="Repair order">
+        <AccountSection title="Orden de trabajo">
           {order ? (
             <Link
               href={`/account/service/${encodeURIComponent(order.id)}`}
@@ -95,26 +95,26 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
             >
               <span className="sf-title-line">
                 <span className="sf-dot" data-tone={statusTone(order.status)} aria-hidden="true" />
-                <span className="sf-heading">{order.invoiceNumber ? `Invoice ${order.invoiceNumber}` : 'Repair order'}</span>
+                <span className="sf-heading">{order.invoiceNumber ? `Invoice ${order.invoiceNumber}` : 'Orden de trabajo'}</span>
                 <span className="sf-muted text-[length:var(--sf-text-sm)]">{serviceOrderStatusLabel(order.status)}</span>
               </span>
               {order.grandTotalCents != null && <span className="sf-price">{formatCents(order.grandTotalCents)}</span>}
             </Link>
           ) : (
-            <AccountEmpty>No repair order yet.</AccountEmpty>
+            <AccountEmpty>Todavía no hay orden de trabajo.</AccountEmpty>
           )}
         </AccountSection>
-        <AccountSection title="Manage">
+        <AccountSection title="Gestionar">
           <BookingActions kind="service" id={detail.id} canCancel={Boolean(detail.canCancel)} canReschedule={Boolean(detail.canReschedule)} />
         </AccountSection>
       </>
     )
   } else if (kind === 'inquiry') {
     rows.push(
-      ...(detail.intentLabel ? [{ label: 'Request', value: detail.intentLabel }] : []),
+      ...(detail.intentLabel ? [{ label: 'Solicitud', value: detail.intentLabel }] : []),
       ...vehicleRows(detail.vehicle),
-      ...(detail.preferredContact ? [{ label: 'Contact by', value: statusLabel(detail.preferredContact) }] : []),
-      { label: 'Submitted', value: formatDateTime(detail.submittedAt, tz) },
+      ...(detail.preferredContact ? [{ label: 'Contacto por', value: statusLabel(detail.preferredContact) }] : []),
+      { label: 'Enviada', value: formatDateTime(detail.submittedAt, tz) },
     )
   } else if (kind === 'trade-in') {
     const range = detail.estimatedMin != null && detail.estimatedMax != null
@@ -122,11 +122,11 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
       : null
     rows.push(
       ...vehicleRows(detail.vehicle),
-      ...(detail.mileage != null ? [{ label: 'Mileage', value: `${new Intl.NumberFormat('en-US').format(detail.mileage)} mi` }] : []),
-      ...(detail.condition ? [{ label: 'Condition', value: statusLabel(detail.condition) }] : []),
-      ...(range ? [{ label: 'Preliminary range', value: range }] : []),
-      { label: 'Offer', value: detail.offerAmountCents != null ? formatCents(detail.offerAmountCents) : detail.status === 'closed' ? 'No offer' : 'Pending appraisal', strong: true },
-      { label: 'Submitted', value: formatDateTime(detail.submittedAt, tz) },
+      ...(detail.mileage != null ? [{ label: 'Kilometraje', value: `${new Intl.NumberFormat('en-US').format(detail.mileage)} mi` }] : []),
+      ...(detail.condition ? [{ label: 'Condición', value: statusLabel(detail.condition) }] : []),
+      ...(range ? [{ label: 'Rango preliminar', value: range }] : []),
+      { label: 'Oferta', value: detail.offerAmountCents != null ? formatCents(detail.offerAmountCents) : detail.status === 'closed' ? 'Sin oferta' : 'Pendiente de tasación', strong: true },
+      { label: 'Enviada', value: formatDateTime(detail.submittedAt, tz) },
     )
     if (range) {
       body = <p className="sf-muted mt-[var(--sf-space-md)] text-[length:var(--sf-text-sm)]">{TRADE_IN_ESTIMATE_DISCLAIMER}</p>
@@ -134,16 +134,16 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
   } else if (kind === 'financing') {
     rows.push(
       ...vehicleRows(detail.vehicle),
-      ...(detail.requestedAmountCents != null ? [{ label: 'Amount', value: formatCents(detail.requestedAmountCents) }] : []),
-      ...(detail.plannedDownPaymentCents != null ? [{ label: 'Down payment', value: formatCents(detail.plannedDownPaymentCents) }] : []),
-      ...(detail.loanTermMonths != null ? [{ label: 'Term', value: `${detail.loanTermMonths} mo` }] : []),
-      { label: 'Submitted', value: formatDateTime(detail.submittedAt, tz) },
+      ...(detail.requestedAmountCents != null ? [{ label: 'Importe', value: formatCents(detail.requestedAmountCents) }] : []),
+      ...(detail.plannedDownPaymentCents != null ? [{ label: 'Anticipo', value: formatCents(detail.plannedDownPaymentCents) }] : []),
+      ...(detail.loanTermMonths != null ? [{ label: 'Plazo', value: `${detail.loanTermMonths} mo` }] : []),
+      { label: 'Enviada', value: formatDateTime(detail.submittedAt, tz) },
     )
     const decisions = Array.isArray(detail.decisions) ? detail.decisions : []
     body = (
-      <AccountSection title="Lender decisions">
+      <AccountSection title="Respuestas de entidades">
         {decisions.length === 0 ? (
-          <AccountEmpty>No lender decision yet.</AccountEmpty>
+          <AccountEmpty>Todavía no hay respuesta de la entidad.</AccountEmpty>
         ) : (
           <ul className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
             {decisions.map((decision: any) => (
@@ -154,10 +154,10 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
                   <span className="sf-muted text-[length:var(--sf-text-sm)]">{formatDateTime(decision.decidedAt, tz)}</span>
                 </p>
                 <dl className="sf-spec mt-3">
-                  {decision.approvedAmountCents != null && <div><dt>Approved</dt><dd className="sf-figure">{formatCents(decision.approvedAmountCents)}</dd></div>}
-                  {decision.aprBasisPoints != null && <div><dt>APR</dt><dd className="sf-figure">{percent(decision.aprBasisPoints)}</dd></div>}
-                  {decision.termMonths != null && <div><dt>Term</dt><dd className="sf-figure">{decision.termMonths} mo</dd></div>}
-                  {decision.monthlyPaymentCents != null && <div><dt>Payment</dt><dd className="sf-figure">{formatCents(decision.monthlyPaymentCents)}</dd></div>}
+                  {decision.approvedAmountCents != null && <div><dt>Aprobada</dt><dd className="sf-figure">{formatCents(decision.approvedAmountCents)}</dd></div>}
+                  {decision.aprBasisPoints != null && <div><dt>TNA</dt><dd className="sf-figure">{percent(decision.aprBasisPoints)}</dd></div>}
+                  {decision.termMonths != null && <div><dt>Plazo</dt><dd className="sf-figure">{decision.termMonths} mo</dd></div>}
+                  {decision.monthlyPaymentCents != null && <div><dt>Cuota</dt><dd className="sf-figure">{formatCents(decision.monthlyPaymentCents)}</dd></div>}
                 </dl>
               </li>
             ))}
@@ -169,17 +169,17 @@ export async function AccountRequestDetailPage({ refParam }: { refParam: string 
 
   return (
     <section className="pb-24">
-      <AccountBack href="/account" label="Requests" />
+      <AccountBack href="/account" label="Solicitudes" />
       <div className="mt-2">
         <AccountHeader
           reference={reference}
-          title={detail.label || 'Request'}
+          title={detail.label || 'Solicitud'}
           tone={statusTone(detail.status)}
           status={customerRequestStatusLabel(kind, detail.status)}
         />
       </div>
       <div className="mt-[var(--sf-space-lg)] max-w-xl">
-        <Sticker title={detail.label || 'Request'} meta={reference} rows={rows} />
+        <Sticker title={detail.label || 'Solicitud'} meta={reference} rows={rows} />
       </div>
       {body}
     </section>

@@ -466,7 +466,7 @@ module.exports = __toCommonJS(keystone_exports);
 
 // features/keystone/index.ts
 var import_auth = require("@keystone-6/auth");
-var import_core71 = require("@keystone-6/core");
+var import_core72 = require("@keystone-6/core");
 var import_config = require("dotenv/config");
 
 // features/keystone/models/User.ts
@@ -3699,6 +3699,17 @@ var TradeIn = (0, import_core16.list)({
       storage: "my_images",
       label: "Main Photo"
     }),
+    photos: (0, import_fields21.relationship)({
+      ref: "TradeInPhoto.tradeIn",
+      many: true,
+      label: "Fotos del cliente",
+      access: { create: import_access24.denyAll, update: import_access24.denyAll },
+      ui: { displayMode: "count" }
+    }),
+    // Código temporal para que el cliente adjunte fotos justo después de enviar el formulario.
+    // Se guarda solo el hash (nunca el código) y vence a la hora.
+    photoTokenHash: (0, import_fields21.text)({ access: { read: import_access24.denyAll, create: import_access24.denyAll, update: import_access24.denyAll }, ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" }, createView: { fieldMode: "hidden" } } }),
+    photoTokenExpiresAt: (0, import_fields21.timestamp)({ access: { read: import_access24.denyAll, create: import_access24.denyAll, update: import_access24.denyAll }, ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" }, createView: { fieldMode: "hidden" } } }),
     // Relationships
     lead: (0, import_fields21.relationship)({
       access: { create: import_access24.denyAll, update: import_access24.denyAll },
@@ -3730,11 +3741,42 @@ var TradeIn = (0, import_core16.list)({
   }
 });
 
-// features/keystone/models/ServiceAppointment.ts
+// features/keystone/models/TradeInPhoto.ts
 var import_core17 = require("@keystone-6/core");
-var import_access26 = require("@keystone-6/core/access");
 var import_fields22 = require("@keystone-6/core/fields");
-var ServiceAppointment = (0, import_core17.list)({
+var readFilter = ({ session }) => {
+  const filter = rules.canReadTradeIns({ session });
+  if (typeof filter === "boolean") return filter;
+  return { tradeIn: filter };
+};
+var TradeInPhoto = (0, import_core17.list)({
+  access: {
+    operation: {
+      query: permissions.canAccessTradeIns,
+      create: () => false,
+      update: () => false,
+      delete: permissions.canManageTradeIns
+    },
+    filter: { query: readFilter, delete: readFilter }
+  },
+  hooks: {
+    validate: (args) => args.operation === "delete" ? void 0 : validateRooftopRecord(args, [{ field: "tradeIn", listKey: "TradeIn" }])
+  },
+  ui: { hideCreate: true, label: "Fotos de usados", listView: { initialColumns: ["tradeIn", "image", "sortOrder"] } },
+  fields: {
+    ...trackingFields,
+    rooftop: rooftopField(),
+    tradeIn: (0, import_fields22.relationship)({ ref: "TradeIn.photos", label: "Usado" }),
+    image: (0, import_fields22.image)({ storage: "my_images", label: "Foto" }),
+    sortOrder: (0, import_fields22.integer)({ defaultValue: 0, label: "Orden" })
+  }
+});
+
+// features/keystone/models/ServiceAppointment.ts
+var import_core18 = require("@keystone-6/core");
+var import_access27 = require("@keystone-6/core/access");
+var import_fields23 = require("@keystone-6/core/fields");
+var ServiceAppointment = (0, import_core18.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -3766,10 +3808,10 @@ var ServiceAppointment = (0, import_core17.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    requestedBy: (0, import_fields22.relationship)({ ref: "User", access: { read: import_access26.denyAll, create: import_access26.denyAll, update: import_access26.denyAll } }),
+    requestedBy: (0, import_fields23.relationship)({ ref: "User", access: { read: import_access27.denyAll, create: import_access27.denyAll, update: import_access27.denyAll } }),
     // Customer and Vehicle
-    lead: (0, import_fields22.relationship)({
-      access: { create: import_access26.denyAll, update: import_access26.denyAll },
+    lead: (0, import_fields23.relationship)({
+      access: { create: import_access27.denyAll, update: import_access27.denyAll },
       ref: "Lead.serviceAppointments",
       ui: {
         displayMode: "select",
@@ -3777,7 +3819,7 @@ var ServiceAppointment = (0, import_core17.list)({
       },
       label: "Customer Lead"
     }),
-    customer: (0, import_fields22.relationship)({
+    customer: (0, import_fields23.relationship)({
       ref: "User.customerAppointments",
       ui: {
         displayMode: "select",
@@ -3785,29 +3827,29 @@ var ServiceAppointment = (0, import_core17.list)({
       },
       label: "Customer"
     }),
-    servicePackage: (0, import_fields22.relationship)({
+    servicePackage: (0, import_fields23.relationship)({
       ref: "ServicePackage",
       ui: { displayMode: "select", labelField: "name" },
       label: "Service Package"
     }),
-    vehicleVin: (0, import_fields22.text)(),
-    transportationNeed: (0, import_fields22.select)({ type: "string", options: ["none", "waiter", "shuttle", "loaner", "rental", "drop-off"].map((value) => ({ label: value, value })), defaultValue: "none" }),
+    vehicleVin: (0, import_fields23.text)(),
+    transportationNeed: (0, import_fields23.select)({ type: "string", options: ["none", "waiter", "shuttle", "loaner", "rental", "drop-off"].map((value) => ({ label: value, value })), defaultValue: "none" }),
     // Derived from appointmentDate by the booking and reschedule commands.
-    capacitySlot: (0, import_fields22.text)({ access: { create: import_access26.denyAll, update: import_access26.denyAll } }),
-    customerVehicleDescription: (0, import_fields22.text)({
+    capacitySlot: (0, import_fields23.text)({ access: { create: import_access27.denyAll, update: import_access27.denyAll } }),
+    customerVehicleDescription: (0, import_fields23.text)({
       label: "Customer Vehicle",
       ui: {
         description: "Description of customer vehicle (Year Make Model)"
       }
     }),
     // Appointment Details
-    appointmentDate: (0, import_fields22.timestamp)({
+    appointmentDate: (0, import_fields23.timestamp)({
       // Moves go through rescheduleServiceAppointment so the hourly slot capacity is enforced.
-      access: { update: import_access26.denyAll },
+      access: { update: import_access27.denyAll },
       label: "Appointment Date",
       validation: { isRequired: true }
     }),
-    serviceType: (0, import_fields22.select)({
+    serviceType: (0, import_fields23.select)({
       type: "string",
       options: [
         { label: "Maintenance", value: "maintenance" },
@@ -3819,14 +3861,14 @@ var ServiceAppointment = (0, import_core17.list)({
       ],
       label: "Service Type"
     }),
-    description: (0, import_fields22.text)({
+    description: (0, import_fields23.text)({
       ui: {
         displayMode: "textarea",
         description: "Customer complaint or service requested"
       },
       label: "Description"
     }),
-    estimatedDuration: (0, import_fields22.integer)({
+    estimatedDuration: (0, import_fields23.integer)({
       validation: { min: 0 },
       label: "Estimated Duration (Minutes)",
       ui: {
@@ -3834,7 +3876,7 @@ var ServiceAppointment = (0, import_core17.list)({
       }
     }),
     // Assignment
-    assignedTech: (0, import_fields22.relationship)({
+    assignedTech: (0, import_fields23.relationship)({
       ref: "User.techAppointments",
       ui: {
         displayMode: "select",
@@ -3843,7 +3885,7 @@ var ServiceAppointment = (0, import_core17.list)({
       label: "Assigned Technician"
     }),
     // Status
-    status: (0, import_fields22.select)({
+    status: (0, import_fields23.select)({
       access: { update: () => false },
       type: "string",
       options: [
@@ -3858,7 +3900,7 @@ var ServiceAppointment = (0, import_core17.list)({
       label: "Status"
     }),
     // Vehicle Info at Service
-    mileageIn: (0, import_fields22.integer)({
+    mileageIn: (0, import_fields23.integer)({
       validation: { min: 0 },
       label: "Mileage In",
       ui: {
@@ -3866,7 +3908,7 @@ var ServiceAppointment = (0, import_core17.list)({
       }
     }),
     // Notes
-    advisorNotes: (0, import_fields22.text)({
+    advisorNotes: (0, import_fields23.text)({
       ui: {
         displayMode: "textarea",
         description: "Service advisor notes"
@@ -3874,7 +3916,7 @@ var ServiceAppointment = (0, import_core17.list)({
       label: "Advisor Notes"
     }),
     // Relationship to Service Order
-    serviceOrder: (0, import_fields22.relationship)({
+    serviceOrder: (0, import_fields23.relationship)({
       access: { update: () => false },
       ref: "ServiceOrder.appointment",
       ui: {
@@ -3887,8 +3929,8 @@ var ServiceAppointment = (0, import_core17.list)({
 });
 
 // features/keystone/models/ServiceOrder.ts
-var import_core18 = require("@keystone-6/core");
-var import_fields23 = require("@keystone-6/core/fields");
+var import_core19 = require("@keystone-6/core");
+var import_fields24 = require("@keystone-6/core/fields");
 var import_schema5 = require("@graphql-ts/schema");
 
 // features/keystone/lifecycle/serviceOrderLifecycle.ts
@@ -3961,7 +4003,7 @@ function buildServiceOrderEvidenceSnapshot(order2) {
 }
 
 // features/keystone/models/ServiceOrder.ts
-var ServiceOrder = (0, import_core18.list)({
+var ServiceOrder = (0, import_core19.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4018,7 +4060,7 @@ var ServiceOrder = (0, import_core18.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Link to Appointment
-    appointment: (0, import_fields23.relationship)({
+    appointment: (0, import_fields24.relationship)({
       ref: "ServiceAppointment.serviceOrder",
       ui: {
         displayMode: "select"
@@ -4026,30 +4068,30 @@ var ServiceOrder = (0, import_core18.list)({
       label: "Appointment"
     }),
     // Work Description
-    concern: (0, import_fields23.text)({ label: "Customer Concern", ui: { displayMode: "textarea" } }),
-    cause: (0, import_fields23.text)({ label: "Verified Cause", ui: { displayMode: "textarea" } }),
-    correction: (0, import_fields23.text)({ label: "Correction", ui: { displayMode: "textarea" } }),
-    payType: (0, import_fields23.select)({ type: "string", options: ["customer", "warranty", "internal"].map((value) => ({ label: value, value })), defaultValue: "customer" }),
-    authorizationStatus: (0, import_fields23.select)({ type: "string", options: ["pending", "authorized", "declined"].map((value) => ({ label: value, value })), defaultValue: "pending" }),
-    authorizationEvidence: (0, import_fields23.json)({ defaultValue: {} }),
-    inspectionEvidence: (0, import_fields23.json)({ defaultValue: [] }),
-    declinedWork: (0, import_fields23.json)({ defaultValue: [] }),
-    invoiceNumber: (0, import_fields23.text)(),
-    diagnosis: (0, import_fields23.text)({
+    concern: (0, import_fields24.text)({ label: "Customer Concern", ui: { displayMode: "textarea" } }),
+    cause: (0, import_fields24.text)({ label: "Verified Cause", ui: { displayMode: "textarea" } }),
+    correction: (0, import_fields24.text)({ label: "Correction", ui: { displayMode: "textarea" } }),
+    payType: (0, import_fields24.select)({ type: "string", options: ["customer", "warranty", "internal"].map((value) => ({ label: value, value })), defaultValue: "customer" }),
+    authorizationStatus: (0, import_fields24.select)({ type: "string", options: ["pending", "authorized", "declined"].map((value) => ({ label: value, value })), defaultValue: "pending" }),
+    authorizationEvidence: (0, import_fields24.json)({ defaultValue: {} }),
+    inspectionEvidence: (0, import_fields24.json)({ defaultValue: [] }),
+    declinedWork: (0, import_fields24.json)({ defaultValue: [] }),
+    invoiceNumber: (0, import_fields24.text)(),
+    diagnosis: (0, import_fields24.text)({
       ui: {
         displayMode: "textarea",
         description: "Initial diagnosis and findings"
       },
       label: "Diagnosis"
     }),
-    workPerformed: (0, import_fields23.text)({
+    workPerformed: (0, import_fields24.text)({
       ui: {
         displayMode: "textarea",
         description: "Detailed description of work completed"
       },
       label: "Work Performed"
     }),
-    recommendations: (0, import_fields23.text)({
+    recommendations: (0, import_fields24.text)({
       ui: {
         displayMode: "textarea",
         description: "Recommended future service"
@@ -4057,10 +4099,10 @@ var ServiceOrder = (0, import_core18.list)({
       label: "Recommendations"
     }),
     // Line Items
-    laborOperations: (0, import_fields23.relationship)({ ref: "ServiceLaborOperation.serviceOrder", many: true }),
-    partsMovements: (0, import_fields23.relationship)({ ref: "PartsMovement.serviceOrder", many: true }),
-    paymentTransactions: (0, import_fields23.relationship)({ ref: "PaymentTransaction.serviceOrder", many: true, access: { read: permissions.canViewReports, create: () => false, update: () => false } }),
-    lineItems: (0, import_fields23.relationship)({
+    laborOperations: (0, import_fields24.relationship)({ ref: "ServiceLaborOperation.serviceOrder", many: true }),
+    partsMovements: (0, import_fields24.relationship)({ ref: "PartsMovement.serviceOrder", many: true }),
+    paymentTransactions: (0, import_fields24.relationship)({ ref: "PaymentTransaction.serviceOrder", many: true, access: { read: permissions.canViewReports, create: () => false, update: () => false } }),
+    lineItems: (0, import_fields24.relationship)({
       ref: "RepairOrderLineItem.serviceOrder",
       many: true,
       ui: {
@@ -4072,21 +4114,21 @@ var ServiceOrder = (0, import_core18.list)({
       label: "Line Items"
     }),
     // Totals (can be calculated from line items or entered manually)
-    laborTotalCents: (0, import_fields23.integer)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
-    partsTotalCents: (0, import_fields23.integer)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
-    laborTotal: (0, import_fields23.virtual)({
+    laborTotalCents: (0, import_fields24.integer)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
+    partsTotalCents: (0, import_fields24.integer)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
+    laborTotal: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.laborTotalCents == null ? null : item.laborTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    partsTotal: (0, import_fields23.virtual)({
+    partsTotal: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.partsTotalCents == null ? null : item.partsTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    subtotal: (0, import_fields23.virtual)({
+    subtotal: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({
         type: import_schema5.graphql.Float,
         async resolve(item) {
@@ -4099,22 +4141,22 @@ var ServiceOrder = (0, import_core18.list)({
         itemView: { fieldMode: "read" }
       }
     }),
-    taxCents: (0, import_fields23.integer)({ label: "Tax (cents)" }),
-    grandTotalCents: (0, import_fields23.integer)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
-    tax: (0, import_fields23.virtual)({
+    taxCents: (0, import_fields24.integer)({ label: "Tax (cents)" }),
+    grandTotalCents: (0, import_fields24.integer)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
+    tax: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.taxCents == null ? null : item.taxCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    grandTotal: (0, import_fields23.virtual)({
+    grandTotal: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.grandTotalCents == null ? null : item.grandTotalCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
     // Status
-    status: (0, import_fields23.select)({
+    status: (0, import_fields24.select)({
       type: "string",
       options: [
         { label: "Estimate", value: "estimate" },
@@ -4132,21 +4174,21 @@ var ServiceOrder = (0, import_core18.list)({
       }
     }),
     // Timestamps
-    completedAt: (0, import_fields23.timestamp)({
+    completedAt: (0, import_fields24.timestamp)({
       label: "Completed At",
       ui: {
         description: "When the service was completed"
       }
     }),
-    lockedAt: (0, import_fields23.timestamp)({
+    lockedAt: (0, import_fields24.timestamp)({
       label: "Evidence Locked At",
       ui: { itemView: { fieldMode: "read" } }
     }),
-    settledAt: (0, import_fields23.timestamp)({
+    settledAt: (0, import_fields24.timestamp)({
       label: "External Settlement Recorded At",
       ui: { itemView: { fieldMode: "read" } }
     }),
-    evidenceSnapshot: (0, import_fields23.json)({
+    evidenceSnapshot: (0, import_fields24.json)({
       access: { create: () => false, update: () => false },
       defaultValue: {},
       label: "Immutable Service Evidence",
@@ -4156,10 +4198,10 @@ var ServiceOrder = (0, import_core18.list)({
 });
 
 // features/keystone/models/RepairOrderLineItem.ts
-var import_core19 = require("@keystone-6/core");
-var import_fields24 = require("@keystone-6/core/fields");
+var import_core20 = require("@keystone-6/core");
+var import_fields25 = require("@keystone-6/core/fields");
 var import_schema6 = require("@graphql-ts/schema");
-var RepairOrderLineItem = (0, import_core19.list)({
+var RepairOrderLineItem = (0, import_core20.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4202,7 +4244,7 @@ var RepairOrderLineItem = (0, import_core19.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Service Order relationship
-    serviceOrder: (0, import_fields24.relationship)({
+    serviceOrder: (0, import_fields25.relationship)({
       ref: "ServiceOrder.lineItems",
       ui: {
         displayMode: "select"
@@ -4210,7 +4252,7 @@ var RepairOrderLineItem = (0, import_core19.list)({
       label: "Service Order"
     }),
     // Item Details
-    itemType: (0, import_fields24.select)({
+    itemType: (0, import_fields25.select)({
       type: "string",
       options: [
         { label: "Labor", value: "labor" },
@@ -4220,21 +4262,21 @@ var RepairOrderLineItem = (0, import_core19.list)({
       validation: { isRequired: true },
       label: "Item Type"
     }),
-    description: (0, import_fields24.text)({
+    description: (0, import_fields25.text)({
       validation: { isRequired: true },
       label: "Description",
       ui: {
         description: "Description of labor or part"
       }
     }),
-    partNumber: (0, import_fields24.text)({
+    partNumber: (0, import_fields25.text)({
       label: "Part Number",
       ui: {
         description: "Part number if applicable"
       }
     }),
     // Quantity and Pricing
-    quantity: (0, import_fields24.float)({
+    quantity: (0, import_fields25.float)({
       validation: { isRequired: true },
       defaultValue: 1,
       label: "Quantity",
@@ -4242,22 +4284,22 @@ var RepairOrderLineItem = (0, import_core19.list)({
         description: "Quantity or hours"
       }
     }),
-    unitPriceCents: (0, import_fields24.integer)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
-    priceCents: (0, import_fields24.integer)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
-    costCents: (0, import_fields24.integer)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
-    unitPrice: (0, import_fields24.virtual)({
+    unitPriceCents: (0, import_fields25.integer)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
+    priceCents: (0, import_fields25.integer)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
+    costCents: (0, import_fields25.integer)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
+    unitPrice: (0, import_fields25.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.unitPriceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    price: (0, import_fields24.virtual)({
+    price: (0, import_fields25.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    cost: (0, import_fields24.virtual)({
+    cost: (0, import_fields25.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.costCents == null ? null : item.costCents / 100;
       } }),
@@ -4267,10 +4309,10 @@ var RepairOrderLineItem = (0, import_core19.list)({
 });
 
 // features/keystone/models/ServicePackage.ts
-var import_core20 = require("@keystone-6/core");
-var import_fields25 = require("@keystone-6/core/fields");
+var import_core21 = require("@keystone-6/core");
+var import_fields26 = require("@keystone-6/core/fields");
 var import_schema7 = require("@graphql-ts/schema");
-var ServicePackage = (0, import_core20.list)({
+var ServicePackage = (0, import_core21.list)({
   access: {
     operation: {
       query: () => true,
@@ -4297,28 +4339,28 @@ var ServicePackage = (0, import_core20.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Package Details
-    name: (0, import_fields25.text)({
+    name: (0, import_fields26.text)({
       validation: { isRequired: true },
       label: "Package Name",
       ui: {
         description: "e.g., Oil Change, Tire Rotation, Brake Service"
       }
     }),
-    description: (0, import_fields25.text)({
+    description: (0, import_fields26.text)({
       ui: {
         displayMode: "textarea"
       },
       label: "Description"
     }),
     // Pricing and Duration
-    priceCents: (0, import_fields25.integer)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
-    price: (0, import_fields25.virtual)({
+    priceCents: (0, import_fields26.integer)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
+    price: (0, import_fields26.virtual)({
       field: import_schema7.graphql.field({ type: import_schema7.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    estimatedDuration: (0, import_fields25.integer)({
+    estimatedDuration: (0, import_fields26.integer)({
       validation: { min: 0 },
       label: "Estimated Duration (Minutes)",
       ui: {
@@ -4326,7 +4368,7 @@ var ServicePackage = (0, import_core20.list)({
       }
     }),
     // Included Services
-    includedServices: (0, import_fields25.json)({
+    includedServices: (0, import_fields26.json)({
       defaultValue: [],
       label: "Included Services",
       ui: {
@@ -4337,8 +4379,8 @@ var ServicePackage = (0, import_core20.list)({
 });
 
 // features/keystone/models/PartsInventory.ts
-var import_core21 = require("@keystone-6/core");
-var import_fields26 = require("@keystone-6/core/fields");
+var import_core22 = require("@keystone-6/core");
+var import_fields27 = require("@keystone-6/core/fields");
 var import_schema8 = require("@graphql-ts/schema");
 
 // features/keystone/models/prismaSchema.ts
@@ -4364,7 +4406,7 @@ function prismaModelDirectives(...directives) {
 }
 
 // features/keystone/models/PartsInventory.ts
-var PartsInventory = (0, import_core21.list)({
+var PartsInventory = (0, import_core22.list)({
   db: prismaModelDirectives('@@unique([rooftopId, partNumber], map: "PartsInventory_rooftop_partNumber_key")'),
   access: {
     operation: {
@@ -4391,27 +4433,27 @@ var PartsInventory = (0, import_core21.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     // Part Details
-    partNumber: (0, import_fields26.text)({
+    partNumber: (0, import_fields27.text)({
       validation: { isRequired: true },
       label: "Part Number"
     }),
-    description: (0, import_fields26.text)({
+    description: (0, import_fields27.text)({
       validation: { isRequired: true },
       label: "Description"
     }),
     // Inventory
-    binLocation: (0, import_fields26.text)(),
+    binLocation: (0, import_fields27.text)(),
     // Stock quantities change only through recorded parts movements.
-    committedQuantity: (0, import_fields26.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
-    onOrderQuantity: (0, import_fields26.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
-    movements: (0, import_fields26.relationship)({ ref: "PartsMovement.part", many: true, access: { create: () => false, update: () => false } }),
-    quantity: (0, import_fields26.integer)({
+    committedQuantity: (0, import_fields27.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
+    onOrderQuantity: (0, import_fields27.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0, access: { create: () => false, update: () => false } }),
+    movements: (0, import_fields27.relationship)({ ref: "PartsMovement.part", many: true, access: { create: () => false, update: () => false } }),
+    quantity: (0, import_fields27.integer)({
       validation: { isRequired: true },
       defaultValue: 0,
       access: { create: () => false, update: () => false },
       label: "Quantity in Stock"
     }),
-    minimumQuantity: (0, import_fields26.integer)({
+    minimumQuantity: (0, import_fields27.integer)({
       validation: { min: 0 },
       label: "Minimum Quantity",
       ui: {
@@ -4419,28 +4461,28 @@ var PartsInventory = (0, import_core21.list)({
       }
     }),
     // Pricing
-    costCents: (0, import_fields26.integer)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
-    priceCents: (0, import_fields26.integer)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
-    cost: (0, import_fields26.virtual)({
+    costCents: (0, import_fields27.integer)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
+    priceCents: (0, import_fields27.integer)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
+    cost: (0, import_fields27.virtual)({
       field: import_schema8.graphql.field({ type: import_schema8.graphql.Float, resolve(item) {
         return item.costCents == null ? null : item.costCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
-    price: (0, import_fields26.virtual)({
+    price: (0, import_fields27.virtual)({
       field: import_schema8.graphql.field({ type: import_schema8.graphql.Float, resolve(item) {
         return item.priceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
     // Supplier
-    supplier: (0, import_fields26.text)({
+    supplier: (0, import_fields27.text)({
       label: "Supplier",
       ui: {
         description: "Parts supplier name"
       }
     }),
-    supplierPartNumber: (0, import_fields26.text)({
+    supplierPartNumber: (0, import_fields27.text)({
       label: "Supplier Part Number",
       ui: {
         description: "Supplier-specific part number"
@@ -4450,8 +4492,8 @@ var PartsInventory = (0, import_core21.list)({
 });
 
 // features/keystone/models/DealershipProfile.ts
-var import_core22 = require("@keystone-6/core");
-var import_fields27 = require("@keystone-6/core/fields");
+var import_core23 = require("@keystone-6/core");
+var import_fields28 = require("@keystone-6/core/fields");
 
 // features/platform/store-settings/lib/icon-registry.ts
 var LOGO_ICONS = [
@@ -4816,7 +4858,7 @@ function sanitizeStoreLogoSvg(svg) {
 
 // features/keystone/models/DealershipProfile.ts
 var canManageStoreSettings = (args) => permissions.canManageSettings(args) || permissions.canManageOnboarding(args) || permissions.canManageDealerships(args);
-var DealershipProfile = (0, import_core22.list)({
+var DealershipProfile = (0, import_core23.list)({
   isSingleton: true,
   access: {
     operation: {
@@ -4831,45 +4873,45 @@ var DealershipProfile = (0, import_core22.list)({
   },
   fields: {
     ...trackingFields,
-    name: (0, import_fields27.text)({ validation: { isRequired: true } }),
-    shortName: (0, import_fields27.text)({ validation: { isRequired: true } }),
-    salesEmail: (0, import_fields27.text)({ defaultValue: "" }),
-    serviceEmail: (0, import_fields27.text)({ defaultValue: "" }),
-    phone: (0, import_fields27.text)({ defaultValue: "" }),
-    whatsappNumber: (0, import_fields27.text)({
+    name: (0, import_fields28.text)({ validation: { isRequired: true } }),
+    shortName: (0, import_fields28.text)({ validation: { isRequired: true } }),
+    salesEmail: (0, import_fields28.text)({ defaultValue: "" }),
+    serviceEmail: (0, import_fields28.text)({ defaultValue: "" }),
+    phone: (0, import_fields28.text)({ defaultValue: "" }),
+    whatsappNumber: (0, import_fields28.text)({
       defaultValue: "",
       label: "WhatsApp",
       ui: { description: "N\xFAmero con c\xF3digo de pa\xEDs, sin espacios ni signos. Ej.: 5491122334455" },
       validation: { match: { regex: /^$|^\d{8,15}$/, explanation: "Us\xE1 solo d\xEDgitos, con c\xF3digo de pa\xEDs (8 a 15 d\xEDgitos)." } }
     }),
-    addressLine1: (0, import_fields27.text)({ defaultValue: "" }),
-    addressLine2: (0, import_fields27.text)({ defaultValue: "" }),
-    city: (0, import_fields27.text)({ defaultValue: "" }),
-    state: (0, import_fields27.text)({ defaultValue: "" }),
-    postalCode: (0, import_fields27.text)({ defaultValue: "" }),
-    hoursMonFri: (0, import_fields27.text)({ defaultValue: "" }),
-    hoursSaturday: (0, import_fields27.text)({ defaultValue: "" }),
-    hoursSunday: (0, import_fields27.text)({ defaultValue: "" }),
-    websiteUrl: (0, import_fields27.text)({ defaultValue: "" }),
-    currencyCode: (0, import_fields27.text)({ validation: { isRequired: true }, defaultValue: "ARS" }),
-    salesTaxRateBps: (0, import_fields27.integer)({
+    addressLine1: (0, import_fields28.text)({ defaultValue: "" }),
+    addressLine2: (0, import_fields28.text)({ defaultValue: "" }),
+    city: (0, import_fields28.text)({ defaultValue: "" }),
+    state: (0, import_fields28.text)({ defaultValue: "" }),
+    postalCode: (0, import_fields28.text)({ defaultValue: "" }),
+    hoursMonFri: (0, import_fields28.text)({ defaultValue: "" }),
+    hoursSaturday: (0, import_fields28.text)({ defaultValue: "" }),
+    hoursSunday: (0, import_fields28.text)({ defaultValue: "" }),
+    websiteUrl: (0, import_fields28.text)({ defaultValue: "" }),
+    currencyCode: (0, import_fields28.text)({ validation: { isRequired: true }, defaultValue: "ARS" }),
+    salesTaxRateBps: (0, import_fields28.integer)({
       label: "Sales tax rate (basis points)",
       defaultValue: 0,
       validation: { isRequired: true, min: 0, max: 1e4 },
       ui: { description: "Default deal sales tax rate; 415 is 4.15%" }
     }),
-    docFeeCents: (0, import_fields27.integer)({
+    docFeeCents: (0, import_fields28.integer)({
       label: "Documentation fee (cents)",
       defaultValue: 0,
       validation: { isRequired: true, min: 0 },
       ui: { description: "Default documentation fee added to new deal worksheets" }
     }),
-    homepageTitle: (0, import_fields27.text)({ defaultValue: "" }),
-    homepageDescription: (0, import_fields27.text)({
+    homepageTitle: (0, import_fields28.text)({ defaultValue: "" }),
+    homepageDescription: (0, import_fields28.text)({
       defaultValue: "",
       ui: { displayMode: "textarea" }
     }),
-    logoIcon: (0, import_fields27.text)({
+    logoIcon: (0, import_fields28.text)({
       defaultValue: "",
       ui: {
         displayMode: "textarea",
@@ -4889,7 +4931,7 @@ var DealershipProfile = (0, import_core22.list)({
         }
       }
     }),
-    logoColor: (0, import_fields27.text)({
+    logoColor: (0, import_fields28.text)({
       defaultValue: "0",
       ui: { description: "Normalized storefront brand hue rotation from 0 through 359 degrees" },
       hooks: {
@@ -4903,11 +4945,11 @@ var DealershipProfile = (0, import_core22.list)({
 });
 
 // features/keystone/models/FinancingApplication.ts
-var import_core23 = require("@keystone-6/core");
-var import_access33 = require("@keystone-6/core/access");
-var import_fields28 = require("@keystone-6/core/fields");
+var import_core24 = require("@keystone-6/core");
+var import_access34 = require("@keystone-6/core/access");
+var import_fields29 = require("@keystone-6/core/fields");
 var privateRead = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var FinancingApplication = (0, import_core23.list)({
+var FinancingApplication = (0, import_core24.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -4932,14 +4974,14 @@ var FinancingApplication = (0, import_core23.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields28.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    idempotencyKey: (0, import_fields28.text)({
+    reference: (0, import_fields29.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    idempotencyKey: (0, import_fields29.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access33.denyAll, create: () => false, update: () => false },
+      access: { read: import_access34.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields28.select)({
+    status: (0, import_fields29.select)({
       type: "string",
       options: [
         { label: "Submitted", value: "submitted" },
@@ -4952,39 +4994,39 @@ var FinancingApplication = (0, import_core23.list)({
       defaultValue: "submitted",
       validation: { isRequired: true }
     }),
-    lead: (0, import_fields28.relationship)({ ref: "Lead.financingApplications" }),
-    vehicle: (0, import_fields28.relationship)({ ref: "Vehicle.financingApplications" }),
-    applicantName: (0, import_fields28.text)({ access: privateRead, validation: { isRequired: true } }),
-    applicantEmail: (0, import_fields28.text)({ access: privateRead, validation: { isRequired: true } }),
-    applicantPhone: (0, import_fields28.text)({ access: privateRead, validation: { isRequired: true } }),
-    employmentStatus: (0, import_fields28.text)({ access: privateRead, validation: { isRequired: true } }),
-    annualIncomeCents: (0, import_fields28.integer)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
-    selfReportedCreditTier: (0, import_fields28.text)({ access: privateRead, validation: { isRequired: true } }),
-    requestedAmountCents: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    plannedMonthlyPaymentCents: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    plannedDownPaymentCents: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    tradeInValueCents: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    aprBasisPoints: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    loanTermMonths: (0, import_fields28.integer)({ validation: { min: 0 } }),
-    consentAt: (0, import_fields28.timestamp)({ validation: { isRequired: true } }),
-    submittedAt: (0, import_fields28.timestamp)({ validation: { isRequired: true } }),
-    lockedAt: (0, import_fields28.timestamp)({ validation: { isRequired: true } }),
-    immutableSnapshot: (0, import_fields28.json)({
+    lead: (0, import_fields29.relationship)({ ref: "Lead.financingApplications" }),
+    vehicle: (0, import_fields29.relationship)({ ref: "Vehicle.financingApplications" }),
+    applicantName: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
+    applicantEmail: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
+    applicantPhone: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
+    employmentStatus: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
+    annualIncomeCents: (0, import_fields29.integer)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
+    selfReportedCreditTier: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
+    requestedAmountCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    plannedMonthlyPaymentCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    plannedDownPaymentCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    tradeInValueCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    aprBasisPoints: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    loanTermMonths: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    consentAt: (0, import_fields29.timestamp)({ validation: { isRequired: true } }),
+    submittedAt: (0, import_fields29.timestamp)({ validation: { isRequired: true } }),
+    lockedAt: (0, import_fields29.timestamp)({ validation: { isRequired: true } }),
+    immutableSnapshot: (0, import_fields29.json)({
       access: privateRead,
       defaultValue: {},
       ui: { itemView: { fieldMode: "read" } }
     }),
-    submissions: (0, import_fields28.relationship)({ ref: "LenderSubmission.application", many: true }),
-    decisions: (0, import_fields28.relationship)({ ref: "LenderDecision.application", many: true })
+    submissions: (0, import_fields29.relationship)({ ref: "LenderSubmission.application", many: true }),
+    decisions: (0, import_fields29.relationship)({ ref: "LenderDecision.application", many: true })
   }
 });
 
 // features/keystone/models/LenderSubmission.ts
-var import_core24 = require("@keystone-6/core");
-var import_access35 = require("@keystone-6/core/access");
-var import_fields29 = require("@keystone-6/core/fields");
+var import_core25 = require("@keystone-6/core");
+var import_access36 = require("@keystone-6/core/access");
+var import_fields30 = require("@keystone-6/core/fields");
 var restricted = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderSubmission = (0, import_core24.list)({
+var LenderSubmission = (0, import_core25.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5005,15 +5047,15 @@ var LenderSubmission = (0, import_core24.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    application: (0, import_fields29.relationship)({ ref: "FinancingApplication.submissions" }),
-    providerKey: (0, import_fields29.text)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields29.text)({
+    application: (0, import_fields30.relationship)({ ref: "FinancingApplication.submissions" }),
+    providerKey: (0, import_fields30.text)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields30.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access35.denyAll, create: () => false, update: () => false },
+      access: { read: import_access36.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields29.select)({
+    status: (0, import_fields30.select)({
       type: "string",
       options: [
         { label: "Queued", value: "queued" },
@@ -5023,21 +5065,21 @@ var LenderSubmission = (0, import_core24.list)({
       defaultValue: "queued",
       validation: { isRequired: true }
     }),
-    externalReference: (0, import_fields29.text)({ db: { isNullable: true } }),
-    requestSnapshot: (0, import_fields29.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    responseSummary: (0, import_fields29.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    errorCode: (0, import_fields29.text)({ db: { isNullable: true } }),
-    queuedAt: (0, import_fields29.timestamp)({ validation: { isRequired: true } }),
-    submittedAt: (0, import_fields29.timestamp)()
+    externalReference: (0, import_fields30.text)({ db: { isNullable: true } }),
+    requestSnapshot: (0, import_fields30.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    responseSummary: (0, import_fields30.json)({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    errorCode: (0, import_fields30.text)({ db: { isNullable: true } }),
+    queuedAt: (0, import_fields30.timestamp)({ validation: { isRequired: true } }),
+    submittedAt: (0, import_fields30.timestamp)()
   }
 });
 
 // features/keystone/models/LenderDecision.ts
-var import_core25 = require("@keystone-6/core");
-var import_access37 = require("@keystone-6/core/access");
-var import_fields30 = require("@keystone-6/core/fields");
+var import_core26 = require("@keystone-6/core");
+var import_access38 = require("@keystone-6/core/access");
+var import_fields31 = require("@keystone-6/core/fields");
 var restricted2 = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderDecision = (0, import_core25.list)({
+var LenderDecision = (0, import_core26.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5062,17 +5104,17 @@ var LenderDecision = (0, import_core25.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    application: (0, import_fields30.relationship)({ ref: "FinancingApplication.decisions" }),
-    submission: (0, import_fields30.relationship)({ ref: "LenderSubmission" }),
-    idempotencyKey: (0, import_fields30.text)({
+    application: (0, import_fields31.relationship)({ ref: "FinancingApplication.decisions" }),
+    submission: (0, import_fields31.relationship)({ ref: "LenderSubmission" }),
+    idempotencyKey: (0, import_fields31.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access37.denyAll, create: () => false, update: () => false },
+      access: { read: import_access38.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    providerKey: (0, import_fields30.text)({ validation: { isRequired: true } }),
-    externalReference: (0, import_fields30.text)({ db: { isNullable: true } }),
-    decision: (0, import_fields30.select)({
+    providerKey: (0, import_fields31.text)({ validation: { isRequired: true } }),
+    externalReference: (0, import_fields31.text)({ db: { isNullable: true } }),
+    decision: (0, import_fields31.select)({
       type: "string",
       options: [
         { label: "Approved", value: "approved" },
@@ -5083,23 +5125,23 @@ var LenderDecision = (0, import_core25.list)({
       ],
       validation: { isRequired: true }
     }),
-    approvedAmountCents: (0, import_fields30.integer)({ validation: { min: 0 } }),
-    aprBasisPoints: (0, import_fields30.integer)({ validation: { min: 0 } }),
-    termMonths: (0, import_fields30.integer)({ validation: { min: 0 } }),
-    monthlyPaymentCents: (0, import_fields30.integer)({ validation: { min: 0 } }),
-    reasonCodes: (0, import_fields30.json)({ access: restricted2, defaultValue: [] }),
-    immutableSnapshot: (0, import_fields30.json)({ access: restricted2, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
-    decidedAt: (0, import_fields30.timestamp)({ validation: { isRequired: true } }),
-    recordedBy: (0, import_fields30.relationship)({ ref: "User" }),
-    selectedForDeals: (0, import_fields30.relationship)({ ref: "Deal.selectedLenderDecision", many: true, access: restricted2 })
+    approvedAmountCents: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    aprBasisPoints: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    termMonths: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    monthlyPaymentCents: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    reasonCodes: (0, import_fields31.json)({ access: restricted2, defaultValue: [] }),
+    immutableSnapshot: (0, import_fields31.json)({ access: restricted2, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
+    decidedAt: (0, import_fields31.timestamp)({ validation: { isRequired: true } }),
+    recordedBy: (0, import_fields31.relationship)({ ref: "User" }),
+    selectedForDeals: (0, import_fields31.relationship)({ ref: "Deal.selectedLenderDecision", many: true, access: restricted2 })
   }
 });
 
 // features/keystone/models/DealerGroup.ts
-var import_core26 = require("@keystone-6/core");
-var import_access39 = require("@keystone-6/core/access");
-var import_fields31 = require("@keystone-6/core/fields");
-var DealerGroup = (0, import_core26.list)({
+var import_core27 = require("@keystone-6/core");
+var import_access40 = require("@keystone-6/core/access");
+var import_fields32 = require("@keystone-6/core/fields");
+var DealerGroup = (0, import_core27.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5115,13 +5157,13 @@ var DealerGroup = (0, import_core26.list)({
   ui: { listView: { initialColumns: ["name", "slug", "status", "rooftops"] } },
   fields: {
     ...trackingFields,
-    name: (0, import_fields31.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
-    slug: (0, import_fields31.text)({
+    name: (0, import_fields32.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
+    slug: (0, import_fields32.text)({
       isIndexed: "unique",
       validation: { isRequired: true, length: { min: 2, max: 120 }, match: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ } }
     }),
-    legalName: (0, import_fields31.text)({ validation: { length: { max: 240 } } }),
-    status: (0, import_fields31.select)({
+    legalName: (0, import_fields32.text)({ validation: { length: { max: 240 } } }),
+    status: (0, import_fields32.select)({
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5131,17 +5173,17 @@ var DealerGroup = (0, import_core26.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    rooftops: (0, import_fields31.relationship)({ ref: "Rooftop.dealerGroup", many: true, access: { update: import_access39.denyAll } }),
-    memberships: (0, import_fields31.relationship)({ ref: "DealerGroupMembership.dealerGroup", many: true, access: { update: import_access39.denyAll } }),
-    membershipAuditEvents: (0, import_fields31.relationship)({ ref: "MembershipAuditEvent.dealerGroup", many: true, access: { update: import_access39.denyAll } })
+    rooftops: (0, import_fields32.relationship)({ ref: "Rooftop.dealerGroup", many: true, access: { update: import_access40.denyAll } }),
+    memberships: (0, import_fields32.relationship)({ ref: "DealerGroupMembership.dealerGroup", many: true, access: { update: import_access40.denyAll } }),
+    membershipAuditEvents: (0, import_fields32.relationship)({ ref: "MembershipAuditEvent.dealerGroup", many: true, access: { update: import_access40.denyAll } })
   }
 });
 
 // features/keystone/models/Rooftop.ts
-var import_core27 = require("@keystone-6/core");
-var import_access41 = require("@keystone-6/core/access");
-var import_fields32 = require("@keystone-6/core/fields");
-var Rooftop = (0, import_core27.list)({
+var import_core28 = require("@keystone-6/core");
+var import_access42 = require("@keystone-6/core/access");
+var import_fields33 = require("@keystone-6/core/fields");
+var Rooftop = (0, import_core28.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5174,18 +5216,18 @@ var Rooftop = (0, import_core27.list)({
   ui: { listView: { initialColumns: ["code", "name", "dealerGroup", "status", "timezone"] } },
   fields: {
     ...trackingFields,
-    rooftopKey: (0, import_fields32.text)({
+    rooftopKey: (0, import_fields33.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access41.denyAll, update: import_access41.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access42.denyAll, update: import_access42.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    code: (0, import_fields32.text)({ validation: { isRequired: true, length: { min: 1, max: 40 } }, access: { update: import_access41.denyAll } }),
-    name: (0, import_fields32.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
-    publicSlug: (0, import_fields32.text)({
+    code: (0, import_fields33.text)({ validation: { isRequired: true, length: { min: 1, max: 40 } }, access: { update: import_access42.denyAll } }),
+    name: (0, import_fields33.text)({ validation: { isRequired: true, length: { min: 1, max: 200 } } }),
+    publicSlug: (0, import_fields33.text)({
       isIndexed: "unique",
       validation: { isRequired: true, length: { min: 2, max: 120 }, match: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ } }
     }),
-    status: (0, import_fields32.select)({
+    status: (0, import_fields33.select)({
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5195,19 +5237,19 @@ var Rooftop = (0, import_core27.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    timezone: (0, import_fields32.text)({ defaultValue: "America/New_York", validation: { isRequired: true } }),
-    currencyCode: (0, import_fields32.text)({ defaultValue: "USD", validation: { isRequired: true, length: { min: 3, max: 3 } } }),
-    dealerGroup: (0, import_fields32.relationship)({ ref: "DealerGroup.rooftops", access: { update: import_access41.denyAll } }),
-    memberships: (0, import_fields32.relationship)({ ref: "RooftopMembership.rooftop", many: true, access: { update: import_access41.denyAll } }),
-    membershipAuditEvents: (0, import_fields32.relationship)({ ref: "MembershipAuditEvent.rooftop", many: true, access: { update: import_access41.denyAll } })
+    timezone: (0, import_fields33.text)({ defaultValue: "America/New_York", validation: { isRequired: true } }),
+    currencyCode: (0, import_fields33.text)({ defaultValue: "USD", validation: { isRequired: true, length: { min: 3, max: 3 } } }),
+    dealerGroup: (0, import_fields33.relationship)({ ref: "DealerGroup.rooftops", access: { update: import_access42.denyAll } }),
+    memberships: (0, import_fields33.relationship)({ ref: "RooftopMembership.rooftop", many: true, access: { update: import_access42.denyAll } }),
+    membershipAuditEvents: (0, import_fields33.relationship)({ ref: "MembershipAuditEvent.rooftop", many: true, access: { update: import_access42.denyAll } })
   }
 });
 
 // features/keystone/models/DealerGroupMembership.ts
-var import_core28 = require("@keystone-6/core");
-var import_access43 = require("@keystone-6/core/access");
-var import_fields33 = require("@keystone-6/core/fields");
-var DealerGroupMembership = (0, import_core28.list)({
+var import_core29 = require("@keystone-6/core");
+var import_access44 = require("@keystone-6/core/access");
+var import_fields34 = require("@keystone-6/core/fields");
+var DealerGroupMembership = (0, import_core29.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5240,16 +5282,16 @@ var DealerGroupMembership = (0, import_core28.list)({
   ui: { hideCreate: true, hideDelete: true, itemView: { defaultFieldMode: "read" }, listView: { initialColumns: ["user", "dealerGroup", "role", "status", "accessAllRooftops"] } },
   fields: {
     ...trackingFields,
-    membershipKey: (0, import_fields33.text)({
+    membershipKey: (0, import_fields34.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access43.denyAll, update: import_access43.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access44.denyAll, update: import_access44.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    user: (0, import_fields33.relationship)({ ref: "User.dealerGroupMemberships", access: { update: import_access43.denyAll } }),
-    dealerGroup: (0, import_fields33.relationship)({ ref: "DealerGroup.memberships", access: { update: import_access43.denyAll } }),
-    role: (0, import_fields33.relationship)({ ref: "Role.dealerGroupMemberships", access: { update: import_access43.denyAll } }),
-    status: (0, import_fields33.select)({
-      access: { update: import_access43.denyAll },
+    user: (0, import_fields34.relationship)({ ref: "User.dealerGroupMemberships", access: { update: import_access44.denyAll } }),
+    dealerGroup: (0, import_fields34.relationship)({ ref: "DealerGroup.memberships", access: { update: import_access44.denyAll } }),
+    role: (0, import_fields34.relationship)({ ref: "Role.dealerGroupMemberships", access: { update: import_access44.denyAll } }),
+    status: (0, import_fields34.select)({
+      access: { update: import_access44.denyAll },
       type: "string",
       options: [
         { label: "Invited", value: "invited" },
@@ -5260,17 +5302,17 @@ var DealerGroupMembership = (0, import_core28.list)({
       defaultValue: "invited",
       validation: { isRequired: true }
     }),
-    accessAllRooftops: (0, import_fields33.checkbox)({ defaultValue: false, access: { update: import_access43.denyAll } }),
-    invitedBy: (0, import_fields33.relationship)({ ref: "User" }),
-    joinedAt: (0, import_fields33.timestamp)()
+    accessAllRooftops: (0, import_fields34.checkbox)({ defaultValue: false, access: { update: import_access44.denyAll } }),
+    invitedBy: (0, import_fields34.relationship)({ ref: "User" }),
+    joinedAt: (0, import_fields34.timestamp)()
   }
 });
 
 // features/keystone/models/RooftopMembership.ts
-var import_core29 = require("@keystone-6/core");
-var import_access45 = require("@keystone-6/core/access");
-var import_fields34 = require("@keystone-6/core/fields");
-var RooftopMembership = (0, import_core29.list)({
+var import_core30 = require("@keystone-6/core");
+var import_access46 = require("@keystone-6/core/access");
+var import_fields35 = require("@keystone-6/core/fields");
+var RooftopMembership = (0, import_core30.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5306,16 +5348,16 @@ var RooftopMembership = (0, import_core29.list)({
   ui: { hideCreate: true, hideDelete: true, itemView: { defaultFieldMode: "read" }, listView: { initialColumns: ["user", "rooftop", "role", "status"] } },
   fields: {
     ...trackingFields,
-    membershipKey: (0, import_fields34.text)({
+    membershipKey: (0, import_fields35.text)({
       isIndexed: "unique",
-      access: { read: permissions.canManageDealerships, create: import_access45.denyAll, update: import_access45.denyAll },
+      access: { read: permissions.canManageDealerships, create: import_access46.denyAll, update: import_access46.denyAll },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" }, listView: { fieldMode: "hidden" } }
     }),
-    user: (0, import_fields34.relationship)({ ref: "User.rooftopMemberships", access: { update: import_access45.denyAll } }),
-    rooftop: (0, import_fields34.relationship)({ ref: "Rooftop.memberships", access: { update: import_access45.denyAll } }),
-    role: (0, import_fields34.relationship)({ ref: "Role.rooftopMemberships", access: { update: import_access45.denyAll } }),
-    status: (0, import_fields34.select)({
-      access: { update: import_access45.denyAll },
+    user: (0, import_fields35.relationship)({ ref: "User.rooftopMemberships", access: { update: import_access46.denyAll } }),
+    rooftop: (0, import_fields35.relationship)({ ref: "Rooftop.memberships", access: { update: import_access46.denyAll } }),
+    role: (0, import_fields35.relationship)({ ref: "Role.rooftopMemberships", access: { update: import_access46.denyAll } }),
+    status: (0, import_fields35.select)({
+      access: { update: import_access46.denyAll },
       type: "string",
       options: [
         { label: "Invited", value: "invited" },
@@ -5326,15 +5368,15 @@ var RooftopMembership = (0, import_core29.list)({
       defaultValue: "invited",
       validation: { isRequired: true }
     }),
-    invitedBy: (0, import_fields34.relationship)({ ref: "User" }),
-    joinedAt: (0, import_fields34.timestamp)()
+    invitedBy: (0, import_fields35.relationship)({ ref: "User" }),
+    joinedAt: (0, import_fields35.timestamp)()
   }
 });
 
 // features/keystone/models/MembershipAuditEvent.ts
-var import_core30 = require("@keystone-6/core");
-var import_fields35 = require("@keystone-6/core/fields");
-var MembershipAuditEvent = (0, import_core30.list)({
+var import_core31 = require("@keystone-6/core");
+var import_fields36 = require("@keystone-6/core/fields");
+var MembershipAuditEvent = (0, import_core31.list)({
   access: {
     operation: {
       query: permissions.canManageDealerships,
@@ -5350,7 +5392,7 @@ var MembershipAuditEvent = (0, import_core30.list)({
   },
   fields: {
     ...trackingFields,
-    scopeType: (0, import_fields35.select)({
+    scopeType: (0, import_fields36.select)({
       type: "string",
       options: [
         { label: "Dealer Group", value: "dealer-group" },
@@ -5358,7 +5400,7 @@ var MembershipAuditEvent = (0, import_core30.list)({
       ],
       validation: { isRequired: true }
     }),
-    action: (0, import_fields35.select)({
+    action: (0, import_fields36.select)({
       type: "string",
       options: [
         { label: "Created", value: "created" },
@@ -5367,23 +5409,23 @@ var MembershipAuditEvent = (0, import_core30.list)({
       ],
       validation: { isRequired: true }
     }),
-    dealerGroup: (0, import_fields35.relationship)({ ref: "DealerGroup.membershipAuditEvents" }),
-    rooftop: (0, import_fields35.relationship)({ ref: "Rooftop.membershipAuditEvents" }),
-    targetUser: (0, import_fields35.relationship)({ ref: "User.membershipAuditEvents" }),
-    actor: (0, import_fields35.relationship)({ ref: "User.performedMembershipAuditEvents" }),
-    membershipId: (0, import_fields35.text)({ validation: { isRequired: true } }),
-    previousSnapshot: (0, import_fields35.json)({ defaultValue: null }),
-    nextSnapshot: (0, import_fields35.json)({ defaultValue: {} }),
-    reason: (0, import_fields35.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
-    occurredAt: (0, import_fields35.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
+    dealerGroup: (0, import_fields36.relationship)({ ref: "DealerGroup.membershipAuditEvents" }),
+    rooftop: (0, import_fields36.relationship)({ ref: "Rooftop.membershipAuditEvents" }),
+    targetUser: (0, import_fields36.relationship)({ ref: "User.membershipAuditEvents" }),
+    actor: (0, import_fields36.relationship)({ ref: "User.performedMembershipAuditEvents" }),
+    membershipId: (0, import_fields36.text)({ validation: { isRequired: true } }),
+    previousSnapshot: (0, import_fields36.json)({ defaultValue: null }),
+    nextSnapshot: (0, import_fields36.json)({ defaultValue: {} }),
+    reason: (0, import_fields36.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
+    occurredAt: (0, import_fields36.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
   }
 });
 
 // features/keystone/models/InventoryAcquisition.ts
-var import_core31 = require("@keystone-6/core");
-var import_access48 = require("@keystone-6/core/access");
-var import_fields36 = require("@keystone-6/core/fields");
-var InventoryAcquisition = (0, import_core31.list)({
+var import_core32 = require("@keystone-6/core");
+var import_access49 = require("@keystone-6/core/access");
+var import_fields37 = require("@keystone-6/core/fields");
+var InventoryAcquisition = (0, import_core32.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5402,14 +5444,14 @@ var InventoryAcquisition = (0, import_core31.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields36.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    idempotencyKey: (0, import_fields36.text)({
+    reference: (0, import_fields37.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    idempotencyKey: (0, import_fields37.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
-      access: { read: import_access48.denyAll, create: () => false, update: () => false },
+      access: { read: import_access49.denyAll, create: () => false, update: () => false },
       ui: { itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } }
     }),
-    status: (0, import_fields36.select)({
+    status: (0, import_fields37.select)({
       type: "string",
       options: [
         { label: "Appraised", value: "appraised" },
@@ -5423,7 +5465,7 @@ var InventoryAcquisition = (0, import_core31.list)({
       defaultValue: "appraised",
       validation: { isRequired: true }
     }),
-    acquisitionSource: (0, import_fields36.select)({
+    acquisitionSource: (0, import_fields37.select)({
       type: "string",
       options: [
         { label: "Trade-in", value: "trade-in" },
@@ -5435,31 +5477,31 @@ var InventoryAcquisition = (0, import_core31.list)({
       ],
       validation: { isRequired: true }
     }),
-    sourceReference: (0, import_fields36.text)({ validation: { length: { max: 200 } } }),
-    vin: (0, import_fields36.text)({ validation: { isRequired: true, length: { min: 17, max: 17 } } }),
-    year: (0, import_fields36.integer)({ validation: { isRequired: true, min: 1900, max: 2200 } }),
-    make: (0, import_fields36.text)({ validation: { isRequired: true } }),
-    model: (0, import_fields36.text)({ validation: { isRequired: true } }),
-    odometer: (0, import_fields36.integer)({ validation: { min: 0 } }),
-    appraisalCents: (0, import_fields36.integer)({ validation: { isRequired: true, min: 0 } }),
-    purchaseCents: (0, import_fields36.integer)({ validation: { min: 0 } }),
-    reconEstimateCents: (0, import_fields36.integer)({ validation: { min: 0 } }),
-    vehicle: (0, import_fields36.relationship)({ ref: "Vehicle.acquisition", access: { update: import_access48.denyAll } }),
-    immutablePurchaseSnapshot: (0, import_fields36.json)({ defaultValue: null, access: { create: () => false, update: () => false } }),
-    purchasedAt: (0, import_fields36.timestamp)(),
-    arrivedAt: (0, import_fields36.timestamp)(),
-    frontlineAt: (0, import_fields36.timestamp)(),
-    requestedBy: (0, import_fields36.relationship)({ ref: "User" }),
-    lastTransitionedBy: (0, import_fields36.relationship)({ ref: "User" }),
-    stock: (0, import_fields36.relationship)({ ref: "InventoryStock.acquisition", access: { update: import_access48.denyAll } }),
-    events: (0, import_fields36.relationship)({ ref: "InventoryAcquisitionEvent.acquisition", many: true })
+    sourceReference: (0, import_fields37.text)({ validation: { length: { max: 200 } } }),
+    vin: (0, import_fields37.text)({ validation: { isRequired: true, length: { min: 17, max: 17 } } }),
+    year: (0, import_fields37.integer)({ validation: { isRequired: true, min: 1900, max: 2200 } }),
+    make: (0, import_fields37.text)({ validation: { isRequired: true } }),
+    model: (0, import_fields37.text)({ validation: { isRequired: true } }),
+    odometer: (0, import_fields37.integer)({ validation: { min: 0 } }),
+    appraisalCents: (0, import_fields37.integer)({ validation: { isRequired: true, min: 0 } }),
+    purchaseCents: (0, import_fields37.integer)({ validation: { min: 0 } }),
+    reconEstimateCents: (0, import_fields37.integer)({ validation: { min: 0 } }),
+    vehicle: (0, import_fields37.relationship)({ ref: "Vehicle.acquisition", access: { update: import_access49.denyAll } }),
+    immutablePurchaseSnapshot: (0, import_fields37.json)({ defaultValue: null, access: { create: () => false, update: () => false } }),
+    purchasedAt: (0, import_fields37.timestamp)(),
+    arrivedAt: (0, import_fields37.timestamp)(),
+    frontlineAt: (0, import_fields37.timestamp)(),
+    requestedBy: (0, import_fields37.relationship)({ ref: "User" }),
+    lastTransitionedBy: (0, import_fields37.relationship)({ ref: "User" }),
+    stock: (0, import_fields37.relationship)({ ref: "InventoryStock.acquisition", access: { update: import_access49.denyAll } }),
+    events: (0, import_fields37.relationship)({ ref: "InventoryAcquisitionEvent.acquisition", many: true })
   }
 });
 
 // features/keystone/models/InventoryAcquisitionEvent.ts
-var import_core32 = require("@keystone-6/core");
-var import_fields37 = require("@keystone-6/core/fields");
-var InventoryAcquisitionEvent = (0, import_core32.list)({
+var import_core33 = require("@keystone-6/core");
+var import_fields38 = require("@keystone-6/core/fields");
+var InventoryAcquisitionEvent = (0, import_core33.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5477,25 +5519,25 @@ var InventoryAcquisitionEvent = (0, import_core32.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    acquisition: (0, import_fields37.relationship)({
+    acquisition: (0, import_fields38.relationship)({
       ref: "InventoryAcquisition.events",
       db: {
         extendPrismaSchema: (field) => field.replace(/acquisition InventoryAcquisition\?/g, "acquisition InventoryAcquisition").replace(/acquisitionId String\?/g, "acquisitionId String")
       }
     }),
-    fromStatus: (0, import_fields37.text)(),
-    toStatus: (0, import_fields37.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields37.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
-    evidence: (0, import_fields37.json)({ defaultValue: {} }),
-    actor: (0, import_fields37.relationship)({ ref: "User" }),
-    occurredAt: (0, import_fields37.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
+    fromStatus: (0, import_fields38.text)(),
+    toStatus: (0, import_fields38.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields38.text)({ validation: { isRequired: true, length: { min: 1, max: 500 } } }),
+    evidence: (0, import_fields38.json)({ defaultValue: {} }),
+    actor: (0, import_fields38.relationship)({ ref: "User" }),
+    occurredAt: (0, import_fields38.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } })
   }
 });
 
 // features/keystone/models/DomainAuditEvent.ts
-var import_core33 = require("@keystone-6/core");
-var import_fields38 = require("@keystone-6/core/fields");
-var DomainAuditEvent = (0, import_core33.list)({
+var import_core34 = require("@keystone-6/core");
+var import_fields39 = require("@keystone-6/core/fields");
+var DomainAuditEvent = (0, import_core34.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -5513,24 +5555,24 @@ var DomainAuditEvent = (0, import_core33.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    eventKey: (0, import_fields38.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    requestHash: (0, import_fields38.text)({ validation: { isRequired: true }, access: { create: () => false, update: () => false } }),
-    aggregateType: (0, import_fields38.text)({ validation: { isRequired: true }, isIndexed: true }),
-    aggregateId: (0, import_fields38.text)({ validation: { isRequired: true }, isIndexed: true }),
-    action: (0, import_fields38.text)({ validation: { isRequired: true } }),
-    beforeSnapshot: (0, import_fields38.json)({ defaultValue: null }),
-    afterSnapshot: (0, import_fields38.json)({ defaultValue: null }),
-    metadata: (0, import_fields38.json)({ defaultValue: {} }),
-    actor: (0, import_fields38.relationship)({ ref: "User.domainAuditEvents" }),
-    occurredAt: (0, import_fields38.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
+    eventKey: (0, import_fields39.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    requestHash: (0, import_fields39.text)({ validation: { isRequired: true }, access: { create: () => false, update: () => false } }),
+    aggregateType: (0, import_fields39.text)({ validation: { isRequired: true }, isIndexed: true }),
+    aggregateId: (0, import_fields39.text)({ validation: { isRequired: true }, isIndexed: true }),
+    action: (0, import_fields39.text)({ validation: { isRequired: true } }),
+    beforeSnapshot: (0, import_fields39.json)({ defaultValue: null }),
+    afterSnapshot: (0, import_fields39.json)({ defaultValue: null }),
+    metadata: (0, import_fields39.json)({ defaultValue: {} }),
+    actor: (0, import_fields39.relationship)({ ref: "User.domainAuditEvents" }),
+    occurredAt: (0, import_fields39.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
   }
 });
 
 // features/keystone/models/InventoryStock.ts
-var import_core34 = require("@keystone-6/core");
-var import_access52 = require("@keystone-6/core/access");
-var import_fields39 = require("@keystone-6/core/fields");
-var InventoryStock = (0, import_core34.list)({
+var import_core35 = require("@keystone-6/core");
+var import_access53 = require("@keystone-6/core/access");
+var import_fields40 = require("@keystone-6/core/fields");
+var InventoryStock = (0, import_core35.list)({
   access: {
     operation: { query: permissions.canViewInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5539,36 +5581,36 @@ var InventoryStock = (0, import_core34.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    vehicle: (0, import_fields39.relationship)({
+    vehicle: (0, import_fields40.relationship)({
       ref: "Vehicle.inventoryStock",
-      access: { update: import_access52.denyAll },
+      access: { update: import_access53.denyAll },
       db: { extendPrismaSchema: (field) => field.replace(/vehicle Vehicle\?/g, "vehicle Vehicle").replace(/vehicleId String\?/g, "vehicleId String") }
     }),
-    acquisition: (0, import_fields39.relationship)({ ref: "InventoryAcquisition.stock", access: { update: import_access52.denyAll } }),
-    stockNumber: (0, import_fields39.text)({ validation: { isRequired: true } }),
-    stockKey: (0, import_fields39.text)({ validation: { isRequired: true }, isIndexed: "unique", access: { read: import_access52.denyAll, create: import_access52.denyAll, update: import_access52.denyAll }, ui: { itemView: { fieldMode: "hidden" } } }),
-    locationCode: (0, import_fields39.text)({ validation: { isRequired: true } }),
-    locationLabel: (0, import_fields39.text)(),
-    stockedAt: (0, import_fields39.timestamp)({ validation: { isRequired: true } }),
-    frontlineAt: (0, import_fields39.timestamp)(),
-    purchaseCostCents: (0, import_fields39.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    reconCostCents: (0, import_fields39.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    otherCostCents: (0, import_fields39.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    totalCostCents: (0, import_fields39.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    reconStatus: (0, import_fields39.select)({ type: "string", options: ["not-started", "in-progress", "completed"].map((value) => ({ label: value, value })), defaultValue: "not-started" }),
-    merchandisingStatus: (0, import_fields39.select)({ type: "string", options: ["draft", "submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "draft" }),
-    approvedRevisionHash: (0, import_fields39.text)({ defaultValue: "", access: { create: import_access52.denyAll, update: import_access52.denyAll, read: permissions.canViewInventory }, label: "Approved marketing revision", ui: { itemView: { fieldMode: "read" } } }),
-    feedStatus: (0, import_fields39.select)({ type: "string", options: ["not-published", "succeeded", "partial", "failed"].map((value) => ({ label: value, value })), defaultValue: "not-published" }),
-    events: (0, import_fields39.relationship)({ ref: "InventoryStockEvent.stock", many: true }),
-    reconWorkItems: (0, import_fields39.relationship)({ ref: "InventoryReconWorkItem.stock", many: true }),
-    merchandisingVersions: (0, import_fields39.relationship)({ ref: "InventoryMerchandisingVersion.stock", many: true })
+    acquisition: (0, import_fields40.relationship)({ ref: "InventoryAcquisition.stock", access: { update: import_access53.denyAll } }),
+    stockNumber: (0, import_fields40.text)({ validation: { isRequired: true } }),
+    stockKey: (0, import_fields40.text)({ validation: { isRequired: true }, isIndexed: "unique", access: { read: import_access53.denyAll, create: import_access53.denyAll, update: import_access53.denyAll }, ui: { itemView: { fieldMode: "hidden" } } }),
+    locationCode: (0, import_fields40.text)({ validation: { isRequired: true } }),
+    locationLabel: (0, import_fields40.text)(),
+    stockedAt: (0, import_fields40.timestamp)({ validation: { isRequired: true } }),
+    frontlineAt: (0, import_fields40.timestamp)(),
+    purchaseCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    reconCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    otherCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    totalCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    reconStatus: (0, import_fields40.select)({ type: "string", options: ["not-started", "in-progress", "completed"].map((value) => ({ label: value, value })), defaultValue: "not-started" }),
+    merchandisingStatus: (0, import_fields40.select)({ type: "string", options: ["draft", "submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "draft" }),
+    approvedRevisionHash: (0, import_fields40.text)({ defaultValue: "", access: { create: import_access53.denyAll, update: import_access53.denyAll, read: permissions.canViewInventory }, label: "Approved marketing revision", ui: { itemView: { fieldMode: "read" } } }),
+    feedStatus: (0, import_fields40.select)({ type: "string", options: ["not-published", "succeeded", "partial", "failed"].map((value) => ({ label: value, value })), defaultValue: "not-published" }),
+    events: (0, import_fields40.relationship)({ ref: "InventoryStockEvent.stock", many: true }),
+    reconWorkItems: (0, import_fields40.relationship)({ ref: "InventoryReconWorkItem.stock", many: true }),
+    merchandisingVersions: (0, import_fields40.relationship)({ ref: "InventoryMerchandisingVersion.stock", many: true })
   }
 });
 
 // features/keystone/models/InventoryStockEvent.ts
-var import_core35 = require("@keystone-6/core");
-var import_fields40 = require("@keystone-6/core/fields");
-var InventoryStockEvent = (0, import_core35.list)({
+var import_core36 = require("@keystone-6/core");
+var import_fields41 = require("@keystone-6/core/fields");
+var InventoryStockEvent = (0, import_core36.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5577,21 +5619,21 @@ var InventoryStockEvent = (0, import_core35.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields40.relationship)({ ref: "InventoryStock.events", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    eventKey: (0, import_fields40.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    eventType: (0, import_fields40.text)({ validation: { isRequired: true }, isIndexed: true }),
-    reason: (0, import_fields40.text)({ validation: { isRequired: true, length: { max: 500 } } }),
-    amountCents: (0, import_fields40.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    evidence: (0, import_fields40.json)({ defaultValue: {} }),
-    actor: (0, import_fields40.relationship)({ ref: "User" }),
-    occurredAt: (0, import_fields40.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
+    stock: (0, import_fields41.relationship)({ ref: "InventoryStock.events", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    eventKey: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    eventType: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: true }),
+    reason: (0, import_fields41.text)({ validation: { isRequired: true, length: { max: 500 } } }),
+    amountCents: (0, import_fields41.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    evidence: (0, import_fields41.json)({ defaultValue: {} }),
+    actor: (0, import_fields41.relationship)({ ref: "User" }),
+    occurredAt: (0, import_fields41.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
   }
 });
 
 // features/keystone/models/InventoryReconWorkItem.ts
-var import_core36 = require("@keystone-6/core");
-var import_fields41 = require("@keystone-6/core/fields");
-var InventoryReconWorkItem = (0, import_core36.list)({
+var import_core37 = require("@keystone-6/core");
+var import_fields42 = require("@keystone-6/core/fields");
+var InventoryReconWorkItem = (0, import_core37.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5600,23 +5642,23 @@ var InventoryReconWorkItem = (0, import_core36.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields41.relationship)({ ref: "InventoryStock.reconWorkItems", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    title: (0, import_fields41.text)({ validation: { isRequired: true, length: { max: 200 } } }),
-    category: (0, import_fields41.select)({ type: "string", options: ["mechanical", "body", "detail", "tires", "inspection", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    status: (0, import_fields41.select)({ type: "string", options: ["open", "in-progress", "completed", "cancelled"].map((value) => ({ label: value, value })), defaultValue: "open" }),
-    estimatedCostCents: (0, import_fields41.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    actualCostCents: (0, import_fields41.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    vendorName: (0, import_fields41.text)({ validation: { length: { max: 200 } } }),
-    assignedTo: (0, import_fields41.relationship)({ ref: "User" }),
-    dueAt: (0, import_fields41.timestamp)(),
-    completedAt: (0, import_fields41.timestamp)()
+    stock: (0, import_fields42.relationship)({ ref: "InventoryStock.reconWorkItems", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    title: (0, import_fields42.text)({ validation: { isRequired: true, length: { max: 200 } } }),
+    category: (0, import_fields42.select)({ type: "string", options: ["mechanical", "body", "detail", "tires", "inspection", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    status: (0, import_fields42.select)({ type: "string", options: ["open", "in-progress", "completed", "cancelled"].map((value) => ({ label: value, value })), defaultValue: "open" }),
+    estimatedCostCents: (0, import_fields42.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    actualCostCents: (0, import_fields42.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    vendorName: (0, import_fields42.text)({ validation: { length: { max: 200 } } }),
+    assignedTo: (0, import_fields42.relationship)({ ref: "User" }),
+    dueAt: (0, import_fields42.timestamp)(),
+    completedAt: (0, import_fields42.timestamp)()
   }
 });
 
 // features/keystone/models/InventoryMerchandisingVersion.ts
-var import_core37 = require("@keystone-6/core");
-var import_fields42 = require("@keystone-6/core/fields");
-var InventoryMerchandisingVersion = (0, import_core37.list)({
+var import_core38 = require("@keystone-6/core");
+var import_fields43 = require("@keystone-6/core/fields");
+var InventoryMerchandisingVersion = (0, import_core38.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5625,23 +5667,23 @@ var InventoryMerchandisingVersion = (0, import_core37.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    stock: (0, import_fields42.relationship)({ ref: "InventoryStock.merchandisingVersions", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
-    version: (0, import_fields42.integer)({ validation: { isRequired: true, min: 1 } }),
-    versionKey: (0, import_fields42.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    status: (0, import_fields42.select)({ type: "string", options: ["submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "submitted" }),
-    snapshot: (0, import_fields42.json)({ defaultValue: {} }),
-    submittedBy: (0, import_fields42.relationship)({ ref: "User" }),
-    submittedAt: (0, import_fields42.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    decidedBy: (0, import_fields42.relationship)({ ref: "User" }),
-    decidedAt: (0, import_fields42.timestamp)(),
-    decisionReason: (0, import_fields42.text)({ validation: { length: { max: 500 } } })
+    stock: (0, import_fields43.relationship)({ ref: "InventoryStock.merchandisingVersions", db: { extendPrismaSchema: (field) => field.replace(/stock InventoryStock\?/g, "stock InventoryStock").replace(/stockId String\?/g, "stockId String") } }),
+    version: (0, import_fields43.integer)({ validation: { isRequired: true, min: 1 } }),
+    versionKey: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    status: (0, import_fields43.select)({ type: "string", options: ["submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "submitted" }),
+    snapshot: (0, import_fields43.json)({ defaultValue: {} }),
+    submittedBy: (0, import_fields43.relationship)({ ref: "User" }),
+    submittedAt: (0, import_fields43.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    decidedBy: (0, import_fields43.relationship)({ ref: "User" }),
+    decidedAt: (0, import_fields43.timestamp)(),
+    decisionReason: (0, import_fields43.text)({ validation: { length: { max: 500 } } })
   }
 });
 
 // features/keystone/models/InventoryFeedRun.ts
-var import_core38 = require("@keystone-6/core");
-var import_fields43 = require("@keystone-6/core/fields");
-var InventoryFeedRun = (0, import_core38.list)({
+var import_core39 = require("@keystone-6/core");
+var import_fields44 = require("@keystone-6/core/fields");
+var InventoryFeedRun = (0, import_core39.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5650,25 +5692,25 @@ var InventoryFeedRun = (0, import_core38.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    runKey: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    channelKey: (0, import_fields43.text)({ validation: { isRequired: true }, isIndexed: true }),
-    status: (0, import_fields43.select)({ type: "string", options: ["succeeded", "partial", "failed"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    attemptedCount: (0, import_fields43.integer)({ validation: { isRequired: true, min: 0 } }),
-    succeededCount: (0, import_fields43.integer)({ validation: { isRequired: true, min: 0 } }),
-    failedCount: (0, import_fields43.integer)({ validation: { isRequired: true, min: 0 } }),
-    requestSnapshot: (0, import_fields43.json)({ defaultValue: {} }),
-    responseSummary: (0, import_fields43.json)({ defaultValue: {} }),
-    startedAt: (0, import_fields43.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields43.timestamp)({ validation: { isRequired: true } }),
-    recordedBy: (0, import_fields43.relationship)({ ref: "User" }),
-    errors: (0, import_fields43.relationship)({ ref: "InventoryFeedError.run", many: true })
+    runKey: (0, import_fields44.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    channelKey: (0, import_fields44.text)({ validation: { isRequired: true }, isIndexed: true }),
+    status: (0, import_fields44.select)({ type: "string", options: ["succeeded", "partial", "failed"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    attemptedCount: (0, import_fields44.integer)({ validation: { isRequired: true, min: 0 } }),
+    succeededCount: (0, import_fields44.integer)({ validation: { isRequired: true, min: 0 } }),
+    failedCount: (0, import_fields44.integer)({ validation: { isRequired: true, min: 0 } }),
+    requestSnapshot: (0, import_fields44.json)({ defaultValue: {} }),
+    responseSummary: (0, import_fields44.json)({ defaultValue: {} }),
+    startedAt: (0, import_fields44.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields44.timestamp)({ validation: { isRequired: true } }),
+    recordedBy: (0, import_fields44.relationship)({ ref: "User" }),
+    errors: (0, import_fields44.relationship)({ ref: "InventoryFeedError.run", many: true })
   }
 });
 
 // features/keystone/models/InventoryFeedError.ts
-var import_core39 = require("@keystone-6/core");
-var import_fields44 = require("@keystone-6/core/fields");
-var InventoryFeedError = (0, import_core39.list)({
+var import_core40 = require("@keystone-6/core");
+var import_fields45 = require("@keystone-6/core/fields");
+var InventoryFeedError = (0, import_core40.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5677,20 +5719,20 @@ var InventoryFeedError = (0, import_core39.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    run: (0, import_fields44.relationship)({ ref: "InventoryFeedRun.errors", db: { extendPrismaSchema: (field) => field.replace(/run InventoryFeedRun\?/g, "run InventoryFeedRun").replace(/runId String\?/g, "runId String") } }),
-    stock: (0, import_fields44.relationship)({ ref: "InventoryStock" }),
-    errorCode: (0, import_fields44.text)({ validation: { isRequired: true } }),
-    message: (0, import_fields44.text)({ validation: { isRequired: true, length: { max: 1e3 } } }),
-    rowReference: (0, import_fields44.text)({ validation: { length: { max: 200 } } }),
-    evidence: (0, import_fields44.json)({ defaultValue: {} })
+    run: (0, import_fields45.relationship)({ ref: "InventoryFeedRun.errors", db: { extendPrismaSchema: (field) => field.replace(/run InventoryFeedRun\?/g, "run InventoryFeedRun").replace(/runId String\?/g, "runId String") } }),
+    stock: (0, import_fields45.relationship)({ ref: "InventoryStock" }),
+    errorCode: (0, import_fields45.text)({ validation: { isRequired: true } }),
+    message: (0, import_fields45.text)({ validation: { isRequired: true, length: { max: 1e3 } } }),
+    rowReference: (0, import_fields45.text)({ validation: { length: { max: 200 } } }),
+    evidence: (0, import_fields45.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/Customer.ts
-var import_core40 = require("@keystone-6/core");
-var import_access59 = require("@keystone-6/core/access");
-var import_fields45 = require("@keystone-6/core/fields");
-var Customer = (0, import_core40.list)({
+var import_core41 = require("@keystone-6/core");
+var import_access60 = require("@keystone-6/core/access");
+var import_fields46 = require("@keystone-6/core/fields");
+var Customer = (0, import_core41.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5711,15 +5753,15 @@ var Customer = (0, import_core40.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    firstName: (0, import_fields45.text)({ validation: { isRequired: true } }),
-    lastName: (0, import_fields45.text)({ validation: { isRequired: true } }),
-    primaryEmail: (0, import_fields45.text)(),
-    primaryPhone: (0, import_fields45.text)(),
-    normalizedEmail: (0, import_fields45.text)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, isIndexed: true }),
-    normalizedPhone: (0, import_fields45.text)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, isIndexed: true }),
-    identityKey: (0, import_fields45.text)({ access: { read: import_access59.denyAll, create: import_access59.denyAll, update: import_access59.denyAll }, isIndexed: "unique", validation: { isRequired: true } }),
-    status: (0, import_fields45.select)({
-      access: { create: import_access59.denyAll, update: import_access59.denyAll },
+    firstName: (0, import_fields46.text)({ validation: { isRequired: true } }),
+    lastName: (0, import_fields46.text)({ validation: { isRequired: true } }),
+    primaryEmail: (0, import_fields46.text)(),
+    primaryPhone: (0, import_fields46.text)(),
+    normalizedEmail: (0, import_fields46.text)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, isIndexed: true }),
+    normalizedPhone: (0, import_fields46.text)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, isIndexed: true }),
+    identityKey: (0, import_fields46.text)({ access: { read: import_access60.denyAll, create: import_access60.denyAll, update: import_access60.denyAll }, isIndexed: "unique", validation: { isRequired: true } }),
+    status: (0, import_fields46.select)({
+      access: { create: import_access60.denyAll, update: import_access60.denyAll },
       type: "string",
       options: [
         { label: "Active", value: "active" },
@@ -5728,14 +5770,14 @@ var Customer = (0, import_core40.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    emailConsent: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    smsConsent: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    phoneConsent: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    emailSuppressed: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    smsSuppressed: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    phoneSuppressed: (0, import_fields45.checkbox)({ access: { create: import_access59.denyAll, update: import_access59.denyAll }, defaultValue: false }),
-    preferredChannel: (0, import_fields45.select)({
-      access: { create: import_access59.denyAll, update: import_access59.denyAll },
+    emailConsent: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    smsConsent: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    phoneConsent: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    emailSuppressed: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    smsSuppressed: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    phoneSuppressed: (0, import_fields46.checkbox)({ access: { create: import_access60.denyAll, update: import_access60.denyAll }, defaultValue: false }),
+    preferredChannel: (0, import_fields46.select)({
+      access: { create: import_access60.denyAll, update: import_access60.denyAll },
       type: "string",
       options: [
         { label: "Email", value: "email" },
@@ -5746,28 +5788,28 @@ var Customer = (0, import_core40.list)({
       defaultValue: "none",
       validation: { isRequired: true }
     }),
-    contactPreferenceUpdatedAt: (0, import_fields45.timestamp)({ access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    suppressionReason: (0, import_fields45.text)({ access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    suppressionSource: (0, import_fields45.text)({ access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
+    contactPreferenceUpdatedAt: (0, import_fields46.timestamp)({ access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    suppressionReason: (0, import_fields46.text)({ access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    suppressionSource: (0, import_fields46.text)({ access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
     // The storefront login that proved ownership of primaryEmail. Written only by
     // confirmCustomerEmailVerification (customerEmailVerification.ts); never from submitted data.
-    account: (0, import_fields45.relationship)({ ref: "User", access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    household: (0, import_fields45.relationship)({ ref: "CustomerHousehold.members", access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    contactPreferenceEvents: (0, import_fields45.relationship)({ ref: "CustomerContactPreferenceEvent.customer", many: true, access: { update: import_access59.denyAll } }),
-    salesVisits: (0, import_fields45.relationship)({ ref: "SalesVisit.customer", many: true, access: { update: import_access59.denyAll } }),
-    mergedAt: (0, import_fields45.timestamp)({ access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    mergedInto: (0, import_fields45.relationship)({ ref: "Customer.mergedCustomers", access: { create: import_access59.denyAll, update: import_access59.denyAll } }),
-    mergedCustomers: (0, import_fields45.relationship)({ ref: "Customer.mergedInto", many: true, access: { update: import_access59.denyAll } }),
-    leads: (0, import_fields45.relationship)({ ref: "Lead.customer", many: true, access: { update: import_access59.denyAll } }),
-    mergeEventsAsSurvivor: (0, import_fields45.relationship)({ ref: "CustomerMergeEvent.survivor", many: true, access: { update: import_access59.denyAll } }),
-    mergeEventsAsDuplicate: (0, import_fields45.relationship)({ ref: "CustomerMergeEvent.duplicate", many: true, access: { update: import_access59.denyAll } })
+    account: (0, import_fields46.relationship)({ ref: "User", access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    household: (0, import_fields46.relationship)({ ref: "CustomerHousehold.members", access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    contactPreferenceEvents: (0, import_fields46.relationship)({ ref: "CustomerContactPreferenceEvent.customer", many: true, access: { update: import_access60.denyAll } }),
+    salesVisits: (0, import_fields46.relationship)({ ref: "SalesVisit.customer", many: true, access: { update: import_access60.denyAll } }),
+    mergedAt: (0, import_fields46.timestamp)({ access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    mergedInto: (0, import_fields46.relationship)({ ref: "Customer.mergedCustomers", access: { create: import_access60.denyAll, update: import_access60.denyAll } }),
+    mergedCustomers: (0, import_fields46.relationship)({ ref: "Customer.mergedInto", many: true, access: { update: import_access60.denyAll } }),
+    leads: (0, import_fields46.relationship)({ ref: "Lead.customer", many: true, access: { update: import_access60.denyAll } }),
+    mergeEventsAsSurvivor: (0, import_fields46.relationship)({ ref: "CustomerMergeEvent.survivor", many: true, access: { update: import_access60.denyAll } }),
+    mergeEventsAsDuplicate: (0, import_fields46.relationship)({ ref: "CustomerMergeEvent.duplicate", many: true, access: { update: import_access60.denyAll } })
   }
 });
 
 // features/keystone/models/CustomerMergeEvent.ts
-var import_core41 = require("@keystone-6/core");
-var import_fields46 = require("@keystone-6/core/fields");
-var CustomerMergeEvent = (0, import_core41.list)({
+var import_core42 = require("@keystone-6/core");
+var import_fields47 = require("@keystone-6/core/fields");
+var CustomerMergeEvent = (0, import_core42.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -5785,20 +5827,20 @@ var CustomerMergeEvent = (0, import_core41.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    survivor: (0, import_fields46.relationship)({ ref: "Customer.mergeEventsAsSurvivor", db: { extendPrismaSchema: (field) => field.replace(/survivor Customer\?/g, "survivor Customer").replace(/survivorId String\?/g, "survivorId String") } }),
-    duplicate: (0, import_fields46.relationship)({ ref: "Customer.mergeEventsAsDuplicate", db: { extendPrismaSchema: (field) => field.replace(/duplicate Customer\?/g, "duplicate Customer").replace(/duplicateId String\?/g, "duplicateId String") } }),
-    actor: (0, import_fields46.relationship)({ ref: "User.customerMergeEvents", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
-    reason: (0, import_fields46.text)({ validation: { isRequired: true } }),
-    mergedAt: (0, import_fields46.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    movedLeadIds: (0, import_fields46.json)({ defaultValue: [] }),
-    evidenceSnapshot: (0, import_fields46.json)({ defaultValue: {} })
+    survivor: (0, import_fields47.relationship)({ ref: "Customer.mergeEventsAsSurvivor", db: { extendPrismaSchema: (field) => field.replace(/survivor Customer\?/g, "survivor Customer").replace(/survivorId String\?/g, "survivorId String") } }),
+    duplicate: (0, import_fields47.relationship)({ ref: "Customer.mergeEventsAsDuplicate", db: { extendPrismaSchema: (field) => field.replace(/duplicate Customer\?/g, "duplicate Customer").replace(/duplicateId String\?/g, "duplicateId String") } }),
+    actor: (0, import_fields47.relationship)({ ref: "User.customerMergeEvents", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
+    reason: (0, import_fields47.text)({ validation: { isRequired: true } }),
+    mergedAt: (0, import_fields47.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    movedLeadIds: (0, import_fields47.json)({ defaultValue: [] }),
+    evidenceSnapshot: (0, import_fields47.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/LeadAssignmentEvent.ts
-var import_core42 = require("@keystone-6/core");
-var import_fields47 = require("@keystone-6/core/fields");
-var LeadAssignmentEvent = (0, import_core42.list)({
+var import_core43 = require("@keystone-6/core");
+var import_fields48 = require("@keystone-6/core/fields");
+var LeadAssignmentEvent = (0, import_core43.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5816,21 +5858,21 @@ var LeadAssignmentEvent = (0, import_core42.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    lead: (0, import_fields47.relationship)({ ref: "Lead.assignmentEvents", db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") } }),
-    fromUser: (0, import_fields47.relationship)({ ref: "User.leadAssignmentsFrom" }),
-    toUser: (0, import_fields47.relationship)({ ref: "User.leadAssignmentsTo", db: { extendPrismaSchema: (field) => field.replace(/toUser User\?/g, "toUser User").replace(/toUserId String\?/g, "toUserId String") } }),
-    actor: (0, import_fields47.relationship)({ ref: "User.performedLeadAssignments", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
-    reason: (0, import_fields47.text)({ validation: { isRequired: true } }),
-    routeKey: (0, import_fields47.text)(),
-    assignedAt: (0, import_fields47.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
-    firstResponseDueAt: (0, import_fields47.timestamp)()
+    lead: (0, import_fields48.relationship)({ ref: "Lead.assignmentEvents", db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") } }),
+    fromUser: (0, import_fields48.relationship)({ ref: "User.leadAssignmentsFrom" }),
+    toUser: (0, import_fields48.relationship)({ ref: "User.leadAssignmentsTo", db: { extendPrismaSchema: (field) => field.replace(/toUser User\?/g, "toUser User").replace(/toUserId String\?/g, "toUserId String") } }),
+    actor: (0, import_fields48.relationship)({ ref: "User.performedLeadAssignments", db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") } }),
+    reason: (0, import_fields48.text)({ validation: { isRequired: true } }),
+    routeKey: (0, import_fields48.text)(),
+    assignedAt: (0, import_fields48.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" } }),
+    firstResponseDueAt: (0, import_fields48.timestamp)()
   }
 });
 
 // features/keystone/models/LeadRoutingRule.ts
-var import_core43 = require("@keystone-6/core");
-var import_fields48 = require("@keystone-6/core/fields");
-var LeadRoutingRule = (0, import_core43.list)({
+var import_core44 = require("@keystone-6/core");
+var import_fields49 = require("@keystone-6/core/fields");
+var LeadRoutingRule = (0, import_core44.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -5863,16 +5905,16 @@ var LeadRoutingRule = (0, import_core43.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    name: (0, import_fields48.text)({ validation: { isRequired: true } }),
-    routeKey: (0, import_fields48.text)({
+    name: (0, import_fields49.text)({ validation: { isRequired: true } }),
+    routeKey: (0, import_fields49.text)({
       validation: { isRequired: true },
       isIndexed: "unique",
       access: { create: () => false, update: () => false },
       ui: { createView: { fieldMode: "hidden" }, itemView: { fieldMode: "read" } }
     }),
-    active: (0, import_fields48.checkbox)({ defaultValue: true }),
-    priority: (0, import_fields48.integer)({ defaultValue: 100, validation: { isRequired: true, min: 0, max: 1e4 } }),
-    source: (0, import_fields48.select)({
+    active: (0, import_fields49.checkbox)({ defaultValue: true }),
+    priority: (0, import_fields49.integer)({ defaultValue: 100, validation: { isRequired: true, min: 0, max: 1e4 } }),
+    source: (0, import_fields49.select)({
       type: "string",
       options: [
         { label: "Any source", value: "any" },
@@ -5887,15 +5929,15 @@ var LeadRoutingRule = (0, import_core43.list)({
       defaultValue: "any",
       validation: { isRequired: true }
     }),
-    assignee: (0, import_fields48.relationship)({ ref: "User.leadRoutingRules", db: { extendPrismaSchema: (field) => field.replace(/assignee User\?/g, "assignee User").replace(/assigneeId String\?/g, "assigneeId String") } }),
-    firstResponseMinutes: (0, import_fields48.integer)({ defaultValue: 30, validation: { isRequired: true, min: 1, max: 10080 } })
+    assignee: (0, import_fields49.relationship)({ ref: "User.leadRoutingRules", db: { extendPrismaSchema: (field) => field.replace(/assignee User\?/g, "assignee User").replace(/assigneeId String\?/g, "assigneeId String") } }),
+    firstResponseMinutes: (0, import_fields49.integer)({ defaultValue: 30, validation: { isRequired: true, min: 1, max: 10080 } })
   }
 });
 
 // features/keystone/models/CustomerContactPreferenceEvent.ts
-var import_core44 = require("@keystone-6/core");
-var import_fields49 = require("@keystone-6/core/fields");
-var CustomerContactPreferenceEvent = (0, import_core44.list)({
+var import_core45 = require("@keystone-6/core");
+var import_fields50 = require("@keystone-6/core/fields");
+var CustomerContactPreferenceEvent = (0, import_core45.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5909,25 +5951,25 @@ var CustomerContactPreferenceEvent = (0, import_core44.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    customer: (0, import_fields49.relationship)({
+    customer: (0, import_fields50.relationship)({
       ref: "Customer.contactPreferenceEvents",
       db: { extendPrismaSchema: (field) => field.replace(/customer Customer\?/g, "customer Customer").replace(/customerId String\?/g, "customerId String") }
     }),
-    actor: (0, import_fields49.relationship)({
+    actor: (0, import_fields50.relationship)({
       ref: "User.customerContactPreferenceEvents",
       db: { extendPrismaSchema: (field) => field.replace(/actor User\?/g, "actor User").replace(/actorId String\?/g, "actorId String") }
     }),
-    source: (0, import_fields49.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields49.text)({ validation: { isRequired: true } }),
-    occurredAt: (0, import_fields49.timestamp)({ validation: { isRequired: true } }),
-    preferenceSnapshot: (0, import_fields49.json)({ defaultValue: {} })
+    source: (0, import_fields50.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields50.text)({ validation: { isRequired: true } }),
+    occurredAt: (0, import_fields50.timestamp)({ validation: { isRequired: true } }),
+    preferenceSnapshot: (0, import_fields50.json)({ defaultValue: {} })
   }
 });
 
 // features/keystone/models/CustomerHousehold.ts
-var import_core45 = require("@keystone-6/core");
-var import_fields50 = require("@keystone-6/core/fields");
-var CustomerHousehold = (0, import_core45.list)({
+var import_core46 = require("@keystone-6/core");
+var import_fields51 = require("@keystone-6/core/fields");
+var CustomerHousehold = (0, import_core46.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5941,16 +5983,16 @@ var CustomerHousehold = (0, import_core45.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    householdKey: (0, import_fields50.text)({ isIndexed: "unique", validation: { isRequired: true } }),
-    displayName: (0, import_fields50.text)({ validation: { isRequired: true } }),
-    members: (0, import_fields50.relationship)({ ref: "Customer.household", many: true })
+    householdKey: (0, import_fields51.text)({ isIndexed: "unique", validation: { isRequired: true } }),
+    displayName: (0, import_fields51.text)({ validation: { isRequired: true } }),
+    members: (0, import_fields51.relationship)({ ref: "Customer.household", many: true })
   }
 });
 
 // features/keystone/models/SalesVisit.ts
-var import_core46 = require("@keystone-6/core");
-var import_fields51 = require("@keystone-6/core/fields");
-var SalesVisit = (0, import_core46.list)({
+var import_core47 = require("@keystone-6/core");
+var import_fields52 = require("@keystone-6/core/fields");
+var SalesVisit = (0, import_core47.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -5964,21 +6006,21 @@ var SalesVisit = (0, import_core46.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    lead: (0, import_fields51.relationship)({
+    lead: (0, import_fields52.relationship)({
       ref: "Lead.salesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/lead Lead\?/g, "lead Lead").replace(/leadId String\?/g, "leadId String") }
     }),
-    customer: (0, import_fields51.relationship)({
+    customer: (0, import_fields52.relationship)({
       ref: "Customer.salesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/customer Customer\?/g, "customer Customer").replace(/customerId String\?/g, "customerId String") }
     }),
-    vehicle: (0, import_fields51.relationship)({ ref: "Vehicle.salesVisits" }),
-    assignedSalesperson: (0, import_fields51.relationship)({
+    vehicle: (0, import_fields52.relationship)({ ref: "Vehicle.salesVisits" }),
+    assignedSalesperson: (0, import_fields52.relationship)({
       ref: "User.assignedSalesVisits",
       db: { extendPrismaSchema: (field) => field.replace(/assignedSalesperson User\?/g, "assignedSalesperson User").replace(/assignedSalespersonId String\?/g, "assignedSalespersonId String") }
     }),
-    manager: (0, import_fields51.relationship)({ ref: "User.managedSalesVisits" }),
-    kind: (0, import_fields51.select)({
+    manager: (0, import_fields52.relationship)({ ref: "User.managedSalesVisits" }),
+    kind: (0, import_fields52.select)({
       type: "string",
       options: [
         { label: "Sales appointment", value: "appointment" },
@@ -5986,7 +6028,7 @@ var SalesVisit = (0, import_core46.list)({
       ],
       validation: { isRequired: true }
     }),
-    status: (0, import_fields51.select)({
+    status: (0, import_fields52.select)({
       type: "string",
       options: [
         { label: "Scheduled", value: "scheduled" },
@@ -5998,19 +6040,19 @@ var SalesVisit = (0, import_core46.list)({
       ],
       validation: { isRequired: true }
     }),
-    scheduledAt: (0, import_fields51.timestamp)(),
-    arrivedAt: (0, import_fields51.timestamp)(),
-    managerTurnAt: (0, import_fields51.timestamp)(),
-    completedAt: (0, import_fields51.timestamp)(),
-    outcome: (0, import_fields51.text)(),
-    notes: (0, import_fields51.text)({ ui: { displayMode: "textarea" } })
+    scheduledAt: (0, import_fields52.timestamp)(),
+    arrivedAt: (0, import_fields52.timestamp)(),
+    managerTurnAt: (0, import_fields52.timestamp)(),
+    completedAt: (0, import_fields52.timestamp)(),
+    outcome: (0, import_fields52.text)(),
+    notes: (0, import_fields52.text)({ ui: { displayMode: "textarea" } })
   }
 });
 
 // features/keystone/models/FinanceProduct.ts
-var import_core47 = require("@keystone-6/core");
-var import_fields52 = require("@keystone-6/core/fields");
-var FinanceProduct = (0, import_core47.list)({
+var import_core48 = require("@keystone-6/core");
+var import_fields53 = require("@keystone-6/core/fields");
+var FinanceProduct = (0, import_core48.list)({
   db: prismaModelDirectives('@@unique([rooftopId, code], map: "FinanceProduct_rooftop_code_key")'),
   access: {
     operation: {
@@ -6031,21 +6073,21 @@ var FinanceProduct = (0, import_core47.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    code: (0, import_fields52.text)({ validation: { isRequired: true } }),
-    name: (0, import_fields52.text)({ validation: { isRequired: true } }),
-    category: (0, import_fields52.select)({ type: "string", options: ["service-contract", "gap", "maintenance", "appearance", "tire-wheel", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    providerKey: (0, import_fields52.text)({ validation: { isRequired: true } }),
-    active: (0, import_fields52.checkbox)({ defaultValue: true }),
-    quotes: (0, import_fields52.relationship)({ ref: "FinanceProductQuote.product", many: true }),
-    retailPriceCents: (0, import_fields52.integer)({ validation: { isRequired: true, min: 0 } }),
-    costCents: (0, import_fields52.integer)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
+    code: (0, import_fields53.text)({ validation: { isRequired: true } }),
+    name: (0, import_fields53.text)({ validation: { isRequired: true } }),
+    category: (0, import_fields53.select)({ type: "string", options: ["service-contract", "gap", "maintenance", "appearance", "tire-wheel", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    providerKey: (0, import_fields53.text)({ validation: { isRequired: true } }),
+    active: (0, import_fields53.checkbox)({ defaultValue: true }),
+    quotes: (0, import_fields53.relationship)({ ref: "FinanceProductQuote.product", many: true }),
+    retailPriceCents: (0, import_fields53.integer)({ validation: { isRequired: true, min: 0 } }),
+    costCents: (0, import_fields53.integer)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
   }
 });
 
 // features/keystone/models/FinanceMenuVersion.ts
-var import_core48 = require("@keystone-6/core");
-var import_fields53 = require("@keystone-6/core/fields");
-var FinanceMenuVersion = (0, import_core48.list)({
+var import_core49 = require("@keystone-6/core");
+var import_fields54 = require("@keystone-6/core/fields");
+var FinanceMenuVersion = (0, import_core49.list)({
   db: prismaModelDirectives('@@unique([dealId, version], map: "FinanceMenuVersion_deal_version_key")'),
   access: { operation: { query: permissions.canManageFinancing, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageFinancing") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "deal", listKey: "Deal" }]) },
@@ -6053,24 +6095,24 @@ var FinanceMenuVersion = (0, import_core48.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields53.relationship)({ ref: "Deal.financeMenuVersions", db: requiredRelationshipDb("deal") }),
-    version: (0, import_fields53.integer)({ validation: { isRequired: true, min: 1 } }),
-    status: (0, import_fields53.select)({ type: "string", options: ["presented", "accepted", "declined", "superseded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    optionsSnapshot: (0, import_fields53.json)({ defaultValue: [] }),
-    selectedProductCodes: (0, import_fields53.json)({ defaultValue: [] }),
-    declinedProductCodes: (0, import_fields53.json)({ defaultValue: [] }),
-    disclosureAcknowledgment: (0, import_fields53.text)(),
-    presentedAt: (0, import_fields53.timestamp)({ validation: { isRequired: true } }),
-    decidedAt: (0, import_fields53.timestamp)(),
-    cancellations: (0, import_fields53.relationship)({ ref: "FinanceProductCancellation.menu", many: true }),
-    idempotencyKey: (0, import_fields53.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    deal: (0, import_fields54.relationship)({ ref: "Deal.financeMenuVersions", db: requiredRelationshipDb("deal") }),
+    version: (0, import_fields54.integer)({ validation: { isRequired: true, min: 1 } }),
+    status: (0, import_fields54.select)({ type: "string", options: ["presented", "accepted", "declined", "superseded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    optionsSnapshot: (0, import_fields54.json)({ defaultValue: [] }),
+    selectedProductCodes: (0, import_fields54.json)({ defaultValue: [] }),
+    declinedProductCodes: (0, import_fields54.json)({ defaultValue: [] }),
+    disclosureAcknowledgment: (0, import_fields54.text)(),
+    presentedAt: (0, import_fields54.timestamp)({ validation: { isRequired: true } }),
+    decidedAt: (0, import_fields54.timestamp)(),
+    cancellations: (0, import_fields54.relationship)({ ref: "FinanceProductCancellation.menu", many: true }),
+    idempotencyKey: (0, import_fields54.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/FinanceComplianceCheck.ts
-var import_core49 = require("@keystone-6/core");
-var import_fields54 = require("@keystone-6/core/fields");
-var FinanceComplianceCheck = (0, import_core49.list)({
+var import_core50 = require("@keystone-6/core");
+var import_fields55 = require("@keystone-6/core/fields");
+var FinanceComplianceCheck = (0, import_core50.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6092,11 +6134,11 @@ var FinanceComplianceCheck = (0, import_core49.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields54.relationship)({
+    deal: (0, import_fields55.relationship)({
       ref: "Deal.financeComplianceChecks",
       db: requiredRelationshipDb("deal")
     }),
-    checkType: (0, import_fields54.select)({
+    checkType: (0, import_fields55.select)({
       type: "string",
       options: ["identity", "ofac", "red-flag", "privacy"].map((value) => ({
         label: value,
@@ -6104,8 +6146,8 @@ var FinanceComplianceCheck = (0, import_core49.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields54.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields54.select)({
+    providerKey: (0, import_fields55.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields55.select)({
       type: "string",
       options: ["requested", "completed", "failed", "manual-review"].map((value) => ({
         label: value,
@@ -6113,12 +6155,12 @@ var FinanceComplianceCheck = (0, import_core49.list)({
       })),
       validation: { isRequired: true }
     }),
-    resultCode: (0, import_fields54.text)(),
-    requestSnapshot: (0, import_fields54.json)({ defaultValue: {} }),
-    resultSnapshot: (0, import_fields54.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields54.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields54.timestamp)(),
-    idempotencyKey: (0, import_fields54.text)({
+    resultCode: (0, import_fields55.text)(),
+    requestSnapshot: (0, import_fields55.json)({ defaultValue: {} }),
+    resultSnapshot: (0, import_fields55.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields55.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields55.timestamp)(),
+    idempotencyKey: (0, import_fields55.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6126,9 +6168,9 @@ var FinanceComplianceCheck = (0, import_core49.list)({
 });
 
 // features/keystone/models/FinanceContractPackage.ts
-var import_core50 = require("@keystone-6/core");
-var import_fields55 = require("@keystone-6/core/fields");
-var FinanceContractPackage = (0, import_core50.list)({
+var import_core51 = require("@keystone-6/core");
+var import_fields56 = require("@keystone-6/core/fields");
+var FinanceContractPackage = (0, import_core51.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceContractPackage_deal_key")'),
   access: {
     operation: {
@@ -6151,11 +6193,11 @@ var FinanceContractPackage = (0, import_core50.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields55.relationship)({
+    deal: (0, import_fields56.relationship)({
       ref: "Deal.financeContractPackages",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields55.select)({
+    status: (0, import_fields56.select)({
       type: "string",
       options: ["preparing", "ready", "awaiting-external-handoff", "sent", "viewed", "signed", "declined", "void"].map((value) => ({
         label: value,
@@ -6163,15 +6205,15 @@ var FinanceContractPackage = (0, import_core50.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields55.text)({ validation: { isRequired: true } }),
-    envelopeReference: (0, import_fields55.text)(),
-    requiredDocuments: (0, import_fields55.json)({ defaultValue: [] }),
-    documentChecklist: (0, import_fields55.json)({ defaultValue: [] }),
-    immutableStatusEvidence: (0, import_fields55.json)({ defaultValue: {} }),
-    sentAt: (0, import_fields55.timestamp)(),
-    signedAt: (0, import_fields55.timestamp)(),
-    lastWebhookAt: (0, import_fields55.timestamp)(),
-    idempotencyKey: (0, import_fields55.text)({
+    providerKey: (0, import_fields56.text)({ validation: { isRequired: true } }),
+    envelopeReference: (0, import_fields56.text)(),
+    requiredDocuments: (0, import_fields56.json)({ defaultValue: [] }),
+    documentChecklist: (0, import_fields56.json)({ defaultValue: [] }),
+    immutableStatusEvidence: (0, import_fields56.json)({ defaultValue: {} }),
+    sentAt: (0, import_fields56.timestamp)(),
+    signedAt: (0, import_fields56.timestamp)(),
+    lastWebhookAt: (0, import_fields56.timestamp)(),
+    idempotencyKey: (0, import_fields56.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6179,9 +6221,9 @@ var FinanceContractPackage = (0, import_core50.list)({
 });
 
 // features/keystone/models/FinanceFundingCase.ts
-var import_core51 = require("@keystone-6/core");
-var import_fields56 = require("@keystone-6/core/fields");
-var FinanceFundingCase = (0, import_core51.list)({
+var import_core52 = require("@keystone-6/core");
+var import_fields57 = require("@keystone-6/core/fields");
+var FinanceFundingCase = (0, import_core52.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceFundingCase_deal_key")'),
   access: {
     operation: {
@@ -6204,11 +6246,11 @@ var FinanceFundingCase = (0, import_core51.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields56.relationship)({
+    deal: (0, import_fields57.relationship)({
       ref: "Deal.financeFundingCases",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields56.select)({
+    status: (0, import_fields57.select)({
       type: "string",
       options: ["pending", "exception", "clear-to-fund", "funded", "cancelled"].map((value) => ({
         label: value,
@@ -6216,12 +6258,12 @@ var FinanceFundingCase = (0, import_core51.list)({
       })),
       validation: { isRequired: true }
     }),
-    checklist: (0, import_fields56.json)({ defaultValue: [] }),
-    exceptions: (0, import_fields56.json)({ defaultValue: [] }),
-    fundingReference: (0, import_fields56.text)(),
-    fundedAt: (0, import_fields56.timestamp)(),
-    immutableEvidence: (0, import_fields56.json)({ defaultValue: {} }),
-    idempotencyKey: (0, import_fields56.text)({
+    checklist: (0, import_fields57.json)({ defaultValue: [] }),
+    exceptions: (0, import_fields57.json)({ defaultValue: [] }),
+    fundingReference: (0, import_fields57.text)(),
+    fundedAt: (0, import_fields57.timestamp)(),
+    immutableEvidence: (0, import_fields57.json)({ defaultValue: {} }),
+    idempotencyKey: (0, import_fields57.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6229,9 +6271,9 @@ var FinanceFundingCase = (0, import_core51.list)({
 });
 
 // features/keystone/models/FinanceProductQuote.ts
-var import_core52 = require("@keystone-6/core");
-var import_fields57 = require("@keystone-6/core/fields");
-var FinanceProductQuote = (0, import_core52.list)({
+var import_core53 = require("@keystone-6/core");
+var import_fields58 = require("@keystone-6/core/fields");
+var FinanceProductQuote = (0, import_core53.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6255,16 +6297,16 @@ var FinanceProductQuote = (0, import_core52.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields57.relationship)({
+    deal: (0, import_fields58.relationship)({
       ref: "Deal.financeProductQuotes",
       db: requiredRelationshipDb("deal")
     }),
-    product: (0, import_fields57.relationship)({
+    product: (0, import_fields58.relationship)({
       ref: "FinanceProduct.quotes",
       db: requiredRelationshipDb("product")
     }),
-    providerKey: (0, import_fields57.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields57.select)({
+    providerKey: (0, import_fields58.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields58.select)({
       type: "string",
       options: ["requested", "quoted", "failed"].map((value) => ({
         label: value,
@@ -6272,8 +6314,8 @@ var FinanceProductQuote = (0, import_core52.list)({
       })),
       validation: { isRequired: true }
     }),
-    retailPriceCents: (0, import_fields57.integer)({ validation: { min: 0 } }),
-    costCents: (0, import_fields57.integer)({
+    retailPriceCents: (0, import_fields58.integer)({ validation: { min: 0 } }),
+    costCents: (0, import_fields58.integer)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6281,12 +6323,12 @@ var FinanceProductQuote = (0, import_core52.list)({
         update: () => false
       }
     }),
-    evidenceReference: (0, import_fields57.text)(),
-    requestSnapshot: (0, import_fields57.json)({ defaultValue: {} }),
-    resultSnapshot: (0, import_fields57.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields57.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields57.timestamp)(),
-    idempotencyKey: (0, import_fields57.text)({
+    evidenceReference: (0, import_fields58.text)(),
+    requestSnapshot: (0, import_fields58.json)({ defaultValue: {} }),
+    resultSnapshot: (0, import_fields58.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields58.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields58.timestamp)(),
+    idempotencyKey: (0, import_fields58.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6294,9 +6336,9 @@ var FinanceProductQuote = (0, import_core52.list)({
 });
 
 // features/keystone/models/FinanceProductCancellation.ts
-var import_core53 = require("@keystone-6/core");
-var import_fields58 = require("@keystone-6/core/fields");
-var FinanceProductCancellation = (0, import_core53.list)({
+var import_core54 = require("@keystone-6/core");
+var import_fields59 = require("@keystone-6/core/fields");
+var FinanceProductCancellation = (0, import_core54.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6320,16 +6362,16 @@ var FinanceProductCancellation = (0, import_core53.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields58.relationship)({
+    deal: (0, import_fields59.relationship)({
       ref: "Deal.financeProductCancellations",
       db: requiredRelationshipDb("deal")
     }),
-    menu: (0, import_fields58.relationship)({
+    menu: (0, import_fields59.relationship)({
       ref: "FinanceMenuVersion.cancellations",
       db: requiredRelationshipDb("menu")
     }),
-    productCode: (0, import_fields58.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields58.select)({
+    productCode: (0, import_fields59.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields59.select)({
       type: "string",
       options: ["requested", "completed", "denied"].map((value) => ({
         label: value,
@@ -6337,12 +6379,12 @@ var FinanceProductCancellation = (0, import_core53.list)({
       })),
       validation: { isRequired: true }
     }),
-    reason: (0, import_fields58.text)({ validation: { isRequired: true } }),
-    refundCents: (0, import_fields58.integer)({ validation: { min: 0 } }),
-    evidence: (0, import_fields58.json)({ defaultValue: {} }),
-    requestedAt: (0, import_fields58.timestamp)({ validation: { isRequired: true } }),
-    completedAt: (0, import_fields58.timestamp)(),
-    idempotencyKey: (0, import_fields58.text)({
+    reason: (0, import_fields59.text)({ validation: { isRequired: true } }),
+    refundCents: (0, import_fields59.integer)({ validation: { min: 0 } }),
+    evidence: (0, import_fields59.json)({ defaultValue: {} }),
+    requestedAt: (0, import_fields59.timestamp)({ validation: { isRequired: true } }),
+    completedAt: (0, import_fields59.timestamp)(),
+    idempotencyKey: (0, import_fields59.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6350,9 +6392,9 @@ var FinanceProductCancellation = (0, import_core53.list)({
 });
 
 // features/keystone/models/DeliveryCase.ts
-var import_core54 = require("@keystone-6/core");
-var import_fields59 = require("@keystone-6/core/fields");
-var DeliveryCase = (0, import_core54.list)({
+var import_core55 = require("@keystone-6/core");
+var import_fields60 = require("@keystone-6/core/fields");
+var DeliveryCase = (0, import_core55.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "DeliveryCase_deal_key")'),
   access: {
     operation: {
@@ -6374,11 +6416,11 @@ var DeliveryCase = (0, import_core54.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields59.relationship)({
+    deal: (0, import_fields60.relationship)({
       ref: "Deal.deliveryCases",
       db: requiredRelationshipDb("deal")
     }),
-    status: (0, import_fields59.select)({
+    status: (0, import_fields60.select)({
       type: "string",
       options: ["scheduled", "arrived", "ready", "delivered", "cancelled"].map((value) => ({
         label: value,
@@ -6386,17 +6428,17 @@ var DeliveryCase = (0, import_core54.list)({
       })),
       validation: { isRequired: true }
     }),
-    appointmentAt: (0, import_fields59.timestamp)(),
-    arrivedAt: (0, import_fields59.timestamp)(),
-    checklist: (0, import_fields59.json)({ defaultValue: [] }),
-    customerAcknowledgment: (0, import_fields59.text)(),
-    acknowledgedAt: (0, import_fields59.timestamp)(),
-    deliverySnapshot: (0, import_fields59.json)({ defaultValue: {} }),
-    idempotencyKey: (0, import_fields59.text)({
+    appointmentAt: (0, import_fields60.timestamp)(),
+    arrivedAt: (0, import_fields60.timestamp)(),
+    checklist: (0, import_fields60.json)({ defaultValue: [] }),
+    customerAcknowledgment: (0, import_fields60.text)(),
+    acknowledgedAt: (0, import_fields60.timestamp)(),
+    deliverySnapshot: (0, import_fields60.json)({ defaultValue: {} }),
+    idempotencyKey: (0, import_fields60.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     }),
-    weOweItems: (0, import_fields59.relationship)({
+    weOweItems: (0, import_fields60.relationship)({
       ref: "WeOweItem.deliveryCase",
       many: true
     })
@@ -6404,9 +6446,9 @@ var DeliveryCase = (0, import_core54.list)({
 });
 
 // features/keystone/models/WeOweItem.ts
-var import_core55 = require("@keystone-6/core");
-var import_fields60 = require("@keystone-6/core/fields");
-var WeOweItem = (0, import_core55.list)({
+var import_core56 = require("@keystone-6/core");
+var import_fields61 = require("@keystone-6/core/fields");
+var WeOweItem = (0, import_core56.list)({
   access: {
     operation: {
       query: permissions.canAccessDeals,
@@ -6431,12 +6473,12 @@ var WeOweItem = (0, import_core55.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deliveryCase: (0, import_fields60.relationship)({
+    deliveryCase: (0, import_fields61.relationship)({
       ref: "DeliveryCase.weOweItems",
       db: requiredRelationshipDb("deliveryCase")
     }),
-    description: (0, import_fields60.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields60.select)({
+    description: (0, import_fields61.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields61.select)({
       type: "string",
       options: ["open", "fulfilled", "waived"].map((value) => ({
         label: value,
@@ -6444,12 +6486,12 @@ var WeOweItem = (0, import_core55.list)({
       })),
       validation: { isRequired: true }
     }),
-    promisedAt: (0, import_fields60.timestamp)({ validation: { isRequired: true } }),
-    owner: (0, import_fields60.relationship)({
+    promisedAt: (0, import_fields61.timestamp)({ validation: { isRequired: true } }),
+    owner: (0, import_fields61.relationship)({
       ref: "User",
       db: requiredRelationshipDb("owner")
     }),
-    estimatedCostCents: (0, import_fields60.integer)({
+    estimatedCostCents: (0, import_fields61.integer)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6457,10 +6499,10 @@ var WeOweItem = (0, import_core55.list)({
         update: () => false
       }
     }),
-    fulfillmentEvidence: (0, import_fields60.text)(),
-    customerAcknowledgment: (0, import_fields60.text)(),
-    fulfilledAt: (0, import_fields60.timestamp)(),
-    idempotencyKey: (0, import_fields60.text)({
+    fulfillmentEvidence: (0, import_fields61.text)(),
+    customerAcknowledgment: (0, import_fields61.text)(),
+    fulfilledAt: (0, import_fields61.timestamp)(),
+    idempotencyKey: (0, import_fields61.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6468,9 +6510,9 @@ var WeOweItem = (0, import_core55.list)({
 });
 
 // features/keystone/models/ServiceLaborOperation.ts
-var import_core56 = require("@keystone-6/core");
-var import_fields61 = require("@keystone-6/core/fields");
-var ServiceLaborOperation = (0, import_core56.list)({
+var import_core57 = require("@keystone-6/core");
+var import_fields62 = require("@keystone-6/core/fields");
+var ServiceLaborOperation = (0, import_core57.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6495,13 +6537,13 @@ var ServiceLaborOperation = (0, import_core56.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    serviceOrder: (0, import_fields61.relationship)({
+    serviceOrder: (0, import_fields62.relationship)({
       ref: "ServiceOrder.laborOperations",
       db: requiredRelationshipDb("serviceOrder")
     }),
-    operationCode: (0, import_fields61.text)({ validation: { isRequired: true } }),
-    description: (0, import_fields61.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields61.select)({
+    operationCode: (0, import_fields62.text)({ validation: { isRequired: true } }),
+    description: (0, import_fields62.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields62.select)({
       type: "string",
       options: ["open", "dispatched", "in-progress", "paused", "completed", "cancelled"].map((value) => ({
         label: value,
@@ -6509,13 +6551,13 @@ var ServiceLaborOperation = (0, import_core56.list)({
       })),
       validation: { isRequired: true }
     }),
-    technician: (0, import_fields61.relationship)({ ref: "User" }),
-    soldHours: (0, import_fields61.float)({ validation: { min: 0 } }),
-    actualMinutes: (0, import_fields61.integer)({ validation: { min: 0 } }),
-    timePunches: (0, import_fields61.json)({ defaultValue: [] }),
-    startedAt: (0, import_fields61.timestamp)(),
-    completedAt: (0, import_fields61.timestamp)(),
-    idempotencyKey: (0, import_fields61.text)({
+    technician: (0, import_fields62.relationship)({ ref: "User" }),
+    soldHours: (0, import_fields62.float)({ validation: { min: 0 } }),
+    actualMinutes: (0, import_fields62.integer)({ validation: { min: 0 } }),
+    timePunches: (0, import_fields62.json)({ defaultValue: [] }),
+    startedAt: (0, import_fields62.timestamp)(),
+    completedAt: (0, import_fields62.timestamp)(),
+    idempotencyKey: (0, import_fields62.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6523,9 +6565,9 @@ var ServiceLaborOperation = (0, import_core56.list)({
 });
 
 // features/keystone/models/PartsMovement.ts
-var import_core57 = require("@keystone-6/core");
-var import_fields62 = require("@keystone-6/core/fields");
-var PartsMovement = (0, import_core57.list)({
+var import_core58 = require("@keystone-6/core");
+var import_fields63 = require("@keystone-6/core/fields");
+var PartsMovement = (0, import_core58.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6549,12 +6591,12 @@ var PartsMovement = (0, import_core57.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    part: (0, import_fields62.relationship)({
+    part: (0, import_fields63.relationship)({
       ref: "PartsInventory.movements",
       db: requiredRelationshipDb("part")
     }),
-    serviceOrder: (0, import_fields62.relationship)({ ref: "ServiceOrder.partsMovements" }),
-    movementType: (0, import_fields62.select)({
+    serviceOrder: (0, import_fields63.relationship)({ ref: "ServiceOrder.partsMovements" }),
+    movementType: (0, import_fields63.select)({
       type: "string",
       options: ["receipt", "issue", "return", "adjustment", "count", "commit", "release", "po-order", "po-cancel"].map((value) => ({
         label: value,
@@ -6562,15 +6604,15 @@ var PartsMovement = (0, import_core57.list)({
       })),
       validation: { isRequired: true }
     }),
-    quantityDelta: (0, import_fields62.integer)({ validation: { isRequired: true } }),
-    onHandAfter: (0, import_fields62.integer)({ validation: { min: 0 } }),
-    committedAfter: (0, import_fields62.integer)({ validation: { min: 0 } }),
-    onOrderAfter: (0, import_fields62.integer)({ validation: { min: 0 } }),
-    reference: (0, import_fields62.text)({ validation: { isRequired: true } }),
-    reason: (0, import_fields62.text)({ validation: { isRequired: true } }),
-    evidence: (0, import_fields62.json)({ defaultValue: {} }),
-    occurredAt: (0, import_fields62.timestamp)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields62.text)({
+    quantityDelta: (0, import_fields63.integer)({ validation: { isRequired: true } }),
+    onHandAfter: (0, import_fields63.integer)({ validation: { min: 0 } }),
+    committedAfter: (0, import_fields63.integer)({ validation: { min: 0 } }),
+    onOrderAfter: (0, import_fields63.integer)({ validation: { min: 0 } }),
+    reference: (0, import_fields63.text)({ validation: { isRequired: true } }),
+    reason: (0, import_fields63.text)({ validation: { isRequired: true } }),
+    evidence: (0, import_fields63.json)({ defaultValue: {} }),
+    occurredAt: (0, import_fields63.timestamp)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields63.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6578,9 +6620,9 @@ var PartsMovement = (0, import_core57.list)({
 });
 
 // features/keystone/models/PartsPurchaseOrder.ts
-var import_core58 = require("@keystone-6/core");
-var import_fields63 = require("@keystone-6/core/fields");
-var PartsPurchaseOrder = (0, import_core58.list)({
+var import_core59 = require("@keystone-6/core");
+var import_fields64 = require("@keystone-6/core/fields");
+var PartsPurchaseOrder = (0, import_core59.list)({
   db: prismaModelDirectives('@@unique([rooftopId, reference], map: "PartsPurchaseOrder_rooftop_reference_key")'),
   access: {
     operation: {
@@ -6598,9 +6640,9 @@ var PartsPurchaseOrder = (0, import_core58.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    reference: (0, import_fields63.text)({ validation: { isRequired: true } }),
-    supplier: (0, import_fields63.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields63.select)({
+    reference: (0, import_fields64.text)({ validation: { isRequired: true } }),
+    supplier: (0, import_fields64.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields64.select)({
       type: "string",
       options: ["draft", "ordered", "partially-received", "received", "cancelled"].map((value) => ({
         label: value,
@@ -6608,10 +6650,10 @@ var PartsPurchaseOrder = (0, import_core58.list)({
       })),
       validation: { isRequired: true }
     }),
-    lines: (0, import_fields63.json)({ defaultValue: [] }),
-    orderedAt: (0, import_fields63.timestamp)(),
-    receivedAt: (0, import_fields63.timestamp)(),
-    idempotencyKey: (0, import_fields63.text)({
+    lines: (0, import_fields64.json)({ defaultValue: [] }),
+    orderedAt: (0, import_fields64.timestamp)(),
+    receivedAt: (0, import_fields64.timestamp)(),
+    idempotencyKey: (0, import_fields64.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6619,10 +6661,10 @@ var PartsPurchaseOrder = (0, import_core58.list)({
 });
 
 // features/keystone/models/AccountingMapping.ts
-var import_core59 = require("@keystone-6/core");
-var import_fields64 = require("@keystone-6/core/fields");
+var import_core60 = require("@keystone-6/core");
+var import_fields65 = require("@keystone-6/core/fields");
 var canManageAccounting = (args) => permissions.canManageDealerships(args) && permissions.canViewReports(args);
-var AccountingMapping = (0, import_core59.list)({
+var AccountingMapping = (0, import_core60.list)({
   db: prismaModelDirectives('@@unique([rooftopId, sourceType, sourceCode, providerKey], map: "AccountingMapping_rooftop_source_provider_key")'),
   access: {
     operation: {
@@ -6648,22 +6690,22 @@ var AccountingMapping = (0, import_core59.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    sourceType: (0, import_fields64.select)({
+    sourceType: (0, import_fields65.select)({
       type: "string",
       options: ["deal", "service", "parts", "payment"].map((value) => ({ label: value, value })),
       validation: { isRequired: true }
     }),
-    sourceCode: (0, import_fields64.text)({ validation: { isRequired: true } }),
-    debitAccount: (0, import_fields64.text)({ validation: { isRequired: true } }),
-    creditAccount: (0, import_fields64.text)({ validation: { isRequired: true } }),
-    providerKey: (0, import_fields64.text)({ validation: { isRequired: true }, defaultValue: "operator-recorded" })
+    sourceCode: (0, import_fields65.text)({ validation: { isRequired: true } }),
+    debitAccount: (0, import_fields65.text)({ validation: { isRequired: true } }),
+    creditAccount: (0, import_fields65.text)({ validation: { isRequired: true } }),
+    providerKey: (0, import_fields65.text)({ validation: { isRequired: true }, defaultValue: "operator-recorded" })
   }
 });
 
 // features/keystone/models/AccountingBatch.ts
-var import_core60 = require("@keystone-6/core");
-var import_fields65 = require("@keystone-6/core/fields");
-var AccountingBatch = (0, import_core60.list)({
+var import_core61 = require("@keystone-6/core");
+var import_fields66 = require("@keystone-6/core/fields");
+var AccountingBatch = (0, import_core61.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -6680,7 +6722,7 @@ var AccountingBatch = (0, import_core60.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    sourceType: (0, import_fields65.select)({
+    sourceType: (0, import_fields66.select)({
       type: "string",
       options: ["deal", "service", "parts", "payment"].map((value) => ({
         label: value,
@@ -6688,8 +6730,8 @@ var AccountingBatch = (0, import_core60.list)({
       })),
       validation: { isRequired: true }
     }),
-    sourceId: (0, import_fields65.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields65.select)({
+    sourceId: (0, import_fields66.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields66.select)({
       type: "string",
       options: ["staged", "posting", "posted", "failed", "reconciled", "locked"].map((value) => ({
         label: value,
@@ -6697,29 +6739,29 @@ var AccountingBatch = (0, import_core60.list)({
       })),
       validation: { isRequired: true }
     }),
-    providerKey: (0, import_fields65.text)({ validation: { isRequired: true } }),
-    lines: (0, import_fields65.json)({ defaultValue: [] }),
-    totalDebitCents: (0, import_fields65.integer)({ validation: {
+    providerKey: (0, import_fields66.text)({ validation: { isRequired: true } }),
+    lines: (0, import_fields66.json)({ defaultValue: [] }),
+    totalDebitCents: (0, import_fields66.integer)({ validation: {
       isRequired: true,
       min: 0
     } }),
-    totalCreditCents: (0, import_fields65.integer)({ validation: {
+    totalCreditCents: (0, import_fields66.integer)({ validation: {
       isRequired: true,
       min: 0
     } }),
-    attemptCount: (0, import_fields65.integer)({
+    attemptCount: (0, import_fields66.integer)({
       validation: {
         isRequired: true,
         min: 0
       },
       defaultValue: 0
     }),
-    externalReference: (0, import_fields65.text)(),
-    lastErrorCode: (0, import_fields65.text)(),
-    postedAt: (0, import_fields65.timestamp)(),
-    reconciledAt: (0, import_fields65.timestamp)(),
-    lockedAt: (0, import_fields65.timestamp)(),
-    idempotencyKey: (0, import_fields65.text)({
+    externalReference: (0, import_fields66.text)(),
+    lastErrorCode: (0, import_fields66.text)(),
+    postedAt: (0, import_fields66.timestamp)(),
+    reconciledAt: (0, import_fields66.timestamp)(),
+    lockedAt: (0, import_fields66.timestamp)(),
+    idempotencyKey: (0, import_fields66.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6727,9 +6769,9 @@ var AccountingBatch = (0, import_core60.list)({
 });
 
 // features/keystone/models/AccountingProviderResponse.ts
-var import_core61 = require("@keystone-6/core");
-var import_fields66 = require("@keystone-6/core/fields");
-var AccountingProviderResponse = (0, import_core61.list)({
+var import_core62 = require("@keystone-6/core");
+var import_fields67 = require("@keystone-6/core/fields");
+var AccountingProviderResponse = (0, import_core62.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -6750,17 +6792,17 @@ var AccountingProviderResponse = (0, import_core61.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    batch: (0, import_fields66.relationship)({
+    batch: (0, import_fields67.relationship)({
       ref: "AccountingBatch",
       db: requiredRelationshipDb("batch")
     }),
-    providerKey: (0, import_fields66.text)({ validation: { isRequired: true } }),
-    requestFingerprint: (0, import_fields66.text)({ validation: { isRequired: true } }),
-    responseCode: (0, import_fields66.text)({ validation: { isRequired: true } }),
-    externalReference: (0, import_fields66.text)(),
-    immutableResponse: (0, import_fields66.json)({ defaultValue: {} }),
-    receivedAt: (0, import_fields66.timestamp)({ validation: { isRequired: true } }),
-    idempotencyKey: (0, import_fields66.text)({
+    providerKey: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    requestFingerprint: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    responseCode: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    externalReference: (0, import_fields67.text)(),
+    immutableResponse: (0, import_fields67.json)({ defaultValue: {} }),
+    receivedAt: (0, import_fields67.timestamp)({ validation: { isRequired: true } }),
+    idempotencyKey: (0, import_fields67.text)({
       validation: { isRequired: true },
       isIndexed: "unique"
     })
@@ -6768,9 +6810,9 @@ var AccountingProviderResponse = (0, import_core61.list)({
 });
 
 // features/keystone/models/PaymentTransaction.ts
-var import_core62 = require("@keystone-6/core");
-var import_fields67 = require("@keystone-6/core/fields");
-var PaymentTransaction = (0, import_core62.list)({
+var import_core63 = require("@keystone-6/core");
+var import_fields68 = require("@keystone-6/core/fields");
+var PaymentTransaction = (0, import_core63.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6786,35 +6828,35 @@ var PaymentTransaction = (0, import_core62.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    deal: (0, import_fields67.relationship)({ ref: "Deal.paymentTransactions" }),
-    serviceOrder: (0, import_fields67.relationship)({ ref: "ServiceOrder.paymentTransactions" }),
+    deal: (0, import_fields68.relationship)({ ref: "Deal.paymentTransactions" }),
+    serviceOrder: (0, import_fields68.relationship)({ ref: "ServiceOrder.paymentTransactions" }),
     // A storefront vehicle reservation: the shopper's refundable deposit, tied to the lead it created.
-    lead: (0, import_fields67.relationship)({ ref: "Lead.paymentTransactions" }),
-    sourceType: (0, import_fields67.select)({ type: "string", options: ["deal", "service", "reservation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    amountCents: (0, import_fields67.integer)({ validation: { isRequired: true, min: 1 } }),
-    currency: (0, import_fields67.text)({ validation: { isRequired: true }, defaultValue: "usd" }),
-    providerKey: (0, import_fields67.text)({ validation: { isRequired: true } }),
+    lead: (0, import_fields68.relationship)({ ref: "Lead.paymentTransactions" }),
+    sourceType: (0, import_fields68.select)({ type: "string", options: ["deal", "service", "reservation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    amountCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 1 } }),
+    currency: (0, import_fields68.text)({ validation: { isRequired: true }, defaultValue: "usd" }),
+    providerKey: (0, import_fields68.text)({ validation: { isRequired: true } }),
     // How an operator-recorded payment was taken (cash, check, card, wire, ACH, financing); empty for processor payments.
-    paymentMethod: (0, import_fields67.text)({ defaultValue: "" }),
-    paymentProvider: (0, import_fields67.relationship)({ ref: "PaymentProvider.transactions" }),
-    providerTransactionId: (0, import_fields67.text)(),
-    providerSessionId: (0, import_fields67.text)(),
-    checkoutUrl: (0, import_fields67.text)(),
-    status: (0, import_fields67.select)({ type: "string", options: ["creating", "pending", "authorized", "captured", "failed", "canceled", "partially-refunded", "refunded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    capturedCents: (0, import_fields67.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    refundedCents: (0, import_fields67.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    failureCode: (0, import_fields67.text)(),
-    reconciliationReference: (0, import_fields67.text)(),
-    reconciledAt: (0, import_fields67.timestamp)(),
-    version: (0, import_fields67.integer)({ validation: { isRequired: true, min: 1 }, defaultValue: 1 }),
-    idempotencyKey: (0, import_fields67.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    paymentMethod: (0, import_fields68.text)({ defaultValue: "" }),
+    paymentProvider: (0, import_fields68.relationship)({ ref: "PaymentProvider.transactions" }),
+    providerTransactionId: (0, import_fields68.text)(),
+    providerSessionId: (0, import_fields68.text)(),
+    checkoutUrl: (0, import_fields68.text)(),
+    status: (0, import_fields68.select)({ type: "string", options: ["creating", "pending", "authorized", "captured", "failed", "canceled", "partially-refunded", "refunded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    capturedCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    refundedCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    failureCode: (0, import_fields68.text)(),
+    reconciliationReference: (0, import_fields68.text)(),
+    reconciledAt: (0, import_fields68.timestamp)(),
+    version: (0, import_fields68.integer)({ validation: { isRequired: true, min: 1 }, defaultValue: 1 }),
+    idempotencyKey: (0, import_fields68.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/PaymentRefund.ts
-var import_core63 = require("@keystone-6/core");
-var import_fields68 = require("@keystone-6/core/fields");
-var PaymentRefund = (0, import_core63.list)({
+var import_core64 = require("@keystone-6/core");
+var import_fields69 = require("@keystone-6/core/fields");
+var PaymentRefund = (0, import_core64.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6824,20 +6866,20 @@ var PaymentRefund = (0, import_core63.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    transaction: (0, import_fields68.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
-    amountCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 1 } }),
-    reason: (0, import_fields68.text)({ validation: { isRequired: true } }),
-    status: (0, import_fields68.select)({ type: "string", options: ["creating", "pending", "succeeded", "failed", "canceled"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    providerRefundId: (0, import_fields68.text)(),
-    failureCode: (0, import_fields68.text)(),
-    idempotencyKey: (0, import_fields68.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    transaction: (0, import_fields69.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
+    amountCents: (0, import_fields69.integer)({ validation: { isRequired: true, min: 1 } }),
+    reason: (0, import_fields69.text)({ validation: { isRequired: true } }),
+    status: (0, import_fields69.select)({ type: "string", options: ["creating", "pending", "succeeded", "failed", "canceled"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    providerRefundId: (0, import_fields69.text)(),
+    failureCode: (0, import_fields69.text)(),
+    idempotencyKey: (0, import_fields69.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/PaymentProviderEvent.ts
-var import_core64 = require("@keystone-6/core");
-var import_fields69 = require("@keystone-6/core/fields");
-var PaymentProviderEvent = (0, import_core64.list)({
+var import_core65 = require("@keystone-6/core");
+var import_fields70 = require("@keystone-6/core/fields");
+var PaymentProviderEvent = (0, import_core65.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -6847,21 +6889,21 @@ var PaymentProviderEvent = (0, import_core64.list)({
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    transaction: (0, import_fields69.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
-    refund: (0, import_fields69.relationship)({ ref: "PaymentRefund" }),
-    providerKey: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    providerEventId: (0, import_fields69.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    eventType: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    payloadDigest: (0, import_fields69.text)({ validation: { isRequired: true } }),
-    signatureTimestamp: (0, import_fields69.timestamp)({ validation: { isRequired: true } }),
-    receivedAt: (0, import_fields69.timestamp)({ validation: { isRequired: true } })
+    transaction: (0, import_fields70.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
+    refund: (0, import_fields70.relationship)({ ref: "PaymentRefund" }),
+    providerKey: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    providerEventId: (0, import_fields70.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    eventType: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    payloadDigest: (0, import_fields70.text)({ validation: { isRequired: true } }),
+    signatureTimestamp: (0, import_fields70.timestamp)({ validation: { isRequired: true } }),
+    receivedAt: (0, import_fields70.timestamp)({ validation: { isRequired: true } })
   }
 });
 
 // features/keystone/models/PaymentProvider.ts
-var import_core65 = require("@keystone-6/core");
-var import_fields70 = require("@keystone-6/core/fields");
-var PaymentProvider = (0, import_core65.list)({
+var import_core66 = require("@keystone-6/core");
+var import_fields71 = require("@keystone-6/core/fields");
+var PaymentProvider = (0, import_core66.list)({
   access: {
     operation: {
       query: ({ session }) => permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }),
@@ -6871,10 +6913,10 @@ var PaymentProvider = (0, import_core65.list)({
     }
   },
   fields: {
-    name: (0, import_fields70.text)({
+    name: (0, import_fields71.text)({
       validation: { isRequired: true }
     }),
-    code: (0, import_fields70.text)({
+    code: (0, import_fields71.text)({
       isIndexed: "unique",
       validation: {
         isRequired: true,
@@ -6884,53 +6926,53 @@ var PaymentProvider = (0, import_core65.list)({
         }
       }
     }),
-    isInstalled: (0, import_fields70.checkbox)({
+    isInstalled: (0, import_fields71.checkbox)({
       defaultValue: true
     }),
-    credentials: (0, import_fields70.json)({
+    credentials: (0, import_fields71.json)({
       defaultValue: {}
     }),
-    metadata: (0, import_fields70.json)({
+    metadata: (0, import_fields71.json)({
       defaultValue: {}
     }),
     // Adapter function fields
-    createPaymentFunction: (0, import_fields70.text)({
+    createPaymentFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to create payments"
       }
     }),
-    capturePaymentFunction: (0, import_fields70.text)({
+    capturePaymentFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to capture payments"
       }
     }),
-    refundPaymentFunction: (0, import_fields70.text)({
+    refundPaymentFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to refund payments"
       }
     }),
-    getPaymentStatusFunction: (0, import_fields70.text)({
+    getPaymentStatusFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to check payment status"
       }
     }),
-    generatePaymentLinkFunction: (0, import_fields70.text)({
+    generatePaymentLinkFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to generate payment dashboard links"
       }
     }),
-    handleWebhookFunction: (0, import_fields70.text)({
+    handleWebhookFunction: (0, import_fields71.text)({
       validation: { isRequired: true },
       ui: {
         description: "Name of the adapter function to handle provider webhooks"
       }
     }),
-    transactions: (0, import_fields70.relationship)({
+    transactions: (0, import_fields71.relationship)({
       ref: "PaymentTransaction.paymentProvider",
       many: true
     }),
@@ -6939,84 +6981,84 @@ var PaymentProvider = (0, import_core65.list)({
 });
 
 // features/keystone/models/SavedReport.ts
-var import_core66 = require("@keystone-6/core");
-var import_fields71 = require("@keystone-6/core/fields");
-var SavedReport = (0, import_core66.list)({
+var import_core67 = require("@keystone-6/core");
+var import_fields72 = require("@keystone-6/core/fields");
+var SavedReport = (0, import_core67.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "owner", listKey: "User", kind: "user" }]) },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    owner: (0, import_fields71.relationship)({ ref: "User", db: requiredRelationshipDb("owner") }),
-    name: (0, import_fields71.text)({ validation: { isRequired: true } }),
-    reportType: (0, import_fields71.select)({ type: "string", options: ["operations", "audit", "accounting-exceptions", "payment-reconciliation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    filters: (0, import_fields71.json)({ defaultValue: {} }),
-    exportFormat: (0, import_fields71.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    schedule: (0, import_fields71.select)({ type: "string", options: ["manual", "daily", "weekly", "monthly"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    active: (0, import_fields71.checkbox)({ defaultValue: true }),
-    nextRunAt: (0, import_fields71.timestamp)(),
-    idempotencyKey: (0, import_fields71.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    owner: (0, import_fields72.relationship)({ ref: "User", db: requiredRelationshipDb("owner") }),
+    name: (0, import_fields72.text)({ validation: { isRequired: true } }),
+    reportType: (0, import_fields72.select)({ type: "string", options: ["operations", "audit", "accounting-exceptions", "payment-reconciliation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    filters: (0, import_fields72.json)({ defaultValue: {} }),
+    exportFormat: (0, import_fields72.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    schedule: (0, import_fields72.select)({ type: "string", options: ["manual", "daily", "weekly", "monthly"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    active: (0, import_fields72.checkbox)({ defaultValue: true }),
+    nextRunAt: (0, import_fields72.timestamp)(),
+    idempotencyKey: (0, import_fields72.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/ReportRun.ts
-var import_core67 = require("@keystone-6/core");
-var import_fields72 = require("@keystone-6/core/fields");
-var ReportRun = (0, import_core67.list)({
+var import_core68 = require("@keystone-6/core");
+var import_fields73 = require("@keystone-6/core/fields");
+var ReportRun = (0, import_core68.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "savedReport", listKey: "SavedReport" }]) },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    savedReport: (0, import_fields72.relationship)({ ref: "SavedReport", db: requiredRelationshipDb("savedReport") }),
-    status: (0, import_fields72.select)({ type: "string", options: ["queued", "completed", "failed", "expired"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    exportFormat: (0, import_fields72.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    savedReport: (0, import_fields73.relationship)({ ref: "SavedReport", db: requiredRelationshipDb("savedReport") }),
+    status: (0, import_fields73.select)({ type: "string", options: ["queued", "completed", "failed", "expired"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    exportFormat: (0, import_fields73.select)({ type: "string", options: ["json", "csv"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
     // Runs keep their result for 30 days (expiresAt); after that the snapshot is no longer served.
-    resultSnapshot: (0, import_fields72.json)({ defaultValue: {}, access: { read: ({ item }) => !item?.expiresAt || new Date(item.expiresAt).getTime() > Date.now() } }),
-    resultDigest: (0, import_fields72.text)(),
-    errorCode: (0, import_fields72.text)(),
-    completedAt: (0, import_fields72.timestamp)(),
-    expiresAt: (0, import_fields72.timestamp)(),
-    idempotencyKey: (0, import_fields72.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    resultSnapshot: (0, import_fields73.json)({ defaultValue: {}, access: { read: ({ item }) => !item?.expiresAt || new Date(item.expiresAt).getTime() > Date.now() } }),
+    resultDigest: (0, import_fields73.text)(),
+    errorCode: (0, import_fields73.text)(),
+    completedAt: (0, import_fields73.timestamp)(),
+    expiresAt: (0, import_fields73.timestamp)(),
+    idempotencyKey: (0, import_fields73.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/RetentionPolicy.ts
-var import_core68 = require("@keystone-6/core");
-var import_fields73 = require("@keystone-6/core/fields");
-var RetentionPolicy = (0, import_core68.list)({
+var import_core69 = require("@keystone-6/core");
+var import_fields74 = require("@keystone-6/core/fields");
+var RetentionPolicy = (0, import_core69.list)({
   db: prismaModelDirectives('@@unique([rooftopId, category], map: "RetentionPolicy_rooftop_category_key")'),
   access: { operation: { query: permissions.canManageDealerships, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageDealerships") } },
   ui: { hideCreate: true, hideDelete: true },
   fields: {
     ...trackingFields,
     rooftop: rooftopField(),
-    category: (0, import_fields73.select)({ type: "string", options: ["customer-intake", "report-export", "provider-payload", "audit-evidence"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    retentionDays: (0, import_fields73.integer)({ validation: { isRequired: true, min: 1 } }),
-    legalHold: (0, import_fields73.checkbox)({ defaultValue: false }),
-    rationale: (0, import_fields73.text)({ validation: { isRequired: true } }),
-    lastSweptAt: (0, import_fields73.timestamp)(),
-    idempotencyKey: (0, import_fields73.text)({ validation: { isRequired: true }, isIndexed: "unique" })
+    category: (0, import_fields74.select)({ type: "string", options: ["customer-intake", "report-export", "provider-payload", "audit-evidence"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
+    retentionDays: (0, import_fields74.integer)({ validation: { isRequired: true, min: 1 } }),
+    legalHold: (0, import_fields74.checkbox)({ defaultValue: false }),
+    rationale: (0, import_fields74.text)({ validation: { isRequired: true } }),
+    lastSweptAt: (0, import_fields74.timestamp)(),
+    idempotencyKey: (0, import_fields74.text)({ validation: { isRequired: true }, isIndexed: "unique" })
   }
 });
 
 // features/keystone/models/AuthenticationThrottle.ts
-var import_core69 = require("@keystone-6/core");
-var import_fields74 = require("@keystone-6/core/fields");
-var AuthenticationThrottle = (0, import_core69.list)({
+var import_core70 = require("@keystone-6/core");
+var import_fields75 = require("@keystone-6/core/fields");
+var AuthenticationThrottle = (0, import_core70.list)({
   access: { operation: { query: () => false, create: () => false, update: () => false, delete: () => false } },
   graphql: { omit: true },
   ui: { isHidden: true },
   fields: {
     ...trackingFields,
-    keyHash: (0, import_fields74.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
-    purpose: (0, import_fields74.text)({ validation: { isRequired: true } }),
-    failureCount: (0, import_fields74.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    windowStartedAt: (0, import_fields74.timestamp)({ validation: { isRequired: true } }),
-    blockedUntil: (0, import_fields74.timestamp)({ isIndexed: true }),
-    updatedAt: (0, import_fields74.timestamp)({
+    keyHash: (0, import_fields75.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
+    purpose: (0, import_fields75.text)({ validation: { isRequired: true } }),
+    failureCount: (0, import_fields75.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    windowStartedAt: (0, import_fields75.timestamp)({ validation: { isRequired: true } }),
+    blockedUntil: (0, import_fields75.timestamp)({ isIndexed: true }),
+    updatedAt: (0, import_fields75.timestamp)({
       access: { create: () => false, update: () => false },
       defaultValue: { kind: "now" },
       db: { isNullable: false, updatedAt: true },
@@ -7027,10 +7069,10 @@ var AuthenticationThrottle = (0, import_core69.list)({
 });
 
 // features/keystone/models/ApiKey.ts
-var import_fields75 = require("@keystone-6/core/fields");
-var import_core70 = require("@keystone-6/core");
+var import_fields76 = require("@keystone-6/core/fields");
+var import_core71 = require("@keystone-6/core");
 var isHumanSession = ({ session }) => isSignedIn({ session }) && !session?.apiKeyId && !session?.apiKeyScopes;
-var ApiKey = (0, import_core70.list)({
+var ApiKey = (0, import_core71.list)({
   access: {
     operation: {
       query: isHumanSession,
@@ -7065,13 +7107,13 @@ var ApiKey = (0, import_core70.list)({
     }
   },
   fields: {
-    name: (0, import_fields75.text)({
+    name: (0, import_fields76.text)({
       validation: { isRequired: true },
       ui: {
         description: "A descriptive name for this API key (e.g. 'Inventory syndication')"
       }
     }),
-    tokenSecret: (0, import_fields75.password)({
+    tokenSecret: (0, import_fields76.password)({
       access: { read: () => false },
       validation: { isRequired: true },
       ui: {
@@ -7081,7 +7123,7 @@ var ApiKey = (0, import_core70.list)({
         description: "Secure API key token (hashed and never displayed)"
       }
     }),
-    tokenPreview: (0, import_fields75.text)({
+    tokenPreview: (0, import_fields76.text)({
       access: { update: () => false },
       ui: {
         createView: { fieldMode: "hidden" },
@@ -7090,13 +7132,13 @@ var ApiKey = (0, import_core70.list)({
         description: "Preview of the API key (actual key is hidden)"
       }
     }),
-    scopes: (0, import_fields75.json)({
+    scopes: (0, import_fields76.json)({
       defaultValue: [],
       ui: {
         description: "Array of scopes for this API key"
       }
     }),
-    status: (0, import_fields75.select)({
+    status: (0, import_fields76.select)({
       type: "enum",
       options: [
         { label: "Active", value: "active" },
@@ -7108,12 +7150,12 @@ var ApiKey = (0, import_core70.list)({
         description: "Current status of this API key"
       }
     }),
-    expiresAt: (0, import_fields75.timestamp)({
+    expiresAt: (0, import_fields76.timestamp)({
       ui: {
         description: "When this API key expires (optional - leave blank for no expiration)"
       }
     }),
-    lastUsedAt: (0, import_fields75.timestamp)({
+    lastUsedAt: (0, import_fields76.timestamp)({
       access: { create: () => false, update: () => false },
       ui: {
         createView: { fieldMode: "hidden" },
@@ -7121,7 +7163,7 @@ var ApiKey = (0, import_core70.list)({
         description: "Last time this API key was used"
       }
     }),
-    usageCount: (0, import_fields75.json)({
+    usageCount: (0, import_fields76.json)({
       access: { create: () => false, update: () => false },
       defaultValue: { total: 0, daily: {} },
       ui: {
@@ -7130,14 +7172,14 @@ var ApiKey = (0, import_core70.list)({
         description: "Usage statistics for this API key"
       }
     }),
-    restrictedToIPs: (0, import_fields75.json)({
+    restrictedToIPs: (0, import_fields76.json)({
       defaultValue: [],
       ui: {
         description: "Optional: Restrict this key to specific IP addresses (array of IPs)"
       }
     }),
     ...trackingFields,
-    user: (0, import_fields75.relationship)({
+    user: (0, import_fields76.relationship)({
       access: { create: () => false, update: () => false },
       ref: "User.apiKeys",
       ui: {
@@ -7173,6 +7215,7 @@ var rawModels = {
   Deal,
   DealApproval,
   TradeIn,
+  TradeInPhoto,
   ServiceAppointment,
   ServiceOrder,
   RepairOrderLineItem,
@@ -7249,8 +7292,8 @@ function createRule(access) {
   if (typeof operation?.create === "function") return operation.create;
   return void 0;
 }
-async function createAllowed(listKey, list71, args) {
-  const rule = createRule(list71.access);
+async function createAllowed(listKey, list72, args) {
+  const rule = createRule(list72.access);
   if (!rule) return true;
   try {
     return Boolean(await rule({ session: args.session, context: args.context, listKey, operation: "create" }));
@@ -7260,16 +7303,16 @@ async function createAllowed(listKey, list71, args) {
 }
 function withCreateAwareUi(lists) {
   const out = {};
-  for (const [listKey, list71] of Object.entries(lists)) {
-    if (list71.ui?.hideCreate !== void 0 || !createRule(list71.access)) {
-      out[listKey] = list71;
+  for (const [listKey, list72] of Object.entries(lists)) {
+    if (list72.ui?.hideCreate !== void 0 || !createRule(list72.access)) {
+      out[listKey] = list72;
       continue;
     }
     out[listKey] = {
-      ...list71,
+      ...list72,
       ui: {
-        ...list71.ui,
-        hideCreate: async (args) => !await createAllowed(listKey, list71, args)
+        ...list72.ui,
+        hideCreate: async (args) => !await createAllowed(listKey, list72, args)
       }
     };
   }
@@ -7287,8 +7330,8 @@ function updateFilterRule(access) {
   return typeof filter?.update === "function" ? filter.update : void 0;
 }
 var itemModeCache = /* @__PURE__ */ new WeakMap();
-async function itemUpdateAllowed(listKey, list71, args) {
-  const operation = updateOperationRule(list71.access);
+async function itemUpdateAllowed(listKey, list72, args) {
+  const operation = updateOperationRule(list72.access);
   if (operation) {
     try {
       if (!await operation({ session: args.session, context: args.context, listKey, operation: "update" })) return false;
@@ -7296,7 +7339,7 @@ async function itemUpdateAllowed(listKey, list71, args) {
       return false;
     }
   }
-  const filterRule = updateFilterRule(list71.access);
+  const filterRule = updateFilterRule(list72.access);
   if (!filterRule || args.item?.id == null) return true;
   try {
     const filter = await filterRule({ session: args.session, context: args.context, listKey, operation: "update" });
@@ -7311,21 +7354,21 @@ async function itemUpdateAllowed(listKey, list71, args) {
 }
 function withItemViewAwareUi(lists) {
   const out = {};
-  for (const [listKey, list71] of Object.entries(lists)) {
-    const itemView = list71.ui?.itemView ?? {};
-    if (itemView.defaultFieldMode !== void 0 || !updateOperationRule(list71.access) && !updateFilterRule(list71.access)) {
-      out[listKey] = list71;
+  for (const [listKey, list72] of Object.entries(lists)) {
+    const itemView = list72.ui?.itemView ?? {};
+    if (itemView.defaultFieldMode !== void 0 || !updateOperationRule(list72.access) && !updateFilterRule(list72.access)) {
+      out[listKey] = list72;
       continue;
     }
     out[listKey] = {
-      ...list71,
+      ...list72,
       ui: {
-        ...list71.ui,
+        ...list72.ui,
         itemView: {
           ...itemView,
           // Called once per field; one decision per request and item.
           defaultFieldMode: (args) => {
-            const decide = () => itemUpdateAllowed(listKey, list71, args).then((ok) => ok ? "edit" : "read");
+            const decide = () => itemUpdateAllowed(listKey, list72, args).then((ok) => ok ? "edit" : "read");
             if (!args.context || typeof args.context !== "object") return decide();
             const key7 = JSON.stringify([listKey, String(args.item?.id), String(args.session?.itemId ?? ""), String(args.session?.listKey ?? "")]);
             const scope = args.context;
@@ -7348,8 +7391,8 @@ function deleteRule(access) {
   if (typeof operation?.delete === "function") return operation.delete;
   return void 0;
 }
-async function deleteAllowed(listKey, list71, args) {
-  const rule = deleteRule(list71.access);
+async function deleteAllowed(listKey, list72, args) {
+  const rule = deleteRule(list72.access);
   if (!rule) return true;
   try {
     return Boolean(await rule({ session: args.session, context: args.context, listKey, operation: "delete" }));
@@ -7359,16 +7402,16 @@ async function deleteAllowed(listKey, list71, args) {
 }
 function withDeleteAwareUi(lists) {
   const out = {};
-  for (const [listKey, list71] of Object.entries(lists)) {
-    if (list71.ui?.hideDelete !== void 0 || !deleteRule(list71.access)) {
-      out[listKey] = list71;
+  for (const [listKey, list72] of Object.entries(lists)) {
+    if (list72.ui?.hideDelete !== void 0 || !deleteRule(list72.access)) {
+      out[listKey] = list72;
       continue;
     }
     out[listKey] = {
-      ...list71,
+      ...list72,
       ui: {
-        ...list71.ui,
-        hideDelete: async (args) => !await deleteAllowed(listKey, list71, args)
+        ...list72.ui,
+        hideDelete: async (args) => !await deleteAllowed(listKey, list72, args)
       }
     };
   }
@@ -7418,7 +7461,7 @@ function localScheduleIso(date4, hours, minutes, timezone) {
     second: "2-digit",
     hourCycle: "h23"
   });
-  const parts = (timestamp53) => Object.fromEntries(format.formatToParts(timestamp53).filter((p2) => p2.type !== "literal").map((p2) => [p2.type, Number(p2.value)]));
+  const parts = (timestamp54) => Object.fromEntries(format.formatToParts(timestamp54).filter((p2) => p2.type !== "literal").map((p2) => [p2.type, Number(p2.value)]));
   const candidates = /* @__PURE__ */ new Set();
   for (const delta of [-36, -24, -12, 0, 12, 24, 36]) {
     const sample = civil + delta * 36e5;
@@ -7447,15 +7490,15 @@ async function loadInventoryPublication(tx, stockId) {
 function merchandisingSnapshot(stock) {
   const v = stock.vehicle;
   if (!v) throw new Error("Inventory vehicle is missing");
-  const images = (v.images || []).map((image5) => ({
-    id: String(image5.id),
-    imagePath: String(image5.imagePath || ""),
-    imageId: image5.image_id || null,
-    imageExtension: image5.image_extension || null,
-    caption: String(image5.caption || ""),
-    category: image5.category || null,
-    isPrimary: Boolean(image5.isPrimary),
-    sortOrder: image5.sortOrder ?? 0
+  const images = (v.images || []).map((image6) => ({
+    id: String(image6.id),
+    imagePath: String(image6.imagePath || ""),
+    imageId: image6.image_id || null,
+    imageExtension: image6.image_extension || null,
+    caption: String(image6.caption || ""),
+    category: image6.category || null,
+    isPrimary: Boolean(image6.isPrimary),
+    sortOrder: image6.sortOrder ?? 0
   })).sort((a, b) => a.id.localeCompare(b.id));
   return {
     schemaVersion: 2,
@@ -7479,20 +7522,20 @@ function merchandisingSnapshot(stock) {
     ...v.fuelType ? { fuelType: v.fuelType } : {},
     ...v.transmission ? { transmission: v.transmission } : {},
     ...v.engine ? { engine: v.engine } : {},
-    primaryImagePath: images.find((image5) => image5.isPrimary)?.imagePath || images[0]?.imagePath || ""
+    primaryImagePath: images.find((image6) => image6.isPrimary)?.imagePath || images[0]?.imagePath || ""
   };
 }
 function photoArrangementUnchanged(current, imageIds) {
-  const byId = new Map(current.map((image5) => [String(image5.id), image5]));
+  const byId = new Map(current.map((image6) => [String(image6.id), image6]));
   if (current.length !== imageIds.length || byId.size !== imageIds.length) return false;
   return imageIds.every((id, index) => {
-    const image5 = byId.get(id);
-    return Boolean(image5) && (image5.sortOrder ?? 0) === index && Boolean(image5.isPrimary) === (index === 0);
+    const image6 = byId.get(id);
+    return Boolean(image6) && (image6.sortOrder ?? 0) === index && Boolean(image6.isPrimary) === (index === 0);
   });
 }
 function assertMerchandisingContent(stock) {
   const snapshot2 = merchandisingSnapshot(stock);
-  if (!snapshot2.description || !Number.isInteger(snapshot2.priceCents) || snapshot2.priceCents <= 0 || !snapshot2.images.some((image5) => image5.imagePath || image5.imageId)) {
+  if (!snapshot2.description || !Number.isInteger(snapshot2.priceCents) || snapshot2.priceCents <= 0 || !snapshot2.images.some((image6) => image6.imagePath || image6.imageId)) {
     throw new Error("Merchandising submission requires price, description, and at least one image");
   }
   if (!["available", "service"].includes(stock.vehicle.status)) throw new Error("Only active inventory can be reviewed");
@@ -7643,10 +7686,10 @@ async function resolveAvailableVehicle(context, vehicleId, rooftopId) {
   });
   if (!vehicle || vehicle.inventoryStock?.id !== candidate.inventoryStock.id || vehicle.status !== "available" || vehicle.rooftop?.id !== rooftopId || vehicle.rooftop?.status !== "active" || vehicle.rooftop?.dealerGroup?.status !== "active" || vehicle.inventoryStock?.rooftop?.id !== rooftopId || vehicle.inventoryStock?.rooftop?.status !== "active" || vehicle.inventoryStock?.rooftop?.dealerGroup?.status !== "active" || vehicle.inventoryStock?.rooftop?.dealerGroup?.id !== vehicle.rooftop?.dealerGroup?.id || vehicle.inventoryStock?.reconStatus !== "completed" || vehicle.inventoryStock?.merchandisingStatus !== "approved" || !vehicle.inventoryStock?.approvedRevisionHash || !vehicle.inventoryStock?.frontlineAt) unavailableVehicle();
   try {
-    const revisionVehicle = { ...vehicle, images: (vehicle.images || []).map((image5) => ({
-      ...image5,
-      image_id: image5.image?.id ?? null,
-      image_extension: image5.image?.extension ?? null
+    const revisionVehicle = { ...vehicle, images: (vehicle.images || []).map((image6) => ({
+      ...image6,
+      image_id: image6.image?.id ?? null,
+      image_extension: image6.image?.extension ?? null
     })) };
     assertPublishableInventory({ ...vehicle.inventoryStock, vehicle: revisionVehicle });
   } catch {
@@ -9361,6 +9404,74 @@ async function submitTestDrive(_root, { data }, context) {
   });
 }
 
+// features/keystone/mutations/tradeInPhotos.ts
+var import_node_crypto5 = require("node:crypto");
+var PHOTO_STORAGE = "my_images";
+var MAX_TRADE_IN_PHOTOS = 8;
+var TOKEN_TTL_MS2 = 60 * 60 * 1e3;
+var MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+var ALLOWED_EXTENSIONS = /* @__PURE__ */ new Set(["jpg", "jpeg", "png", "webp"]);
+function hashToken(token) {
+  return (0, import_node_crypto5.createHash)("sha256").update(token).digest("hex");
+}
+async function issueTradeInPhotoToken(context, tradeInId) {
+  const token = (0, import_node_crypto5.randomBytes)(24).toString("base64url");
+  await context.sudo().prisma.tradeIn.update({
+    where: { id: tradeInId },
+    data: { photoTokenHash: hashToken(token), photoTokenExpiresAt: new Date(Date.now() + TOKEN_TTL_MS2) }
+  });
+  return token;
+}
+async function attachTradeInPhoto(_root, { tradeInId, photoToken, photo }, context) {
+  const id = String(tradeInId || "").trim();
+  const token = String(photoToken || "").trim();
+  if (!id || token.length < 20 || token.length > 100) throw new SubmissionError("C\xF3digo de fotos inv\xE1lido.", 403, "PHOTO_TOKEN_INVALID");
+  const sudo = context.sudo();
+  const tradeIn = await sudo.prisma.tradeIn.findUnique({
+    where: { id },
+    select: { id: true, rooftopId: true, photoTokenHash: true, photoTokenExpiresAt: true, _count: { select: { photos: true } } }
+  });
+  const expected = Buffer.from(tradeIn?.photoTokenHash || "", "hex");
+  const actual = Buffer.from(hashToken(token), "hex");
+  const valid = Boolean(tradeIn) && expected.length === actual.length && (0, import_node_crypto5.timingSafeEqual)(expected, actual);
+  if (!valid || !tradeIn?.photoTokenExpiresAt || tradeIn.photoTokenExpiresAt.getTime() < Date.now()) {
+    throw new SubmissionError("El plazo para adjuntar fotos venci\xF3. Envialas por WhatsApp.", 403, "PHOTO_TOKEN_INVALID");
+  }
+  if (tradeIn._count.photos >= MAX_TRADE_IN_PHOTOS) {
+    throw new SubmissionError(`Pod\xE9s adjuntar hasta ${MAX_TRADE_IN_PHOTOS} fotos.`, 400, "PHOTO_LIMIT");
+  }
+  const upload = await photo?.upload;
+  if (!upload?.createReadStream) throw new SubmissionError("Eleg\xED una foto.", 400, "PHOTO_MISSING");
+  const extension = String(upload.filename || "").split(".").pop()?.toLowerCase() || "";
+  if (!ALLOWED_EXTENSIONS.has(extension) || !/^image\/(jpeg|png|webp)$/.test(String(upload.mimetype || ""))) {
+    throw new SubmissionError("Las fotos deben ser JPG, PNG o WebP.", 400, "PHOTO_TYPE");
+  }
+  let stored;
+  try {
+    stored = await context.images(PHOTO_STORAGE).getDataFromStream(upload.createReadStream(), String(upload.filename || "foto"));
+  } catch {
+    throw new SubmissionError("No pudimos procesar la foto. Prob\xE1 con otra imagen.", 400, "PHOTO_UNREADABLE");
+  }
+  if (!stored || stored.filesize > MAX_PHOTO_BYTES) {
+    if (stored) await context.images(PHOTO_STORAGE).deleteAtSource(stored.id, stored.extension).catch(() => {
+    });
+    throw new SubmissionError("Cada foto puede pesar hasta 8 MB.", 400, "PHOTO_TOO_LARGE");
+  }
+  await sudo.prisma.tradeInPhoto.create({
+    data: {
+      rooftop: { connect: { id: tradeIn.rooftopId } },
+      tradeIn: { connect: { id: tradeIn.id } },
+      image_id: stored.id,
+      image_extension: stored.extension,
+      image_filesize: stored.filesize,
+      image_width: stored.width,
+      image_height: stored.height,
+      sortOrder: tradeIn._count.photos
+    }
+  });
+  return { count: tradeIn._count.photos + 1 };
+}
+
 // features/keystone/mutations/submitTradeIn.ts
 var CONDITIONS = /* @__PURE__ */ new Set(["excellent", "good", "fair", "poor"]);
 var OWNERSHIP = /* @__PURE__ */ new Set(["own", "financing", "lease"]);
@@ -9398,7 +9509,7 @@ async function submitTradeIn(_root, { data }, context) {
   }
   const estimate = preliminaryTradeRange(year, mileage, condition);
   const summary = `${year} ${make} ${model}${trim ? ` ${trim}` : ""}`;
-  return runPublicSubmission({
+  const outcome = await runPublicSubmission({
     context,
     workflow: "trade-in",
     rooftopSlug: data.rooftopSlug,
@@ -9480,6 +9591,8 @@ async function submitTradeIn(_root, { data }, context) {
       };
     }
   });
+  const photoToken = !outcome.reused && outcome.tradeInId ? await issueTradeInPhotoToken(context, String(outcome.tradeInId)) : null;
+  return { ...outcome, photoToken };
 }
 
 // features/keystone/mutations/financingPrivacy.ts
@@ -9910,7 +10023,7 @@ function publicSubmissionResolver(service) {
       return {
         ok: false,
         errorCode: "SUBMISSION_FAILED",
-        errorMessage: "Unable to process this request. Please try again or contact the dealership."
+        errorMessage: "No pudimos procesar la solicitud. Intent\xE1 de nuevo o comunicate con nosotros."
       };
     }
   };
@@ -10938,7 +11051,7 @@ async function manageAccountingBatch(_r, { data }, c) {
 }
 
 // features/keystone/mutations/crmIdentityWorkflows.ts
-var import_node_crypto5 = require("node:crypto");
+var import_node_crypto6 = require("node:crypto");
 
 // features/keystone/mutations/operatorProjections.ts
 function date2(value) {
@@ -11307,7 +11420,7 @@ async function configureLeadRoutingRule(_root, { data }, context) {
   const eventKey = `lead-route-rule:${commandKey(data.idempotencyKey)}`;
   const active = data.active !== false;
   const existingRuleId = data.ruleId ? String(data.ruleId) : null;
-  const ruleId = existingRuleId || (0, import_node_crypto5.randomUUID)();
+  const ruleId = existingRuleId || (0, import_node_crypto6.randomUUID)();
   return context.transaction(async (tx) => {
     await tx.prisma.$queryRaw`SELECT 1 AS "locked" FROM pg_advisory_xact_lock(hashtextextended(${`command:${eventKey}`}, 0))`;
     const replay = await tx.prisma.domainAuditEvent.findUnique({ where: { eventKey }, select: { metadata: true, afterSnapshot: true } });
@@ -12508,7 +12621,7 @@ function optionalLegacyVin(value) {
   if (!/^[A-Z0-9]{11,17}$/.test(vin)) throw new Error("Legacy VIN must be an 11\u201317 character identifier");
   return vin;
 }
-function integer37(value, label2, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
+function integer38(value, label2, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   const result2 = Number(value);
   if (!Number.isInteger(result2) || result2 < minimum || result2 > maximum) {
     throw new Error(`${label2} must be an integer between ${minimum} and ${maximum}`);
@@ -12526,8 +12639,8 @@ function normalizeIntake(input2) {
   const vin = normalizeVin(input2.vin);
   const legacyVin = optionalLegacyVin(input2.legacyVin);
   const stockNumber = normalizeStockNumber(input2.stockNumber);
-  const year = integer37(input2.year, "Model year", 1900, 2200);
-  const mileage = input2.mileage == null ? null : integer37(input2.mileage, "Mileage");
+  const year = integer38(input2.year, "Model year", 1900, 2200);
+  const mileage = input2.mileage == null ? null : integer38(input2.mileage, "Mileage");
   const purchasePriceCents = nonNegativeCents(input2.purchasePriceCents, "Purchase price");
   const listPriceCents = nonNegativeCents(input2.listPriceCents, "List price");
   const priceCents = nonNegativeCents(input2.priceCents, "Retail price");
@@ -12740,7 +12853,7 @@ async function intakeInventoryVehicleInTransaction(transactionContext, rawInput,
   const vehicle = existingVehicle ? await prisma.vehicle.update({ where: { id: existingVehicle.id }, data: vehicleValues, select: { id: true } }) : await prisma.vehicle.create({ data: vehicleValues, select: { id: true } });
   let imageCreated = false;
   if (input2.imagePath) {
-    const existingImage = existingVehicle?.images.find((image5) => image5.imagePath === input2.imagePath);
+    const existingImage = existingVehicle?.images.find((image6) => image6.imagePath === input2.imagePath);
     const imageValues = {
       rooftopId: input2.rooftopId,
       vehicleId: vehicle.id,
@@ -14982,10 +15095,10 @@ async function inventoryWorkspace(_root, args, context) {
     }
   }) : [];
   const byId = new Map(rows.map((row) => [row.id, row]));
-  const photoUrls = new Map(await Promise.all(rows.flatMap((row) => (row.vehicle?.images || []).map(async (image5) => {
-    if (image5.imagePath) return [image5.id, image5.imagePath];
-    if (!image5.image_id || !image5.image_extension) return [image5.id, null];
-    return [image5.id, await context.images("my_images").getUrl(image5.image_id, image5.image_extension).catch(() => null)];
+  const photoUrls = new Map(await Promise.all(rows.flatMap((row) => (row.vehicle?.images || []).map(async (image6) => {
+    if (image6.imagePath) return [image6.id, image6.imagePath];
+    if (!image6.image_id || !image6.image_extension) return [image6.id, null];
+    return [image6.id, await context.images("my_images").getUrl(image6.image_id, image6.image_extension).catch(() => null)];
   }))));
   const publications = ids.length ? await context.sudo().prisma.inventoryStock.findMany({
     where: { id: { in: ids } },
@@ -15001,7 +15114,7 @@ async function inventoryWorkspace(_root, args, context) {
       id: row.id,
       rooftop: row.rooftop,
       vehicle: (() => {
-        const images = row.vehicle.images.map((image5) => ({ id: image5.id, url: photoUrls.get(image5.id) ?? null, isPrimary: image5.isPrimary, sortOrder: image5.sortOrder ?? 0, uploaded: Boolean(image5.image_id) })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
+        const images = row.vehicle.images.map((image6) => ({ id: image6.id, url: photoUrls.get(image6.id) ?? null, isPrimary: image6.isPrimary, sortOrder: image6.sortOrder ?? 0, uploaded: Boolean(image6.image_id) })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
         return { ...row.vehicle, primaryImagePath: images[0]?.url ?? null, images };
       })(),
       acquisition: row.acquisition ?? null,
@@ -15050,7 +15163,7 @@ async function inventoryWorkspace(_root, args, context) {
 }
 
 // features/keystone/mutations/inventoryStockCommands.ts
-var import_node_crypto6 = require("node:crypto");
+var import_node_crypto7 = require("node:crypto");
 
 // features/keystone/mutations/inventoryActiveStatus.ts
 var INACTIVE_INVENTORY_MESSAGES = {
@@ -15148,7 +15261,7 @@ async function establishInventoryStockCommand(_root, { data }, context) {
     }
     const existing = await tx.prisma.inventoryStock.findFirst({ where: { OR: [{ stockKey }, { vehicleId }] }, select: { id: true } });
     if (existing) throw new Error("Vehicle or rooftop stock number already has an inventory stock record");
-    const id = (0, import_node_crypto6.randomUUID)();
+    const id = (0, import_node_crypto7.randomUUID)();
     const stockedAt = vehicle.acquisition?.arrivedAt ? new Date(vehicle.acquisition.arrivedAt) : /* @__PURE__ */ new Date();
     await tx.prisma.inventoryStock.create({ data: { id, rooftopId, vehicleId, stockNumber, stockKey, locationCode, locationLabel, stockedAt, frontlineAt: vehicle.acquisition?.frontlineAt ? new Date(vehicle.acquisition.frontlineAt) : null, purchaseCostCents, totalCostCents: purchaseCostCents } });
     await tx.prisma.vehicle.update({ where: { id: vehicleId }, data: { stockNumber } });
@@ -15222,7 +15335,7 @@ async function receiveAcquisitionIntoStock(data, context) {
       },
       select: { id: true }
     });
-    const id = (0, import_node_crypto6.randomUUID)();
+    const id = (0, import_node_crypto7.randomUUID)();
     const stockedAt = current.arrivedAt ? new Date(current.arrivedAt) : /* @__PURE__ */ new Date();
     await tx.prisma.inventoryStock.create({ data: { id, rooftopId, vehicleId: vehicle.id, stockNumber, stockKey, locationCode, locationLabel, stockedAt, purchaseCostCents, totalCostCents: purchaseCostCents } });
     const attached = await tx.prisma.inventoryAcquisition.updateMany({ where: { id: acquisitionId, rooftopId, vehicleId: null, stockId: null }, data: { vehicleId: vehicle.id, stockId: id } });
@@ -15291,7 +15404,7 @@ async function openInventoryReconWorkItemCommand(_root, { data }, context) {
   if (dueAt && Number.isNaN(dueAt.getTime())) throw new Error("dueAt is invalid");
   const idempotencyKey6 = commandKey3(data.idempotencyKey);
   const eventKey = `inventory-recon-create:${idempotencyKey6}`;
-  const itemId = (0, import_node_crypto6.randomUUID)();
+  const itemId = (0, import_node_crypto7.randomUUID)();
   const reason = text74(data.reason, "Audit reason");
   const evidence = { stockId: stock.id, title, category, estimatedCostCents, vendorName, assignedToId, dueAt: dueAt?.toISOString() ?? null, reason };
   const resolvedId = await context.transaction(async (tx) => {
@@ -15347,7 +15460,7 @@ var openInventoryReconWorkItem = inventoryCommand(openInventoryReconWorkItemComm
 var transitionInventoryReconWorkItem = inventoryCommand(transitionInventoryReconWorkItemCommand);
 
 // features/keystone/mutations/inventoryPublishingCommands.ts
-var import_node_crypto7 = require("node:crypto");
+var import_node_crypto8 = require("node:crypto");
 
 // features/keystone/lifecycle/inventoryPriceHistory.ts
 async function appendInventoryPriceHistory(tx, input2) {
@@ -15476,7 +15589,7 @@ async function submitInventoryMerchandisingCommand(_root, { data }, context) {
     const snapshot2 = assertMerchandisingContent(current);
     const eventEvidence2 = { snapshot: snapshot2, reason };
     const version = (current.merchandisingVersions[0]?.version ?? 0) + 1;
-    const versionId = (0, import_node_crypto7.randomUUID)();
+    const versionId = (0, import_node_crypto8.randomUUID)();
     await tx.prisma.inventoryMerchandisingVersion.create({ data: { id: versionId, rooftopId: stock.rooftop.id, stockId: stock.id, version, versionKey: `${stock.id}:${version}`, status: "submitted", snapshot: snapshot2, submittedById: context.session.itemId, submittedAt: /* @__PURE__ */ new Date() } });
     await tx.prisma.inventoryStock.update({ where: { id: stock.id }, data: { merchandisingStatus: "submitted", approvedRevisionHash: "", feedStatus: "not-published" } });
     const event2 = { eventKey, rooftopId: stock.rooftop.id, aggregateType: "InventoryStock", aggregateId: stock.id, action: "merchandising-submitted", actorId: context.session.itemId, afterSnapshot: eventEvidence2, metadata: { versionId, version } };
@@ -15598,7 +15711,7 @@ async function recordInventoryFeedRunCommand(_root, { data }, context) {
       if (current.rooftopId !== rooftopId) throw new Error("Inventory rooftop changed");
       if (channel.key === "public-inventory-feed") revisions.push({ stockId, ...assertPublishableInventory(current) });
     }
-    const runId = (0, import_node_crypto7.randomUUID)();
+    const runId = (0, import_node_crypto8.randomUUID)();
     await tx.prisma.inventoryFeedRun.create({ data: { id: runId, rooftopId, runKey: eventKey, channelKey: channel.key, status, attemptedCount: stockIds.length, succeededCount, failedCount, requestSnapshot: { stockIds, revisions }, responseSummary: { mode: channel.mode, externalRequestSent: channel.externalRequestSent }, startedAt, completedAt, recordedById: context.session.itemId } });
     if (errors.length) await tx.prisma.inventoryFeedError.createMany({ data: errors.map((error) => ({ rooftopId, runId, stockId: error.stockId, errorCode: error.errorCode, message: error.message, rowReference: error.rowReference, evidence: { source: "operator-recorded" } })) });
     const failedIds = [...failedStockIds];
@@ -15616,7 +15729,7 @@ var decideInventoryMerchandising = inventoryCommand(decideInventoryMerchandising
 var recordInventoryFeedRun = inventoryCommand(recordInventoryFeedRunCommand);
 
 // features/keystone/mutations/inventoryPhotoCommands.ts
-var PHOTO_STORAGE = "my_images";
+var PHOTO_STORAGE2 = "my_images";
 var MAX_PHOTOS_PER_UNIT = 60;
 var UNSUPPORTED_PHOTO = "Photos must be JPG, PNG, WebP or GIF images";
 function required7(value, label2, max = 500) {
@@ -15669,7 +15782,7 @@ async function storePhoto(context, photo) {
   const upload = await photo?.upload;
   if (!upload?.createReadStream) throw new Error("Choose a photo to upload");
   try {
-    return await context.images(PHOTO_STORAGE).getDataFromStream(upload.createReadStream(), String(upload.filename || "photo"));
+    return await context.images(PHOTO_STORAGE2).getDataFromStream(upload.createReadStream(), String(upload.filename || "photo"));
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (/file type not found|not a supported image type|height and width/i.test(message)) throw new Error(UNSUPPORTED_PHOTO);
@@ -15701,7 +15814,7 @@ async function addInventoryVehiclePhotoCommand(_root, { data }, context) {
       if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photo-added", reason, evidence)) return { id: stock.id, reused: true };
       const existing = await tx.prisma.vehicleImage.findMany({ where: { vehicleId: stock.vehicle.id }, select: { isPrimary: true, sortOrder: true } });
       if (existing.length >= MAX_PHOTOS_PER_UNIT) throw new Error(`A unit can have at most ${MAX_PHOTOS_PER_UNIT} photos`);
-      const sortOrder = existing.reduce((max, image5) => Math.max(max, image5.sortOrder ?? 0), -1) + 1;
+      const sortOrder = existing.reduce((max, image6) => Math.max(max, image6.sortOrder ?? 0), -1) + 1;
       const created = await tx.prisma.vehicleImage.create({
         data: {
           rooftopId: stock.rooftop.id,
@@ -15715,18 +15828,18 @@ async function addInventoryVehiclePhotoCommand(_root, { data }, context) {
           caption: `${stock.vehicle.year} ${stock.vehicle.make} ${stock.vehicle.model}`,
           category: "exterior",
           sortOrder,
-          isPrimary: !existing.some((image5) => image5.isPrimary)
+          isPrimary: !existing.some((image6) => image6.isPrimary)
         },
         select: { id: true }
       });
       await returnListingToDraft(tx, stock, context.session.itemId);
       return { id: created.id, reused: false };
     }, { timeout: 3e4 });
-    if (command.reused && stored) await context.images(PHOTO_STORAGE).deleteAtSource(stored.id, stored.extension).catch(() => {
+    if (command.reused && stored) await context.images(PHOTO_STORAGE2).deleteAtSource(stored.id, stored.extension).catch(() => {
     });
     return commandResult3(context, stock.id, command.id, command.reused);
   } catch (error) {
-    if (stored) await context.images(PHOTO_STORAGE).deleteAtSource(stored.id, stored.extension).catch(() => {
+    if (stored) await context.images(PHOTO_STORAGE2).deleteAtSource(stored.id, stored.extension).catch(() => {
     });
     throw error;
   }
@@ -15743,7 +15856,7 @@ async function arrangeInventoryVehiclePhotosCommand(_root, { data }, context) {
     await lockInventoryStock(tx, stock.id);
     if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photos-arranged", reason, evidence)) return true;
     const current = await tx.prisma.vehicleImage.findMany({ where: { vehicleId: stock.vehicle.id }, select: { id: true, sortOrder: true, isPrimary: true } });
-    const currentIds = new Set(current.map((image5) => image5.id));
+    const currentIds = new Set(current.map((image6) => image6.id));
     if (current.length !== imageIds.length || imageIds.some((id) => !currentIds.has(id))) throw new Error("Photos changed; reload and try again");
     if (photoArrangementUnchanged(current, imageIds)) return false;
     await tx.prisma.vehicleImage.updateMany({ where: { vehicleId: stock.vehicle.id, isPrimary: true, id: { not: imageIds[0] } }, data: { isPrimary: false } });
@@ -15765,17 +15878,17 @@ async function removeInventoryVehiclePhotoCommand(_root, { data }, context) {
   const command = await context.transaction(async (tx) => {
     await lockInventoryStock(tx, stock.id);
     if (await recordPhotoEvent(tx, stock, context, eventKey, "merchandising-photo-removed", reason, evidence)) return { reused: true, stored: null };
-    const image5 = await tx.prisma.vehicleImage.findFirst({ where: { id: imageId, vehicleId: stock.vehicle.id }, select: { id: true, isPrimary: true, image_id: true, image_extension: true } });
-    if (!image5) throw new Error("Photo not found; reload and try again");
-    await tx.prisma.vehicleImage.delete({ where: { id: image5.id } });
-    if (image5.isPrimary) {
+    const image6 = await tx.prisma.vehicleImage.findFirst({ where: { id: imageId, vehicleId: stock.vehicle.id }, select: { id: true, isPrimary: true, image_id: true, image_extension: true } });
+    if (!image6) throw new Error("Photo not found; reload and try again");
+    await tx.prisma.vehicleImage.delete({ where: { id: image6.id } });
+    if (image6.isPrimary) {
       const next = await tx.prisma.vehicleImage.findFirst({ where: { vehicleId: stock.vehicle.id }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true } });
       if (next) await tx.prisma.vehicleImage.update({ where: { id: next.id }, data: { isPrimary: true } });
     }
     await returnListingToDraft(tx, stock, context.session.itemId);
-    return { reused: false, stored: image5.image_id && image5.image_extension ? { id: image5.image_id, extension: image5.image_extension } : null };
+    return { reused: false, stored: image6.image_id && image6.image_extension ? { id: image6.image_id, extension: image6.image_extension } : null };
   }, { timeout: 3e4 });
-  if (command.stored) await context.images(PHOTO_STORAGE).deleteAtSource(command.stored.id, command.stored.extension).catch(() => {
+  if (command.stored) await context.images(PHOTO_STORAGE2).deleteAtSource(command.stored.id, command.stored.extension).catch(() => {
   });
   return commandResult3(context, stock.id, imageId, command.reused);
 }
@@ -16099,7 +16212,7 @@ async function fixedOpsWorkspace(_root, args, context) {
 }
 
 // features/keystone/mutations/operatorCommands.ts
-var import_node_crypto8 = require("node:crypto");
+var import_node_crypto9 = require("node:crypto");
 
 // features/keystone/lifecycle/leadClosure.ts
 var DELIVERY_CLOSE_WON_FROM = ["new", "contacted", "test-drive-scheduled", "negotiating", "closed-lost"];
@@ -16450,7 +16563,7 @@ async function openFinanceFollowUp(_root, { data }, context) {
   await assertSessionRooftopPermission(context, lead.rooftop.id, "canManageFinancing");
   const eventKey = `finance-follow-up:${idempotencyKey3(data.idempotencyKey)}`;
   const evidence = { leadId: lead.id, priority: "high", reason: required8(data.reason, "Follow-up reason") };
-  const taskId = (0, import_node_crypto8.randomUUID)();
+  const taskId = (0, import_node_crypto9.randomUUID)();
   const resolved = await context.transaction(async (tx) => {
     await tx.prisma.$queryRaw`SELECT 1 AS "locked" FROM pg_advisory_xact_lock(hashtextextended(${`command:${eventKey}`}, 0))`;
     const replay = await tx.prisma.domainAuditEvent.findUnique({ where: { eventKey }, select: { metadata: true } });
@@ -16488,7 +16601,7 @@ async function addServiceOrderLineItem(_root, { data }, context) {
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt);
   const eventKey = `service-line-add:${idempotencyKey3(data.idempotencyKey)}`;
   const evidence = { serviceOrderId: order2.id, itemType, description, partNumber: String(data.partNumber || "").trim().slice(0, 100), quantity, unitPriceCents, priceCents, costCents, expectedUpdatedAt: expectedUpdatedAt.toISOString() };
-  const lineId = (0, import_node_crypto8.randomUUID)();
+  const lineId = (0, import_node_crypto9.randomUUID)();
   const resolved = await context.transaction(async (tx) => {
     await tx.prisma.$queryRaw`SELECT 1 AS "locked" FROM pg_advisory_xact_lock(hashtextextended(${`command:${eventKey}`}, 0))`;
     const replay = await tx.prisma.domainAuditEvent.findUnique({ where: { eventKey }, select: { metadata: true } });
@@ -16511,7 +16624,7 @@ async function addServiceOrderLineItem(_root, { data }, context) {
 }
 
 // features/keystone/mutations/crmEngagementWorkflows.ts
-var import_node_crypto9 = require("node:crypto");
+var import_node_crypto10 = require("node:crypto");
 var CADENCES = {
   "internet-lead-first-response": [
     { step: "initial-response", channel: "email", delayMinutes: 0, taskTitle: "Respond to internet lead" },
@@ -16783,7 +16896,7 @@ async function linkCustomerHousehold(_root, { data }, context) {
     if (rows.length !== 2 || rows.some((row, index) => row.updatedAt.getTime() !== expected[customerIds.indexOf(row.id)].getTime())) throw new Error("Customer changed concurrently; reload and retry");
     const existingHouseholds = [...new Set(rows.map((row) => row.householdId).filter(Boolean))];
     if (existingHouseholds.length > 1) throw new Error("Customers already belong to different households");
-    const household = existingHouseholds.length === 1 ? await tx.prisma.customerHousehold.update({ where: { id: existingHouseholds[0] }, data: { displayName } }) : await tx.prisma.customerHousehold.create({ data: { id: (0, import_node_crypto9.randomUUID)(), rooftopId, householdKey, displayName } });
+    const household = existingHouseholds.length === 1 ? await tx.prisma.customerHousehold.update({ where: { id: existingHouseholds[0] }, data: { displayName } }) : await tx.prisma.customerHousehold.create({ data: { id: (0, import_node_crypto10.randomUUID)(), rooftopId, householdKey, displayName } });
     await tx.prisma.customer.updateMany({ where: { id: { in: customerIds }, rooftopId }, data: { householdId: household.id } });
     await recordDomainEventInTransaction(tx, {
       eventKey,
@@ -16862,7 +16975,7 @@ async function manageSalesVisit(_root, { data }, context) {
       if (!["appointment", "showroom"].includes(kind)) throw new Error("Sales visit kind is invalid");
       const scheduledAt = date3(data.scheduledAt || now, "Scheduled time");
       visit = await tx.prisma.salesVisit.create({
-        data: { id: (0, import_node_crypto9.randomUUID)(), rooftopId, leadId, customerId: lead.customer.id, vehicleId: String(data.vehicleId || lead.interestedVehicle?.id || "") || null, assignedSalespersonId: lead.assignedSalesperson?.id || context.session.itemId, kind, status: kind === "showroom" ? "arrived" : "scheduled", scheduledAt, arrivedAt: kind === "showroom" ? now : null, notes: String(data.notes || "").trim().slice(0, 4e3) }
+        data: { id: (0, import_node_crypto10.randomUUID)(), rooftopId, leadId, customerId: lead.customer.id, vehicleId: String(data.vehicleId || lead.interestedVehicle?.id || "") || null, assignedSalespersonId: lead.assignedSalesperson?.id || context.session.itemId, kind, status: kind === "showroom" ? "arrived" : "scheduled", scheduledAt, arrivedAt: kind === "showroom" ? now : null, notes: String(data.notes || "").trim().slice(0, 4e3) }
       });
     } else {
       if (!visibleVisit || !expectedUpdatedAt) throw new Error("Sales visit is required");
@@ -17641,7 +17754,7 @@ async function processVerifiedPaymentWebhook(event2, context) {
 }
 
 // features/keystone/mutations/handlePaymentProviderWebhook.ts
-var import_node_crypto10 = require("node:crypto");
+var import_node_crypto11 = require("node:crypto");
 function normalizedHeaders(headers) {
   return Object.fromEntries(
     Object.entries(headers || {}).map(([key7, value]) => [
@@ -17651,8 +17764,8 @@ function normalizedHeaders(headers) {
   );
 }
 function signatureTimestamp(headers, fallbackSeconds) {
-  const timestamp53 = (headers["stripe-signature"] || "").split(",").map((part) => part.trim().split("=", 2)).find(([key7]) => key7 === "t")?.[1];
-  const seconds = timestamp53 && /^\d+$/.test(timestamp53) ? Number(timestamp53) : fallbackSeconds;
+  const timestamp54 = (headers["stripe-signature"] || "").split(",").map((part) => part.trim().split("=", 2)).find(([key7]) => key7 === "t")?.[1];
+  const seconds = timestamp54 && /^\d+$/.test(timestamp54) ? Number(timestamp54) : fallbackSeconds;
   return new Date(seconds * 1e3);
 }
 async function handlePaymentProviderWebhook(root, { providerId, event: event2, headers }, context) {
@@ -17694,7 +17807,7 @@ async function handlePaymentProviderWebhook(root, { providerId, event: event2, h
     providerRefundId: resource.object === "refund" ? String(resource.id) : void 0,
     amountCents: Number(resource.amount_received ?? resource.amount_total ?? resource.amount ?? 0) || void 0,
     providerStatus: resource.payment_status ? String(resource.payment_status) : resource.status ? String(resource.status) : void 0,
-    rawDigest: (0, import_node_crypto10.createHash)("sha256").update(requestHeaders.__rawBody || JSON.stringify(event2)).digest("hex")
+    rawDigest: (0, import_node_crypto11.createHash)("sha256").update(requestHeaders.__rawBody || JSON.stringify(event2)).digest("hex")
   }, sudo);
   return {
     success: true,
@@ -17704,7 +17817,7 @@ async function handlePaymentProviderWebhook(root, { providerId, event: event2, h
 var handlePaymentProviderWebhook_default = handlePaymentProviderWebhook;
 
 // features/keystone/mutations/reportingOperations.ts
-var import_node_crypto11 = require("node:crypto");
+var import_node_crypto12 = require("node:crypto");
 var required10 = (value, name, max = 500) => {
   const text77 = String(value || "").trim();
   if (!text77 || text77.length > max) throw new Error(`${name} is required`);
@@ -17985,7 +18098,7 @@ async function buildReportRunSnapshot(saved, context) {
   const report = await savedReportPayload(saved, context);
   const exportPayload = saved.exportFormat === "csv" ? { contentType: "text/csv", content: reportCsv(report) } : report;
   const snapshot2 = { schema: "openfront.report.v1", reportType: saved.reportType, exportFormat: saved.exportFormat, filters: normalizeReportFilters(saved.reportType, saved.filters || {}), report: exportPayload };
-  const digest = (0, import_node_crypto11.createHash)("sha256").update(JSON.stringify(snapshot2)).digest("hex");
+  const digest = (0, import_node_crypto12.createHash)("sha256").update(JSON.stringify(snapshot2)).digest("hex");
   return { snapshot: snapshot2, digest, expiresAt: new Date(Date.now() + 30 * 864e5) };
 }
 async function runSavedReport(_root, { data }, context) {
@@ -18751,6 +18864,11 @@ function readWhere(where) {
           }
         }
         if (group.length) filters.anyOf = [...filters.anyOf || [], group];
+      } else if (key7 === "fuelType" || key7 === "transmission") {
+        const option = String(value?.equals || "").trim().toLocaleLowerCase();
+        if (option) filters[key7] = option;
+      } else if (key7 === "isFeatured") {
+        if (value?.equals === true) filters.isFeatured = true;
       } else if (key7 === "condition") {
         const condition = String(value?.equals || "").trim().toLocaleLowerCase();
         if (condition) filters.condition = condition;
@@ -18778,6 +18896,9 @@ function matches(vehicle, filters) {
   if (filters.make && !String(vehicle.make || "").toLocaleLowerCase().includes(filters.make)) return false;
   if (filters.model && !String(vehicle.model || "").toLocaleLowerCase().includes(filters.model)) return false;
   if (filters.condition && String(vehicle.condition || "").toLocaleLowerCase() !== filters.condition) return false;
+  if (filters.fuelType && String(vehicle.fuelType || "") !== filters.fuelType) return false;
+  if (filters.transmission && String(vehicle.transmission || "") !== filters.transmission) return false;
+  if (filters.isFeatured && !vehicle.isFeatured) return false;
   if (filters.anyOf?.some((group) => !group.some(({ field, search }) => String(vehicle[field] || "").toLocaleLowerCase().includes(search)))) return false;
   return inRange(vehicle.year, filters.year) && inRange(vehicle.priceCents, filters.priceCents) && inRange(vehicle.mileage, filters.mileage);
 }
@@ -18806,7 +18927,7 @@ async function loadPublicInventoryImageUrls(sudo, imageIds) {
   const ids = [...new Set(imageIds.filter(Boolean))];
   if (!ids.length) return /* @__PURE__ */ new Map();
   const images = await sudo.query.VehicleImage.findMany({ where: { id: { in: ids } }, query: "id image { url }" });
-  return new Map(images.map((image5) => [image5.id, image5.image?.url || null]));
+  return new Map(images.map((image6) => [image6.id, image6.image?.url || null]));
 }
 async function queryPublicInventory(context, options = {}) {
   const slug2 = await storefrontRooftopSlug(context);
@@ -18860,7 +18981,7 @@ async function queryPublicInventory(context, options = {}) {
       where: { rooftopId, OR: page2.map((vehicle) => activeReservationWhere(vehicle.id)) },
       select: { lead: { select: { interestedVehicleId: true } } }
     })).map((row) => row.lead?.interestedVehicleId).filter(Boolean));
-    const imageIds = page2.flatMap((vehicle) => (vehicle.images || []).map((image5) => image5.id));
+    const imageIds = page2.flatMap((vehicle) => (vehicle.images || []).map((image6) => image6.id));
     const imageUrlById = await loadPublicInventoryImageUrls(sudo, imageIds);
     return {
       totalCount: matching.length,
@@ -18873,18 +18994,22 @@ async function queryPublicInventory(context, options = {}) {
         model: vehicle.model,
         trim: vehicle.trim,
         exteriorColor: vehicle.exteriorColor,
+        fuelType: vehicle.fuelType || null,
+        transmission: vehicle.transmission || null,
+        engine: vehicle.engine || "",
+        isFeatured: Boolean(vehicle.isFeatured),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
         status: reserved.has(vehicle.id) ? "reserved" : vehicle.status,
         condition: vehicle.condition,
         features: vehicle.features,
         description: vehicle.description,
-        images: (vehicle.images || []).map((image5) => ({
-          id: image5.id,
-          imagePath: image5.imagePath,
-          image: image5.image_id ? { url: imageUrlById.get(image5.id) || null } : null,
-          isPrimary: image5.isPrimary,
-          sortOrder: image5.sortOrder
+        images: (vehicle.images || []).map((image6) => ({
+          id: image6.id,
+          imagePath: image6.imagePath,
+          image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null,
+          isPrimary: image6.isPrimary,
+          sortOrder: image6.sortOrder
         })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
       }))
     };
@@ -18939,7 +19064,7 @@ async function publicInventoryVehicleRecord(_root, { id }, context) {
   } catch {
     return null;
   }
-  const imageUrlById = await loadPublicInventoryImageUrls(sudo, (vehicle.images || []).map((image5) => image5.id));
+  const imageUrlById = await loadPublicInventoryImageUrls(sudo, (vehicle.images || []).map((image6) => image6.id));
   const sold = vehicle.status === "sold";
   return {
     id: vehicle.id,
@@ -18950,18 +19075,22 @@ async function publicInventoryVehicleRecord(_root, { id }, context) {
     model: vehicle.model,
     trim: vehicle.trim,
     exteriorColor: vehicle.exteriorColor,
+    fuelType: vehicle.fuelType || null,
+    transmission: vehicle.transmission || null,
+    engine: vehicle.engine || "",
+    isFeatured: false,
     mileage: vehicle.mileage,
     price: null,
     status: vehicle.status,
     condition: vehicle.condition,
     features: vehicle.features,
     description: vehicle.description,
-    images: (vehicle.images || []).map((image5) => ({
-      id: image5.id,
-      imagePath: image5.imagePath,
-      image: image5.image_id ? { url: imageUrlById.get(image5.id) || null } : null,
-      isPrimary: image5.isPrimary,
-      sortOrder: image5.sortOrder
+    images: (vehicle.images || []).map((image6) => ({
+      id: image6.id,
+      imagePath: image6.imagePath,
+      image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null,
+      isPrimary: image6.isPrimary,
+      sortOrder: image6.sortOrder
     })).sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
   };
 }
@@ -19026,15 +19155,15 @@ async function getPublicInventoryFeed(context, input2) {
           return [];
         }
       });
-      const imageIds = valid.flatMap((stock) => (stock.vehicle?.images || []).map((image5) => image5.id));
+      const imageIds = valid.flatMap((stock) => (stock.vehicle?.images || []).map((image6) => image6.id));
       const imageUrlById = await loadPublicInventoryImageUrls(sudo, imageIds);
       return valid.map((stock) => ({
         ...stock,
         vehicle: {
           ...stock.vehicle,
-          images: (stock.vehicle.images || []).map((image5) => ({
-            ...image5,
-            image: image5.image_id ? { url: imageUrlById.get(image5.id) || null } : null
+          images: (stock.vehicle.images || []).map((image6) => ({
+            ...image6,
+            image: image6.image_id ? { url: imageUrlById.get(image6.id) || null } : null
           }))
         }
       }));
@@ -19071,7 +19200,7 @@ function absoluteUrl(baseUrl, path) {
 function normalizeStock(stock, baseUrl, currency) {
   const vehicle = stock.vehicle;
   const price = vehicle.priceCents == null ? vehicle.price ?? vehicle.listPrice ?? 0 : vehicle.priceCents / 100;
-  const primaryImage = vehicle.images?.find((image5) => image5.isPrimary) || vehicle.images?.[0];
+  const primaryImage = vehicle.images?.find((image6) => image6.isPrimary) || vehicle.images?.[0];
   return {
     id: vehicle.id,
     vin: vehicle.vin,
@@ -19090,13 +19219,13 @@ function normalizeStock(stock, baseUrl, currency) {
     description: vehicle.description,
     features: vehicle.features || [],
     primaryImageUrl: primaryImage?.imagePath || primaryImage?.image?.url || null,
-    images: (vehicle.images || []).map((image5) => ({
-      id: image5.id,
-      url: image5.imagePath || image5.image?.url || null,
-      caption: image5.caption,
-      category: image5.category,
-      isPrimary: image5.isPrimary,
-      sortOrder: image5.sortOrder
+    images: (vehicle.images || []).map((image6) => ({
+      id: image6.id,
+      url: image6.imagePath || image6.image?.url || null,
+      caption: image6.caption,
+      category: image6.category,
+      isPrimary: image6.isPrimary,
+      sortOrder: image6.sortOrder
     })),
     publication: {
       stockedAt: stock.stockedAt,
@@ -19216,6 +19345,10 @@ function extendGraphqlSchema(baseSchema) {
         model: String
         trim: String
         exteriorColor: String
+        fuelType: String
+        transmission: String
+        engine: String
+        isFeatured: Boolean
         mileage: Int
         price: Float
         status: String
@@ -19331,6 +19464,14 @@ function extendGraphqlSchema(baseSchema) {
         providerRequestSent: Boolean
         vehicle: PublicSubmissionVehicle
         reused: Boolean
+        photoToken: String
+      }
+
+      type AttachTradeInPhotoPayload {
+        ok: Boolean!
+        errorCode: String
+        errorMessage: String
+        count: Int
       }
 
       input SubmitFinancingInput {
@@ -19764,6 +19905,7 @@ function extendGraphqlSchema(baseSchema) {
         reserveVehicle(data: ReserveVehicleInput!): ReserveVehiclePayload!
         submitTestDrive(data: SubmitTestDriveInput!): SubmitTestDrivePayload!
         submitTradeIn(data: SubmitTradeInInput!): SubmitTradeInPayload!
+        attachTradeInPhoto(tradeInId: ID!, photoToken: String!, photo: ImageFieldInput!): AttachTradeInPhotoPayload!
         submitFinancing(data: SubmitFinancingInput!): SubmitFinancingPayload!
         submitServiceBooking(data: SubmitServiceBookingInput!): SubmitServiceBookingPayload!
         transitionDeal(id: ID!, toStatus: String!, notes: String, idempotencyKey: String!): Deal
@@ -19913,6 +20055,7 @@ function extendGraphqlSchema(baseSchema) {
         reserveVehicle: publicSubmissionResolver(reserveVehicle),
         submitTestDrive: publicSubmissionResolver(submitTestDrive),
         submitTradeIn: publicSubmissionResolver(submitTradeIn),
+        attachTradeInPhoto: publicSubmissionResolver(attachTradeInPhoto),
         submitFinancing: publicSubmissionResolver(submitFinancing),
         submitServiceBooking: publicSubmissionResolver(submitServiceBooking),
         transitionDeal,
@@ -20332,7 +20475,7 @@ var { withAuth } = (0, import_auth.createAuth)({
   sessionData: sessionDataFields
 });
 var keystone_default = withAuth(
-  (0, import_core71.config)({
+  (0, import_core72.config)({
     db: {
       provider: "postgresql",
       url: pooledDatabaseUrl(databaseURL),

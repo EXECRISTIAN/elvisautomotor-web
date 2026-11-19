@@ -36,7 +36,7 @@ export function BookingActions({
   if (!canCancel && !canReschedule) {
     return (
       <p className="sf-muted text-[length:var(--sf-text-sm)]">
-        {kind === 'service' ? 'Online changes closed. Contact the service department.' : 'Online changes closed. Contact the dealership.'}
+        {kind === 'service' ? 'Los cambios online están cerrados. Comunicate con nosotros.' : 'Los cambios online están cerrados. Comunicate con nosotros.'}
       </p>
     )
   }
@@ -54,7 +54,7 @@ export function BookingActions({
   const submitReschedule = (event: React.FormEvent) => {
     event.preventDefault()
     if (!date || !time) {
-      setError('Choose a date and time.')
+      setError('Elegí fecha y hora.')
       return
     }
     setError(null)
@@ -64,7 +64,7 @@ export function BookingActions({
         setError(result.error)
         return
       }
-      setDone('Rescheduled')
+      setDone('Reprogramada')
       setMode('idle')
       setDate('')
       setTime('')
@@ -81,7 +81,7 @@ export function BookingActions({
         setError(result.error)
         return
       }
-      setDone('Cancelled')
+      setDone('Cancelada')
       setMode('idle')
       router.refresh()
     })
@@ -117,7 +117,7 @@ export function BookingActions({
           {error && <Notice tone="bad">{error}</Notice>}
           <div className={ACTION_ROW}>
             <button type="button" disabled={pending} onClick={confirmCancel} className="sf-btn sf-btn-primary">
-              {pending ? 'Cancelling' : 'Confirm cancel'}
+              {pending ? 'Cancelando' : 'Confirmar cancelación'}
             </button>
             <button type="button" disabled={pending} onClick={() => reset('idle')} className="sf-btn sf-btn-ghost">
               Keep booking
@@ -128,7 +128,7 @@ export function BookingActions({
 
       {mode === 'reschedule' && (
         <form onSubmit={submitReschedule} className="sf-well space-y-4 p-4">
-          <Field label="New date" htmlFor={`reschedule-date-${id}`}>
+          <Field label="Nueva fecha" htmlFor={`reschedule-date-${id}`}>
             <PlatformDateInput
               id={`reschedule-date-${id}`}
               required
@@ -161,7 +161,7 @@ export function BookingActions({
           {error && <Notice tone="bad">{error}</Notice>}
           <div className={ACTION_ROW}>
             <button type="submit" disabled={pending} className="sf-btn sf-btn-primary">
-              {pending ? 'Saving' : 'Save new time'}
+              {pending ? 'Guardando' : 'Guardar nuevo horario'}
             </button>
             <button type="button" disabled={pending} onClick={() => reset('idle')} className="sf-btn sf-btn-ghost">
               Keep current time

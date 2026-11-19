@@ -3,6 +3,8 @@
 import { openfrontClient } from '../lib/config'
 import { getAuthHeaders } from '../lib/data/cookies'
 import { DEMO_SUBMISSION_MESSAGE, isDemoMode } from '@/features/lib/demoMode'
+import { getGraphQLEndpoint } from '../lib/getBaseUrl'
+import { getServerGraphQLTarget } from '@/features/dashboard/lib/getBaseUrl'
 
 export type StorefrontSubmissionResult<T> =
   | { success: true; data: T }
@@ -125,9 +127,11 @@ export async function submitStorefrontTradeIn(input: CommonSubmissionInput & {
   condition: string
   ownership: string
   payoffAmount?: number
+  notes?: string
   interestedVehicleId?: string
 }) {
   return executeSubmission<SubmissionPayload & {
+    photoToken?: string | null
     tradeInId?: string
     leadId?: string
     estimatedMin?: number
@@ -140,7 +144,7 @@ export async function submitStorefrontTradeIn(input: CommonSubmissionInput & {
     `mutation SubmitTradeIn($data: SubmitTradeInInput!) {
       submitTradeIn(data: $data) {
         ok errorCode errorMessage tradeInId leadId estimatedMin estimatedMax
-        estimateMode providerRequestSent reused
+        estimateMode providerRequestSent reused photoToken
         vehicle { id vin stockNumber year make model price status }
       }
     }`,
@@ -215,4 +219,41 @@ export async function submitStorefrontService(input: CommonSubmissionInput & {
     }`,
     input
   )
+}
+
+const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
+/** Sube una foto de "Vendelo en Elvis" usando el código temporal devuelto al enviar el formulario. */
+export async function uploadStorefrontTradeInPhoto(formData: FormData): Promise<StorefrontSubmissionResult<{ count: number }>> {
+  if (isDemoMode()) return { success: false, error: DEMO_SUBMISSION_MESSAGE, code: 'demo-mode' }
+  const tradeInId = String(formData.get('tradeInId') || '')
+  const photoToken = String(formData.get('photoToken') || '')
+  const photo = formData.get('photo')
+  if (!tradeInId || !photoToken || !(photo instanceof File) || photo.size === 0) return { success: false, error: 'Elegí una foto.' }
+  if (!PHOTO_TYPES.has(photo.type) || photo.size > 8 * 1024 * 1024) return { success: false, error: 'Las fotos deben ser JPG, PNG o WebP de hasta 8 MB.' }
+  const query = `mutation AttachTradeInPhoto($tradeInId: ID!, $photoToken: String!, $photo: ImageFieldInput!) {
+    attachTradeInPhoto(tradeInId: $tradeInId, photoToken: $photoToken, photo: $photo) { ok errorCode errorMessage count }
+  }`
+  try {
+    const form = new FormData()
+    form.append('operations', JSON.stringify({ query, variables: { tradeInId, photoToken, photo: { upload: null } } }))
+    form.append('map', JSON.stringify({ 1: ['variables.photo.upload'] }))
+    form.append('1', photo, photo.name || 'foto.jpg')
+    const target = process.env.NEXT_PUBLIC_BACKEND_URL
+      ? { endpoint: await getGraphQLEndpoint(), fetch: undefined }
+      : await getServerGraphQLTarget()
+    const response = await (target.fetch ?? fetch)(target.endpoint, {
+      method: 'POST',
+      headers: { 'apollo-require-preflight': 'true' },
+      body: form,
+      redirect: 'error',
+      cache: 'no-store',
+    })
+    const json = await response.json().catch(() => null) as { data?: { attachTradeInPhoto?: { ok: boolean; errorMessage?: string | null; count?: number | null } } } | null
+    const payload = json?.data?.attachTradeInPhoto
+    if (!payload?.ok) return { success: false, error: payload?.errorMessage || 'No pudimos subir la foto.' }
+    return { success: true, data: { count: Number(payload.count) || 0 } }
+  } catch {
+    return { success: false, error: 'No pudimos subir la foto.' }
+  }
 }

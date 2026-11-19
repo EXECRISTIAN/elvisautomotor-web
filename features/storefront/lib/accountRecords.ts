@@ -21,7 +21,7 @@ export function statusTone(status: string | null | undefined): Tone {
 
 export function statusLabel(status: string | null | undefined) {
   const label = String(status || '').trim().replaceAll('-', ' ').replaceAll('_', ' ')
-  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'Status unavailable'
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'Estado no disponible'
 }
 
 const ROUTE_PREFIX: Record<CustomerRequestKind, string> = {

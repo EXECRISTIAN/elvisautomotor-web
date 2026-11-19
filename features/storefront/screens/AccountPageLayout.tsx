@@ -6,11 +6,11 @@ import { AccountLayout } from '../components/account/AccountLayout'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
 
 // A plain string title here would drop the storefront's "%s | <store>" template for every account
-// page ("Sign in" with no store name), so the template is restated for this subtree.
+// page ("Iniciar sesión" with no store name), so the template is restated for this subtree.
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await loadStorefrontBusiness()
-  if (settings.status === 'error') return { title: 'Account' }
-  return { title: { default: 'Account', template: `%s | ${settings.business.shortName}` } }
+  if (settings.status === 'error') return { title: 'Cuenta' }
+  return { title: { default: 'Cuenta', template: `%s | ${settings.business.shortName}` } }
 }
 
 export async function AccountPageLayout({

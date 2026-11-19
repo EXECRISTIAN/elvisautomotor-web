@@ -8,9 +8,9 @@ import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 export function HomeContactPanel() {
   const business = useStorefrontBusiness()
   const hours = [
-    { label: 'Mon–Fri', value: business.hoursMonFri },
-    { label: 'Saturday', value: business.hoursSaturday },
-    { label: 'Sunday', value: business.hoursSunday },
+    { label: 'Lun–Vie', value: business.hoursMonFri },
+    { label: 'Sábado', value: business.hoursSaturday },
+    { label: 'Domingo', value: business.hoursSunday },
   ].filter((row) => row.value)
   const hasLocation = business.addressLine1 || business.addressLine2
 
@@ -27,16 +27,16 @@ export function HomeContactPanel() {
           <div className="mt-6 flex flex-wrap gap-2">
             {business.directionsHref && (
               <a href={business.directionsHref} target="_blank" rel="noreferrer" className="sf-btn sf-btn-primary">
-                Directions
+                Cómo llegar
                 <ArrowUpRight className="size-4" aria-hidden="true" />
               </a>
             )}
-            <Link href="/contact" className="sf-btn sf-btn-ghost">Message us</Link>
+            <Link href="/contact" className="sf-btn sf-btn-ghost">Escribinos</Link>
           </div>
         </div>
 
         <div className="min-w-0">
-          <h3 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Hours</h3>
+          <h3 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Horarios</h3>
           {hours.length > 0 ? (
             <dl className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
               {hours.map((row) => (
@@ -47,16 +47,16 @@ export function HomeContactPanel() {
               ))}
             </dl>
           ) : (
-            <p className="sf-muted text-[length:var(--sf-text-sm)]">Hours not listed</p>
+            <p className="sf-muted text-[length:var(--sf-text-sm)]">Horarios no informados</p>
           )}
         </div>
 
         <div className="min-w-0">
-          <h3 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Sales</h3>
+          <h3 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Ventas</h3>
           <dl className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
             {business.phoneHref && business.phoneDisplay && (
               <div className="flex items-baseline justify-between gap-4 border-b py-2.5 text-[length:var(--sf-text-sm)]" style={{ borderColor: 'var(--sf-rule)' }}>
-                <dt className="sf-muted">Phone</dt>
+                <dt className="sf-muted">Teléfono</dt>
                 <dd><a href={business.phoneHref} className="sf-figure sf-link">{business.phoneDisplay}</a></dd>
               </div>
             )}
@@ -68,7 +68,7 @@ export function HomeContactPanel() {
             )}
             {business.serviceEmail && (
               <div className="flex items-baseline justify-between gap-4 border-b py-2.5 text-[length:var(--sf-text-sm)]" style={{ borderColor: 'var(--sf-rule)' }}>
-                <dt className="sf-muted">Service</dt>
+                <dt className="sf-muted">Taller</dt>
                 <dd className="min-w-0 text-right"><a href={`mailto:${business.serviceEmail}`} className="sf-link break-all">{business.serviceEmail}</a></dd>
               </div>
             )}

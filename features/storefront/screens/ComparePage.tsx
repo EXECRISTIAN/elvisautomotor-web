@@ -28,17 +28,17 @@ const COMPARISON_FIELDS: {
   highlight: boolean
   mono?: boolean
 }[] = [
-  { label: 'Price', key: 'price', format: (v, currencyCode) => formatPrice(v.price, currencyCode), highlight: true, mono: true },
-  { label: 'Year', key: 'year', format: (v) => String(v.year), highlight: false, mono: true },
-  { label: 'Make', key: 'make', format: (v) => v.make, highlight: false },
-  { label: 'Model', key: 'model', format: (v) => v.model, highlight: false },
-  { label: 'Trim', key: 'trim', format: (v) => v.trim || '—', highlight: false },
-  { label: 'Mileage', key: 'mileage', format: (v) => formatMileage(v.mileage), highlight: true, mono: true },
-  { label: 'Condition', key: 'condition', format: (v) => (v.condition ? vehicleConditionLabel(v.condition) : '—'), highlight: false },
+  { label: 'Precio', key: 'price', format: (v, currencyCode) => formatPrice(v.price, currencyCode), highlight: true, mono: true },
+  { label: 'Año', key: 'year', format: (v) => String(v.year), highlight: false, mono: true },
+  { label: 'Marca', key: 'make', format: (v) => v.make, highlight: false },
+  { label: 'Modelo', key: 'model', format: (v) => v.model, highlight: false },
+  { label: 'Versión', key: 'trim', format: (v) => v.trim || '—', highlight: false },
+  { label: 'Kilometraje', key: 'mileage', format: (v) => formatMileage(v.mileage), highlight: true, mono: true },
+  { label: 'Condición', key: 'condition', format: (v) => (v.condition ? vehicleConditionLabel(v.condition) : '—'), highlight: false },
   { label: 'Color', key: 'color', format: (v) => v.color || '—', highlight: false },
-  { label: 'MPG city', key: 'mpgCity', format: (v) => String(v.features?.mpgCity ?? '—'), highlight: true, mono: true },
-  { label: 'MPG highway', key: 'mpgHighway', format: (v) => String(v.features?.mpgHighway ?? '—'), highlight: true, mono: true },
-  { label: 'VIN', key: 'vin', format: (v) => v.vin, highlight: false, mono: true },
+  { label: 'Consumo ciudad', key: 'mpgCity', format: (v) => String(v.features?.mpgCity ?? '—'), highlight: true, mono: true },
+  { label: 'Consumo ruta', key: 'mpgHighway', format: (v) => String(v.features?.mpgHighway ?? '—'), highlight: true, mono: true },
+  { label: 'Chasis (VIN)', key: 'vin', format: (v) => v.vin, highlight: false, mono: true },
   { label: 'Stock #', key: 'stockNumber', format: (v) => v.stockNumber, highlight: false, mono: true },
 ]
 
@@ -114,7 +114,7 @@ export function ComparePage() {
 
   const browseTrack = (
     <div className="flex flex-wrap gap-2">
-      <Link href="/inventory" className="sf-btn sf-btn-primary">Browse inventory</Link>
+      <Link href="/inventory" className="sf-btn sf-btn-primary">Ver inventario</Link>
     </div>
   )
 
@@ -124,7 +124,7 @@ export function ComparePage() {
         <li key={id} className="flex items-center justify-between gap-4 py-2" style={{ borderColor: 'var(--sf-rule)' }}>
           <span className="sf-title-line min-w-0">
             <span className="sf-dot" aria-hidden="true" />
-            <span className="truncate">Vehicle no longer available</span>
+            <span className="truncate">Vehículo ya no disponible</span>
           </span>
           <button type="button" onClick={() => removeFromComparison(id)} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10 shrink-0">
             <X className="size-4" aria-hidden="true" />
@@ -138,9 +138,9 @@ export function ComparePage() {
   if (loading) {
     return (
       <>
-        <PageHeader title="Compare vehicles" />
+        <PageHeader title="Comparar vehículos" />
         <Container className="py-[var(--sf-space-xl)]">
-          <div className="flex gap-4 overflow-hidden" aria-busy="true" aria-label="Loading comparison">
+          <div className="flex gap-4 overflow-hidden" aria-busy="true" aria-label="Cargando comparación">
             <div className="hidden w-32 shrink-0 space-y-3 sm:block">
               <div className="sf-skeleton h-56" />
               {Array.from({ length: 6 }).map((_, i) => <div key={i} className="sf-skeleton h-6" />)}
@@ -162,7 +162,7 @@ export function ComparePage() {
   if (loadError) {
     return (
       <>
-        <PageHeader title="Compare vehicles" />
+        <PageHeader title="Comparar vehículos" />
         <Container className="py-[var(--sf-space-xl)]">
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p role="alert" className="sf-title-line font-semibold">
@@ -171,9 +171,9 @@ export function ComparePage() {
             </p>
             <div className="flex shrink-0 flex-wrap gap-2">
               <button type="button" onClick={() => void loadComparisonVehicles()} className="sf-btn sf-btn-primary">
-                Retry
+                Reintentar
               </button>
-              <Link href="/inventory" className="sf-btn sf-btn-ghost">Browse inventory</Link>
+              <Link href="/inventory" className="sf-btn sf-btn-ghost">Ver inventario</Link>
             </div>
           </div>
         </Container>
@@ -184,7 +184,7 @@ export function ComparePage() {
   if (savedIds.length === 0) {
     return (
       <>
-        <PageHeader title="No vehicles to compare" />
+        <PageHeader title="No hay vehículos para comparar" />
         <Container className="py-[var(--sf-space-xl)]">
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="sf-title-line font-semibold">
@@ -201,7 +201,7 @@ export function ComparePage() {
   if (vehicles.length === 0) {
     return (
       <>
-        <PageHeader title="Vehicles no longer available" />
+        <PageHeader title="Vehículos ya no disponibles" />
         <Container className="py-[var(--sf-space-xl)]">
           <div className="sf-well p-6">
             <p className="sf-title-line font-semibold">
@@ -222,7 +222,7 @@ export function ComparePage() {
   return (
     <>
       <PageHeader
-        title="Compare vehicles"
+        title="Comparar vehículos"
         description={`${vehicles.length} of 4 ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}`}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -240,20 +240,20 @@ export function ComparePage() {
       <Container className="py-[var(--sf-space-lg)] md:py-[var(--sf-space-xl)]">
         {unavailableIds.length > 0 && (
           <div className="sf-notice mb-6" data-tone="warn" role="status">
-            <p className="font-semibold">Some vehicles are no longer available.</p>
+            <p className="font-semibold">Algunos vehículos ya no están disponibles.</p>
             {unavailableList}
           </div>
         )}
 
         <div className="mb-3 flex items-center justify-end gap-2">
-          <span className="sf-chip sf-best">Best value</span>
+          <span className="sf-chip sf-best">Mejor valor</span>
         </div>
 
         <div
           className="sf-panel overflow-x-auto overscroll-x-contain"
           style={{ borderColor: 'var(--sf-rule)' }}
           role="region"
-          aria-label="Comparison table"
+          aria-label="Tabla comparativa"
           tabIndex={0}
         >
           <table className="w-full border-collapse text-[length:var(--sf-text-sm)]">
@@ -316,7 +316,7 @@ export function ComparePage() {
                         className={`px-3 py-3 sm:px-4 ${field.mono ? 'sf-figure' : ''} ${field.key === 'vin' ? 'break-all text-[length:var(--sf-text-xs)]' : ''} ${best}`}
                       >
                         {field.format(vehicle, currencyCode)}
-                        {best && <span className="sr-only"> (best)</span>}
+                        {best && <span className="sr-only"> (mejor)</span>}
                       </td>
                     )
                   })}
@@ -325,7 +325,7 @@ export function ComparePage() {
 
               <tr className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
                 <th scope="row" className={`${stickyCell} py-3`} style={stickyStyle}>
-                  <span className="sf-eyebrow">Description</span>
+                  <span className="sf-eyebrow">Descripción</span>
                 </th>
                 {vehicles.map((vehicle) => (
                   <td key={vehicle.id} className="sf-muted px-3 py-3 align-top leading-relaxed sm:px-4">
@@ -336,7 +336,7 @@ export function ComparePage() {
 
               <tr className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
                 <th scope="row" className={`${stickyCell} py-4`} style={stickyStyle}>
-                  <span className="sf-eyebrow">Actions</span>
+                  <span className="sf-eyebrow">Acciones</span>
                 </th>
                 {vehicles.map((vehicle) => (
                   <td key={vehicle.id} className="px-3 py-4 sm:px-4">
@@ -345,7 +345,7 @@ export function ComparePage() {
                         View
                       </Link>
                       <Link href={`/test-drive?vehicleId=${vehicle.id}`} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">
-                        Test drive
+                        Prueba de manejo
                       </Link>
                     </div>
                   </td>

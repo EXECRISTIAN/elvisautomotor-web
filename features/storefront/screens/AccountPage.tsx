@@ -35,10 +35,10 @@ function isScheduledKind(item: CustomerRequest) {
 }
 
 const NEW_REQUESTS = [
-  { href: '/test-drive', label: 'Test drive' },
-  { href: '/service', label: 'Service' },
-  { href: '/trade-in', label: 'Trade-in' },
-  { href: '/financing', label: 'Financing' },
+  { href: '/test-drive', label: 'Prueba de manejo' },
+  { href: '/service', label: 'Taller' },
+  { href: '/trade-in', label: 'Usado' },
+  { href: '/financing', label: 'Financiación' },
 ]
 
 export async function AccountPage() {
@@ -49,12 +49,12 @@ export async function AccountPage() {
       <div role="alert" className="mx-auto max-w-md py-[var(--sf-space-lg)]">
         <h1 className="sf-title-line">
           <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-          <span className="sf-heading text-[length:var(--sf-text-2xl)]">Account unavailable</span>
+          <span className="sf-heading text-[length:var(--sf-text-2xl)]">Cuenta no disponible</span>
         </h1>
-        <p className="sf-muted mt-3">We couldn&apos;t load your account. Please try again.</p>
+        <p className="sf-muted mt-3">No pudimos cargar tu cuenta. Intentá de nuevo.</p>
         <div className="mt-6 flex flex-wrap gap-2">
-          <Link href="/account" prefetch={false} className="sf-btn sf-btn-primary">Retry</Link>
-          <Link href="/inventory" className="sf-btn sf-btn-ghost">Back to inventory</Link>
+          <Link href="/account" prefetch={false} className="sf-btn sf-btn-primary">Reintentar</Link>
+          <Link href="/inventory" className="sf-btn sf-btn-ghost">Volver al inventario</Link>
         </div>
       </div>
     )
@@ -70,7 +70,7 @@ export async function AccountPage() {
   return (
     <section>
       <header className="border-b pb-[var(--sf-space-md)]" style={{ borderColor: 'var(--sf-rule)' }}>
-        <h1 className="sf-display text-[length:var(--sf-text-display)]">{customer.name || 'Account'}</h1>
+        <h1 className="sf-display text-[length:var(--sf-text-display)]">{customer.name || 'Cuenta'}</h1>
         {customer.email && <p className="sf-muted mt-2 break-all">{customer.email}</p>}
       </header>
 
@@ -79,7 +79,7 @@ export async function AccountPage() {
       {counts.length > 0 && (
         <dl className="sf-spec grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))]">
           <div>
-            <dt>Requests</dt>
+            <dt>Solicitudes</dt>
             <dd className="sf-figure text-[length:var(--sf-text-xl)]">{history?.length ?? 0}</dd>
           </div>
           {counts.map(([kind, count]) => (
@@ -92,8 +92,8 @@ export async function AccountPage() {
       )}
 
       <div className="mt-[var(--sf-space-xl)] flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <h2 className="sf-heading text-[length:var(--sf-text-xl)]">Request history</h2>
-        <nav className="flex flex-wrap gap-2" aria-label="New request">
+        <h2 className="sf-heading text-[length:var(--sf-text-xl)]">Historial de solicitudes</h2>
+        <nav className="flex flex-wrap gap-2" aria-label="Nueva solicitud">
           {NEW_REQUESTS.map((link) => (
             <Link
               key={link.href}
@@ -108,10 +108,10 @@ export async function AccountPage() {
 
       <div className="mt-5">
         {history === null ? (
-          <div className="sf-notice" data-tone="bad" role="alert">Request history couldn&apos;t be loaded.</div>
+          <div className="sf-notice" data-tone="bad" role="alert">No pudimos cargar el historial.</div>
         ) : history.length === 0 ? (
           <div className="sf-well p-6">
-            <p className="sf-muted text-[length:var(--sf-text-sm)]">No requests yet.</p>
+            <p className="sf-muted text-[length:var(--sf-text-sm)]">Todavía no hiciste solicitudes.</p>
           </div>
         ) : (
           <ul className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
@@ -130,7 +130,7 @@ export async function AccountPage() {
                     </h3>
                     {item.vehicle && <p className="mt-1 pl-4 text-[length:var(--sf-text-sm)]">{item.vehicle}</p>}
                     <p className="sf-muted mt-1 pl-4 text-[length:var(--sf-text-sm)]">
-                      {isScheduledKind(item) ? 'Requested time' : 'Submitted'}{' '}
+                      {isScheduledKind(item) ? 'Horario solicitado' : 'Enviada'}{' '}
                       <time dateTime={item.scheduledAt} className="sf-figure text-[var(--sf-ink)]">
                         {formatDateTime(item.scheduledAt, item.timezone)}
                       </time>
