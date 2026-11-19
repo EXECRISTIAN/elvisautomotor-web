@@ -7,7 +7,7 @@ export async function getDealershipTimeZone(): Promise<string> {
   const timeZone = response.success ? response.data?.storefrontProfile?.timezone : null
   if (!timeZone) return DEFAULT_DEALERSHIP_TIME_ZONE
   try {
-    new Intl.DateTimeFormat('en-US', { timeZone })
+    new Intl.DateTimeFormat('es-AR', { timeZone })
     return timeZone
   } catch {
     return DEFAULT_DEALERSHIP_TIME_ZONE

@@ -142,8 +142,8 @@ export function ApiKeysPageClient({ data, timeZone }: { data: ApiKeysData; timeZ
     .sort((a, b) => Date.parse(a.expiresAt || '') - Date.parse(b.expiresAt || ''))
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'page' as const, label: 'API keys' },
   ]
 

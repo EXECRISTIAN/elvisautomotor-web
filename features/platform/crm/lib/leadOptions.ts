@@ -87,7 +87,7 @@ export function toZonedInputValue(value: string | number | Date, timeZone: strin
 
 function zoneOffsetMs(instant: number, timeZone: string) {
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
+    new Intl.DateTimeFormat('es-AR', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
       .formatToParts(new Date(instant))
       .map(part => [part.type, part.value]),
   )
@@ -117,12 +117,12 @@ export function zonedDayBounds(timeZone: string, now = Date.now()) {
 
 export function formatDateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function formatDay(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function personName(first: string | null | undefined, last: string | null | undefined, fallback = 'Unnamed') {

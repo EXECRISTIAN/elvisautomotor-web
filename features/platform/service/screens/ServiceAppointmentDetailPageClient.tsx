@@ -74,8 +74,8 @@ export function ServiceAppointmentDetailPageClient({
   }
 
   const breadcrumbs = (label: string) => [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Service', href: `${basePath}/platform/service` },
     { type: 'page' as const, label },
   ]
@@ -353,7 +353,7 @@ export function ServiceAppointmentDetailPageClient({
                   lead?.email ? { label: 'Email', value: lead.email } : null,
                   { label: 'Vehicle', value: vehicle },
                   appointment.vehicleVin ? { label: 'VIN', value: appointment.vehicleVin, mono: true } : null,
-                  appointment.mileageIn != null ? { label: 'Mileage in', value: appointment.mileageIn.toLocaleString('en-US'), mono: true } : null,
+                  appointment.mileageIn != null ? { label: 'Mileage in', value: appointment.mileageIn.toLocaleString('es-AR'), mono: true } : null,
                 ]}
               />
             </DeskSection>

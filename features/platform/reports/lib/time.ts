@@ -2,7 +2,7 @@
 
 function zoneOffsetMs(instant: number, timeZone: string) {
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    new Intl.DateTimeFormat('es-AR', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
       .formatToParts(new Date(instant))
       .map(part => [part.type, part.value]),
   )
@@ -21,7 +21,7 @@ export function zonedDayStart(date: string, timeZone: string, addDays = 0) {
 
 export function formatDateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function formatAge(value: string | null | undefined, now = Date.now()) {

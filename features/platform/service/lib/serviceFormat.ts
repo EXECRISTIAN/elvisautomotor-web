@@ -1,10 +1,10 @@
 export function formatCents(cents: number | null | undefined) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format((cents || 0) / 100)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 }).format((cents || 0) / 100)
 }
 
 export function formatDateTime(value: string | null | undefined, timeZone: string, empty = 'Unscheduled') {
   if (!value) return empty
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }
 
 /** "1.5" -> 1.5; null when it is not a positive quantity the line commands accept. */
@@ -30,7 +30,7 @@ export function formatQuantity(value: number) {
 /** Time of day only, in dealership time: "9:30 AM". */
 export function formatTime(value: string | null | undefined, timeZone: string, empty = '—') {
   if (!value) return empty
-  return new Date(value).toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleTimeString('es-AR', { timeZone, hour: 'numeric', minute: '2-digit' })
 }
 
 /** Elapsed time since a timestamp as a short figure: "45m", "6h", "3d". */

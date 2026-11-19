@@ -98,7 +98,7 @@ export const US_TIME_ZONES = [
 export function isValidTimeZone(value: string) {
   if (!value) return false
   try {
-    new Intl.DateTimeFormat('en-US', { timeZone: value })
+    new Intl.DateTimeFormat('es-AR', { timeZone: value })
     return true
   } catch {
     return false

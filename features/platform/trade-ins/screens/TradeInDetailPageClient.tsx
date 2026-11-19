@@ -291,9 +291,9 @@ export function TradeInDetailPageClient({
   }
 
   const breadcrumbs = (label: string) => [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Trade-Ins', href: `${basePath}/platform/trade-ins` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Usados ofrecidos', href: `${basePath}/platform/trade-ins` },
     { type: 'page' as const, label },
   ]
 
@@ -401,7 +401,7 @@ export function TradeInDetailPageClient({
   }
 
   const formatDateTime = (value: string | null | undefined) =>
-    value ? new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '-'
+    value ? new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '-'
 
   return (
     <PageContainer title={title} header={header} breadcrumbs={breadcrumbs(title)}>

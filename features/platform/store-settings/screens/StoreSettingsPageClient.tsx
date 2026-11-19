@@ -51,15 +51,12 @@ const EMPTY_SETTINGS: DealershipStoreSettings = {
   timezone: '',
 }
 
+const SHOW_OPENFRONT_LOGO_PICKER = false
+
 const US_TIME_ZONES = [
-  { value: 'America/New_York', label: 'Eastern (New York)' },
-  { value: 'America/Chicago', label: 'Central (Chicago)' },
-  { value: 'America/Denver', label: 'Mountain (Denver)' },
-  { value: 'America/Phoenix', label: 'Mountain, no DST (Phoenix)' },
-  { value: 'America/Los_Angeles', label: 'Pacific (Los Angeles)' },
-  { value: 'America/Anchorage', label: 'Alaska (Anchorage)' },
-  { value: 'Pacific/Honolulu', label: 'Hawaii (Honolulu)' },
-  { value: 'America/Puerto_Rico', label: 'Atlantic (Puerto Rico)' },
+  { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (Argentina)' },
+  { value: 'America/Argentina/Cordoba', label: 'Córdoba (Argentina)' },
+  { value: 'America/Argentina/Mendoza', label: 'Mendoza (Argentina)' },
 ]
 
 function otherTimeZones(current: string) {
@@ -79,19 +76,19 @@ function TimezoneSelect({ value, onChange, disabled }: { value: string; onChange
   const others = useMemo(() => otherTimeZones(value), [value])
   return (
     <div className="min-w-0 space-y-1.5">
-      <Label htmlFor="store-settings-timezone" className={labelClass}>Timezone</Label>
+      <Label htmlFor="store-settings-timezone" className={labelClass}>Zona horaria</Label>
       <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="store-settings-timezone" className="h-10 w-full rounded-[4px]" aria-label="Timezone">
-          <SelectValue placeholder={disabled ? 'Unavailable' : 'Select timezone'} />
+        <SelectTrigger id="store-settings-timezone" className="h-10 w-full rounded-[4px]" aria-label="Zona horaria">
+          <SelectValue placeholder={disabled ? 'No disponible' : 'Elegí la zona horaria'} />
         </SelectTrigger>
         <SelectContent className="max-h-[min(420px,var(--radix-select-content-available-height))]">
           <SelectGroup>
-            <SelectLabel>United States</SelectLabel>
+            <SelectLabel>Argentina</SelectLabel>
             {US_TIME_ZONES.map(zone => <SelectItem key={zone.value} value={zone.value}>{zone.label}</SelectItem>)}
           </SelectGroup>
           <SelectSeparator />
           <SelectGroup>
-            <SelectLabel>All zones</SelectLabel>
+            <SelectLabel>Todas las zonas</SelectLabel>
             {others.map(zone => <SelectItem key={zone.value} value={zone.value}>{zone.label}</SelectItem>)}
           </SelectGroup>
         </SelectContent>
@@ -203,7 +200,7 @@ export function StoreSettingsPageClient({
         setWarning(result.warning)
         toast.error(result.warning)
       } else {
-        toast.success('Store settings saved')
+        toast.success('Configuración guardada')
       }
     } else if (!result.success) {
       setError(result.error)
@@ -224,54 +221,53 @@ export function StoreSettingsPageClient({
 
   // Needs you: the details shoppers look for first, still blank. Required ones first.
   const missing = [
-    { label: 'Dealership name', value: form.name, required: true },
-    { label: 'Short name', value: form.shortName, required: true },
-    { label: 'Phone', value: form.phone },
-    { label: 'Sales email', value: form.salesEmail },
-    { label: 'Service email', value: form.serviceEmail },
-    { label: 'Monday–Friday', value: form.hoursMonFri, display: 'Weekday hours' },
-    { label: 'Saturday', value: form.hoursSaturday, display: 'Saturday hours' },
-    { label: 'Address line 1', value: form.addressLine1, display: 'Street address' },
-    { label: 'City', value: form.city },
-    { label: 'State', value: form.state },
-    { label: 'Postal code', value: form.postalCode },
+    { label: 'Nombre del negocio (razón social)', value: form.name, required: true },
+    { label: 'Nombre corto', value: form.shortName, required: true },
+    { label: 'Teléfono', value: form.phone },
+    { label: 'Email de ventas', value: form.salesEmail },
+    { label: 'Lunes a viernes', value: form.hoursMonFri, display: 'Horario de lunes a viernes' },
+    { label: 'Sábado', value: form.hoursSaturday, display: 'Horario del sábado' },
+    { label: 'Dirección', value: form.addressLine1, display: 'Dirección' },
+    { label: 'Ciudad', value: form.city },
+    { label: 'Provincia', value: form.state },
+    { label: 'Código postal', value: form.postalCode },
   ].filter(item => !item.value.trim())
 
   const saveButton = (
     <Pill variant="primary" className="max-sm:h-10" onClick={save} disabled={isSaving || Boolean(initialError) || invalidMark || invalidDealDefaults}>
       <Save />
-      {isSaving ? 'Saving…' : 'Save settings'}
+      {isSaving ? 'Guardando…' : 'Guardar configuración'}
     </Pill>
   )
 
-  const stateWord = initialError ? 'Unavailable' : !initialSettings ? 'Not set up' : missing.length ? `${countLabel(missing.length, 'detail')} missing` : 'Set up'
+  const stateWord = initialError ? 'No disponible' : !initialSettings ? 'Sin configurar' : missing.length ? `Faltan ${countLabel(missing.length, 'dato', 'datos')}` : 'Configurado'
 
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto min-w-0 max-w-5xl space-y-8 px-4 pb-24 pt-6 md:px-6 md:pb-6">
         <DeskHeader
-          title="Store settings"
+          title="Configuración del negocio"
           status={stateWord}
           meta={[stateWord, form.name || null, form.currencyCode || null].filter(Boolean).join(' · ')}
           actions={<div className="hidden md:block">{saveButton}</div>}
         />
 
         {!initialSettings && !initialError ? (
-          <Notice tone="warn">Add a dealership name and short name to publish the storefront.</Notice>
+          <Notice tone="warn">Completá el nombre del negocio y el nombre corto para publicar la web.</Notice>
         ) : null}
 
         {warning ? <Notice tone="warn">{warning}</Notice> : null}
 
         {error ? (
           <Notice tone="bad">
-            <p className="font-medium">Settings were not saved</p>
+            <p className="font-medium">No se guardó la configuración</p>
             <p className="mt-0.5">{error}</p>
           </Notice>
         ) : null}
 
         {!initialError && missing.length > 0 ? (
-          <DeskSection title="Missing" count={missing.length} id="store-settings-missing">
+          <DeskSection title="Falta" count={missing.length} id="store-settings-missing">
             <ul className="flex flex-wrap gap-x-2 gap-y-2" aria-labelledby="store-settings-missing">
               {missing.map(item => (
                 <li key={item.label}>
@@ -280,7 +276,7 @@ export function StoreSettingsPageClient({
                     className="inline-flex min-h-10 items-center gap-2 rounded-[4px] border bg-card px-3 text-sm text-foreground hover:bg-muted sm:min-h-8"
                   >
                     {item.display || item.label}
-                    <Status tone={item.required ? 'bad' : 'warn'} className="text-xs">{item.required ? 'Required' : 'Blank'}</Status>
+                    <Status tone={item.required ? 'bad' : 'warn'} className="text-xs">{item.required ? 'Obligatorio' : 'Vacío'}</Status>
                   </a>
                 </li>
               ))}
@@ -289,38 +285,38 @@ export function StoreSettingsPageClient({
         ) : null}
 
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <Section title="Dealership">
+          <Section title="Negocio">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Dealership name" value={form.name} onChange={value => update('name', value)} required />
-              <Field label="Short name" value={form.shortName} onChange={value => update('shortName', value)} required />
+              <Field label="Nombre del negocio (razón social)" value={form.name} onChange={value => update('name', value)} required />
+              <Field label="Nombre corto" value={form.shortName} onChange={value => update('shortName', value)} required />
             </div>
           </Section>
 
-          <Section title="Contact">
+          <Section title="Contacto">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone" type="tel" value={form.phone} onChange={value => update('phone', value)} />
+              <Field label="Teléfono" type="tel" value={form.phone} onChange={value => update('phone', value)} />
               <Field label="WhatsApp (con código de país)" type="tel" value={form.whatsappNumber} onChange={value => update('whatsappNumber', value)} placeholder="5491122334455" />
-              <Field label="Sales email" type="email" value={form.salesEmail} onChange={value => update('salesEmail', value)} />
-              <Field label="Service email" type="email" value={form.serviceEmail} onChange={value => update('serviceEmail', value)} />
-              <Field label="Website URL" type="url" value={form.websiteUrl} onChange={value => update('websiteUrl', value)} placeholder="https://example.com" />
+              <Field label="Email de ventas" type="email" value={form.salesEmail} onChange={value => update('salesEmail', value)} />
+              
+              <Field label="Sitio web" type="url" value={form.websiteUrl} onChange={value => update('websiteUrl', value)} placeholder="https://www.elvisautomotores.com" />
             </div>
           </Section>
 
-          <Section title="Hours">
+          <Section title="Horarios">
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Monday–Friday" value={form.hoursMonFri} onChange={value => update('hoursMonFri', value)} />
-              <Field label="Saturday" value={form.hoursSaturday} onChange={value => update('hoursSaturday', value)} />
-              <Field label="Sunday" value={form.hoursSunday} onChange={value => update('hoursSunday', value)} />
+              <Field label="Lunes a viernes" value={form.hoursMonFri} onChange={value => update('hoursMonFri', value)} />
+              <Field label="Sábado" value={form.hoursSaturday} onChange={value => update('hoursSaturday', value)} />
+              <Field label="Domingo" value={form.hoursSunday} onChange={value => update('hoursSunday', value)} />
             </div>
           </Section>
 
-          <Section title="Address">
-            <Field label="Address line 1" value={form.addressLine1} onChange={value => update('addressLine1', value)} />
-            <Field label="Address line 2" value={form.addressLine2} onChange={value => update('addressLine2', value)} />
+          <Section title="Dirección">
+            <Field label="Dirección" value={form.addressLine1} onChange={value => update('addressLine1', value)} />
+            <Field label="Dirección (línea 2)" value={form.addressLine2} onChange={value => update('addressLine2', value)} />
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="City" value={form.city} onChange={value => update('city', value)} />
-              <Field label="State" value={form.state} onChange={value => update('state', value)} />
-              <Field label="Postal code" value={form.postalCode} onChange={value => update('postalCode', value)} />
+              <Field label="Ciudad" value={form.city} onChange={value => update('city', value)} />
+              <Field label="Provincia" value={form.state} onChange={value => update('state', value)} />
+              <Field label="Código postal" value={form.postalCode} onChange={value => update('postalCode', value)} />
             </div>
             <div className="sm:max-w-sm">
               <TimezoneSelect value={form.timezone} onChange={value => update('timezone', value)} disabled={Boolean(initialSettings) && !initialSettings?.timezone} />
@@ -328,11 +324,17 @@ export function StoreSettingsPageClient({
           </Section>
         </div>
 
-        <Section title="Branding">
+        {/* Elvis Automotores: el logo AE está integrado en el diseño del sitio, así que el selector de ícono
+            de Openfront no se muestra (no tendría efecto). Se conserva el código por si se reutiliza. */}
+        <Section title="Marca">
+          <p className="text-sm text-muted-foreground">El logo de Elvis Automotores (isotipo AE + logotipo) está integrado en el diseño del sitio.</p>
+        </Section>
+        {SHOW_OPENFRONT_LOGO_PICKER && (
+        <Section title="Ícono (Openfront)">
           <div className="space-y-6">
           {/* Logo Icon Selector */}
           <div>
-            <Label>Logo Icon</Label>
+            <Label>Ícono del logo</Label>
             <div className="mt-2 flex items-center gap-2">
               <Select
                 value={selectedIcon?.id || ''}
@@ -387,7 +389,7 @@ export function StoreSettingsPageClient({
                 <PopoverContent className="w-[min(500px,calc(100vw-2rem))]" align="start">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Edit SVG Code</h4>
+                      <h4 className="font-medium mb-2">Editar código SVG</h4>
                       <p className="text-sm text-muted-foreground mb-4">
                         Edit the SVG code directly. Changes will be reflected in the icon preview.
                       </p>
@@ -399,7 +401,7 @@ export function StoreSettingsPageClient({
                       placeholder="<svg>...</svg>"
                     />
                     <div className="flex items-center gap-2">
-                      <div className="text-sm text-muted-foreground">Preview:</div>
+                      <div className="text-sm text-muted-foreground">Vista previa:</div>
                       <div
                         dangerouslySetInnerHTML={{ __html: logoIcon }}
                         style={{ filter: `hue-rotate(${logoColor}deg)` }}
@@ -414,7 +416,7 @@ export function StoreSettingsPageClient({
 
           {/* Logo Color Selector */}
           <div>
-            <Label>Logo Color</Label>
+            <Label>Color del logo</Label>
             <div className="mt-2">
               <Select
                 value={logoColor}
@@ -456,14 +458,15 @@ export function StoreSettingsPageClient({
             </div>
           </div>
           </div>
-          {invalidMark ? <Notice tone="bad">Invalid or unsupported SVG.</Notice> : null}
+          {invalidMark ? <Notice tone="bad">SVG inválido o no compatible.</Notice> : null}
         </Section>
+        )}
 
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <Section title="Storefront">
-            <Field label="Homepage title" value={form.homepageTitle} onChange={value => update('homepageTitle', value)} placeholder="Inventory and service" />
+          <Section title="Página web">
+            <Field label="Título de la página principal" value={form.homepageTitle} onChange={value => update('homepageTitle', value)} placeholder="Tu próximo auto, más cerca." />
             <div className="space-y-1.5">
-              <Label htmlFor="store-settings-homepage-description" className={labelClass}>Description</Label>
+              <Label htmlFor="store-settings-homepage-description" className={labelClass}>Descripción</Label>
               <Textarea
                 id="store-settings-homepage-description"
                 className="rounded-[4px]"
@@ -475,16 +478,16 @@ export function StoreSettingsPageClient({
           </Section>
 
           <div className="min-w-0 space-y-8">
-            <Section title="Deal defaults">
+            <Section title="Valores por defecto de operaciones">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Sales tax rate (%)" inputMode="decimal" className="text-right tabular-nums" value={taxRateText} onChange={setTaxRateText} placeholder="0" error={salesTaxRateBps === null ? TAX_RATE_ERROR : null} />
-                <Field label="Documentation fee ($)" inputMode="decimal" className="text-right tabular-nums" value={docFeeText} onChange={setDocFeeText} placeholder="0" error={docFeeCents === null ? DOC_FEE_ERROR : null} />
+                <Field label="Impuesto sobre ventas (%)" inputMode="decimal" className="text-right tabular-nums" value={taxRateText} onChange={setTaxRateText} placeholder="0" error={salesTaxRateBps === null ? TAX_RATE_ERROR : null} />
+                <Field label="Gastos de gestoría ($)" inputMode="decimal" className="text-right tabular-nums" value={docFeeText} onChange={setDocFeeText} placeholder="0" error={docFeeCents === null ? DOC_FEE_ERROR : null} />
               </div>
             </Section>
 
-            <Section title="Currency">
+            <Section title="Moneda">
               <div className="max-w-[12rem]">
-                <Field label="Currency code" value={form.currencyCode} onChange={value => update('currencyCode', value.toUpperCase())} required />
+                <Field label="Código de moneda (ARS)" value={form.currencyCode} onChange={value => update('currencyCode', value.toUpperCase())} required />
               </div>
             </Section>
           </div>

@@ -59,8 +59,8 @@ export function PaymentDetailPageClient({
   }, [id])
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Payments', href: `${basePath}/platform/payments` },
     { type: 'page' as const, label: recordReference('PAY', id) || 'Payment' },
   ]

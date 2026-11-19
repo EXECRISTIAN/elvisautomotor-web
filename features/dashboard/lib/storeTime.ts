@@ -9,7 +9,7 @@ export type StoreTimeStyle = 'datetime' | 'long' | 'date' | 'dateLong'
 export function isValidTimeZone(timeZone: unknown): timeZone is string {
   if (typeof timeZone !== 'string' || !timeZone.trim()) return false
   try {
-    new Intl.DateTimeFormat('en-US', { timeZone })
+    new Intl.DateTimeFormat('es-AR', { timeZone })
     return true
   } catch {
     return false
@@ -40,7 +40,7 @@ export function formatInZone(
   if (date == null || date === '') return ''
   const d = date instanceof Date ? date : new Date(date)
   if (Number.isNaN(d.getTime())) return ''
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('es-AR', {
     ...STYLE_OPTIONS[style],
     timeZone: resolveTimeZone(timeZone),
   }).format(d)
@@ -57,7 +57,7 @@ export type ZonedParts = {
 
 /** Wall-clock parts of an instant in the given zone. */
 export function getZonedParts(date: Date, timeZone?: string | null): ZonedParts {
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const parts = new Intl.DateTimeFormat('es-AR', {
     timeZone: resolveTimeZone(timeZone),
     hourCycle: 'h23',
     year: 'numeric',

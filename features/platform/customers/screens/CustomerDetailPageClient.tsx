@@ -41,7 +41,7 @@ function vehicleName(vehicle: VehicleRef) {
 
 function money(value: number | null | undefined) {
   if (value == null) return '-'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value)
 }
 
 const label = (value: string | null | undefined) => (value ? value.replaceAll('-', ' ') : '-')
@@ -131,9 +131,9 @@ export function CustomerDetailPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Customers', href: `${basePath}/platform/customers` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Clientes', href: `${basePath}/platform/customers` },
     { type: 'page' as const, label: customer ? personName(customer.firstName, customer.lastName) : 'Customer' },
   ]
 
@@ -366,7 +366,7 @@ export function CustomerDetailPageClient({
                     <div key={tradeIn.id} className="flex min-w-0 items-start justify-between gap-3 px-4 py-2.5">
                       <div className="min-w-0">
                         <TitleLine as="p" tone={tradeIn.offerAmount != null ? 'ok' : 'warn'} status={tradeIn.offerAmount != null ? 'Appraised' : 'Awaiting appraisal'} className="text-sm font-medium">{vehicleName(tradeIn)}</TitleLine>
-                        <p className="pl-4 text-xs text-muted-foreground">{[tradeIn.mileage != null ? `${tradeIn.mileage.toLocaleString('en-US')} mi` : null, `Submitted ${formatDay(tradeIn.createdAt, timeZone)}`, tradeIn.offerAmount != null ? 'Appraised' : 'Awaiting appraisal'].filter(Boolean).join(' · ')}</p>
+                        <p className="pl-4 text-xs text-muted-foreground">{[tradeIn.mileage != null ? `${tradeIn.mileage.toLocaleString('es-AR')} km` : null, `Submitted ${formatDay(tradeIn.createdAt, timeZone)}`, tradeIn.offerAmount != null ? 'Appraised' : 'Awaiting appraisal'].filter(Boolean).join(' · ')}</p>
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-medium tabular-nums">{money(tradeIn.offerAmount)}</p>

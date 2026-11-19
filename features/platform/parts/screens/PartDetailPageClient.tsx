@@ -143,7 +143,7 @@ export function PartDetailPageClient({
   const visibleMovements = ledgerFilter === 'all' ? movements : movements.filter(movement => LEDGER_GROUP[movement.movementType] === ledgerFilter)
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'link' as const, label: 'Parts', href: `${basePath}/platform/parts` },
     { type: 'page' as const, label: part?.partNumber || 'Part' },
   ]

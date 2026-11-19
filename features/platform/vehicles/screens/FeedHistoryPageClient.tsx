@@ -168,9 +168,9 @@ export function FeedHistoryPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Inventory', href: VEHICLES_HREF },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Inventario', href: VEHICLES_HREF },
     { type: 'page' as const, label: 'Feed' },
   ]
   const header = (

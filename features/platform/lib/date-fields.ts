@@ -19,7 +19,7 @@ export function parseDateKey(value: string | null | undefined) {
 /** "Nov 4, 2026" for a "yyyy-MM-dd" key; "" when invalid. */
 export function formatDateKey(value: string) {
   const date = parseDateKey(value);
-  return date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date) : "";
+  return date ? new Intl.DateTimeFormat("es-AR", { month: "short", day: "numeric", year: "numeric" }).format(date) : "";
 }
 
 /** "7:30 AM" for "07:30"; the input unchanged when it is not HH:mm. */

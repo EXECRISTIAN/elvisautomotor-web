@@ -16,9 +16,9 @@ export async function StoreSettingsPage() {
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <PageBreadcrumbs
         items={[
-          { type: 'link', label: 'Dashboard', href: '/' },
-          { type: 'page', label: 'Platform' },
-          { type: 'page', label: 'Store Settings' },
+          { type: 'link', label: 'Inicio', href: '/' },
+          { type: 'page', label: 'Gestión' },
+          { type: 'page', label: 'Configuración' },
         ]}
       />
       <StoreSettingsPageClient

@@ -138,12 +138,12 @@ export const MOVEMENT_LABEL: Record<string, string> = {
 
 export function formatCents(cents: number | null | undefined) {
   if (cents == null) return '-'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(cents) / 100)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(cents) / 100)
 }
 
 export function formatDateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function repairOrderLabel(order: OpenRepairOrder) {

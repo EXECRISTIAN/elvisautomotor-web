@@ -36,7 +36,7 @@ const AGED_UNIT_DAYS = 60
 
 const AREA_OPTIONS = [
   { value: 'sales', label: 'Sales' },
-  { value: 'inventory', label: 'Inventory' },
+  { value: 'inventory', label: 'Inventario' },
   { value: 'service', label: 'Service' },
 ] as const
 
@@ -132,15 +132,15 @@ export function AnalyticsDashboardPageClient({ initialData, timeZone }: { initia
   const { sales: salesMetrics, inventory: inventoryMetrics, service: serviceMetrics, operations, currencyCode, error } = data
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 }).format(value)
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 }).format(value)
   }
-  const compactCurrency = new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, notation: 'compact', maximumFractionDigits: 0 })
+  const compactCurrency = new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, notation: 'compact', maximumFractionDigits: 0 })
   const platform = `${basePath}/platform`
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Analytics' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Estadísticas' },
   ]
 
   const exceptions = operations?.exceptions?.total || 0
@@ -184,7 +184,7 @@ export function AnalyticsDashboardPageClient({ initialData, timeZone }: { initia
         error
           ? 'Unavailable'
           : operations?.generatedAt
-            ? `${currentKey ? `${monthLabel(currentKey)} to date` : 'Month to date'} · Updated ${new Date(operations.generatedAt).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+            ? `${currentKey ? `${monthLabel(currentKey)} to date` : 'Month to date'} · Updated ${new Date(operations.generatedAt).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
             : undefined
       }
       actions={

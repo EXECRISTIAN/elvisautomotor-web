@@ -333,8 +333,8 @@ export function PaymentsPageClient({
   ]
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'page' as const, label: 'Payments' },
   ]
 

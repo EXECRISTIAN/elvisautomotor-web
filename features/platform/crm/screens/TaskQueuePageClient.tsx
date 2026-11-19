@@ -122,9 +122,9 @@ export function TaskQueuePageClient({
   const canComplete = viewer?.canManageTasks === true
   const counts = data?.counts
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'CRM', href: `${basePath}/platform/crm` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Consultas', href: `${basePath}/platform/crm` },
     { type: 'page' as const, label: 'Tasks' },
   ]
 
@@ -198,7 +198,7 @@ export function TaskQueuePageClient({
                               <span className="block text-xs text-muted-foreground">overdue</span>
                             </>
                           ) : (
-                            <Figure size="sm">{task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' }) : '-'}</Figure>
+                            <Figure size="sm">{task.dueDate ? new Date(task.dueDate).toLocaleTimeString('es-AR', { timeZone, hour: 'numeric', minute: '2-digit' }) : '-'}</Figure>
                           )}
                         </Td>
                         <Td className="min-w-0">

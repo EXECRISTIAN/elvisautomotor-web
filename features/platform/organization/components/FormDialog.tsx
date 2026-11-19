@@ -98,10 +98,10 @@ export function newIdempotencyKey(prefix: string) {
 
 export function formatWhen(value: string | null | undefined, timeZone: string) {
   if (!value) return ''
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function formatDate(value: string | null | undefined, timeZone: string) {
   if (!value) return ''
-  return new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
 }

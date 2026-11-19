@@ -5,14 +5,9 @@ export function countLabel(count: number, singular: string, plural = `${singular
   return `${count} ${count === 1 ? singular : plural}`
 }
 
-/** "2025550147" -> "(202) 555-0147"; NANP numbers with or without a leading 1. Anything else is returned trimmed. */
+/** Teléfonos argentinos: se muestran tal como se cargaron (el formato de EE.UU. no aplica). */
 export function formatPhone(value: string | null | undefined) {
-  const raw = String(value ?? '').trim()
-  if (!raw) return ''
-  const digits = raw.replace(/\D/g, '')
-  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits
-  if (national.length !== 10 || (raw.startsWith('+') && !raw.startsWith('+1'))) return raw
-  return `(${national.slice(0, 3)}) ${national.slice(3, 6)}-${national.slice(6)}`
+  return String(value ?? '').trim()
 }
 
 /**

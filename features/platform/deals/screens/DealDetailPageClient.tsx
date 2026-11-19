@@ -589,9 +589,9 @@ export function DealDetailPageClient({ id }: { id: string }) {
   }
 
   const breadcrumbs = (label: string) => [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Deals', href: `${basePath}/platform/deals` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Operaciones', href: `${basePath}/platform/deals` },
     { type: 'page' as const, label },
   ]
 
@@ -878,7 +878,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
                         ...(structureType === 'finance' ? { residualValueCents: null, moneyFactorBasisPoints: null } : {}),
                         ...(structureType === 'lease' ? { apr: 0, residualValueCents: deal.residualValueCents ?? 0, moneyFactorBasisPoints: deal.moneyFactorBasisPoints ?? 0 } : {}),
                       })}
-                      options={[{ value: 'cash', label: 'Cash', disabled: updating }, { value: 'finance', label: 'Finance', disabled: updating }, { value: 'lease', label: 'Lease', disabled: updating }]}
+                      options={[{ value: 'cash', label: 'Cash', disabled: updating }, { value: 'finance', label: 'Solicitudes de crédito', disabled: updating }, { value: 'lease', label: 'Lease', disabled: updating }]}
                     />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

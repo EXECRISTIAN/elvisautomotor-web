@@ -66,9 +66,9 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
       title="Catalog"
       header={header}
       breadcrumbs={[
-        { type: 'link', label: 'Dashboard', href: basePath },
-        { type: 'page', label: 'Platform' },
-        { type: 'page', label: 'Catalog' },
+        { type: 'link', label: 'Inicio', href: basePath },
+        { type: 'page', label: 'Gestión' },
+        { type: 'page', label: 'Catálogo' },
       ]}
     >
       <div className="min-w-0 max-w-full space-y-4 px-4 pb-24 md:px-6">

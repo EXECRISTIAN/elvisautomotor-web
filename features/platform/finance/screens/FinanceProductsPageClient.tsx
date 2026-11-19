@@ -148,9 +148,9 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
   ]
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Finance', href: `${basePath}/platform/finance` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Solicitudes de crédito', href: `${basePath}/platform/finance` },
     { type: 'page' as const, label: 'F&I products' },
   ]
 

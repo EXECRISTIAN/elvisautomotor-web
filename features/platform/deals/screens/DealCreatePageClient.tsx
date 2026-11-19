@@ -341,9 +341,9 @@ export function DealCreatePageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Deals', href: `${basePath}/platform/deals` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Operaciones', href: `${basePath}/platform/deals` },
     { type: 'page' as const, label: 'New Deal' },
   ]
 

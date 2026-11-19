@@ -139,8 +139,8 @@ export function PartsPageClient({
   const poHref = (order: PurchaseOrder) => `${basePath}/platform/parts/purchase-orders/${order.id}`
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'page' as const, label: 'Parts' },
   ]
 

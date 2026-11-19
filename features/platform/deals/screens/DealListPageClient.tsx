@@ -70,7 +70,7 @@ const formatCurrency = (value: number | null | undefined) => formatUsd(value, { 
 // The dealership's zone, not the browser's, so the server and client render the same day.
 const formatDate = (date: string | null, timeZone: string) => {
   if (!date) return '-'
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone })
+  return new Date(date).toLocaleDateString('es-AR', { month: 'short', day: 'numeric', year: 'numeric', timeZone })
 }
 
 function ageDays(createdAt: string, now: number) {
@@ -170,9 +170,9 @@ export function DealListPageClient({
   const dealHref = (deal: Deal) => `${basePath}/platform/deals/${deal.id}`
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Deals' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Operaciones' },
   ]
 
   const metaParts = [

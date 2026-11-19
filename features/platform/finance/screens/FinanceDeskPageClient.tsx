@@ -107,9 +107,9 @@ const filterOptions = [
 ]
 
 function formatCurrency(value: number | null | undefined) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-AR', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'ARS',
     maximumFractionDigits: 0,
   }).format(value || 0)
 }
@@ -117,7 +117,7 @@ function formatCurrency(value: number | null | undefined) {
 // Dealership time zone, so the server render and the browser agree.
 function formatDate(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 const approvalLabels: Record<string, string> = {
@@ -146,7 +146,7 @@ function approvalSummary(approval: Deal['approvals'][number]) {
 const stepTone = (step: FinanceStep, next: boolean): DeskTone => step.state === 'done' ? 'ok' : next ? 'info' : step.state === 'optional' ? 'idle' : step.available ? 'warn' : 'idle'
 
 function formatCurrencyCents(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(cents / 100)
 }
 
 function parseDollarsSafe(raw: string) {
@@ -780,9 +780,9 @@ export function FinanceDeskPageClient({
   const fundingExceptions = fundingCases.filter(item => item.status === 'exception').length
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Finance' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Solicitudes de crédito' },
   ]
 
   const deskStatus = financeDeskStatus({

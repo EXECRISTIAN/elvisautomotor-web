@@ -1,12 +1,12 @@
 import type { DeskTone } from '@/features/platform/components/desk'
 
-const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const usd = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
 
 export function money(cents: number | null | undefined, currency = 'usd') {
   const value = (Number(cents) || 0) / 100
   if (!currency || currency.toLowerCase() === 'usd') return usd.format(value)
   try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(value)
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: currency.toUpperCase() }).format(value)
   } catch {
     return usd.format(value)
   }
@@ -14,12 +14,12 @@ export function money(cents: number | null | undefined, currency = 'usd') {
 
 export function dateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return ''
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function shortDate(value: string | null | undefined, timeZone: string) {
   if (!value) return ''
-  return new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export const nonce = (prefix: string) => `${prefix}:${crypto.randomUUID()}`
@@ -98,7 +98,7 @@ export function zonedDayStart(day: string, timeZone: string) {
   if (!year || !month || !date) return null
   const guess = Date.UTC(year, month - 1, date)
   const offsetAt = (instant: number) => {
-    const parts = new Intl.DateTimeFormat('en-US', {
+    const parts = new Intl.DateTimeFormat('es-AR', {
       timeZone,
       hourCycle: 'h23',
       year: 'numeric',

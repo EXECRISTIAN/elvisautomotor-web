@@ -6,22 +6,22 @@ export type AcquisitionStatus = typeof ACQUISITION_STATUSES[number]
 export const ACQUISITION_SOURCES = ['trade-in', 'auction', 'wholesale', 'consumer-purchase', 'oem-distributor', 'dealer-transfer'] as const
 
 export const acquisitionSourceLabels: Record<string, string> = {
-  'trade-in': 'Trade-in',
-  auction: 'Auction',
-  wholesale: 'Wholesale',
-  'consumer-purchase': 'Bought from consumer',
-  'oem-distributor': 'OEM / distributor',
-  'dealer-transfer': 'Dealer transfer',
+  'trade-in': 'Toma de usado',
+  auction: 'Subasta',
+  wholesale: 'Mayorista',
+  'consumer-purchase': 'Comprado a particular',
+  'oem-distributor': 'Fábrica / distribuidor',
+  'dealer-transfer': 'Transferencia entre agencias',
 }
 
 export const acquisitionStatusLabels: Record<string, string> = {
-  appraised: 'Appraised',
-  approved: 'Approved',
-  purchased: 'Purchased',
-  arrived: 'Arrived',
-  reconditioning: 'In recon',
-  frontline: 'Frontline',
-  cancelled: 'Cancelled',
+  appraised: 'Tasado',
+  approved: 'Aprobado',
+  purchased: 'Comprado',
+  arrived: 'Recibido',
+  reconditioning: 'En preparación',
+  frontline: 'En exhibición',
+  cancelled: 'Cancelado',
 }
 
 export const acquisitionStatusTones: Record<string, DeskTone> = {
@@ -46,30 +46,30 @@ export const ACQUISITION_NEXT: Record<string, string | null> = {
 }
 
 export const acquisitionActionLabels: Record<string, string> = {
-  approved: 'Approve',
-  purchased: 'Record purchase',
-  arrived: 'Mark arrived',
-  reconditioning: 'Send to recon',
-  frontline: 'Mark frontline',
-  cancelled: 'Cancel',
+  approved: 'Aprobar',
+  purchased: 'Registrar compra',
+  arrived: 'Marcar recibido',
+  reconditioning: 'Enviar a preparación',
+  frontline: 'Pasar a exhibición',
+  cancelled: 'Cancelar',
 }
 
 export const RECON_CATEGORIES = ['mechanical', 'body', 'detail', 'tires', 'inspection', 'other'] as const
 
 export const reconCategoryLabels: Record<string, string> = {
-  mechanical: 'Mechanical',
-  body: 'Body',
-  detail: 'Detail',
-  tires: 'Tires',
-  inspection: 'Inspection',
-  other: 'Other',
+  mechanical: 'Mecánica',
+  body: 'Chapa y pintura',
+  detail: 'Lavado / detalle',
+  tires: 'Neumáticos',
+  inspection: 'Inspección / VTV',
+  other: 'Otro',
 }
 
 export const reconStatusLabels: Record<string, string> = {
-  open: 'Open',
-  'in-progress': 'In progress',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
+  open: 'Abierto',
+  'in-progress': 'En curso',
+  completed: 'Completado',
+  cancelled: 'Cancelado',
 }
 
 export const reconStatusTones: Record<string, DeskTone> = {
@@ -82,18 +82,18 @@ export const reconStatusTones: Record<string, DeskTone> = {
 export const COST_TYPES = ['reconditioning', 'transport', 'auction-fee', 'detail', 'other'] as const
 
 export const costTypeLabels: Record<string, string> = {
-  reconditioning: 'Reconditioning',
-  transport: 'Transport',
-  'auction-fee': 'Auction fee',
-  detail: 'Detail',
-  other: 'Other',
+  reconditioning: 'Preparación',
+  transport: 'Traslado',
+  'auction-fee': 'Comisión de subasta',
+  detail: 'Lavado / detalle',
+  other: 'Otro',
 }
 
 export const merchandisingStatusLabels: Record<string, string> = {
-  draft: 'Draft',
-  submitted: 'Awaiting approval',
-  approved: 'Approved',
-  rejected: 'Rejected',
+  draft: 'Borrador',
+  submitted: 'Esperando aprobación',
+  approved: 'Aprobado',
+  rejected: 'Rechazado',
 }
 
 export const merchandisingStatusTones: Record<string, DeskTone> = {
@@ -104,10 +104,10 @@ export const merchandisingStatusTones: Record<string, DeskTone> = {
 }
 
 export const feedStatusLabels: Record<string, string> = {
-  'not-published': 'Not published',
-  succeeded: 'Published',
-  partial: 'Partly published',
-  failed: 'Failed',
+  'not-published': 'No publicado',
+  succeeded: 'Publicado',
+  partial: 'Publicado en parte',
+  failed: 'Falló',
 }
 
 export const feedStatusTones: Record<string, DeskTone> = {
@@ -118,17 +118,17 @@ export const feedStatusTones: Record<string, DeskTone> = {
 }
 
 export const feedChannelLabels: Record<string, string> = {
-  'public-inventory-feed': 'Public inventory feed',
-  'manual-marketplace-export': 'Marketplace export',
+  'public-inventory-feed': 'Feed público de inventario',
+  'manual-marketplace-export': 'Exportación a portales',
 }
 
 export const vehicleStatusLabels: Record<string, string> = {
-  available: 'Available',
-  prep: 'In prep',
-  pending: 'Pending',
-  hold: 'On hold',
-  service: 'In service',
-  sold: 'Sold',
+  available: 'Disponible',
+  prep: 'En preparación',
+  pending: 'Señado / pendiente',
+  hold: 'Reservado',
+  service: 'En taller',
+  sold: 'Vendido',
 }
 
 export const vehicleStatusTones: Record<string, DeskTone> = {
@@ -143,27 +143,27 @@ export const vehicleStatusTones: Record<string, DeskTone> = {
 export const CONDITIONS = ['new', 'used', 'certified'] as const
 
 export const conditionLabels: Record<string, string> = {
-  new: 'New',
-  used: 'Used',
-  certified: 'Certified Pre-Owned',
+  new: '0 km',
+  used: 'Usado',
+  certified: 'Usado certificado',
 }
 
 export const RATINGS = ['excellent', 'good', 'fair', 'poor'] as const
 
 export const ratingLabels: Record<string, string> = {
-  excellent: 'Excellent',
-  good: 'Good',
-  fair: 'Fair',
-  poor: 'Poor',
+  excellent: 'Excelente',
+  good: 'Bueno',
+  fair: 'Regular',
+  poor: 'Malo',
 }
 
 export const dealStatusLabels: Record<string, string> = {
-  pencil: 'Pencil',
-  submitted: 'Submitted',
-  approved: 'Approved',
-  financed: 'Financed',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
+  pencil: 'Borrador',
+  submitted: 'Enviada',
+  approved: 'Aprobado',
+  financed: 'Financiada',
+  delivered: 'Entregada',
+  cancelled: 'Cancelado',
 }
 
 /** "merchandising-draft-updated" -> "Merchandising draft updated"; "cost:transport" -> "Cost: transport". */
@@ -177,21 +177,21 @@ export function eventTypeLabel(value: string) {
 /** VIN check used by every inventory form: 17 characters, no I, O or Q. */
 export const VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/
 
-export function formatMoneyCents(cents: number | null | undefined, currencyCode = 'USD') {
+export function formatMoneyCents(cents: number | null | undefined, currencyCode = 'ARS') {
   if (cents == null) return '-'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, maximumFractionDigits: cents % 100 ? 2 : 0 }).format(cents / 100)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, maximumFractionDigits: cents % 100 ? 2 : 0 }).format(cents / 100)
 }
 
 export function formatDateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 export function formatDate(value: string | null | undefined, timeZone: string) {
   if (!value) return '-'
-  return new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function personName(person: { name: string | null } | null | undefined) {
-  return person?.name || 'System'
+  return person?.name || 'Sistema'
 }

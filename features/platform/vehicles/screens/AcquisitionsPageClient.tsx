@@ -268,10 +268,10 @@ export function AcquisitionsPageClient({
   const config = dialog ? dialogConfig[dialog.kind] : null
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'Inventory', href: VEHICLES_HREF },
-    { type: 'page' as const, label: 'Acquisitions' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Inventario', href: VEHICLES_HREF },
+    { type: 'page' as const, label: 'Ingresos' },
   ]
   const header = (
     <DeskHeader
@@ -425,7 +425,7 @@ export function AcquisitionsPageClient({
                     { label: 'VIN', value: selected.vin, mono: true },
                     { label: 'Source', value: acquisitionSourceLabels[selected.acquisitionSource] || selected.acquisitionSource },
                     Boolean(selected.sourceReference) && { label: 'Source ref', value: selected.sourceReference, mono: true },
-                    { label: 'Odometer', value: selected.odometer == null ? '-' : `${selected.odometer.toLocaleString('en-US')} mi`, mono: true },
+                    { label: 'Odometer', value: selected.odometer == null ? '-' : `${selected.odometer.toLocaleString('es-AR')} km`, mono: true },
                     { label: 'Appraisal', value: money(selected.appraisalCents), mono: true },
                     { label: 'Purchase', value: money(selected.purchaseCents), mono: true },
                     { label: 'Recon estimate', value: money(selected.reconEstimateCents), mono: true },

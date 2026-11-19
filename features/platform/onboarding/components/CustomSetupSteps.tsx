@@ -44,7 +44,7 @@ function getCompleteSetupJson() {
   return seedData;
 }
 
-const money = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (cents: number) => `$${(cents / 100).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function CustomSetupSteps({
   currentJson,

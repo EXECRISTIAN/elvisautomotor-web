@@ -53,7 +53,7 @@ type StorefrontRooftop = { rooftopId: string; timezone: string }
 function isTimeZone(value: string) {
   if (!value) return false
   try {
-    new Intl.DateTimeFormat('en-US', { timeZone: value })
+    new Intl.DateTimeFormat('es-AR', { timeZone: value })
     return true
   } catch {
     return false
@@ -76,25 +76,25 @@ function boundedText(value: unknown, max: number) {
 function prepareSettings(input: DealershipStoreSettings): DealershipStoreSettings {
   const name = boundedText(input.name, 200)
   const shortName = boundedText(input.shortName, 120)
-  if (!name || !shortName) throw new Error('Dealership name and short name are required.')
+  if (!name || !shortName) throw new Error('El nombre del negocio y el nombre corto son obligatorios.')
 
   const websiteUrl = boundedText(input.websiteUrl, 500)
   if (websiteUrl && !/^https?:\/\//i.test(websiteUrl)) {
-    throw new Error('Website URL must start with http:// or https://.')
+    throw new Error('El sitio web debe empezar con http:// o https://.')
   }
 
   const currencyCode = boundedText(input.currencyCode, 3).toUpperCase()
-  if (!/^[A-Z]{3}$/.test(currencyCode)) throw new Error('Currency code must contain three letters.')
+  if (!/^[A-Z]{3}$/.test(currencyCode)) throw new Error('El código de moneda debe tener tres letras (por ejemplo, ARS).')
 
   const submittedMark = boundedText(input.logoIcon, 20_000)
   const logoIcon = sanitizeStoreLogoSvg(submittedMark)
-  if (submittedMark && !logoIcon) throw new Error('Brand mark must be a valid, safe SVG document.')
+  if (submittedMark && !logoIcon) throw new Error('El logo debe ser un SVG válido y seguro.')
 
   const whatsappDigits = boundedText(input.whatsappNumber, 40).replace(/\D/g, '')
   if (whatsappDigits && !/^\d{8,15}$/.test(whatsappDigits)) throw new Error('El WhatsApp debe tener entre 8 y 15 dígitos, con código de país.')
 
   const timezone = boundedText(input.timezone, 100)
-  if (timezone && !isTimeZone(timezone)) throw new Error('Choose a valid timezone.')
+  if (timezone && !isTimeZone(timezone)) throw new Error('Elegí una zona horaria válida.')
 
   const salesTaxRateBps = checkedRateBps(input.salesTaxRateBps)
   const docFeeCents = checkedCents(input.docFeeCents, 'Documentation fee')

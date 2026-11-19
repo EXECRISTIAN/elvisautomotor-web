@@ -63,7 +63,7 @@ export function PurchaseOrderDetailPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'link' as const, label: 'Parts', href: `${basePath}/platform/parts` },
     { type: 'link' as const, label: 'Purchase orders', href: `${basePath}/platform/parts/purchase-orders` },
     { type: 'page' as const, label: order?.reference || 'Purchase order' },

@@ -98,7 +98,7 @@ function vehicleName(delivery: Delivery) {
 // Dealership time zone, so the server render and the browser agree.
 function formatDate(value: string | null | undefined, timeZone: string) {
   return value
-    ? new Date(value).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    ? new Date(value).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : 'Not scheduled'
 }
 
@@ -406,8 +406,8 @@ export function DeliveryDeskPageClient({
             : ''
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'page' as const, label: 'Delivery' },
   ]
 
@@ -750,10 +750,10 @@ export function DeliveryDeskPageClient({
                       {scheduledAt ? (
                         <time dateTime={scheduledAt} className="block">
                           <Figure size="md" attention={overdue}>
-                            {new Date(scheduledAt).toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' })}
+                            {new Date(scheduledAt).toLocaleTimeString('es-AR', { timeZone, hour: 'numeric', minute: '2-digit' })}
                           </Figure>
                           <span className="mt-1 block text-[12px] text-muted-foreground">
-                            {overdue ? 'Overdue' : 'Today'}{dayKey(scheduledAt) < todayKey ? ` · ${new Date(scheduledAt).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric' })}` : ''}
+                            {overdue ? 'Overdue' : 'Today'}{dayKey(scheduledAt) < todayKey ? ` · ${new Date(scheduledAt).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric' })}` : ''}
                           </span>
                         </time>
                       ) : (

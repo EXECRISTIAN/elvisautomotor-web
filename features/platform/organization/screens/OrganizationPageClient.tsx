@@ -62,9 +62,9 @@ export function OrganizationPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Organization' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Organización' },
   ]
 
   const groupState = data.errors.organization ? 'Unavailable' : group ? (RECORD_STATUS[group.status]?.label ?? group.status) : 'Not set up'

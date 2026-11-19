@@ -83,7 +83,7 @@ const VISIT_ACTION_LABEL: Record<string, string> = { arrive: 'Check in', 'manage
 const ROUTE_LABEL: Record<string, string> = { 'manual-transfer': 'Transfer', 'manual-intake': 'Assigned at intake', 'intake-creator': 'Intake staff' }
 
 function formatCurrency(value: number | null | undefined) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value || 0)
 }
 
 function leadName(lead: Lead) {
@@ -399,9 +399,9 @@ export function LeadDetailPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'link' as const, label: 'CRM', href: `${basePath}/platform/crm` },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'link' as const, label: 'Consultas', href: `${basePath}/platform/crm` },
     { type: 'page' as const, label: lead ? leadName(lead) : 'Lead' },
   ]
 

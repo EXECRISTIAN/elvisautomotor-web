@@ -116,8 +116,8 @@ export function AccountingBatchPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Accounting', href: `${basePath}/platform/accounting` },
     { type: 'page' as const, label: recordReference('BAT', id) || 'Batch' },
   ]

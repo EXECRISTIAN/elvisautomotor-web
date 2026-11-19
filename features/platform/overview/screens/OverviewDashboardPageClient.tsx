@@ -159,7 +159,7 @@ export function OverviewDashboardPageClient({
   const [error, setError] = useState<string | null>(initialError)
 
   const formatCurrencyCents = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 }).format((value || 0) / 100)
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 }).format((value || 0) / 100)
 
   const loadDashboardData = async () => {
     setLoading(true)
@@ -175,9 +175,9 @@ export function OverviewDashboardPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Overview' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Resumen' },
   ]
 
   const platform = `${basePath}/platform`
@@ -383,7 +383,7 @@ export function OverviewDashboardPageClient({
 
   const revenueChart = metrics.deliveredByMonth.map(item => ({ ...item, label: monthLabel(item.month), revenue: item.revenueCents / 100 }))
   const latestMonth = revenueChart[revenueChart.length - 1]?.month
-  const compactCurrency = new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, notation: 'compact', maximumFractionDigits: 0 })
+  const compactCurrency = new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, notation: 'compact', maximumFractionDigits: 0 })
   const knownStages = new Set(leadStages.map(stage => stage.value))
   const pipeline = [
     ...leadStages.map(stage => ({ ...stage, count: metrics.salesFunnel.find(item => item.label === stage.value)?.count ?? 0 })),

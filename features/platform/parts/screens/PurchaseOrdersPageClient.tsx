@@ -81,7 +81,7 @@ export function PurchaseOrdersPageClient({
   }, [orders, filter, search])
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'link' as const, label: 'Parts', href: `${basePath}/platform/parts` },
     { type: 'page' as const, label: 'Purchase orders' },
   ]

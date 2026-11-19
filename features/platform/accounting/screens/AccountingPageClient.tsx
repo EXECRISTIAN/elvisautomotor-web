@@ -355,8 +355,8 @@ export function AccountingPageClient({
 
   const needsAction = counts.staged + counts.posting + counts.failed
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
     { type: 'page' as const, label: 'Accounting' },
   ]
   const filtered = Boolean(search.trim()) || status !== 'all' || sourceType !== 'all'

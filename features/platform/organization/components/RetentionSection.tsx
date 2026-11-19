@@ -87,7 +87,7 @@ export function RetentionSection({
     const retentionDays = Number(daysText)
     const rationale = form.rationale.trim()
     const errors: FieldErrors = {}
-    if (!/^\d+$/.test(daysText) || retentionDays < 1 || retentionDays > MAX_RETENTION_DAYS) errors.retentionDays = `Whole number from 1 to ${MAX_RETENTION_DAYS.toLocaleString('en-US')}`
+    if (!/^\d+$/.test(daysText) || retentionDays < 1 || retentionDays > MAX_RETENTION_DAYS) errors.retentionDays = `Whole number from 1 to ${MAX_RETENTION_DAYS.toLocaleString('es-AR')}`
     if (!rationale) errors.rationale = 'Rationale is required'
     else if (rationale.length > 1000) errors.rationale = '1,000 characters or fewer'
     setFieldErrors(errors)

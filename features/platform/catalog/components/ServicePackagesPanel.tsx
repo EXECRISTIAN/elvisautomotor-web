@@ -55,7 +55,7 @@ export function ServicePackagesPanel({
   const [pending, setPending] = useState<CatalogServicePackage | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  const money = useMemo(() => new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 2 }), [currencyCode])
+  const money = useMemo(() => new Intl.NumberFormat('es-AR', { style: 'currency', currency: currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 2 }), [currencyCode])
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase()
     return packages

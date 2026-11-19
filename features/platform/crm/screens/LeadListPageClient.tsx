@@ -157,9 +157,9 @@ export function LeadListPageClient({
     if (days === 0) return 'today'
     if (days === 1) return 'yesterday'
     if (days > 1 && days < 7) return `${days} days ago`
-    return new Date(date).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric' })
+    return new Date(date).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric' })
   }
-  const formatDue = (date: string) => new Date(date).toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  const formatDue = (date: string) => new Date(date).toLocaleString('es-AR', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 
   const nextStep = (lead: CrmLeadRow): { label: string; bad?: boolean } => {
     if (isClosed(lead.status)) return { label: leadStatus(lead.status).label }
@@ -182,9 +182,9 @@ export function LeadListPageClient({
   const waitingShown = waiting.slice(0, QUEUE_LIMIT)
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'CRM' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Consultas' },
   ]
 
   const refreshAll = () => {

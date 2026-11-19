@@ -136,7 +136,7 @@ export async function getAccountingMappings() {
 }
 
 const fullName = (lead: any) => (lead ? `${lead.firstName || ''} ${lead.lastName || ''}`.trim() : '')
-const usd = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(cents) || 0) / 100)
+const usd = (cents: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format((Number(cents) || 0) / 100)
 
 /** Records that can be staged: the same gates as stageAccountingBatch, minus sources that already have an active batch. */
 export async function getStageSources(sourceType: string) {

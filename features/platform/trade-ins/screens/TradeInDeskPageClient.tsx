@@ -136,9 +136,9 @@ export function TradeInDeskPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Trade-Ins' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Usados ofrecidos' },
   ]
 
   const header = (
@@ -179,7 +179,7 @@ export function TradeInDeskPageClient({
   const waitedDays = (createdAt: string | null) =>
     createdAt ? Math.max(0, Math.floor((now - new Date(createdAt).getTime()) / 86_400_000)) : null
   const detailHref = (tradeIn: TradeIn) => `${basePath}/platform/trade-ins/${tradeIn.id}`
-  const shortDate = (value: string | null) => value ? new Date(value).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric' }) : '-'
+  const shortDate = (value: string | null) => value ? new Date(value).toLocaleDateString('es-AR', { timeZone, month: 'short', day: 'numeric' }) : '-'
 
   const vehicleCell = (tradeIn: TradeIn) => (
     <>

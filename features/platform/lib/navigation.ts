@@ -40,46 +40,55 @@ export interface PlatformNavGroup {
   items: PlatformNavItem[]
 }
 
-export const platformNavItems: PlatformNavItem[] = [
-  // Standalone
-  { title: 'Overview',       href: '/platform/overview',       color: 'slate',   description: 'Daily sales, inventory, and service performance.',              icon: Gauge,         group: 'standalone' },
-  { title: 'Inventory',      href: '/platform/vehicles',       color: 'blue',    description: 'Manage vehicle inventory, pricing, photos, and merchandising.', icon: Car,           group: 'standalone' },
-  { title: 'Deals',          href: '/platform/deals',          color: 'emerald', description: 'Work deals from quote through contracting and delivery.',       icon: DollarSign,    group: 'standalone' },
-  { title: 'Analytics',      href: '/platform/analytics',      color: 'violet',  description: 'Track sales, inventory, conversion, and operations metrics.',   icon: BarChart3,     group: 'standalone' },
-  { title: 'Store Settings', href: '/platform/store-settings', color: 'slate',   description: 'Configure dealership settings, hours, and branding.',           icon: Settings2,     group: 'standalone' },
+// Menú del panel para Elvis Automotores. Los módulos que Elvis no usa (taller, repuestos, pagos con
+// tarjeta, contabilidad, entregas, API) quedan fuera del menú pero NO se borran: sus rutas siguen
+// existiendo y se pueden volver a mostrar quitándolos de HIDDEN_FOR_ELVIS.
+const allPlatformNavItems: PlatformNavItem[] = [
+  // Principal
+  { title: 'Resumen',        href: '/platform/overview',       color: 'slate',   description: 'Ventas, inventario y actividad del día.',                       icon: Gauge,         group: 'standalone' },
+  { title: 'Inventario',     href: '/platform/vehicles',       color: 'blue',    description: 'Vehículos, precios, fotos, destacados y publicación.',          icon: Car,           group: 'standalone' },
+  { title: 'Operaciones',    href: '/platform/deals',          color: 'emerald', description: 'Operaciones de venta desde la cotización hasta la entrega.',   icon: DollarSign,    group: 'standalone' },
+  { title: 'Estadísticas',   href: '/platform/analytics',      color: 'violet',  description: 'Ventas, inventario, conversión y métricas.',                     icon: BarChart3,     group: 'standalone' },
+  { title: 'Configuración',  href: '/platform/store-settings', color: 'slate',   description: 'Datos del negocio, horarios, WhatsApp y moneda.',               icon: Settings2,     group: 'standalone' },
 
-  // Sales
-  { title: 'CRM',            href: '/platform/crm',            color: 'purple',  description: 'Manage leads, contacts, follow-up, and sales opportunities.',   icon: Users,         group: 'sales' },
-  { title: 'Test Drives',    href: '/platform/test-drives',    color: 'cyan',    description: 'Schedule and track test drive appointments.',                   icon: CalendarClock, group: 'sales' },
-  { title: 'Trade-Ins',      href: '/platform/trade-ins',      color: 'amber',   description: 'Evaluate trade-in vehicles and acquisition opportunities.',     icon: CarFront,      group: 'sales' },
-  { title: 'Customers',      href: '/platform/customers',      color: 'pink',    description: 'Customer records, households, duplicates and history.',         icon: Contact,       group: 'sales' },
+  // Ventas
+  { title: 'Consultas',      href: '/platform/crm',            color: 'purple',  description: 'Consultas, seguimiento y oportunidades de venta.',             icon: Users,         group: 'sales' },
+  { title: 'Pruebas de manejo', href: '/platform/test-drives', color: 'cyan',    description: 'Turnos de prueba de manejo.',                                   icon: CalendarClock, group: 'sales' },
+  { title: 'Usados ofrecidos', href: '/platform/trade-ins',    color: 'amber',   description: 'Autos que ofrecen los clientes (Vendelo en Elvis).',            icon: CarFront,      group: 'sales' },
+  { title: 'Clientes',       href: '/platform/customers',      color: 'pink',    description: 'Fichas de clientes e historial.',                                icon: Contact,       group: 'sales' },
 
-  // Finance
-  { title: 'Finance',        href: '/platform/finance',        color: 'indigo',  description: 'Review finance applications and lender workflows.',             icon: CreditCard,    group: 'finance' },
-  { title: 'Delivery',       href: '/platform/delivery',       color: 'teal',    description: 'Schedule deliveries and complete handoff checklists.',          icon: PackageCheck,  group: 'finance' },
-  { title: 'Payments',       href: '/platform/payments',       color: 'green',   description: 'Transactions, refunds, reconciliation and providers.',          icon: Receipt,       group: 'finance' },
-  { title: 'Accounting',     href: '/platform/accounting',     color: 'sky',     description: 'Journal batches and GL mappings.',                              icon: Landmark,      group: 'finance' },
+  // Financiación
+  { title: 'Solicitudes de crédito', href: '/platform/finance', color: 'indigo', description: 'Solicitudes de financiación y envío a entidades.',             icon: CreditCard,    group: 'finance' },
+  { title: 'Entregas',       href: '/platform/delivery',       color: 'teal',    description: 'Entregas y checklist.',                                          icon: PackageCheck,  group: 'finance' },
+  { title: 'Pagos',          href: '/platform/payments',       color: 'green',   description: 'Transacciones y devoluciones.',                                  icon: Receipt,       group: 'finance' },
+  { title: 'Contabilidad',   href: '/platform/accounting',     color: 'sky',     description: 'Asientos y cuentas contables.',                                  icon: Landmark,      group: 'finance' },
 
-  // Service
-  { title: 'Service',        href: '/platform/service',        color: 'orange',  description: 'Coordinate service appointments and repair work.',              icon: Wrench,        group: 'service' },
-  { title: 'Parts',          href: '/platform/parts',          color: 'stone',   description: 'Parts catalog, stock movements and purchase orders.',           icon: Boxes,         group: 'service' },
+  // Taller
+  { title: 'Taller',         href: '/platform/service',        color: 'orange',  description: 'Turnos y órdenes de taller.',                                    icon: Wrench,        group: 'service' },
+  { title: 'Repuestos',      href: '/platform/parts',          color: 'stone',   description: 'Repuestos y órdenes de compra.',                                 icon: Boxes,         group: 'service' },
 
-  // Operations
-  { title: 'Staff',          href: '/platform/users',          color: 'purple',  description: 'Manage staff accounts, roles, and permissions.',                icon: Users,         group: 'operations' },
-  { title: 'Organization',   href: '/platform/organization',   color: 'slate',   description: 'Dealer group, rooftops, access, roles and retention.',          icon: Building2,     group: 'operations' },
-  { title: 'Catalog',        href: '/platform/catalog',        color: 'lime',    description: 'Makes, models, service packages and lead routing.',             icon: Tags,          group: 'operations' },
-  { title: 'Reports',        href: '/platform/reports',        color: 'violet',  description: 'Saved reports, runs, audit search.',                 icon: FileBarChart,  group: 'operations' },
-  { title: 'API Keys',       href: '/platform/api-keys',       color: 'zinc',    description: 'Create, scope and revoke API keys.',                            icon: KeyRound,      group: 'operations' },
+  // Administración
+  { title: 'Personal',       href: '/platform/users',          color: 'purple',  description: 'Usuarios del equipo, roles y permisos.',                         icon: Users,         group: 'operations' },
+  { title: 'Organización',   href: '/platform/organization',   color: 'slate',   description: 'Sucursales, accesos, roles y retención de datos.',              icon: Building2,     group: 'operations' },
+  { title: 'Catálogo',       href: '/platform/catalog',        color: 'lime',    description: 'Marcas, modelos y reglas de asignación de consultas.',          icon: Tags,          group: 'operations' },
+  { title: 'Reportes',       href: '/platform/reports',        color: 'violet',  description: 'Reportes guardados y auditoría.',                               icon: FileBarChart,  group: 'operations' },
+  { title: 'Claves de API',  href: '/platform/api-keys',       color: 'zinc',    description: 'Claves de acceso para integraciones.',                          icon: KeyRound,      group: 'operations' },
 ]
+
+export const HIDDEN_FOR_ELVIS = new Set([
+  '/platform/delivery', '/platform/payments', '/platform/accounting',
+  '/platform/service', '/platform/parts', '/platform/api-keys',
+])
+
+export const platformNavItems = allPlatformNavItems.filter((item) => !HIDDEN_FOR_ELVIS.has(item.href))
 
 export const platformStandaloneItems = platformNavItems.filter((item) => item.group === 'standalone')
 
 export const platformNavGroups: PlatformNavGroup[] = [
-  { id: 'sales',      title: 'Sales',      icon: Users,         items: platformNavItems.filter((i) => i.group === 'sales') },
-  { id: 'finance',    title: 'Finance',    icon: CreditCard,    items: platformNavItems.filter((i) => i.group === 'finance') },
-  { id: 'service',    title: 'Service',    icon: Wrench,        items: platformNavItems.filter((i) => i.group === 'service') },
-  { id: 'operations', title: 'Operations', icon: ClipboardList, items: platformNavItems.filter((i) => i.group === 'operations') },
-]
+  { id: 'sales',      title: 'Ventas',         icon: Users,         items: platformNavItems.filter((i) => i.group === 'sales') },
+  { id: 'finance',    title: 'Financiación',   icon: CreditCard,    items: platformNavItems.filter((i) => i.group === 'finance') },
+  { id: 'operations', title: 'Administración', icon: ClipboardList, items: platformNavItems.filter((i) => i.group === 'operations') },
+].filter((group) => group.items.length > 0)
 
 export function getPlatformNavItemsWithBasePath(basePath: string) {
   return platformNavItems.map((item) => ({

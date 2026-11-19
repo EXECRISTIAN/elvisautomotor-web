@@ -92,11 +92,11 @@ export function tradeInCustomer(tradeIn: Pick<TradeIn, 'lead'>) {
 }
 
 export function formatWholeUsd(value: number | null | undefined) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value || 0)
 }
 
 export function formatMileage(value: number | null | undefined) {
-  return value == null ? 'Mileage not entered' : `${new Intl.NumberFormat('en-US').format(value)} mi`
+  return value == null ? 'Kilometraje no informado' : `${new Intl.NumberFormat('es-AR').format(value)} km`
 }
 
 /** Preliminary wholesale number from the reference value, condition and mileage. Staff record the offer. */

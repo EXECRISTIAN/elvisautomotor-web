@@ -84,7 +84,7 @@ export async function HomePage() {
       <PageContainer 
         title="Dashboard" 
         header={<h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>}
-        breadcrumbs={[{ type: 'page' as const, label: 'Dashboard' }]}
+        breadcrumbs={[{ type: 'page' as const, label: 'Inicio' }]}
       >
         <EmptyState />
       </PageContainer>
@@ -115,7 +115,7 @@ export async function HomePage() {
   )
 
   const breadcrumbs = [
-    { type: 'page' as const, label: 'Dashboard' }
+    { type: 'page' as const, label: 'Inicio' }
   ]
 
   if (enhancedLists.length === 0) {

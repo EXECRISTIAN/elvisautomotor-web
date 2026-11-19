@@ -17,7 +17,7 @@
 - Confirmar con el cliente el uso de su marca, logo y textos antes de producción.
 
 ## Etapas restantes
-3. Panel administrativo en español y simplificado.
+3. Panel administrativo en español y simplificado — EN CURSO. Hecho: menú, marca, formato es-AR/ARS/km, Configuración, Inventario (listado y ficha), migas. Falta: Consultas, Clientes, Usados ofrecidos, Pruebas de manejo, Solicitudes de crédito, Operaciones, Personal/roles, Resumen, Estadísticas, Organización, Catálogo, Reportes, pantallas de ingreso.
 4. Financiación bancaria (bancos, TNA/TEA/CFT, simulador estimativo).
 5. Tomamos tu usado / "Vendelo en Elvis" con varias fotos.
 6. Calidad, seguridad y SEO final.

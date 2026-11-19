@@ -37,7 +37,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { AdminMeta } from '../hooks/useAdminMeta'
 import { Home, Database, ChevronRight, Package } from 'lucide-react'
-import { Logo, LogoIcon } from '@/features/dashboard/components/Logo'
+import { Logo } from '@/features/dashboard/components/Logo'
+import { ElvisLogo } from '@/features/storefront/components/ElvisLogo'
 import { UserProfileClient } from './UserProfileClient'
 import { OnboardingCards } from '@/features/platform/onboarding/components/OnboardingCards'
 import { dismissOnboarding } from '@/features/platform/onboarding/actions/onboarding'
@@ -131,7 +132,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
         </SidebarMenuButton>
         <SidebarMenuButton asChild>
           <div className="hidden group-has-[[data-collapsible=icon]]/sidebar-wrapper:block">
-            <LogoIcon className="size-5 text-red-500" color="#ef4444" suffix="-full-header" />
+            <ElvisLogo variant="mark" className="h-5 w-auto" />
           </div>
         </SidebarMenuButton>
       </SidebarHeader>
@@ -144,7 +145,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
               <SidebarMenuButton asChild isActive={isLinkActive('/dashboard')}>
                 <Link href="/dashboard" onClick={() => setOpenMobile(false)}>
                   <Home className="h-4 w-4" />
-                  <span>Dashboard</span>
+                  <span>Inicio</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -153,7 +154,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
 
         {/* Platform Routes */}
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>Gestión</SidebarGroupLabel>
           <SidebarMenu className="group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden gap-0">
             {/* Standalone Items in Expanded Mode */}
             {standaloneItemsWithBasePath.map((item) => (
@@ -272,7 +273,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
 
         {/* Models */}
         <SidebarGroup>
-          <SidebarGroupLabel>Models</SidebarGroupLabel>
+          <SidebarGroupLabel>Datos avanzados</SidebarGroupLabel>
           <SidebarMenu className="group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">
             <Collapsible
               asChild
@@ -283,7 +284,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton>
                     <Package className="h-4 w-4" />
-                    <span>Models</span>
+                    <span>Tablas</span>
                     <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -366,8 +367,8 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
           <OnboardingCards
             steps={[{
               href: '#onboarding',
-              title: 'Welcome to Openfront',
-              description: 'Your store is empty. Click get started to configure your store with products, categories, and regions.',
+              title: 'Bienvenido a Elvis Automotores',
+              description: 'Configurá el negocio: datos de contacto, inventario y roles del equipo.',
             }]}
             onboardingStatus={user?.onboardingStatus}
             userRole={user?.role}

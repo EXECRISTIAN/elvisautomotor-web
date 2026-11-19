@@ -69,9 +69,9 @@ export function CustomerListPageClient({
   const isFiltered = Boolean(filters.search) || filters.segment !== 'all'
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Customers' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Clientes' },
   ]
 
   const header = (

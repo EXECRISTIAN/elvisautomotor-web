@@ -192,7 +192,7 @@ export function ListPageClient({
   }
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'page' as const, label: list.label }
   ]
 

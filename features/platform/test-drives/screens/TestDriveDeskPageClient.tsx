@@ -39,7 +39,7 @@ type QueueFilter = 'today' | 'upcoming' | 'past-due' | 'completed' | 'no-show' |
 
 function formatDateTime(value: string | null | undefined, timeZone: string) {
   if (!value) return 'Unscheduled'
-  return new Date(value).toLocaleString('en-US', {
+  return new Date(value).toLocaleString('es-AR', {
     timeZone,
     month: 'short',
     day: 'numeric',
@@ -49,7 +49,7 @@ function formatDateTime(value: string | null | undefined, timeZone: string) {
 }
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value)
 }
 
 function leadName(testDrive: TestDrive) {
@@ -96,7 +96,7 @@ function isPastDue(testDrive: TestDrive) {
 
 function formatTime(value: string | null | undefined, timeZone: string) {
   if (!value) return '--:--'
-  return new Date(value).toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' })
+  return new Date(value).toLocaleTimeString('es-AR', { timeZone, hour: 'numeric', minute: '2-digit' })
 }
 
 /** Time since a past moment as a short figure: "35m", "4h", "3d". */
@@ -110,7 +110,7 @@ function formatElapsedSince(value: string, nowMs: number) {
 function formatDay(value: string | null | undefined, timeZone: string) {
   if (!value) return 'Unscheduled'
   if (isToday(value, timeZone)) return 'Today'
-  return new Date(value).toLocaleDateString('en-US', { timeZone, weekday: 'short', month: 'short', day: 'numeric' })
+  return new Date(value).toLocaleDateString('es-AR', { timeZone, weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 function driveState(testDrive: TestDrive): { tone: DeskTone; label: string } {
@@ -340,9 +340,9 @@ export function TestDriveDeskPageClient({
     .sort((a, b) => new Date(a.scheduledTime || '9999-12-31').getTime() - new Date(b.scheduledTime || '9999-12-31').getTime())
 
   const breadcrumbs = [
-    { type: 'link' as const, label: 'Dashboard', href: basePath },
-    { type: 'page' as const, label: 'Platform' },
-    { type: 'page' as const, label: 'Test Drives' },
+    { type: 'link' as const, label: 'Inicio', href: basePath },
+    { type: 'page' as const, label: 'Gestión' },
+    { type: 'page' as const, label: 'Pruebas de manejo' },
   ]
 
   const header = (

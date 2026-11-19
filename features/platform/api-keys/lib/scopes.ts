@@ -43,7 +43,7 @@ export function endOfDayInZone(date: string, timeZone: string) {
   if (!match) return null
   const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
   const guess = Date.UTC(year, month - 1, day, 23, 59, 59)
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const parts = new Intl.DateTimeFormat('es-AR', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
     .formatToParts(new Date(guess))
     .reduce<Record<string, number>>((acc, part) => (part.type === 'literal' ? acc : { ...acc, [part.type]: Number(part.value) }), {})
   const asZone = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)

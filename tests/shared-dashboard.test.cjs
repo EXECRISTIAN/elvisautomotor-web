@@ -170,15 +170,15 @@ test('sidebar shows only lists and platform pages the session can see', () => {
 test('formatInZone: viewer zone by default, explicit zone when given, labelled', () => {
   const t = sandbox().load('features/dashboard/lib/storeTime.ts');
   const d = new Date('2026-11-02T18:00:00Z');
-  assert.equal(t.formatInZone(d, 'America/Los_Angeles'), 'Nov 2, 2026, 10:00 AM PST');
-  assert.equal(t.formatInZone(d, 'America/New_York'), 'Nov 2, 2026, 1:00 PM EST');
-  assert.equal(t.formatInZone(new Date('2026-07-01T14:00:00Z'), 'America/New_York'), 'Jul 1, 2026, 10:00 AM EDT');
-  assert.equal(t.formatInZone(d, 'America/New_York', 'long'), 'November 2, 2026 at 1:00 PM EST');
-  assert.equal(t.formatInZone(d, 'America/New_York', 'date'), 'Nov 2, 2026');
-  assert.equal(t.formatInZone(d, 'America/New_York', 'dateLong'), 'November 2, 2026');
-  assert.equal(t.formatInZone('2026-11-02T18:00:00Z', 'UTC'), 'Nov 2, 2026, 6:00 PM UTC');
+  assert.equal(t.formatInZone(d, 'America/Los_Angeles'), '2 de nov de 2026, 10:00 a. m. GMT-8');
+  assert.equal(t.formatInZone(d, 'America/New_York'), '2 de nov de 2026, 1:00 p. m. GMT-5');
+  assert.equal(t.formatInZone(new Date('2026-07-01T14:00:00Z'), 'America/New_York'), '1 de jul de 2026, 10:00 a. m. GMT-4');
+  assert.equal(t.formatInZone(d, 'America/New_York', 'long'), '2 de noviembre de 2026 a las 1:00 p. m. GMT-5');
+  assert.equal(t.formatInZone(d, 'America/New_York', 'date'), '2 de nov de 2026');
+  assert.equal(t.formatInZone(d, 'America/New_York', 'dateLong'), '2 de noviembre de 2026');
+  assert.equal(t.formatInZone('2026-11-02T18:00:00Z', 'UTC'), '2 de nov de 2026, 6:00 p. m. UTC');
   // undefined / invalid zone => viewer (process) zone, still labelled
-  assert.equal(t.formatInZone(d), new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(d));
+  assert.equal(t.formatInZone(d), new Intl.DateTimeFormat('es-AR', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(d));
   assert.equal(t.formatInZone(d, 'Not/AZone'), t.formatInZone(d));
   assert.equal(t.formatInZone(null), '');
   assert.equal(t.formatInZone('nope'), '');
@@ -189,7 +189,7 @@ test('timestamp view renders nothing until mounted, then viewer-zone text', () =
     .load('features/dashboard/views/timestamp/index.tsx');
   const d = new Date('2026-11-02T18:00:00Z');
   assert.equal(formatTimestamp(d, undefined, false), '');
-  assert.equal(formatTimestamp(d, 'America/Los_Angeles', true), 'Nov 2, 2026, 10:00 AM PST');
+  assert.equal(formatTimestamp(d, 'America/Los_Angeles', true), '2 de nov de 2026, 10:00 a. m. GMT-8');
 });
 
 test('timestamp picker round-trips in the viewer zone and keeps the same instant', () => {

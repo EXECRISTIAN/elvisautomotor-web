@@ -1,14 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Syne } from "next/font/google";
+import { ElvisLogo } from "@/features/storefront/components/ElvisLogo";
 import { LogoIcon } from "./LogoIcon";
-
-const syne = Syne({
-  subsets: ["latin"],
-  display: "swap",
-  adjustFontFallback: false,
-});
-
-const LOGO_COLOR = "#ef4444";
 
 interface LogoProps {
   className?: string;
@@ -17,48 +9,21 @@ interface LogoProps {
   variant?: "default" | "sidebar";
 }
 
-export const Logo = ({
-  className,
-  textClassName,
-  iconClassName,
-  variant = "default",
-}: LogoProps) => {
+// Marca del panel: isotipo AE original sobre negro + "Elvis Automotores".
+// El panel usa fondo claro, por eso el isotipo va en una placa negra (como en el original).
+export const Logo = ({ className, textClassName, iconClassName, variant = "default" }: LogoProps) => {
   const isSidebar = variant === "sidebar";
-
   return (
-    <div
-      className={cn(
-        className,
-        "flex items-center text-left",
-        isSidebar ? "gap-1.5" : "gap-3",
-      )}
-    >
-      <LogoIcon
-        className={cn("shrink-0", isSidebar ? "size-5" : "size-8", iconClassName)}
-        color={LOGO_COLOR}
-        suffix="-full"
-      />
-      <div className={cn("flex flex-col justify-center", isSidebar ? "-mt-0.5" : "-mt-1")}>
-        <span
-          className={cn(
-            syne.className,
-            textClassName,
-            "font-semibold tracking-tight text-foreground",
-            isSidebar ? "text-[15px] leading-none" : "text-xl",
-          )}
-        >
-          open<span className="font-normal">front</span>
+    <div className={cn(className, "flex items-center text-left", isSidebar ? "gap-2" : "gap-3")}>
+      <span className={cn("grid shrink-0 place-items-center rounded-md bg-black", isSidebar ? "size-8" : "size-11", iconClassName)}>
+        <ElvisLogo variant="mark" title="" className={isSidebar ? "h-5 w-auto" : "h-7 w-auto"} />
+      </span>
+      <div className="flex flex-col justify-center">
+        <span className={cn(textClassName, "font-semibold uppercase tracking-[0.12em] text-foreground", isSidebar ? "text-[13px] leading-none" : "text-lg leading-none")}>
+          Elvis
         </span>
-        <span
-          className={cn(
-            syne.className,
-            "font-bold uppercase text-muted-foreground",
-            isSidebar
-              ? "mt-0.5 text-[12px] leading-none tracking-[0.08em]"
-              : "text-[12px] tracking-wider",
-          )}
-        >
-          Dealership
+        <span className={cn("mt-1 font-medium uppercase text-muted-foreground", isSidebar ? "text-[10px] leading-none tracking-[0.28em]" : "text-[11px] tracking-[0.3em]")}>
+          Automotores
         </span>
       </div>
     </div>

@@ -102,7 +102,7 @@ export function CreatePageClient({ listKey, list }: CreatePageClientProps) {
 
   // Breadcrumb items
   const breadcrumbItems = [
-    { type: 'link' as const, label: 'Dashboard', href: '/' },
+    { type: 'link' as const, label: 'Inicio', href: '/' },
     { type: 'link' as const, label: list.label, href: `/${list.path}` },
     { type: 'page' as const, label: 'Create' }
   ]
