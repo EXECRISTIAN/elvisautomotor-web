@@ -16,6 +16,14 @@ export const GET_VEHICLES = `
         model
         trim
         color: exteriorColor
+      fuelType
+      transmission
+      engine
+      isFeatured
+        fuelType
+        transmission
+        engine
+        isFeatured
         mileage
         price
         status
@@ -45,6 +53,10 @@ export const GET_VEHICLE_BY_ID = `
       model
       trim
       color: exteriorColor
+      fuelType
+      transmission
+      engine
+      isFeatured
       mileage
       price
       status
@@ -75,6 +87,10 @@ export const GET_VEHICLE_RECORD_BY_ID = `
       model
       trim
       color: exteriorColor
+      fuelType
+      transmission
+      engine
+      isFeatured
       mileage
       price
       status

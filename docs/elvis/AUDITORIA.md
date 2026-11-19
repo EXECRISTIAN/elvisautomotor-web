@@ -59,3 +59,14 @@ Referencia visual: `docs/elvis/referencia-diseno.webp`.
 - Moneda por defecto ARS, formato es-AR y kilómetros.
 - Next.js actualizado a 16.4.6 (la versión instalada tenía una vulnerabilidad conocida y bloqueaba el build).
 - Capturas: `etapa1-escritorio.png`, `etapa1-celular.png`.
+
+## Etapa 2 — Inventario y WhatsApp (realizada)
+- Nuevos campos de vehículo: combustible, transmisión, cilindrada/motor y "destacado" (migración `20261119130000_elvis_vehicle_specs`).
+  Opciones y validación compartidas en `features/lib/vehicleSpecs.ts` (validadas también en el servidor).
+- Los campos se cargan en el alta y en la edición del panel (Inventory → vehículo → Edit). Como cambian el contenido publicado,
+  la publicación vuelve a borrador y debe aprobarse de nuevo (mismo circuito de revisión de Openfront).
+- Botón "Destacar" en la ficha del panel (no requiere re-aprobación). La home muestra primero los destacados y completa hasta 4.
+- Inventario público en español con filtros por marca, modelo, año, precio, kilometraje, combustible y transmisión.
+- Ficha de vehículo en español, con botón "Consultar por WhatsApp" que envía marca, modelo, versión, año, precio y enlace.
+- Se quitó el botón "Reservar este vehículo" (seña de USD 500 con tarjeta vía Stripe, no aplica a Elvis); se reemplazó por "Simular financiación".
+- Test `tests/store-settings-save.test.cjs` actualizado para el monograma AE. Los 5 tests que fallan (módulo de chat IA) ya fallaban en el código original.

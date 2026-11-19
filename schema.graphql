@@ -1032,6 +1032,10 @@ type Vehicle {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
+  isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Int
   listPriceCents: Int
@@ -1090,6 +1094,10 @@ input VehicleWhereInput {
   trim: StringFilter
   exteriorColor: StringFilter
   interiorColor: StringFilter
+  fuelType: StringNullableFilter
+  transmission: StringNullableFilter
+  engine: StringFilter
+  isFeatured: BooleanFilter
   mileage: IntNullableFilter
   purchasePriceCents: IntNullableFilter
   listPriceCents: IntNullableFilter
@@ -1157,6 +1165,10 @@ input VehicleOrderByInput {
   trim: OrderDirection
   exteriorColor: OrderDirection
   interiorColor: OrderDirection
+  fuelType: OrderDirection
+  transmission: OrderDirection
+  engine: OrderDirection
+  isFeatured: OrderDirection
   mileage: OrderDirection
   purchasePriceCents: OrderDirection
   listPriceCents: OrderDirection
@@ -1178,6 +1190,10 @@ input VehicleUpdateInput {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
+  isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Int
   listPriceCents: Int
@@ -1269,6 +1285,10 @@ input VehicleCreateInput {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
+  isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Int
   listPriceCents: Int
@@ -8843,6 +8863,7 @@ type Mutation {
   arrangeInventoryVehiclePhotos(data: ArrangeInventoryVehiclePhotosInput!): InventoryCommandResult!
   removeInventoryVehiclePhoto(data: RemoveInventoryVehiclePhotoInput!): InventoryCommandResult!
   updateInventoryVehicleDetails(data: UpdateInventoryVehicleDetailsInput!): InventoryCommandResult!
+  setInventoryVehicleFeatured(vehicleId: ID!, featured: Boolean!): Boolean!
   mergeCustomers(data: MergeCustomersInput!): CustomerMergeResult!
   configureLeadRoutingRule(data: ConfigureLeadRoutingRuleInput!): OperatorCommandResult!
   routeLead(data: RouteLeadInput!): OperatorCommandResult!
@@ -10847,6 +10868,10 @@ type InventoryVehicleResult {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
+  isFeatured: Boolean
   condition: String
   mileage: Int
   status: String
@@ -11021,6 +11046,9 @@ input IntakeInventoryVehicleInput {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
   mileage: Int
   purchasePriceCents: Int!
   listPriceCents: Int!
@@ -11096,6 +11124,9 @@ input UpdateInventoryVehicleDetailsInput {
   trim: String
   exteriorColor: String
   interiorColor: String
+  fuelType: String
+  transmission: String
+  engine: String
   condition: String!
   mileage: Int
   features: JSON

@@ -74,7 +74,7 @@ export function VehicleGallery({
         }}
         role={hasMany ? 'region' : undefined}
         aria-roledescription={hasMany ? 'carousel' : undefined}
-        aria-label={hasMany ? `${title} photos` : undefined}
+        aria-label={hasMany ? `Fotos de ${title}` : undefined}
       >
         {currentImageUrl ? (
           <Image
@@ -94,7 +94,7 @@ export function VehicleGallery({
         <span className="sf-chip sf-chip-dark absolute left-3 top-3">{conditionLabel}</span>
         {stockNumber && <span className="sf-stall absolute bottom-3 left-3">#{stockNumber}</span>}
         {isRepresentativePhoto(currentImageUrl, { make, model }) && (
-          <span className="sf-chip sf-chip-dark absolute bottom-3 right-3">Representative photo</span>
+          <span className="sf-chip sf-chip-dark absolute bottom-3 right-3">Foto ilustrativa</span>
         )}
 
         {hasMany && (
@@ -107,7 +107,7 @@ export function VehicleGallery({
                 type="button"
                 onClick={() => step(-1)}
                 className="grid size-11 place-items-center rounded-[var(--sf-radius-sm)] bg-[var(--sf-asphalt)] text-[var(--sf-on-dark)] transition-colors hover:bg-[var(--sf-ink)] hover:text-[var(--sf-asphalt)]"
-                aria-label="Previous photo"
+                aria-label="Foto anterior"
               >
                 <ChevronLeft className="size-5" aria-hidden="true" />
               </button>
@@ -115,7 +115,7 @@ export function VehicleGallery({
                 type="button"
                 onClick={() => step(1)}
                 className="grid size-11 place-items-center rounded-[var(--sf-radius-sm)] bg-[var(--sf-asphalt)] text-[var(--sf-on-dark)] transition-colors hover:bg-[var(--sf-ink)] hover:text-[var(--sf-asphalt)]"
-                aria-label="Next photo"
+                aria-label="Foto siguiente"
               >
                 <ChevronRight className="size-5" aria-hidden="true" />
               </button>
@@ -146,7 +146,7 @@ export function VehicleGallery({
                   opacity: active ? 1 : 0.62,
                   boxShadow: active ? '0 0 0 2px var(--sf-paper), 0 0 0 4px var(--sf-ink)' : undefined,
                 }}
-                aria-label={`View image ${index + 1}`}
+                aria-label={`Ver foto ${index + 1}`}
                 aria-pressed={active}
               >
                 {url && <Image src={url} alt="" fill className="object-cover" sizes="96px" unoptimized={skipImageOptimizer(url)} />}

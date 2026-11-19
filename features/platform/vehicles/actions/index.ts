@@ -200,6 +200,9 @@ export async function intakeInventoryVehicle(data: {
   trim: string
   exteriorColor: string
   interiorColor: string
+  fuelType: string
+  transmission: string
+  engine: string
   mileage: number
   purchasePriceCents: number
   listPriceCents: number

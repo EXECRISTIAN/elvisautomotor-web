@@ -32,6 +32,9 @@ export function merchandisingSnapshot(stock: any) {
     mileage: v.mileage ?? null, condition: v.condition ?? null,
     description: String(v.description || '').trim(), priceCents: v.priceCents ?? null,
     listPriceCents: v.listPriceCents ?? null, features: v.features ?? [], images,
+    ...(v.fuelType ? { fuelType: v.fuelType } : {}),
+    ...(v.transmission ? { transmission: v.transmission } : {}),
+    ...(v.engine ? { engine: v.engine } : {}),
     primaryImagePath: images.find((image: any) => image.isPrimary)?.imagePath || images[0]?.imagePath || '',
   }
 }

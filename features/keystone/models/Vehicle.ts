@@ -7,6 +7,7 @@ import { permissions, rules } from '../access'
 import { domainEventRequestHash, recordDomainEventInTransaction } from '../lifecycle/domainEvents'
 import { rooftopField, validateRooftopRecord } from '../tenantRecords'
 import { trackingFields } from './trackingFields'
+import { FUEL_OPTIONS, TRANSMISSION_OPTIONS } from '../../lib/vehicleSpecs'
 
 export const Vehicle = list({
   access: {
@@ -27,7 +28,7 @@ export const Vehicle = list({
       const normalized = { ...resolvedData }
       if (typeof normalized.vin === 'string') normalized.vin = normalized.vin.trim().toUpperCase()
       if (typeof normalized.stockNumber === 'string') normalized.stockNumber = normalized.stockNumber.trim().toUpperCase()
-      for (const field of ['make', 'model', 'trim', 'exteriorColor', 'interiorColor']) {
+      for (const field of ['make', 'model', 'trim', 'exteriorColor', 'interiorColor', 'engine']) {
         if (typeof normalized[field] === 'string') normalized[field] = normalized[field].trim()
       }
       return normalized
@@ -155,6 +156,28 @@ export const Vehicle = list({
       ui: {
         description: 'Interior upholstery color',
       },
+    }),
+    fuelType: select({
+      type: 'string',
+      options: [...FUEL_OPTIONS],
+      label: 'Combustible',
+      access: { update: () => false },
+    }),
+    transmission: select({
+      type: 'string',
+      options: [...TRANSMISSION_OPTIONS],
+      label: 'Transmisión',
+      access: { update: () => false },
+    }),
+    engine: text({
+      label: 'Cilindrada / motor',
+      access: { update: () => false },
+      ui: { description: 'Ej.: 1.6, 2.0 TSI' },
+    }),
+    isFeatured: checkbox({
+      label: 'Destacado en la página principal',
+      defaultValue: false,
+      access: { update: () => false },
     }),
     mileage: integer({
       label: 'Mileage',

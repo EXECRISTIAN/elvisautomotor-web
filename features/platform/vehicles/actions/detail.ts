@@ -19,6 +19,10 @@ export type VehicleDetailCore = {
   trim: string
   exteriorColor: string
   interiorColor: string
+  fuelType: string
+  transmission: string
+  engine: string
+  isFeatured: boolean
   mileage: number | null
   listPriceCents: number | null
   priceCents: number | null
@@ -167,7 +171,7 @@ export async function getInventoryVehicleDetail(id: string): Promise<VehicleDeta
   const core = await keystoneClient<{ vehicle: any }>(`
     query InventoryVehicleDetail($id: ID!) {
       vehicle(where: { id: $id }) {
-        id vin stockNumber year make model trim exteriorColor interiorColor mileage listPriceCents priceCents condition status description features createdAt updatedAt
+        id vin stockNumber year make model trim exteriorColor interiorColor fuelType transmission engine isFeatured mileage listPriceCents priceCents condition status description features createdAt updatedAt
         rooftop { id name }
         inventoryStock { id stockNumber locationCode locationLabel stockedAt frontlineAt updatedAt reconStatus merchandisingStatus feedStatus }
         conditionReports(orderBy: { reportDate: desc }, take: 20) { id reportDate inspector overallCondition mechanicalRating bodyRating interiorRating issues estimatedRepairs notes updatedAt }
@@ -261,6 +265,10 @@ export async function getInventoryVehicleDetail(id: string): Promise<VehicleDeta
         trim: raw.trim || '',
         exteriorColor: raw.exteriorColor || '',
         interiorColor: raw.interiorColor || '',
+        fuelType: raw.fuelType || '',
+        transmission: raw.transmission || '',
+        engine: raw.engine || '',
+        isFeatured: Boolean(raw.isFeatured),
         mileage: raw.mileage ?? null,
         listPriceCents: raw.listPriceCents ?? null,
         priceCents: raw.priceCents ?? null,
@@ -311,6 +319,9 @@ export async function updateInventoryVehicleDetails(data: {
   trim: string
   exteriorColor: string
   interiorColor: string
+  fuelType: string
+  transmission: string
+  engine: string
   condition: string
   mileage: number | null
   features: string[]
@@ -329,6 +340,19 @@ export async function updateInventoryVehicleDetails(data: {
   `, { data: { ...input, reason: 'Vehicle details edited from the vehicle page' } })
   if (response.success) revalidateVehicle(vehicleId)
   return response
+}
+
+export async function setInventoryVehicleFeatured(vehicleId: string, featured: boolean) {
+  const response = await keystoneClient<{ setInventoryVehicleFeatured: boolean }>(`
+    mutation SetInventoryVehicleFeatured($vehicleId: ID!, $featured: Boolean!) {
+      setInventoryVehicleFeatured(vehicleId: $vehicleId, featured: $featured)
+    }
+  `, { vehicleId, featured }, { cache: 'no-store' })
+  if (response.success) {
+    revalidateVehicle(vehicleId)
+    revalidatePath('/')
+  }
+  return response.success ? { success: true as const } : { success: false as const, error: response.error }
 }
 
 const RATINGS = new Set(['excellent', 'good', 'fair', 'poor'])

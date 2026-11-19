@@ -8,6 +8,8 @@ export type VehicleInventoryFilters = {
   priceMax?: string
   mileageMax?: string
   condition?: string
+  fuelType?: string
+  transmission?: string
 }
 
 export type VehicleInventorySortKey =
@@ -19,7 +21,7 @@ export type VehicleInventorySortKey =
   | string
 
 export const EMPTY_INVENTORY_FILTERS = {
-  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMax: '', condition: '',
+  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMax: '', condition: '', fuelType: '', transmission: '',
 }
 
 /** Read the inventory filters and sort from the URL. The server render and the client both use this. */
@@ -37,6 +39,8 @@ export function inventoryQueryFromSearch(search: string) {
       priceMax: params.get('priceMax') || '',
       mileageMax: params.get('mileageMax') || '',
       condition: params.get('condition') || '',
+      fuelType: params.get('fuelType') || '',
+      transmission: params.get('transmission') || '',
     },
     sortBy: params.get('sort') || 'year-desc',
     page: params.get('page'),
@@ -46,9 +50,9 @@ export function inventoryQueryFromSearch(search: string) {
 function parseNonNegativeInteger(value: string | undefined, label: string) {
   const normalized = value?.trim() || ''
   if (!normalized) return undefined
-  if (!/^\d+$/.test(normalized)) throw new Error(`${label} must be a non-negative whole number.`)
+  if (!/^\d+$/.test(normalized)) throw new Error(`${label}: ingresá un número entero positivo.`)
   const number = Number(normalized)
-  if (!Number.isSafeInteger(number)) throw new Error(`${label} is outside the supported range.`)
+  if (!Number.isSafeInteger(number)) throw new Error(`${label}: valor fuera de rango.`)
   return number
 }
 
@@ -56,12 +60,12 @@ function parsePriceCents(value: string | undefined, label: string) {
   const normalized = value?.trim() || ''
   if (!normalized) return undefined
   if (!/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(normalized)) {
-    throw new Error(`${label} must be a finite non-negative amount.`)
+    throw new Error(`${label}: ingresá un importe válido.`)
   }
   const amount = Number(normalized)
   const cents = Math.round(amount * 100)
   if (!Number.isFinite(amount) || !Number.isSafeInteger(cents) || cents < 0) {
-    throw new Error(`${label} is outside the supported range.`)
+    throw new Error(`${label}: valor fuera de rango.`)
   }
   return cents
 }
@@ -70,18 +74,18 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   const search = filters.search?.trim() || ''
   const make = filters.make?.trim() || ''
   const model = filters.model?.trim() || ''
-  const yearMin = parseNonNegativeInteger(filters.yearMin, 'Minimum year')
-  const yearMax = parseNonNegativeInteger(filters.yearMax, 'Maximum year')
-  const priceMinCents = parsePriceCents(filters.priceMin, 'Minimum price')
-  const priceMaxCents = parsePriceCents(filters.priceMax, 'Maximum price')
-  const mileageMax = parseNonNegativeInteger(filters.mileageMax, 'Maximum mileage')
+  const yearMin = parseNonNegativeInteger(filters.yearMin, 'Año mínimo')
+  const yearMax = parseNonNegativeInteger(filters.yearMax, 'Año máximo')
+  const priceMinCents = parsePriceCents(filters.priceMin, 'Precio mínimo')
+  const priceMaxCents = parsePriceCents(filters.priceMax, 'Precio máximo')
+  const mileageMax = parseNonNegativeInteger(filters.mileageMax, 'Kilometraje máximo')
   const condition = filters.condition?.trim() || ''
 
   if (yearMin !== undefined && yearMax !== undefined && yearMin > yearMax) {
-    throw new Error('Minimum year cannot exceed maximum year.')
+    throw new Error('El año mínimo no puede ser mayor que el máximo.')
   }
   if (priceMinCents !== undefined && priceMaxCents !== undefined && priceMinCents > priceMaxCents) {
-    throw new Error('Minimum price cannot exceed maximum price.')
+    throw new Error('El precio mínimo no puede ser mayor que el máximo.')
   }
 
   const where: { AND: Record<string, unknown>[] } = {
@@ -105,6 +109,10 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   if (priceMaxCents !== undefined) where.AND.push({ priceCents: { lte: priceMaxCents } })
   if (mileageMax !== undefined) where.AND.push({ mileage: { lte: mileageMax } })
   if (condition) where.AND.push({ condition: { equals: condition } })
+  const fuelType = filters.fuelType?.trim() || ''
+  const transmission = filters.transmission?.trim() || ''
+  if (fuelType) where.AND.push({ fuelType: { equals: fuelType } })
+  if (transmission) where.AND.push({ transmission: { equals: transmission } })
 
   return where
 }

@@ -15,21 +15,21 @@ import { VehicleCard } from '../components/VehicleCard'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { InventoryCardSkeleton } from '../components/inventory/InventoryCardSkeleton'
 import { formatPrice } from '../lib/format'
+import { FUEL_OPTIONS, TRANSMISSION_OPTIONS, fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 import { isEscapeKey, trapDialogFocus } from '../lib/dialogAccessibility'
 
 const CONDITIONS = [
-  { value: '', label: 'All' },
-  { value: 'new', label: 'New' },
-  { value: 'used', label: 'Pre-owned' },
-  { value: 'certified', label: 'Certified' },
+  { value: '', label: 'Todos' },
+  { value: 'new', label: '0 km' },
+  { value: 'used', label: 'Usados' },
 ]
 
 const SORTS = [
-  { value: 'year-desc', label: 'Newest' },
-  { value: 'year-asc', label: 'Oldest' },
-  { value: 'price-asc', label: 'Price low' },
-  { value: 'price-desc', label: 'Price high' },
-  { value: 'mileage-asc', label: 'Lowest miles' },
+  { value: 'year-desc', label: 'Más nuevos' },
+  { value: 'year-asc', label: 'Más antiguos' },
+  { value: 'price-asc', label: 'Menor precio' },
+  { value: 'price-desc', label: 'Mayor precio' },
+  { value: 'mileage-asc', label: 'Menos km' },
 ]
 
 const SHEET_QUERY = '(max-width: 1023.98px)'
@@ -141,7 +141,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
       if (sequence === requestSequence.current) {
         setVehicles([])
         setTotalCount(0)
-        setLoadError(error instanceof Error ? error.message : 'Inventory filters are invalid.')
+        setLoadError(error instanceof Error ? error.message : 'Los filtros no son válidos.')
         setLoading(false)
       }
       return
@@ -168,7 +168,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
         pageTransitionPending = true
         setVehicles([])
         setTotalCount(result.totalCount)
-        setPageNotice('That page is past the current results. Showing the last available page.')
+        setPageNotice('Esa página ya no existe. Te mostramos la última disponible.')
         setCurrentPage(resolution.lastPage)
         return
       }
@@ -178,7 +178,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
         setTotalCount(0)
         if (resolution.resetToFirstPage) {
           pageTransitionPending = true
-          setPageNotice('No matching vehicles were found. Returning to the first page.')
+          setPageNotice('No encontramos vehículos con esos filtros. Volvimos a la primera página.')
           setCurrentPage(1)
         } else {
           setPageNotice(null)
@@ -193,7 +193,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
         setVehicles([])
         setTotalCount(0)
         setPageNotice(null)
-        setLoadError('Inventory could not be loaded. Please try again.')
+        setLoadError('No pudimos cargar el inventario. Intentá de nuevo.')
       }
     } finally {
       if (sequence === requestSequence.current && !pageTransitionPending) setLoading(false)
@@ -295,11 +295,11 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
   }
   const miles = (value: string) => {
     const amount = Number(value)
-    return value.trim() && Number.isFinite(amount) ? `${new Intl.NumberFormat('en-US').format(amount)} mi` : value
+    return value.trim() && Number.isFinite(amount) ? `${new Intl.NumberFormat('es-AR').format(amount)} km` : value
   }
   const range = (min: string, max: string, format: (value: string) => string) => {
     if (min && max) return min === max ? format(min) : `${format(min)}–${format(max)}`
-    return min ? `From ${format(min)}` : `Up to ${format(max)}`
+    return min ? `Desde ${format(min)}` : `Hasta ${format(max)}`
   }
 
   const chips: { key: string; label: string; clear: () => void }[] = []
@@ -333,20 +333,22 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
       },
     })
   }
-  if (filters.mileageMax) chips.push({ key: 'mileage', label: `Max ${miles(filters.mileageMax)}`, clear: () => handleFilterChange('mileageMax', '') })
+  if (filters.mileageMax) chips.push({ key: 'mileage', label: `Hasta ${miles(filters.mileageMax)}`, clear: () => handleFilterChange('mileageMax', '') })
+  if (filters.fuelType) chips.push({ key: 'fuelType', label: fuelLabel(filters.fuelType) || filters.fuelType, clear: () => handleFilterChange('fuelType', '') })
+  if (filters.transmission) chips.push({ key: 'transmission', label: transmissionLabel(filters.transmission) || filters.transmission, clear: () => handleFilterChange('transmission', '') })
 
   const readout = loading
-    ? 'Loading'
+    ? 'Cargando'
     : invalidPage
-      ? 'Invalid page'
+      ? 'Página inválida'
       : loadError
-        ? 'Unavailable'
-        : `${new Intl.NumberFormat('en-US').format(totalCount)} ${totalCount === 1 ? 'vehicle' : 'vehicles'}`
+        ? 'No disponible'
+        : `${new Intl.NumberFormat('es-AR').format(totalCount)} ${totalCount === 1 ? 'vehículo' : 'vehículos'}`
   const readoutTone = loading ? 'idle' : invalidPage || loadError ? 'bad' : totalCount > 0 ? 'ok' : 'idle'
   const pages = Array.from({ length: visiblePageCount }, (_, i) => firstVisiblePage + i)
 
   const sortTrack = (className: string, pillClassName = '') => (
-    <div role="group" aria-label="Sort" className={`sf-track ${className}`}>
+    <div role="group" aria-label="Ordenar" className={`sf-track ${className}`}>
       {SORTS.map((option) => (
         <button
           key={option.value}
@@ -365,7 +367,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
     <>
       <section className="border-b" style={{ borderColor: 'var(--sf-rule)' }}>
         <Container className="py-5 md:py-8">
-          <h1 className="sf-display text-[length:var(--sf-text-2xl)] md:text-[2.75rem]">On the lot</h1>
+          <h1 className="sf-display text-[length:var(--sf-text-2xl)] md:text-[2.75rem]">Inventario</h1>
         </Container>
       </section>
 
@@ -386,21 +388,21 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
               style={{ borderColor: 'var(--sf-rule)' }}
             >
               <h2 id="inventory-filters-title" className="sf-title-line sf-heading text-[length:var(--sf-text-lg)]">
-                Filters
+                Filtros
                 {activeFilterCount > 0 && (
-                  <span className="sf-chip sf-figure" aria-label={`${activeFilterCount} active`}>{activeFilterCount}</span>
+                  <span className="sf-chip sf-figure" aria-label={`${activeFilterCount} activos`}>{activeFilterCount}</span>
                 )}
               </h2>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={clearFilters} className="sf-btn sf-btn-ghost sf-btn-sm hidden lg:inline-flex" disabled={activeFilterCount === 0}>
-                  Reset
+                  Limpiar
                 </button>
                 <button
                   ref={sheetCloseRef}
                   type="button"
                   onClick={closeSheet}
                   className="grid size-11 place-items-center rounded-[var(--sf-radius-sm)] transition-colors hover:bg-[var(--sf-paper-2)] lg:hidden"
-                  aria-label="Close filters"
+                  aria-label="Cerrar filtros"
                 >
                   <X className="size-5" aria-hidden="true" />
                 </button>
@@ -409,7 +411,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
 
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-5 lg:-mx-1 lg:px-1 lg:py-1">
               <div>
-                <p id="inventory-condition-label" className="sf-label">Condition</p>
+                <p id="inventory-condition-label" className="sf-label">Estado</p>
                 <div role="group" aria-labelledby="inventory-condition-label" className="sf-track sf-track-block">
                   {CONDITIONS.map((option) => (
                     <button
@@ -426,7 +428,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
               </div>
 
               <div>
-                <label htmlFor="inventory-search" className="sf-label">Search</label>
+                <label htmlFor="inventory-search" className="sf-label">Buscar</label>
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" style={{ color: 'var(--sf-ink-3)' }} aria-hidden="true" />
                   <input
@@ -434,7 +436,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                     type="search"
                     value={filters.search}
                     onChange={(e) => handleFilterChange('search', e.target.value)}
-                    placeholder="Make, model or trim"
+                    placeholder="Marca, modelo o versión"
                     className="sf-input pl-9"
                   />
                 </div>
@@ -442,61 +444,61 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">
-                  <label htmlFor="inventory-make" className="sf-label">Make</label>
+                  <label htmlFor="inventory-make" className="sf-label">Marca</label>
                   <PlatformSelect
                     id="inventory-make"
                     value={filters.make}
                     onValueChange={(value) => handleFilterChange('make', value)}
                     className="sf-input sf-trigger"
-                    options={[{ value: '', label: facets ? 'Any' : 'Loading' }, ...makeOptions.map((make) => ({ value: make, label: make }))]}
+                    options={[{ value: '', label: facets ? 'Todas' : 'Cargando' }, ...makeOptions.map((make) => ({ value: make, label: make }))]}
                   />
                 </div>
                 <div className="min-w-0">
-                  <label htmlFor="inventory-model" className="sf-label">Model</label>
+                  <label htmlFor="inventory-model" className="sf-label">Modelo</label>
                   <PlatformSelect
                     id="inventory-model"
                     value={filters.model}
                     onValueChange={(value) => handleFilterChange('model', value)}
                     className="sf-input sf-trigger"
-                    options={[{ value: '', label: facets ? 'Any' : 'Loading' }, ...modelOptions.map((model) => ({ value: model, label: model }))]}
+                    options={[{ value: '', label: facets ? 'Todos' : 'Cargando' }, ...modelOptions.map((model) => ({ value: model, label: model }))]}
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="inventory-year-min" className="sf-label">Year</label>
+                <label htmlFor="inventory-year-min" className="sf-label">Año</label>
                 <div className="grid grid-cols-2 gap-3">
                   <PlatformSelect
                     id="inventory-year-min"
                     value={filters.yearMin}
                     onValueChange={(value) => handleFilterChange('yearMin', value)}
                     className="sf-input sf-trigger sf-figure"
-                    aria-label="Minimum year"
-                    options={[{ value: '', label: 'Min' }, ...years.map((y) => ({ value: String(y), label: String(y) }))]}
+                    aria-label="Año mínimo"
+                    options={[{ value: '', label: 'Desde' }, ...years.map((y) => ({ value: String(y), label: String(y) }))]}
                   />
                   <PlatformSelect
                     value={filters.yearMax}
                     onValueChange={(value) => handleFilterChange('yearMax', value)}
                     className="sf-input sf-trigger sf-figure"
-                    aria-label="Maximum year"
-                    options={[{ value: '', label: 'Max' }, ...years.map((y) => ({ value: String(y), label: String(y) }))]}
+                    aria-label="Año máximo"
+                    options={[{ value: '', label: 'Hasta' }, ...years.map((y) => ({ value: String(y), label: String(y) }))]}
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="inventory-price-min" className="sf-label">Price</label>
+                <label htmlFor="inventory-price-min" className="sf-label">Precio</label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     id="inventory-price-min"
-                    aria-label="Minimum price"
+                    aria-label="Precio mínimo"
                     type="number"
                     inputMode="decimal"
                     min="0"
                     step="0.01"
                     value={filters.priceMin}
                     onChange={(e) => handleFilterChange('priceMin', e.target.value)}
-                    placeholder="Min"
+                    placeholder="Desde"
                     className="sf-input sf-figure"
                   />
                   <input
@@ -506,15 +508,15 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                     step="0.01"
                     value={filters.priceMax}
                     onChange={(e) => handleFilterChange('priceMax', e.target.value)}
-                    placeholder="Max"
+                    placeholder="Hasta"
                     className="sf-input sf-figure"
-                    aria-label="Maximum price"
+                    aria-label="Precio máximo"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="inventory-mileage-max" className="sf-label">Max mileage</label>
+                <label htmlFor="inventory-mileage-max" className="sf-label">Kilometraje máximo</label>
                 <input
                   id="inventory-mileage-max"
                   type="number"
@@ -523,9 +525,32 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   step="1"
                   value={filters.mileageMax}
                   onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
-                  placeholder="Any"
+                  placeholder="Sin límite"
                   className="sf-input sf-figure"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="min-w-0">
+                  <label htmlFor="inventory-fuel" className="sf-label">Combustible</label>
+                  <PlatformSelect
+                    id="inventory-fuel"
+                    value={filters.fuelType}
+                    onValueChange={(value) => handleFilterChange('fuelType', value)}
+                    className="sf-input sf-trigger"
+                    options={[{ value: '', label: 'Todos' }, ...FUEL_OPTIONS]}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label htmlFor="inventory-transmission" className="sf-label">Transmisión</label>
+                  <PlatformSelect
+                    id="inventory-transmission"
+                    value={filters.transmission}
+                    onValueChange={(value) => handleFilterChange('transmission', value)}
+                    className="sf-input sf-trigger"
+                    options={[{ value: '', label: 'Todas' }, ...TRANSMISSION_OPTIONS]}
+                  />
+                </div>
               </div>
             </div>
 
@@ -535,10 +560,10 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
             >
               <div className="flex gap-2">
                 <button type="button" onClick={clearFilters} className="sf-btn sf-btn-ghost flex-1" disabled={activeFilterCount === 0}>
-                  Reset
+                  Limpiar
                 </button>
                 <button type="button" onClick={closeSheet} className="sf-btn sf-btn-primary flex-[2]">
-                  {loading || loadError || invalidPage ? 'Show results' : `Show ${new Intl.NumberFormat('en-US').format(totalCount)}`}
+                  {loading || loadError || invalidPage ? 'Ver resultados' : `Ver ${new Intl.NumberFormat('es-AR').format(totalCount)}`}
                 </button>
               </div>
             </div>
@@ -563,17 +588,17 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   aria-controls="inventory-filters"
                 >
                   <SlidersHorizontal className="size-4" aria-hidden="true" />
-                  Filters
-                  {activeFilterCount > 0 && <span className="sf-figure text-[length:var(--sf-text-xs)]" aria-label={`${activeFilterCount} active`}>{activeFilterCount}</span>}
+                  Filtros
+                  {activeFilterCount > 0 && <span className="sf-figure text-[length:var(--sf-text-xs)]" aria-label={`${activeFilterCount} activos`}>{activeFilterCount}</span>}
                 </button>
-                <label htmlFor="inventory-sort-mobile" className="sr-only">Sort</label>
+                <label htmlFor="inventory-sort-mobile" className="sr-only">Ordenar</label>
                 <div className="min-w-0 flex-1">
                   <PlatformSelect
                     id="inventory-sort-mobile"
                     value={sortBy}
                     onValueChange={changeSort}
                     className="sf-input sf-trigger"
-                    aria-label="Sort"
+                    aria-label="Ordenar"
                     options={SORTS.map((option) => ({ value: option.value, label: option.label }))}
                   />
                 </div>
@@ -582,14 +607,14 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
             </div>
 
             {chips.length > 0 && (
-              <ul className="mb-6 flex flex-wrap items-center gap-x-1.5" aria-label="Active filters">
+              <ul className="mb-6 flex flex-wrap items-center gap-x-1.5" aria-label="Filtros activos">
                 {chips.map((chip) => (
                   <li key={chip.key}>
                     <button
                       type="button"
                       onClick={chip.clear}
                       className="group inline-flex min-h-11 items-center"
-                      aria-label={`Remove filter ${chip.label}`}
+                      aria-label={`Quitar filtro ${chip.label}`}
                     >
                       <span className="sf-chip normal-case tracking-normal transition-colors group-hover:text-[var(--sf-ink)]">
                         {chip.label}
@@ -600,19 +625,19 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 ))}
                 <li>
                   <button type="button" onClick={clearFilters} className="sf-link inline-flex min-h-11 items-center px-2 text-[length:var(--sf-text-xs)]">
-                    Clear all
+                    Quitar todos
                   </button>
                 </li>
               </ul>
             )}
 
-            <h2 className="sr-only">Results</h2>
+            <h2 className="sr-only">Resultados</h2>
             {pageNotice && !loading && !loadError && !invalidPage && (
               <p role="status" className="sf-notice mb-6" data-tone="warn">{pageNotice}</p>
             )}
 
             {loading ? (
-              <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Loading vehicles">
+              <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Cargando vehículos">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <InventoryCardSkeleton key={i} />
                 ))}
@@ -621,7 +646,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
               <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <p role="alert" className="sf-title-line font-semibold">
                   <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-                  Page not found.
+                  Página no encontrada.
                 </p>
                 <button
                   type="button"
@@ -632,7 +657,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   }}
                   className="sf-btn sf-btn-ghost sf-btn-sm max-sm:min-h-11"
                 >
-                  Return to first page
+                  Volver a la primera página
                 </button>
               </div>
             ) : loadError ? (
@@ -643,10 +668,10 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 </p>
                 <div className="flex shrink-0 flex-wrap gap-2">
                   <button type="button" onClick={() => void loadVehicles()} className="sf-btn sf-btn-primary sf-btn-sm max-sm:min-h-11">
-                    Retry
+                    Reintentar
                   </button>
                   <button type="button" onClick={clearFilters} className="sf-btn sf-btn-ghost sf-btn-sm max-sm:min-h-11">
-                    Clear filters
+                    Limpiar filtros
                   </button>
                 </div>
               </div>
@@ -659,17 +684,17 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 </div>
 
                 {totalPages > 1 && (
-                  <nav className="mt-12 flex flex-col items-center gap-3 border-t pt-6" style={{ borderColor: 'var(--sf-rule)' }} aria-label="Pagination">
+                  <nav className="mt-12 flex flex-col items-center gap-3 border-t pt-6" style={{ borderColor: 'var(--sf-rule)' }} aria-label="Paginación">
                     <div className="sf-track">
                       <button
                         type="button"
                         onClick={() => goToPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
                         className="sf-pill min-h-11 min-w-11 px-3 sm:min-h-9"
-                        aria-label="Previous page"
+                        aria-label="Página anterior"
                       >
                         <ChevronLeft className="size-4" aria-hidden="true" />
-                        <span className="hidden sm:inline">Previous</span>
+                        <span className="hidden sm:inline">Anterior</span>
                       </button>
                       {firstVisiblePage > 1 && <span className="sf-pill sf-faint pointer-events-none hidden px-2 sm:inline-flex" aria-hidden="true">…</span>}
                       {pages.map((page) => (
@@ -678,7 +703,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                           type="button"
                           onClick={() => goToPage(page)}
                           aria-current={currentPage === page ? 'page' : undefined}
-                          aria-label={`Page ${page}`}
+                          aria-label={`Página ${page}`}
                           className={`sf-pill sf-figure min-h-11 min-w-11 px-2 sm:min-h-9 sm:min-w-9 ${Math.abs(page - currentPage) > 1 ? 'max-sm:hidden' : ''}`}
                         >
                           {page}
@@ -690,14 +715,14 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                         onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
                         className="sf-pill min-h-11 min-w-11 px-3 sm:min-h-9"
-                        aria-label="Next page"
+                        aria-label="Página siguiente"
                       >
-                        <span className="hidden sm:inline">Next</span>
+                        <span className="hidden sm:inline">Siguiente</span>
                         <ChevronRight className="size-4" aria-hidden="true" />
                       </button>
                     </div>
                     <p className="sf-figure sf-faint text-[length:var(--sf-text-xs)]" aria-live="polite">
-                      Page {currentPage} of {totalPages}
+                      Página {currentPage} de {totalPages}
                     </p>
                   </nav>
                 )}
@@ -706,10 +731,10 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
               <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="sf-title-line font-semibold">
                   <span className="sf-dot" aria-hidden="true" />
-                  No vehicles match these filters.
+                  No hay vehículos con estos filtros.
                 </p>
                 <button type="button" onClick={clearFilters} className="sf-btn sf-btn-ghost sf-btn-sm max-sm:min-h-11">
-                  Clear filters
+                  Limpiar filtros
                 </button>
               </div>
             )}

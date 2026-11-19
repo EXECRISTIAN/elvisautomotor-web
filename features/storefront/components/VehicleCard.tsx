@@ -17,6 +17,7 @@ import { PhotoAttribution } from './PhotoAttribution'
 import { isRepresentativePhoto } from '../lib/photoAttribution'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 import { VehiclePhotoPlaceholder } from './VehiclePhotoPlaceholder'
+import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 
 interface VehicleCardProps {
   vehicle: Vehicle
@@ -64,10 +65,10 @@ export function VehicleCard({
       onClick={toggleCompare}
       className={`sf-btn sf-btn-sm ${comparing ? 'sf-btn-secondary' : 'sf-btn-ghost'}`}
       aria-pressed={comparing}
-      aria-label={comparing ? `Remove ${title} from compare` : `Add ${title} to compare`}
+      aria-label={comparing ? `Quitar ${title} de la comparación` : `Agregar ${title} a la comparación`}
     >
       {comparing ? <Check className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
-      Compare
+      Comparar
     </button>
   ) : null
 
@@ -82,7 +83,7 @@ export function VehicleCard({
           )}
           <span className="sf-chip sf-chip-dark absolute left-3 top-3">{vehicleConditionLabel(vehicle.condition)}</span>
           <span className="sf-stall absolute bottom-3 left-3">#{vehicle.stockNumber}</span>
-          {representative && <span className="sf-chip sf-chip-dark absolute bottom-3 right-3">Representative photo</span>}
+          {representative && <span className="sf-chip sf-chip-dark absolute bottom-3 right-3">Foto ilustrativa</span>}
         </Link>
         <div className="flex min-w-0 flex-col justify-end gap-5">
           <div className="min-w-0">
@@ -98,18 +99,18 @@ export function VehicleCard({
             </p>
           </div>
           <dl className="sf-spec">
-            <div><dt>Mileage</dt><dd className="sf-figure">{formatMileage(vehicle.mileage)}</dd></div>
-            <div><dt>Color</dt><dd>{vehicle.color || 'Not listed'}</dd></div>
+            <div><dt>Kilometraje</dt><dd className="sf-figure">{formatMileage(vehicle.mileage)}</dd></div>
+            <div><dt>Color</dt><dd>{vehicle.color || 'No informado'}</dd></div>
             <div><dt>Stock</dt><dd className="sf-figure">{vehicle.stockNumber}</dd></div>
           </dl>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <p className="sf-price text-[length:var(--sf-text-2xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
             <div className="flex flex-wrap gap-2">
-              <Link href={href} className="sf-btn sf-btn-primary sf-btn-sm">View vehicle</Link>
+              <Link href={href} className="sf-btn sf-btn-primary sf-btn-sm">Ver vehículo</Link>
               {compareButton}
             </div>
           </div>
-          {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Compare holds 4 vehicles.</p>}
+          {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
           <PhotoAttribution src={imageUrl} />
         </div>
       </article>
@@ -134,7 +135,7 @@ export function VehicleCard({
         )}
         <span className="sf-chip sf-chip-dark absolute left-2.5 top-2.5">{vehicleConditionLabel(vehicle.condition)}</span>
         <span className="sf-stall absolute bottom-2.5 left-2.5">#{vehicle.stockNumber}</span>
-        {representative && <span className="sf-chip sf-chip-dark absolute bottom-2.5 right-2.5">Representative photo</span>}
+        {representative && <span className="sf-chip sf-chip-dark absolute bottom-2.5 right-2.5">Foto ilustrativa</span>}
       </Link>
 
       <div className="flex flex-1 flex-col pt-3">
@@ -148,17 +149,17 @@ export function VehicleCard({
           <p className="sf-price shrink-0 pt-0.5 text-[length:var(--sf-text-xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
         </div>
 
-        <dl className="mt-3 grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] border-y text-[length:var(--sf-text-xs)]" style={{ borderColor: 'var(--sf-rule)' }}>
+        <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] border-y text-[length:var(--sf-text-xs)]" style={{ borderColor: 'var(--sf-rule)' }}>
           <div className="min-w-0 py-2 pr-2">
-            <dt className="sf-faint">Miles</dt>
-            <dd className="sf-figure truncate text-[length:var(--sf-text-sm)]">{formatMileage(vehicle.mileage)}</dd>
+            <dt className="sf-faint">Km</dt>
+            <dd className="sf-figure whitespace-nowrap text-[length:var(--sf-text-sm)]">{formatMileage(vehicle.mileage)}</dd>
           </div>
           <div className="min-w-0 border-l py-2 pl-3 pr-2" style={{ borderColor: 'var(--sf-rule)' }}>
-            <dt className="sf-faint">Color</dt>
-            <dd className="line-clamp-2 break-words leading-snug text-[length:var(--sf-text-sm)]" title={vehicle.color || undefined}>{vehicle.color || 'Not listed'}</dd>
+            <dt className="sf-faint">{vehicle.fuelType || vehicle.transmission ? 'Motor' : 'Color'}</dt>
+            <dd className="line-clamp-2 break-words leading-snug text-[length:var(--sf-text-sm)]">{vehicle.fuelType || vehicle.transmission ? [fuelLabel(vehicle.fuelType), transmissionLabel(vehicle.transmission)].filter(Boolean).join(' · ') : vehicle.color || 'No informado'}</dd>
           </div>
           <div className="border-l py-2 pl-3" style={{ borderColor: 'var(--sf-rule)' }}>
-            <dt className="sf-faint">Status</dt>
+            <dt className="sf-faint">Estado</dt>
             <dd className="flex items-baseline gap-1.5 whitespace-nowrap leading-snug text-[length:var(--sf-text-sm)]">
               <span className="sf-dot shrink-0 -translate-y-px" data-tone={status.tone} aria-hidden="true" />
               <span>{status.label}</span>
@@ -170,7 +171,7 @@ export function VehicleCard({
           <PhotoAttribution src={imageUrl} className="min-w-0" />
           {compareButton && <div className="ml-auto shrink-0">{compareButton}</div>}
         </div>
-        {compareFull && <p role="status" className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Compare holds 4 vehicles.</p>}
+        {compareFull && <p role="status" className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
       </div>
     </article>
   )

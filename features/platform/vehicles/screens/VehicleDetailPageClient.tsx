@@ -38,6 +38,7 @@ import {
   getInventoryVehicleDetail,
   saveConditionReport,
   saveVehicleHistory,
+  setInventoryVehicleFeatured,
   updateInventoryVehicleDetails,
   type ConditionReport,
   type ReconWorkItem,
@@ -46,6 +47,7 @@ import {
   type VehicleDetail,
 } from '../actions/detail'
 import { LiveVehiclePhotos } from '../components/VehiclePhotos'
+import { FUEL_OPTIONS, TRANSMISSION_OPTIONS, fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 import { Windshield, WindshieldFigure } from '../components/Windshield'
 import { InventoryFormDialog, type FieldErrors, type InventoryFormField } from '../components/InventoryFormDialog'
 import {
@@ -219,7 +221,7 @@ export function VehicleDetailPageClient({
 
   const openDetails = () => openDialog('details', {
     vin: vehicle.vin, year: String(vehicle.year), condition: vehicle.condition || 'used', make: vehicle.make, model: vehicle.model, trim: vehicle.trim,
-    exteriorColor: vehicle.exteriorColor, interiorColor: vehicle.interiorColor, mileage: vehicle.mileage == null ? '' : String(vehicle.mileage),
+    exteriorColor: vehicle.exteriorColor, interiorColor: vehicle.interiorColor, fuelType: vehicle.fuelType, transmission: vehicle.transmission, engine: vehicle.engine, mileage: vehicle.mileage == null ? '' : String(vehicle.mileage),
     retail: vehicle.priceCents == null ? '' : formatCentsForInput(vehicle.priceCents), list: vehicle.listPriceCents == null ? '' : formatCentsForInput(vehicle.listPriceCents),
     priceChangeReason: '', features: vehicle.features.join('\n'), description: vehicle.description,
   })
@@ -286,7 +288,7 @@ export function VehicleDetailPageClient({
       if (Object.keys(errors).length === 0) {
         work = () => updateInventoryVehicleDetails({
           stockId: stock.id, vehicleId: vehicle.id, vin, year: year!, make: v('make'), model: v('model'), trim: v('trim'),
-          exteriorColor: v('exteriorColor'), interiorColor: v('interiorColor'), condition: v('condition') || 'used', mileage,
+          exteriorColor: v('exteriorColor'), interiorColor: v('interiorColor'), fuelType: v('fuelType'), transmission: v('transmission'), engine: v('engine'), condition: v('condition') || 'used', mileage,
           features, priceCents: priceCents!, listPriceCents: listPriceCents ?? priceCents!, description: values.description || '',
           priceChangeReason: v('priceChangeReason'), expectedUpdatedAt: stock.updatedAt, idempotencyKey: dialog.idempotencyKey,
         })
@@ -441,6 +443,9 @@ export function VehicleDetailPageClient({
     { name: 'mileage', label: 'Odometer (mi)', type: 'number', min: 0, required: false },
     { name: 'exteriorColor', label: 'Exterior colour', maxLength: 100, required: false },
     { name: 'interiorColor', label: 'Interior colour', maxLength: 100, required: false },
+    { name: 'fuelType', label: 'Combustible', type: 'select', required: false, options: FUEL_OPTIONS },
+    { name: 'transmission', label: 'Transmisión', type: 'select', required: false, options: TRANSMISSION_OPTIONS },
+    { name: 'engine', label: 'Cilindrada / motor', maxLength: 40, required: false, placeholder: '1.6, 2.0 TSI…' },
     { name: 'retail', label: `Retail price (${currencyCode})`, type: 'money' },
     { name: 'list', label: `List price (${currencyCode})`, type: 'money', required: false, hint: 'Blank uses the retail price' },
     { name: 'priceChangeReason', label: 'Price change reason', maxLength: 500, required: false, wide: true },
@@ -524,7 +529,7 @@ export function VehicleDetailPageClient({
 
         <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div className="min-w-0 space-y-8">
-            <DeskSection title="Identity and spec" id="vehicle-identity" actions={<Track><Pill size="sm" onClick={openDetails} disabled={!editable || Boolean(busy)} title={editable ? undefined : notEditableReason}><Pencil /> Edit</Pill></Track>}>
+            <DeskSection title="Identity and spec" id="vehicle-identity" actions={<Track><Pill size="sm" onClick={() => run('featured', () => setInventoryVehicleFeatured(vehicle.id, !vehicle.isFeatured), vehicle.isFeatured ? 'Ya no se destaca en la página principal.' : 'Destacado en la página principal.')} disabled={Boolean(busy)} aria-pressed={vehicle.isFeatured}>{vehicle.isFeatured ? '★ Destacado' : '☆ Destacar'}</Pill><Pill size="sm" onClick={openDetails} disabled={!editable || Boolean(busy)} title={editable ? undefined : notEditableReason}><Pencil /> Edit</Pill></Track>}>
               <div className="grid gap-x-8 sm:grid-cols-2">
                 <Facts items={[
                   { label: 'VIN', value: vehicle.vin, mono: true },
@@ -539,6 +544,9 @@ export function VehicleDetailPageClient({
                   { label: 'Odometer', value: vehicle.mileage == null ? '-' : `${vehicle.mileage.toLocaleString('en-US')} mi`, mono: true },
                   { label: 'Exterior', value: vehicle.exteriorColor || '-' },
                   { label: 'Interior', value: vehicle.interiorColor || '-' },
+                  { label: 'Combustible', value: fuelLabel(vehicle.fuelType) || '-' },
+                  { label: 'Transmisión', value: transmissionLabel(vehicle.transmission) || '-' },
+                  { label: 'Cilindrada', value: vehicle.engine || '-' },
                   { label: 'Retail', value: money(vehicle.priceCents), mono: true },
                   { label: 'List', value: money(vehicle.listPriceCents), mono: true },
                 ]} />

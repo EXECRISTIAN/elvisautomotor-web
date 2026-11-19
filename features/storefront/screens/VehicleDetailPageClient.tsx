@@ -21,6 +21,8 @@ import { formatMileage, formatPrice, vehicleTitle } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
 import { parseVehicleFeatures, resolveVehicleDetail } from '../lib/data/vehicle-detail-response'
 import { vehicleConditionLabel, vehicleStatus } from '../lib/vehicleStatus'
+import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
+import { WhatsAppButton } from '../components/WhatsAppButton'
 
 export type VehicleDetailPageState =
   | { id: string; status: 'loading' }
@@ -73,6 +75,8 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
   const [compareCount, setCompareCount] = useState(0)
   const [comparing, setComparing] = useState(false)
   const [compareFull, setCompareFull] = useState(false)
+  const [pageUrl, setPageUrl] = useState('')
+  useEffect(() => { setPageUrl(window.location.href.split('#')[0]) }, [id])
 
   // The phone action bar floats above the shared compare bar when that bar is showing.
   useEffect(() => {
@@ -147,7 +151,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
         if (!result.success) throw new Error(result.error)
         setFeedback({
           status: 'success',
-          message: `${business.fullName} received your test-drive request.`,
+          message: `${business.fullName} recibió tu solicitud de prueba de manejo.`,
           reference: customerRequestReference('test-drive', result.data.testDriveId),
         })
       } else if (intent === 'reserve') {
@@ -163,7 +167,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
           idempotencyKey,
         })
         if (!result.success) throw new Error(result.error)
-        if (!result.data.checkoutUrl || !/^https:\/\//.test(result.data.checkoutUrl)) throw new Error('Card checkout could not be started. Please try again.')
+        if (!result.data.checkoutUrl || !/^https:\/\//.test(result.data.checkoutUrl)) throw new Error('No pudimos iniciar el pago. Intentá de nuevo.')
         window.location.assign(result.data.checkoutUrl)
         return
       } else {
@@ -184,8 +188,8 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
         setFeedback({
           status: 'success',
           message: intent === 'get-quote'
-            ? `${business.fullName} received your price-quote request.`
-            : `${business.fullName} received your question.`,
+            ? `${business.fullName} recibió tu pedido de cotización.`
+            : `${business.fullName} recibió tu consulta.`,
           reference: customerRequestReference('inquiry', result.data.leadId),
         })
       }
@@ -193,7 +197,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
     } catch (error) {
       setFeedback({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Something went wrong. Please try again.',
+        message: error instanceof Error ? error.message : 'Algo salió mal. Intentá de nuevo.',
       })
     } finally {
       setIsSubmitting(false)
@@ -211,15 +215,15 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
           <div role="alert" aria-live="assertive">
             <h1 className="sf-title-line sf-heading text-[length:var(--sf-text-xl)]">
               <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-              Vehicle details unavailable
+              No pudimos mostrar este vehículo
             </h1>
-            <p className="sf-muted mt-2 pl-4">We couldn&apos;t load this vehicle.</p>
+            <p className="sf-muted mt-2 pl-4">Ocurrió un error al cargar la publicación.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={retryVehicleLoad} className="sf-btn sf-btn-primary">
-              Retry
+              Reintentar
             </button>
-            <Link href="/inventory" className="sf-btn sf-btn-ghost">Back to inventory</Link>
+            <Link href="/inventory" className="sf-btn sf-btn-ghost">Volver al inventario</Link>
           </div>
         </div>
       </Container>
@@ -241,7 +245,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
   const status = vehicleStatus(vehicle.status)
   const conditionLabel = vehicleConditionLabel(vehicle.condition)
   const hasPublicPrice = typeof vehicle.price === 'number' && Number.isFinite(vehicle.price) && vehicle.price >= 0
-  const displayPrice = readOnly ? status.label : hasPublicPrice ? formatPrice(vehicle.price, business.currencyCode) : 'Price unavailable'
+  const displayPrice = readOnly ? status.label : hasPublicPrice ? formatPrice(vehicle.price, business.currencyCode) : 'Consultar precio'
   const similarParams = new URLSearchParams()
   if (vehicle.make) similarParams.set('make', vehicle.make)
   if (vehicle.model) similarParams.set('model', vehicle.model)
@@ -259,21 +263,29 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
   }
 
   const specs: { label: string; value: string; figure?: boolean }[] = [
-    { label: 'Year', value: String(vehicle.year ?? ''), figure: true },
-    { label: 'Make', value: vehicle.make || '' },
-    { label: 'Model', value: vehicle.model || '' },
-    { label: 'Trim', value: vehicle.trim || '' },
-    { label: 'Mileage', value: formatMileage(vehicle.mileage), figure: true },
+    { label: 'Año', value: String(vehicle.year ?? ''), figure: true },
+    { label: 'Marca', value: vehicle.make || '' },
+    { label: 'Modelo', value: vehicle.model || '' },
+    { label: 'Versión', value: vehicle.trim || '' },
+    { label: 'Kilometraje', value: formatMileage(vehicle.mileage), figure: true },
+    { label: 'Combustible', value: fuelLabel(vehicle.fuelType) },
+    { label: 'Transmisión', value: transmissionLabel(vehicle.transmission) },
+    { label: 'Cilindrada', value: vehicle.engine || '' },
     { label: 'Color', value: vehicle.color || '' },
   ]
+  const whatsappMessage = [
+    `Hola ${business.shortName}, quiero consultar por el ${[vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' ')} ${vehicle.year}`,
+    hasPublicPrice && !readOnly ? `Precio publicado: ${formatPrice(vehicle.price, business.currencyCode)}` : '',
+    pageUrl,
+  ].filter(Boolean).join('\n')
 
   return (
     <>
-      <nav aria-label="Breadcrumb" className="border-b" style={{ borderColor: 'var(--sf-rule)' }}>
+      <nav aria-label="Ruta de navegación" className="border-b" style={{ borderColor: 'var(--sf-rule)' }}>
         <Container className="flex min-h-11 items-center gap-1.5 text-[length:var(--sf-text-sm)]">
           <Link href="/inventory" className="sf-muted inline-flex min-h-11 shrink-0 items-center gap-1 hover:text-[var(--sf-accent)]">
             <ChevronLeft className="size-4 sm:hidden" aria-hidden="true" />
-            Inventory
+            Inventario
           </Link>
           <ChevronRight className="sf-faint hidden size-3.5 shrink-0 sm:block" aria-hidden="true" />
           <span className="sf-faint hidden min-w-0 truncate sm:block" aria-current="page">{title}</span>
@@ -316,18 +328,19 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
               <div className="mt-5">
                 <Link href={similarHref} className="sf-btn sf-btn-primary sf-btn-block">
                   <Search className="size-4" aria-hidden="true" />
-                  See similar vehicles
+                  Ver vehículos similares
                 </Link>
               </div>
             ) : (
               <div ref={actionsRef} className="mt-5 space-y-2">
+                <WhatsAppButton label="Consultar por WhatsApp" message={whatsappMessage} className="sf-btn sf-btn-primary sf-btn-block" />
                 <button
                   ref={testDriveOpenerRef}
                   type="button"
                   onClick={() => openLead('test-drive', testDriveOpenerRef)}
-                  className="sf-btn sf-btn-primary sf-btn-block"
+                  className="sf-btn sf-btn-outline sf-btn-block"
                 >
-                  Schedule test drive
+                  Coordinar prueba de manejo
                 </button>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -336,12 +349,12 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                     onClick={() => openLead('get-quote', quoteOpenerRef)}
                     className="sf-btn sf-btn-ghost px-3"
                   >
-                    Get price quote
+                    Pedir cotización
                   </button>
                   {vehicle.status === 'reserved' ? (
                     <>
                       <Link href={similarHref} className="sf-btn sf-btn-ghost px-3">
-                        See similar
+                        Ver similares
                       </Link>
                       {/* The shopper whose unpaid checkout holds the car gets it back; anyone else is told it is taken. */}
                       <button
@@ -350,18 +363,13 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                         onClick={() => openLead('reserve', reserveOpenerRef)}
                         className="sf-btn sf-btn-ghost col-span-2 px-3"
                       >
-                        Finish my reservation
+                        Completar mi reserva
                       </button>
                     </>
                   ) : (
-                    <button
-                      ref={reserveOpenerRef}
-                      type="button"
-                      onClick={() => openLead('reserve', reserveOpenerRef)}
-                      className="sf-btn sf-btn-ghost px-3"
-                    >
-                      Reserve this vehicle
-                    </button>
+                    <Link href={financingHref} className="sf-btn sf-btn-ghost px-3">
+                      Simular financiación
+                    </Link>
                   )}
                 </div>
                 <button
@@ -369,12 +377,12 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                   onClick={toggleCompare}
                   className={`sf-btn sf-btn-block ${comparing ? 'sf-btn-secondary' : 'sf-btn-ghost'}`}
                   aria-pressed={comparing}
-                  aria-label={comparing ? `Remove ${title} from compare` : `Add ${title} to compare`}
+                  aria-label={comparing ? `Quitar ${title} de la comparación` : `Agregar ${title} a la comparación`}
                 >
                   {comparing ? <Check className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
-                  Compare
+                  Comparar
                 </button>
-                {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Compare holds 4 vehicles.</p>}
+                {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
                 <div className="hidden flex-wrap gap-x-5 gap-y-1 pt-1 text-[length:var(--sf-text-sm)] lg:flex">
                   <button
                     ref={contactOpenerRef}
@@ -382,17 +390,16 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                     onClick={() => openLead('contact', contactOpenerRef)}
                     className="sf-link min-h-10"
                   >
-                    Ask a question
+                    Hacer una consulta
                   </button>
-                  <Link href={financingHref} className="sf-link inline-flex min-h-10 items-center">Financing</Link>
-                  <Link href={tradeInHref} className="sf-link inline-flex min-h-10 items-center">Trade-in</Link>
+                  <Link href={tradeInHref} className="sf-link inline-flex min-h-10 items-center">Entregar mi usado</Link>
                 </div>
               </div>
             )}
 
             <div className="sf-sticker mt-6">
               <div className="sf-sticker-head">
-                <span>Window sticker</span>
+                <span>Ficha técnica</span>
                 <span>{status.label}</span>
               </div>
               <dl>
@@ -402,22 +409,22 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                 </div>
                 <div className="sf-sticker-row">
                   <dt>VIN</dt>
-                  <dd className="text-[length:var(--sf-text-xs)]">{vehicle.vin || 'Not listed'}</dd>
+                  <dd className="text-[length:var(--sf-text-xs)]">{vehicle.vin || 'No informado'}</dd>
                 </div>
                 <div className="sf-sticker-row">
-                  <dt>Mileage</dt>
+                  <dt>Kilometraje</dt>
                   <dd>{formatMileage(vehicle.mileage)}</dd>
                 </div>
                 <div className="sf-sticker-row">
-                  <dt>Condition</dt>
+                  <dt>Estado</dt>
                   <dd>{conditionLabel}</dd>
                 </div>
                 <div className="sf-sticker-row">
                   <dt>Color</dt>
-                  <dd>{vehicle.color || 'Not listed'}</dd>
+                  <dd>{vehicle.color || 'No informado'}</dd>
                 </div>
                 <div className="sf-sticker-row">
-                  <dt>{readOnly ? 'Status' : 'Price'}</dt>
+                  <dt>{readOnly ? 'Estado' : 'Precio'}</dt>
                   <dd className="font-semibold">{displayPrice}</dd>
                 </div>
               </dl>
@@ -426,38 +433,38 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
 
           <div className="min-w-0 lg:col-start-1 lg:row-start-2">
             <section aria-labelledby="vdp-spec">
-              <h2 id="vdp-spec" className="sf-caps text-[0.875rem] font-medium">Specifications</h2>
+              <h2 id="vdp-spec" className="sf-caps text-[0.875rem] font-medium">Especificaciones</h2>
               <dl className="sf-spec mt-4 grid-cols-2 sm:grid-cols-3">
                 {specs.map((spec) => (
                   <div key={spec.label}>
                     <dt>{spec.label}</dt>
-                    <dd className={spec.figure ? 'sf-figure' : undefined}>{spec.value || 'Not listed'}</dd>
+                    <dd className={spec.figure ? 'sf-figure' : undefined}>{spec.value || 'No informado'}</dd>
                   </div>
                 ))}
               </dl>
             </section>
 
             <section className="mt-10 border-t pt-8" style={{ borderColor: 'var(--sf-rule)' }} aria-labelledby="vdp-description">
-              <h2 id="vdp-description" className="sf-caps text-[0.875rem] font-medium">Description</h2>
+              <h2 id="vdp-description" className="sf-caps text-[0.875rem] font-medium">Descripción</h2>
               {vehicle.description ? (
                 <p className="sf-muted mt-4 max-w-[68ch] whitespace-pre-line text-[length:var(--sf-text-md)] leading-relaxed">
                   {vehicle.description}
                 </p>
               ) : (
-                <p className="sf-faint mt-4 text-[length:var(--sf-text-sm)]">No description listed.</p>
+                <p className="sf-faint mt-4 text-[length:var(--sf-text-sm)]">Sin descripción.</p>
               )}
             </section>
 
             {Array.isArray(features) && features.length > 0 && (
               <section className="mt-10 border-t pt-8" style={{ borderColor: 'var(--sf-rule)' }} aria-labelledby="vdp-features">
                 <h2 id="vdp-features" className="sf-title-line sf-caps text-[0.875rem] font-medium">
-                  Features
+                  Equipamiento
                   <span className="sf-chip sf-figure">{features.length}</span>
                 </h2>
                 <ul className="mt-4 grid gap-x-8 sm:grid-cols-2">
                   {features.map((feature: unknown, index: number) => {
                     const name =
-                      typeof feature === 'string' ? feature : (feature as { name?: string })?.name ?? 'Feature'
+                      typeof feature === 'string' ? feature : (feature as { name?: string })?.name ?? 'Equipamiento'
                     return (
                       <li
                         key={index}
@@ -482,7 +489,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
       <div
         className={`fixed inset-x-3 z-40 transition-[opacity,transform] duration-200 lg:hidden ${compareCount > 0 ? 'bottom-[7.25rem] md:bottom-[5.25rem]' : 'bottom-12'} ${actionsVisible ? 'pointer-events-none translate-y-4 opacity-0' : 'opacity-100'}`}
         role="region"
-        aria-label="Vehicle actions"
+        aria-label="Acciones del vehículo"
         aria-hidden={actionsVisible || undefined}
         inert={actionsVisible || undefined}
       >
@@ -496,7 +503,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
             onClick={() => openLead('contact', barContactOpenerRef)}
             className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1"
           >
-            Ask
+            Consultar
           </button>
           <button
             ref={barTestDriveOpenerRef}
@@ -504,10 +511,10 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
             onClick={() => openLead('test-drive', barTestDriveOpenerRef)}
             className="sf-btn sf-btn-primary sf-bar-btn min-w-0 px-1"
           >
-            Test drive
+            Prueba
           </button>
-          <Link href={financingHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Finance</Link>
-          <Link href={tradeInHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Trade-in</Link>
+          <Link href={financingHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Financiar</Link>
+          <Link href={tradeInHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Mi usado</Link>
         </div>
       </div>
       )}
@@ -535,7 +542,7 @@ function VehicleDetailSkeleton() {
       <div
         className="grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-x-12 xl:gap-x-16"
         aria-busy="true"
-        aria-label="Loading vehicle"
+        aria-label="Cargando vehículo"
       >
         <div className="min-w-0">
           <div className="sf-skeleton aspect-[4/3] sm:aspect-[16/10]" />

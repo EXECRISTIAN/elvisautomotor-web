@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Gauge } from 'lucide-react'
+import { Cog, Fuel, Gauge } from 'lucide-react'
+import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 import type { Vehicle } from '../lib/types'
 import { formatMileage, formatPrice } from '../lib/format'
 import { primaryVehicleImage, skipImageOptimizer, vehicleImageUrl } from '../lib/images'
@@ -23,12 +24,17 @@ export function FeaturedVehicleCard({ vehicle, currencyCode, priority = false }:
       </span>
       <span className="flex flex-1 flex-col gap-2 p-4">
         <span className="line-clamp-2 text-[0.95rem] font-bold uppercase leading-snug tracking-[0.02em]">{name}</span>
-        {Number.isFinite(vehicle.mileage) && (
-          <span className="flex items-center gap-1.5 text-[0.75rem] font-medium uppercase" style={{ color: 'var(--elv-cream-ink-2)' }}>
-            <Gauge className="size-3.5" aria-hidden="true" />
-            {formatMileage(vehicle.mileage)}
-          </span>
-        )}
+        <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.72rem] font-medium uppercase" style={{ color: 'var(--elv-cream-ink-2)' }}>
+          {Number.isFinite(vehicle.mileage) && (
+            <span className="inline-flex items-center gap-1"><Gauge className="size-3.5" aria-hidden="true" />{formatMileage(vehicle.mileage)}</span>
+          )}
+          {vehicle.transmission && (
+            <span className="inline-flex items-center gap-1"><Cog className="size-3.5" aria-hidden="true" />{transmissionLabel(vehicle.transmission)}</span>
+          )}
+          {vehicle.fuelType && (
+            <span className="inline-flex items-center gap-1"><Fuel className="size-3.5" aria-hidden="true" />{fuelLabel(vehicle.fuelType)}</span>
+          )}
+        </span>
         <span className="mt-auto pt-2 text-right text-[1.15rem] font-bold tabular-nums">
           {vehicle.price > 0 ? formatPrice(vehicle.price, currencyCode) : 'Consultar precio'}
         </span>

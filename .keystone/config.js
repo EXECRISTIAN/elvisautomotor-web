@@ -1603,6 +1603,31 @@ async function recordDomainEvent(context, input2) {
   );
 }
 
+// features/lib/vehicleSpecs.ts
+var FUEL_OPTIONS = [
+  { value: "nafta", label: "Nafta" },
+  { value: "diesel", label: "Di\xE9sel" },
+  { value: "gnc", label: "GNC" },
+  { value: "nafta-gnc", label: "Nafta / GNC" },
+  { value: "hibrido", label: "H\xEDbrido" },
+  { value: "electrico", label: "El\xE9ctrico" }
+];
+var TRANSMISSION_OPTIONS = [
+  { value: "manual", label: "Manual" },
+  { value: "automatica", label: "Autom\xE1tica" }
+];
+var FUELS = new Set(FUEL_OPTIONS.map((option) => option.value));
+var TRANSMISSIONS = new Set(TRANSMISSION_OPTIONS.map((option) => option.value));
+function normalizeVehicleSpecs(data) {
+  const fuelType = String(data.fuelType ?? "").trim().toLowerCase();
+  if (fuelType && !FUELS.has(fuelType)) throw new Error("Tipo de combustible inv\xE1lido");
+  const transmission = String(data.transmission ?? "").trim().toLowerCase();
+  if (transmission && !TRANSMISSIONS.has(transmission)) throw new Error("Transmisi\xF3n inv\xE1lida");
+  const engine = String(data.engine ?? "").trim();
+  if (engine.length > 40) throw new Error("La cilindrada/motor debe tener como m\xE1ximo 40 caracteres");
+  return { fuelType, transmission, engine };
+}
+
 // features/keystone/models/Vehicle.ts
 var Vehicle = (0, import_core5.list)({
   access: {
@@ -1623,7 +1648,7 @@ var Vehicle = (0, import_core5.list)({
       const normalized = { ...resolvedData };
       if (typeof normalized.vin === "string") normalized.vin = normalized.vin.trim().toUpperCase();
       if (typeof normalized.stockNumber === "string") normalized.stockNumber = normalized.stockNumber.trim().toUpperCase();
-      for (const field of ["make", "model", "trim", "exteriorColor", "interiorColor"]) {
+      for (const field of ["make", "model", "trim", "exteriorColor", "interiorColor", "engine"]) {
         if (typeof normalized[field] === "string") normalized[field] = normalized[field].trim();
       }
       return normalized;
@@ -1744,6 +1769,28 @@ var Vehicle = (0, import_core5.list)({
       ui: {
         description: "Interior upholstery color"
       }
+    }),
+    fuelType: (0, import_fields10.select)({
+      type: "string",
+      options: [...FUEL_OPTIONS],
+      label: "Combustible",
+      access: { update: () => false }
+    }),
+    transmission: (0, import_fields10.select)({
+      type: "string",
+      options: [...TRANSMISSION_OPTIONS],
+      label: "Transmisi\xF3n",
+      access: { update: () => false }
+    }),
+    engine: (0, import_fields10.text)({
+      label: "Cilindrada / motor",
+      access: { update: () => false },
+      ui: { description: "Ej.: 1.6, 2.0 TSI" }
+    }),
+    isFeatured: (0, import_fields10.checkbox)({
+      label: "Destacado en la p\xE1gina principal",
+      defaultValue: false,
+      access: { update: () => false }
     }),
     mileage: (0, import_fields10.integer)({
       label: "Mileage",
@@ -7429,6 +7476,9 @@ function merchandisingSnapshot(stock) {
     listPriceCents: v.listPriceCents ?? null,
     features: v.features ?? [],
     images,
+    ...v.fuelType ? { fuelType: v.fuelType } : {},
+    ...v.transmission ? { transmission: v.transmission } : {},
+    ...v.engine ? { engine: v.engine } : {},
     primaryImagePath: images.find((image5) => image5.isPrimary)?.imagePath || images[0]?.imagePath || ""
   };
 }
@@ -12498,6 +12548,7 @@ function normalizeIntake(input2) {
     trim: boundedText(input2.trim, "Trim", 100, false),
     exteriorColor: boundedText(input2.exteriorColor, "Exterior color", 100, false),
     interiorColor: boundedText(input2.interiorColor, "Interior color", 100, false),
+    ...normalizeVehicleSpecs(input2),
     mileage,
     purchasePriceCents,
     listPriceCents,
@@ -12673,6 +12724,9 @@ async function intakeInventoryVehicleInTransaction(transactionContext, rawInput,
     trim: input2.trim,
     exteriorColor: input2.exteriorColor,
     interiorColor: input2.interiorColor,
+    fuelType: input2.fuelType || null,
+    transmission: input2.transmission || null,
+    engine: input2.engine || "",
     mileage: input2.mileage,
     purchasePriceCents: input2.purchasePriceCents,
     listPriceCents: input2.listPriceCents,
@@ -14921,7 +14975,7 @@ async function inventoryWorkspace(_root, args, context) {
     where: { id: { in: ids } },
     include: {
       rooftop: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, stockNumber: true, year: true, make: true, model: true, trim: true, exteriorColor: true, interiorColor: true, condition: true, mileage: true, status: true, priceCents: true, description: true, images: { orderBy: [{ sortOrder: "asc" }, { id: "asc" }], take: 60, select: { id: true, imagePath: true, image_id: true, image_extension: true, isPrimary: true, sortOrder: true } } } },
+      vehicle: { select: { id: true, vin: true, stockNumber: true, year: true, make: true, model: true, trim: true, exteriorColor: true, interiorColor: true, fuelType: true, transmission: true, engine: true, isFeatured: true, condition: true, mileage: true, status: true, priceCents: true, description: true, images: { orderBy: [{ sortOrder: "asc" }, { id: "asc" }], take: 60, select: { id: true, imagePath: true, image_id: true, image_extension: true, isPrimary: true, sortOrder: true } } } },
       acquisition: { select: { id: true, reference: true, status: true, vin: true, year: true, make: true, model: true, acquisitionSource: true, appraisalCents: true, purchaseCents: true, reconEstimateCents: true, updatedAt: true, vehicleId: true } },
       reconWorkItems: { orderBy: { createdAt: "desc" }, take: 20, select: { id: true, title: true, category: true, status: true, estimatedCostCents: true, actualCostCents: true, dueAt: true, updatedAt: true } },
       merchandisingVersions: { orderBy: { version: "desc" }, take: 1, select: { id: true, version: true, status: true, submittedAt: true, decidedAt: true, decisionReason: true, updatedAt: true } }
@@ -15778,6 +15832,7 @@ function normalizeInventoryVehicleDetails(data, now = /* @__PURE__ */ new Date()
     trim: optionalText4(data.trim, "Trim", 100),
     exteriorColor: optionalText4(data.exteriorColor, "Exterior colour", 100),
     interiorColor: optionalText4(data.interiorColor, "Interior colour", 100),
+    ...normalizeVehicleSpecs(data),
     condition,
     mileage,
     priceCents,
@@ -15786,7 +15841,7 @@ function normalizeInventoryVehicleDetails(data, now = /* @__PURE__ */ new Date()
     description: data.description == null ? null : optionalText4(data.description, "Description", 4e3)
   };
 }
-var TRACKED_FIELDS = ["vin", "year", "make", "model", "trim", "exteriorColor", "interiorColor", "condition", "mileage", "priceCents", "listPriceCents", "features", "description"];
+var TRACKED_FIELDS = ["vin", "year", "make", "model", "trim", "exteriorColor", "interiorColor", "fuelType", "transmission", "engine", "condition", "mileage", "priceCents", "listPriceCents", "features", "description"];
 function sameValue(a, b) {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
@@ -15827,6 +15882,9 @@ async function updateInventoryVehicleDetailsCommand(_root, { data }, context) {
       exteriorColor: vehicle.exteriorColor || "",
       interiorColor: vehicle.interiorColor || "",
       condition: vehicle.condition ?? null,
+      fuelType: vehicle.fuelType || "",
+      transmission: vehicle.transmission || "",
+      engine: vehicle.engine || "",
       mileage: vehicle.mileage ?? null,
       priceCents: vehicle.priceCents ?? null,
       listPriceCents: vehicle.listPriceCents ?? null,
@@ -15862,6 +15920,9 @@ async function updateInventoryVehicleDetailsCommand(_root, { data }, context) {
         exteriorColor: next.exteriorColor,
         interiorColor: next.interiorColor,
         condition: next.condition,
+        fuelType: next.fuelType || null,
+        transmission: next.transmission || null,
+        engine: next.engine,
         mileage: next.mileage,
         priceCents: next.priceCents,
         listPriceCents: next.listPriceCents,
@@ -15879,6 +15940,18 @@ async function updateInventoryVehicleDetailsCommand(_root, { data }, context) {
   return { id: stock.vehicle.id, stockId: stock.id, status: result2.reconStatus, merchandisingStatus: result2.merchandisingStatus, feedStatus: result2.feedStatus, updatedAt: result2.updatedAt, reused };
 }
 var updateInventoryVehicleDetails = inventoryCommand(updateInventoryVehicleDetailsCommand);
+
+// features/keystone/mutations/setInventoryVehicleFeatured.ts
+async function setInventoryVehicleFeatured(_root, { vehicleId, featured }, context) {
+  if (!context.session?.itemId || !permissions.canManageInventory({ session: context.session })) {
+    throw new Error("Se requiere permiso de gesti\xF3n de inventario");
+  }
+  const vehicle = await context.query.Vehicle.findOne({ where: { id: String(vehicleId || "") }, query: "id rooftop { id }" });
+  if (!vehicle?.rooftop?.id) throw new Error("Veh\xEDculo no encontrado o sin acceso");
+  await assertSessionRooftopPermission(context, vehicle.rooftop.id, "canManageInventory");
+  await context.sudo().prisma.vehicle.update({ where: { id: vehicle.id }, data: { isFeatured: Boolean(featured) } });
+  return true;
+}
 
 // features/keystone/mutations/operatorWorkspaces.ts
 async function financeEvidenceForVisibleDeal(context, id) {
@@ -19575,7 +19648,7 @@ function extendGraphqlSchema(baseSchema) {
       type OperationalReportResult { generatedAt: String!, metrics: JSON!, exceptions: JSON! }
       type ScheduledReportDispatchResult { queuedCount: Int!, runIds: [ID!]! }
       type InventoryRooftopResult { id: ID!, name: String! }
-      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, condition: String, mileage: Int, status: String, priceCents: Int, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
+      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, isFeatured: Boolean, condition: String, mileage: Int, status: String, priceCents: Int, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
       type InventoryVehicleImageResult { id: ID!, url: String, isPrimary: Boolean!, sortOrder: Int!, uploaded: Boolean! }
       type InventoryPublicListingResult { live: Boolean!, reason: String, action: String }
       type InventoryCostSummary { purchaseCostCents: Int!, reconCostCents: Int!, otherCostCents: Int!, totalCostCents: Int! }
@@ -19591,13 +19664,13 @@ function extendGraphqlSchema(baseSchema) {
       type InventoryIntakeResult { id: ID!, vehicleId: ID!, acquisitionId: ID!, stockId: ID!, status: String, merchandisingStatus: String!, feedStatus: String!, updatedAt: DateTime!, reused: Boolean! }
       type InventoryFeedCommandResult { id: ID!, rooftopId: ID!, channelKey: String!, status: String!, attemptedCount: Int!, succeededCount: Int!, failedCount: Int!, errorCount: Int!, completedAt: DateTime!, reused: Boolean! }
 
-      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, mileage: Int, purchasePriceCents: Int!, listPriceCents: Int!, priceCents: Int!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
+      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, mileage: Int, purchasePriceCents: Int!, listPriceCents: Int!, priceCents: Int!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
       input EstablishInventoryStockInput { vehicleId: ID, acquisitionId: ID, stockNumber: String!, locationCode: String!, locationLabel: String, purchaseCostCents: Int, condition: String, trim: String, exteriorColor: String, interiorColor: String, reason: String!, idempotencyKey: String! }
       input MoveInventoryStockInput { stockId: ID!, locationCode: String!, locationLabel: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input RecordInventoryCostInput { stockId: ID!, costType: String!, amountCents: Int!, reference: String, reason: String!, idempotencyKey: String! }
       input CreateInventoryReconWorkInput { stockId: ID!, title: String!, category: String!, estimatedCostCents: Int, vendorName: String, assignedToId: ID, dueAt: DateTime, reason: String!, idempotencyKey: String! }
       input TransitionInventoryReconWorkInput { id: ID!, toStatus: String!, actualCostCents: Int, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Int, priceCents: Int!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Int, priceCents: Int!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input UpdateInventoryMerchandisingDraftInput { stockId: ID!, priceCents: Int!, listPriceCents: Int, mileage: Int, description: String!, imagePath: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input AddInventoryVehiclePhotoInput { stockId: ID!, photo: ImageFieldInput, imageUrl: String, reason: String!, idempotencyKey: String! }
       input ArrangeInventoryVehiclePhotosInput { stockId: ID!, imageIds: [ID!]!, reason: String!, idempotencyKey: String! }
@@ -19777,6 +19850,7 @@ function extendGraphqlSchema(baseSchema) {
         arrangeInventoryVehiclePhotos(data: ArrangeInventoryVehiclePhotosInput!): InventoryCommandResult!
         removeInventoryVehiclePhoto(data: RemoveInventoryVehiclePhotoInput!): InventoryCommandResult!
         updateInventoryVehicleDetails(data: UpdateInventoryVehicleDetailsInput!): InventoryCommandResult!
+        setInventoryVehicleFeatured(vehicleId: ID!, featured: Boolean!): Boolean!
         mergeCustomers(data: MergeCustomersInput!): CustomerMergeResult!
         configureLeadRoutingRule(data: ConfigureLeadRoutingRuleInput!): OperatorCommandResult!
         routeLead(data: RouteLeadInput!): OperatorCommandResult!
@@ -19916,6 +19990,7 @@ function extendGraphqlSchema(baseSchema) {
         arrangeInventoryVehiclePhotos,
         removeInventoryVehiclePhoto,
         updateInventoryVehicleDetails,
+        setInventoryVehicleFeatured,
         mergeCustomers: operatorCommand(mergeCustomers),
         configureLeadRoutingRule: operatorCommand(configureLeadRoutingRule),
         routeLead: operatorCommand(routeLead),

@@ -149,6 +149,10 @@ model Vehicle {
   trim                  String                   @default("")
   exteriorColor         String                   @default("")
   interiorColor         String                   @default("")
+  fuelType              String?
+  transmission          String?
+  engine                String                   @default("")
+  isFeatured            Boolean                  @default(false)
   mileage               Int?
   purchasePriceCents    Int?
   listPriceCents        Int?

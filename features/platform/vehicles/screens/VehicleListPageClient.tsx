@@ -96,6 +96,10 @@ import {
   type PublicFeedRunAttempt,
 } from '../lib/publicFeedRunOutcome'
 import { countLabel } from '@/features/platform/lib/format'
+import { FUEL_OPTIONS, TRANSMISSION_OPTIONS } from '@/features/lib/vehicleSpecs'
+
+const SPEC_NONE = 'ninguno'
+const specValue = (value: string) => (value === SPEC_NONE ? '' : value)
 
 type Vehicle = InventoryVehicle
 
@@ -299,7 +303,7 @@ export function VehicleListPageClient({
     }
     const fields: Record<string, string> = type === 'intake' ? {
       vin: '', stockNumber: '', year: String(new Date().getFullYear()), condition: 'used', makeChoice: '', make: '', model: '', trim: '',
-      exteriorColor: '', interiorColor: '', features: '',
+      exteriorColor: '', interiorColor: '', fuelType: SPEC_NONE, transmission: SPEC_NONE, engine: '', features: '',
       purchaseDollars: '', retailDollars: '', mileage: '0', description: '', locationCode: 'INTAKE', acquisitionSource: 'dealer-transfer', sourceReference: '',
     } : type === 'edit' && vehicle ? {
       retailDollars: vehicle.price.toFixed(2), mileage: String(vehicle.mileage), description: vehicle.description,
@@ -400,6 +404,7 @@ export function VehicleListPageClient({
           rooftopId: intakeRooftopId, idempotencyKey: task.idempotencyKey,
           reason: 'Vehicle acquired and stocked from inventory operations desk', acquisitionSource: ACQUISITION_SOURCES.includes(field('acquisitionSource') as typeof ACQUISITION_SOURCES[number]) ? field('acquisitionSource') : 'dealer-transfer', sourceReference: field('sourceReference') || 'operator-recorded',
           vin, stockNumber, year, make, model, trim: field('trim'), exteriorColor: field('exteriorColor'), interiorColor: field('interiorColor'),
+          fuelType: specValue(field('fuelType')), transmission: specValue(field('transmission')), engine: field('engine'),
           mileage, purchasePriceCents, listPriceCents: priceCents, priceCents,
           condition, description: field('description'), features: featureList(task.fields.features || ''), imagePath: '', locationCode, locationLabel: locationCode,
         })
@@ -1203,6 +1208,9 @@ export function VehicleListPageClient({
                 {taskInput('trim', 'Trim (optional)', { required: false, maxLength: 100 })}
                 {taskInput('exteriorColor', 'Exterior colour (optional)', { required: false, maxLength: 100 })}
                 {taskInput('interiorColor', 'Interior colour (optional)', { required: false, maxLength: 100 })}
+                {taskSelect('fuelType', 'Combustible', [{ value: SPEC_NONE, label: 'No informado' }, ...FUEL_OPTIONS])}
+                {taskSelect('transmission', 'Transmisión', [{ value: SPEC_NONE, label: 'No informada' }, ...TRANSMISSION_OPTIONS])}
+                {taskInput('engine', 'Cilindrada / motor (opcional)', { required: false, maxLength: 40 })}
                 {taskInput('mileage', 'Odometer', { type: 'number', min: 0, step: 1 })}
                 {taskInput('purchaseDollars', `Purchase cost (${currencyCode})`, { inputMode: 'decimal' })}
                 {taskInput('retailDollars', `Retail price (${currencyCode})`, { inputMode: 'decimal' })}

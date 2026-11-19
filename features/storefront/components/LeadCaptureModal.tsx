@@ -119,10 +119,10 @@ export function LeadCaptureModal({
   }
 
   const titles: Record<LeadIntent, string> = {
-    contact: 'Contact about this vehicle',
-    'test-drive': 'Schedule a test drive',
-    'get-quote': 'Request a price quote',
-    reserve: 'Reserve this vehicle',
+    contact: 'Consultá por este vehículo',
+    'test-drive': 'Coordiná una prueba de manejo',
+    'get-quote': 'Pedí una cotización',
+    reserve: 'Reservá este vehículo',
   }
 
   const fieldId = (name: string) => `lead-${name}`
@@ -158,7 +158,7 @@ export function LeadCaptureModal({
             onClick={onClose}
             disabled={isSubmitting}
             className="-mr-2 -mt-1 grid size-11 shrink-0 place-items-center rounded-[var(--sf-radius-sm)] transition-colors hover:bg-[var(--sf-paper-2)] disabled:opacity-50"
-            aria-label="Close"
+            aria-label="Cerrar"
           >
             <X className="size-5" aria-hidden="true" />
           </button>
@@ -170,25 +170,25 @@ export function LeadCaptureModal({
             <div className="sf-notice" data-tone="ok">
               <p className="sf-title-line font-semibold">
                 <span className="sf-dot" data-tone="ok" aria-hidden="true" />
-                Request received
+                Solicitud recibida
               </p>
               <p className="sf-muted mt-1 pl-4">{feedback.message}</p>
             </div>
             {feedback.reference && (
               <dl className="sf-sticker">
                 <div className="sf-sticker-row">
-                  <dt>Reference</dt>
+                  <dt>Referencia</dt>
                   <dd>{feedback.reference}</dd>
                 </div>
               </dl>
             )}
-            <button type="button" onClick={onClose} className="sf-btn sf-btn-primary w-full" data-dialog-initial-focus>Done</button>
+            <button type="button" onClick={onClose} className="sf-btn sf-btn-primary w-full" data-dialog-initial-focus>Listo</button>
           </div>
         ) : (
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="min-w-0">
-              <label htmlFor={fieldId('first-name')} className="sf-label">First name</label>
+              <label htmlFor={fieldId('first-name')} className="sf-label">Nombre</label>
               <input
                 id={fieldId('first-name')}
                 type="text"
@@ -201,7 +201,7 @@ export function LeadCaptureModal({
               />
             </div>
             <div className="min-w-0">
-              <label htmlFor={fieldId('last-name')} className="sf-label">Last name</label>
+              <label htmlFor={fieldId('last-name')} className="sf-label">Apellido</label>
               <input
                 id={fieldId('last-name')}
                 type="text"
@@ -227,7 +227,7 @@ export function LeadCaptureModal({
               />
             </div>
             <div className="min-w-0">
-              <label htmlFor={fieldId('phone')} className="sf-label">Phone</label>
+              <label htmlFor={fieldId('phone')} className="sf-label">Teléfono</label>
               <input
                 id={fieldId('phone')}
                 type="tel"
@@ -243,7 +243,7 @@ export function LeadCaptureModal({
           {intent === 'test-drive' && (
             <div className="grid grid-cols-2 gap-3">
               <div className="min-w-0">
-                <label htmlFor={fieldId('preferred-date')} className="sf-label">Date</label>
+                <label htmlFor={fieldId('preferred-date')} className="sf-label">Fecha</label>
                 <PlatformDateInput
                   id={fieldId('preferred-date')}
                   value={formData.preferredDate}
@@ -254,14 +254,14 @@ export function LeadCaptureModal({
                 />
               </div>
               <div className="min-w-0">
-                <label htmlFor={fieldId('preferred-time')} className="sf-label">Time</label>
+                <label htmlFor={fieldId('preferred-time')} className="sf-label">Horario</label>
                 <PlatformSelect
                   id={fieldId('preferred-time')}
                   value={formData.preferredTime}
                   onValueChange={(value) => setFormData((p) => ({ ...p, preferredTime: value }))}
                   className="sf-input sf-trigger sf-figure"
                   required
-                  placeholder="Select"
+                  placeholder="Elegí"
                   aria-invalid={availability.status === 'closed' && formData.preferredDate ? true : undefined}
                   options={availability.status === 'open' ? availability.slots.map((slot) => ({ value: slot, label: slot })) : []}
                 />
@@ -285,8 +285,8 @@ export function LeadCaptureModal({
 
           <div>
             <label htmlFor={fieldId('message')} className="sf-label">
-              {intent === 'contact' ? 'Vehicle question' : 'Message'}
-              {intent !== 'contact' && <span className="sf-faint"> / Optional</span>}
+              {intent === 'contact' ? 'Tu consulta' : 'Mensaje'}
+              {intent !== 'contact' && <span className="sf-faint"> / Opcional</span>}
             </label>
             <textarea
               id={fieldId('message')}
@@ -300,19 +300,19 @@ export function LeadCaptureModal({
 
           {intent === 'reserve' && (
             <p className="sf-muted text-[length:var(--sf-text-sm)]">
-              A refundable deposit of {formatDeposit(vehicle.price)} holds this vehicle. You pay by card on the next screen, and the deposit counts toward the purchase or is refunded in full if you change your mind.
+              Una seña reembolsable de {formatDeposit(vehicle.price)} reserva este vehículo. Pagás con tarjeta en la pantalla siguiente; la seña se descuenta del precio o se devuelve completa si cambiás de opinión.
             </p>
           )}
 
           {feedback.status === 'error' && (
             <p role="alert" className="sf-notice" data-tone="bad">
-              {feedback.message || 'Something went wrong. Please try again.'}
+              {feedback.message || 'Algo salió mal. Intentá de nuevo.'}
             </p>
           )}
 
           <button type="submit" disabled={isSubmitting} className="sf-btn sf-btn-primary w-full" aria-busy={isSubmitting || undefined}>
             {isSubmitting && <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
-            {isSubmitting ? (intent === 'reserve' ? 'Opening secure checkout' : 'Sending') : intent === 'reserve' ? `Pay ${formatDeposit(vehicle.price)} deposit` : 'Submit request'}
+            {isSubmitting ? (intent === 'reserve' ? 'Abriendo el pago seguro' : 'Enviando') : intent === 'reserve' ? `Pagar seña de ${formatDeposit(vehicle.price)}` : 'Enviar solicitud'}
           </button>
         </form>
         )}

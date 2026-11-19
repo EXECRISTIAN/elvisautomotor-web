@@ -7,6 +7,10 @@ export interface Vehicle {
   model: string
   trim: string
   color: string
+  fuelType?: string | null
+  transmission?: string | null
+  engine?: string
+  isFeatured?: boolean
   mileage: number
   price: number
   status: string
@@ -50,6 +54,8 @@ export interface VehicleFilters {
   priceMin?: number
   priceMax?: number
   mileageMax?: number
+  fuelType?: string
+  transmission?: string
   condition?: string
   bodyType?: string
   certified?: boolean

@@ -13,16 +13,21 @@ import { createStorefrontBusiness } from '../lib/business'
 
 const HERO_PHOTO = '/images/showroom-dusk.jpg'
 
-// Hasta que exista la marca "destacado" (etapa 2), se muestran las unidades disponibles más recientes por año.
+// Primero los vehículos marcados como "destacados" en el panel; se completa hasta 4 con las unidades disponibles más nuevas.
 async function getFeaturedVehicles() {
-  return loadHomeQuery(
+  const query = (featuredOnly: boolean) => loadHomeQuery(
     () => fetchGraphQL<unknown>(GET_VEHICLES, {
-      where: { status: { equals: 'available' } },
+      where: { AND: [{ status: { equals: 'available' } }, ...(featuredOnly ? [{ isFeatured: { equals: true } }] : [])] },
       orderBy: [{ year: 'desc' }],
       take: 4,
     }),
     selectHomeFeaturedVehicles<Vehicle>,
   )
+  const [featured, latest] = await Promise.all([query(true), query(false)])
+  if (featured.status !== 'ready') return latest
+  if (latest.status !== 'ready') return featured
+  const ids = new Set(featured.value.map(vehicle => vehicle.id))
+  return { status: 'ready' as const, value: [...featured.value, ...latest.value.filter(vehicle => !ids.has(vehicle.id))].slice(0, 4) }
 }
 
 const HIGHLIGHTS = [

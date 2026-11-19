@@ -37,6 +37,11 @@ function readWhere(where: PublicInventoryOptions['where']) {
           }
         }
         if (group.length) filters.anyOf = [...(filters.anyOf || []), group]
+      } else if (key === 'fuelType' || key === 'transmission') {
+        const option = String(value?.equals || '').trim().toLocaleLowerCase()
+        if (option) filters[key] = option
+      } else if (key === 'isFeatured') {
+        if (value?.equals === true) filters.isFeatured = true
       } else if (key === 'condition') {
         const condition = String(value?.equals || '').trim().toLocaleLowerCase()
         if (condition) filters.condition = condition
@@ -66,6 +71,9 @@ function matches(vehicle: any, filters: Record<string, any>) {
   if (filters.make && !String(vehicle.make || '').toLocaleLowerCase().includes(filters.make)) return false
   if (filters.model && !String(vehicle.model || '').toLocaleLowerCase().includes(filters.model)) return false
   if (filters.condition && String(vehicle.condition || '').toLocaleLowerCase() !== filters.condition) return false
+  if (filters.fuelType && String(vehicle.fuelType || '') !== filters.fuelType) return false
+  if (filters.transmission && String(vehicle.transmission || '') !== filters.transmission) return false
+  if (filters.isFeatured && !vehicle.isFeatured) return false
   if (filters.anyOf?.some((group: Array<{ field: string; search: string }>) =>
     !group.some(({ field, search }) => String(vehicle[field] || '').toLocaleLowerCase().includes(search)))) return false
   return inRange(vehicle.year, filters.year) && inRange(vehicle.priceCents, filters.priceCents) && inRange(vehicle.mileage, filters.mileage)
@@ -173,6 +181,10 @@ async function queryPublicInventory(context: any, options: PublicInventoryOption
         model: vehicle.model,
         trim: vehicle.trim,
         exteriorColor: vehicle.exteriorColor,
+        fuelType: vehicle.fuelType || null,
+        transmission: vehicle.transmission || null,
+        engine: vehicle.engine || '',
+        isFeatured: Boolean(vehicle.isFeatured),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
         status: reserved.has(vehicle.id) ? 'reserved' : vehicle.status,
@@ -268,6 +280,10 @@ export async function publicInventoryVehicleRecord(_root: unknown, { id }: { id:
     model: vehicle.model,
     trim: vehicle.trim,
     exteriorColor: vehicle.exteriorColor,
+    fuelType: vehicle.fuelType || null,
+    transmission: vehicle.transmission || null,
+    engine: vehicle.engine || '',
+    isFeatured: false,
     mileage: vehicle.mileage,
     price: null,
     status: vehicle.status,

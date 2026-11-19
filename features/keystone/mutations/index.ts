@@ -54,6 +54,7 @@ import {
 } from './inventoryPublishingCommands';
 import { addInventoryVehiclePhoto, arrangeInventoryVehiclePhotos, removeInventoryVehiclePhoto } from './inventoryPhotoCommands';
 import { updateInventoryVehicleDetails } from './updateInventoryVehicleDetails';
+import { setInventoryVehicleFeatured } from './setInventoryVehicleFeatured';
 import { crmWorkspace, dealDeskWorkspace, dealWorkspace, deliveryWorkspace, financeWorkspace, fixedOpsWorkspace } from './operatorWorkspaces';
 import { acceptDealWorksheet, addServiceOrderLineItem, completeDealDelivery, openFinanceFollowUp, presentDealWorksheet, reopenDealWorksheet, saveDealWorksheet, selectDealLenderOffer, transferLeadOwnership } from './operatorCommands';
 import { configureLeadRoutingRule, customerDuplicateCandidates, mergeCustomers, routeLead } from './crmIdentityWorkflows';
@@ -122,6 +123,10 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         model: String
         trim: String
         exteriorColor: String
+        fuelType: String
+        transmission: String
+        engine: String
+        isFeatured: Boolean
         mileage: Int
         price: Float
         status: String
@@ -554,7 +559,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       type OperationalReportResult { generatedAt: String!, metrics: JSON!, exceptions: JSON! }
       type ScheduledReportDispatchResult { queuedCount: Int!, runIds: [ID!]! }
       type InventoryRooftopResult { id: ID!, name: String! }
-      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, condition: String, mileage: Int, status: String, priceCents: Int, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
+      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, isFeatured: Boolean, condition: String, mileage: Int, status: String, priceCents: Int, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
       type InventoryVehicleImageResult { id: ID!, url: String, isPrimary: Boolean!, sortOrder: Int!, uploaded: Boolean! }
       type InventoryPublicListingResult { live: Boolean!, reason: String, action: String }
       type InventoryCostSummary { purchaseCostCents: Int!, reconCostCents: Int!, otherCostCents: Int!, totalCostCents: Int! }
@@ -570,13 +575,13 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       type InventoryIntakeResult { id: ID!, vehicleId: ID!, acquisitionId: ID!, stockId: ID!, status: String, merchandisingStatus: String!, feedStatus: String!, updatedAt: DateTime!, reused: Boolean! }
       type InventoryFeedCommandResult { id: ID!, rooftopId: ID!, channelKey: String!, status: String!, attemptedCount: Int!, succeededCount: Int!, failedCount: Int!, errorCount: Int!, completedAt: DateTime!, reused: Boolean! }
 
-      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, mileage: Int, purchasePriceCents: Int!, listPriceCents: Int!, priceCents: Int!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
+      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, mileage: Int, purchasePriceCents: Int!, listPriceCents: Int!, priceCents: Int!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
       input EstablishInventoryStockInput { vehicleId: ID, acquisitionId: ID, stockNumber: String!, locationCode: String!, locationLabel: String, purchaseCostCents: Int, condition: String, trim: String, exteriorColor: String, interiorColor: String, reason: String!, idempotencyKey: String! }
       input MoveInventoryStockInput { stockId: ID!, locationCode: String!, locationLabel: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input RecordInventoryCostInput { stockId: ID!, costType: String!, amountCents: Int!, reference: String, reason: String!, idempotencyKey: String! }
       input CreateInventoryReconWorkInput { stockId: ID!, title: String!, category: String!, estimatedCostCents: Int, vendorName: String, assignedToId: ID, dueAt: DateTime, reason: String!, idempotencyKey: String! }
       input TransitionInventoryReconWorkInput { id: ID!, toStatus: String!, actualCostCents: Int, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Int, priceCents: Int!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Int, priceCents: Int!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input UpdateInventoryMerchandisingDraftInput { stockId: ID!, priceCents: Int!, listPriceCents: Int, mileage: Int, description: String!, imagePath: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input AddInventoryVehiclePhotoInput { stockId: ID!, photo: ImageFieldInput, imageUrl: String, reason: String!, idempotencyKey: String! }
       input ArrangeInventoryVehiclePhotosInput { stockId: ID!, imageIds: [ID!]!, reason: String!, idempotencyKey: String! }
@@ -756,6 +761,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         arrangeInventoryVehiclePhotos(data: ArrangeInventoryVehiclePhotosInput!): InventoryCommandResult!
         removeInventoryVehiclePhoto(data: RemoveInventoryVehiclePhotoInput!): InventoryCommandResult!
         updateInventoryVehicleDetails(data: UpdateInventoryVehicleDetailsInput!): InventoryCommandResult!
+        setInventoryVehicleFeatured(vehicleId: ID!, featured: Boolean!): Boolean!
         mergeCustomers(data: MergeCustomersInput!): CustomerMergeResult!
         configureLeadRoutingRule(data: ConfigureLeadRoutingRuleInput!): OperatorCommandResult!
         routeLead(data: RouteLeadInput!): OperatorCommandResult!
@@ -895,6 +901,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         arrangeInventoryVehiclePhotos,
         removeInventoryVehiclePhoto,
         updateInventoryVehicleDetails,
+        setInventoryVehicleFeatured,
         mergeCustomers: operatorCommand(mergeCustomers),
         configureLeadRoutingRule: operatorCommand(configureLeadRoutingRule),
         routeLead: operatorCommand(routeLead),

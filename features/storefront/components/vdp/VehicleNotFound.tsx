@@ -8,12 +8,12 @@ export function VehicleNotFound() {
         <div>
           <h1 className="sf-title-line sf-heading text-[length:var(--sf-text-xl)]">
             <span className="sf-dot" aria-hidden="true" />
-            Vehicle not found
+            Vehículo no encontrado
           </h1>
-          <p className="sf-muted mt-2 pl-4">This vehicle is no longer available.</p>
+          <p className="sf-muted mt-2 pl-4">Este vehículo ya no está disponible.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/inventory" className="sf-btn sf-btn-primary">Back to inventory</Link>
+          <Link href="/inventory" className="sf-btn sf-btn-primary">Volver al inventario</Link>
         </div>
       </div>
     </Container>

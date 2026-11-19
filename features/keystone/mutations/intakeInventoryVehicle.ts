@@ -1,3 +1,4 @@
+import { normalizeVehicleSpecs } from '../../lib/vehicleSpecs'
 import { domainEventRequestHash, recordDomainEventInTransaction } from '../lifecycle/domainEvents'
 import { assertMerchandisingContent } from '../lifecycle/inventoryPublication'
 import { inventoryStockKey, nonNegativeCents, normalizeStockNumber } from '../lifecycle/inventoryOperationsLifecycle'
@@ -22,6 +23,9 @@ type InventoryIntakeInput = {
   trim?: string | null
   exteriorColor?: string | null
   interiorColor?: string | null
+  fuelType?: string | null
+  transmission?: string | null
+  engine?: string | null
   mileage?: number | null
   purchasePriceCents: number
   listPriceCents: number
@@ -107,6 +111,7 @@ function normalizeIntake(input: InventoryIntakeInput) {
     trim: boundedText(input.trim, 'Trim', 100, false),
     exteriorColor: boundedText(input.exteriorColor, 'Exterior color', 100, false),
     interiorColor: boundedText(input.interiorColor, 'Interior color', 100, false),
+    ...normalizeVehicleSpecs(input),
     mileage,
     purchasePriceCents,
     listPriceCents,
@@ -301,6 +306,9 @@ export async function intakeInventoryVehicleInTransaction(
     trim: input.trim,
     exteriorColor: input.exteriorColor,
     interiorColor: input.interiorColor,
+    fuelType: input.fuelType || null,
+    transmission: input.transmission || null,
+    engine: input.engine || '',
     mileage: input.mileage,
     purchasePriceCents: input.purchasePriceCents,
     listPriceCents: input.listPriceCents,

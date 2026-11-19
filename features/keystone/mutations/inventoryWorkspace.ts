@@ -37,7 +37,7 @@ export async function inventoryWorkspace(_root: unknown, args: any, context: any
     where: { id: { in: ids } },
     include: {
       rooftop: { select: { id: true, name: true } },
-      vehicle: { select: { id: true, vin: true, stockNumber: true, year: true, make: true, model: true, trim: true, exteriorColor: true, interiorColor: true, condition: true, mileage: true, status: true, priceCents: true, description: true, images: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }], take: 60, select: { id: true, imagePath: true, image_id: true, image_extension: true, isPrimary: true, sortOrder: true } } } },
+      vehicle: { select: { id: true, vin: true, stockNumber: true, year: true, make: true, model: true, trim: true, exteriorColor: true, interiorColor: true, fuelType: true, transmission: true, engine: true, isFeatured: true, condition: true, mileage: true, status: true, priceCents: true, description: true, images: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }], take: 60, select: { id: true, imagePath: true, image_id: true, image_extension: true, isPrimary: true, sortOrder: true } } } },
       acquisition: { select: { id: true, reference: true, status: true, vin: true, year: true, make: true, model: true, acquisitionSource: true, appraisalCents: true, purchaseCents: true, reconEstimateCents: true, updatedAt: true, vehicleId: true } },
       reconWorkItems: { orderBy: { createdAt: 'desc' }, take: 20, select: { id: true, title: true, category: true, status: true, estimatedCostCents: true, actualCostCents: true, dueAt: true, updatedAt: true } },
       merchandisingVersions: { orderBy: { version: 'desc' }, take: 1, select: { id: true, version: true, status: true, submittedAt: true, decidedAt: true, decisionReason: true, updatedAt: true } },

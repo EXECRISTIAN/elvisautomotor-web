@@ -6,6 +6,7 @@ import { loadInventoryPublication, lockInventoryStock } from '../lifecycle/inven
 import { assertSessionRooftopPermission } from '../tenantRecords'
 import { inventoryCommand } from './inventoryCommandErrors'
 import { assertActiveInventory } from './inventoryActiveStatus'
+import { normalizeVehicleSpecs } from '../../lib/vehicleSpecs'
 
 const CONDITIONS = new Set(['new', 'used', 'certified'])
 const MAX_CENTS = 2_147_483_647
@@ -61,6 +62,7 @@ export function normalizeInventoryVehicleDetails(data: any, now = new Date()) {
     trim: optionalText(data.trim, 'Trim', 100),
     exteriorColor: optionalText(data.exteriorColor, 'Exterior colour', 100),
     interiorColor: optionalText(data.interiorColor, 'Interior colour', 100),
+    ...normalizeVehicleSpecs(data),
     condition,
     mileage,
     priceCents,
@@ -70,7 +72,7 @@ export function normalizeInventoryVehicleDetails(data: any, now = new Date()) {
   }
 }
 
-const TRACKED_FIELDS = ['vin', 'year', 'make', 'model', 'trim', 'exteriorColor', 'interiorColor', 'condition', 'mileage', 'priceCents', 'listPriceCents', 'features', 'description'] as const
+const TRACKED_FIELDS = ['vin', 'year', 'make', 'model', 'trim', 'exteriorColor', 'interiorColor', 'fuelType', 'transmission', 'engine', 'condition', 'mileage', 'priceCents', 'listPriceCents', 'features', 'description'] as const
 
 function sameValue(a: unknown, b: unknown) {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
@@ -109,6 +111,7 @@ async function updateInventoryVehicleDetailsCommand(_root: unknown, { data }: an
     const before: Record<string, unknown> = {
       vin: vehicle.vin, year: vehicle.year, make: vehicle.make, model: vehicle.model, trim: vehicle.trim || '',
       exteriorColor: vehicle.exteriorColor || '', interiorColor: vehicle.interiorColor || '', condition: vehicle.condition ?? null,
+      fuelType: vehicle.fuelType || '', transmission: vehicle.transmission || '', engine: vehicle.engine || '',
       mileage: vehicle.mileage ?? null, priceCents: vehicle.priceCents ?? null, listPriceCents: vehicle.listPriceCents ?? null,
       features: Array.isArray(vehicle.features) ? vehicle.features : [], description: vehicle.description || '',
     }
@@ -135,6 +138,7 @@ async function updateInventoryVehicleDetailsCommand(_root: unknown, { data }: an
       data: {
         vin: next.vin, year: next.year, make: next.make, model: next.model, trim: next.trim,
         exteriorColor: next.exteriorColor, interiorColor: next.interiorColor, condition: next.condition,
+        fuelType: next.fuelType || null, transmission: next.transmission || null, engine: next.engine,
         mileage: next.mileage, priceCents: next.priceCents, listPriceCents: next.listPriceCents, features: next.features,
         ...(next.description == null ? {} : { description: next.description }),
       },
