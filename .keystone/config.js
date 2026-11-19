@@ -1799,18 +1799,18 @@ var Vehicle = (0, import_core5.list)({
       }
     }),
     // Pricing
-    purchasePriceCents: (0, import_fields10.integer)({
+    purchasePriceCents: (0, import_fields10.float)({
       access: { read: permissions.canViewDealerCost },
       isFilterable: permissions.canViewDealerCost,
       isOrderable: permissions.canViewDealerCost,
       label: "Purchase Price (cents)",
       ui: { description: "Dealer acquisition cost in integer USD cents" }
     }),
-    listPriceCents: (0, import_fields10.integer)({
+    listPriceCents: (0, import_fields10.float)({
       label: "List Price (cents)",
       ui: { description: "Current listing price in integer USD cents" }
     }),
-    priceCents: (0, import_fields10.integer)({
+    priceCents: (0, import_fields10.float)({
       label: "Price (cents)",
       ui: { description: "Compatibility listing price in integer USD cents" }
     }),
@@ -2354,8 +2354,8 @@ var PriceHistory = (0, import_core9.list)({
         description: "Date when price change took effect"
       }
     }),
-    previousPriceCents: (0, import_fields14.integer)({ label: "Previous Price (cents)", ui: { description: "Previous price in integer USD cents" } }),
-    newPriceCents: (0, import_fields14.integer)({ validation: { isRequired: true }, label: "New Price (cents)", ui: { description: "New price in integer USD cents" } }),
+    previousPriceCents: (0, import_fields14.float)({ label: "Previous Price (cents)", ui: { description: "Previous price in integer USD cents" } }),
+    newPriceCents: (0, import_fields14.float)({ validation: { isRequired: true }, label: "New Price (cents)", ui: { description: "New price in integer USD cents" } }),
     previousPrice: (0, import_fields14.virtual)({
       field: import_schema2.graphql.field({ type: import_schema2.graphql.Float, resolve(item) {
         return item.previousPriceCents == null ? null : item.previousPriceCents / 100;
@@ -3312,8 +3312,8 @@ var Deal = (0, import_core14.list)({
       label: "Salesperson"
     }),
     // Pricing
-    vehiclePriceCents: (0, import_fields19.integer)({ label: "Negotiated Price (cents)", ui: { description: "Final negotiated vehicle price in integer USD cents" } }),
-    tradeInValueCents: (0, import_fields19.integer)({ label: "Trade-In Value (cents)", ui: { description: "Trade-in credit in integer USD cents" } }),
+    vehiclePriceCents: (0, import_fields19.float)({ label: "Negotiated Price (cents)", ui: { description: "Final negotiated vehicle price in integer USD cents" } }),
+    tradeInValueCents: (0, import_fields19.float)({ label: "Trade-In Value (cents)", ui: { description: "Trade-in credit in integer USD cents" } }),
     vehiclePrice: (0, import_fields19.virtual)({
       field: import_schema3.graphql.field({ type: import_schema3.graphql.Float, resolve(item) {
         return item.vehiclePriceCents == null ? null : item.vehiclePriceCents / 100;
@@ -3341,9 +3341,9 @@ var Deal = (0, import_core14.list)({
       }
     }),
     // Financing
-    downPaymentCents: (0, import_fields19.integer)({ label: "Planned Down Payment (cents)", ui: { description: "Deal structure only, stored in integer USD cents; not proof of captured funds" } }),
-    financingAmountCents: (0, import_fields19.integer)({ label: "Financing Amount (cents)", ui: { description: "Amount financed in integer USD cents" } }),
-    monthlyPaymentCents: (0, import_fields19.integer)({ label: "Monthly Payment (cents)" }),
+    downPaymentCents: (0, import_fields19.float)({ label: "Planned Down Payment (cents)", ui: { description: "Deal structure only, stored in integer USD cents; not proof of captured funds" } }),
+    financingAmountCents: (0, import_fields19.float)({ label: "Financing Amount (cents)", ui: { description: "Amount financed in integer USD cents" } }),
+    monthlyPaymentCents: (0, import_fields19.float)({ label: "Monthly Payment (cents)" }),
     downPayment: (0, import_fields19.virtual)({
       field: import_schema3.graphql.field({ type: import_schema3.graphql.Float, resolve(item) {
         return item.downPaymentCents == null ? null : item.downPaymentCents / 100;
@@ -3389,7 +3389,7 @@ var Deal = (0, import_core14.list)({
       label: "Status"
     }),
     // Taxes and Fees
-    taxAmountCents: (0, import_fields19.integer)({ label: "Tax Amount (cents)", ui: { description: "Sales tax in integer USD cents" } }),
+    taxAmountCents: (0, import_fields19.float)({ label: "Tax Amount (cents)", ui: { description: "Sales tax in integer USD cents" } }),
     taxAmount: (0, import_fields19.virtual)({
       field: import_schema3.graphql.field({ type: import_schema3.graphql.Float, resolve(item) {
         return item.taxAmountCents == null ? null : item.taxAmountCents / 100;
@@ -3410,10 +3410,10 @@ var Deal = (0, import_core14.list)({
       defaultValue: "cash",
       validation: { isRequired: true }
     }),
-    residualValueCents: (0, import_fields19.integer)({ label: "Lease residual (cents)" }),
+    residualValueCents: (0, import_fields19.float)({ label: "Lease residual (cents)" }),
     moneyFactorBasisPoints: (0, import_fields19.integer)({ label: "Lease money factor (basis points)" }),
     worksheetVersion: (0, import_fields19.integer)({ defaultValue: 0, validation: { isRequired: true } }),
-    grossCents: (0, import_fields19.integer)({ access: { create: () => false, update: () => false }, label: "Front gross estimate excluding fees, product margin and recon (cents)" }),
+    grossCents: (0, import_fields19.float)({ access: { create: () => false, update: () => false }, label: "Front gross estimate excluding fees, product margin and recon (cents)" }),
     presentedSnapshot: (0, import_fields19.json)({ access: { create: () => false, update: () => false }, defaultValue: {} }),
     presentedAt: (0, import_fields19.timestamp)({ access: { create: () => false, update: () => false } }),
     acceptedSnapshot: (0, import_fields19.json)({ access: { create: () => false, update: () => false }, defaultValue: {} }),
@@ -3674,8 +3674,8 @@ var TradeIn = (0, import_core16.list)({
       label: "Mechanical Issues"
     }),
     // Valuation
-    kbbValueCents: (0, import_fields21.integer)({ access: { update: () => false }, label: "Reference Value Storage (cents)", ui: { description: "Legacy storage column for an operator-recorded, provider-neutral reference value", itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } } }),
-    offerAmountCents: (0, import_fields21.integer)({ access: { update: () => false }, label: "Offer Amount (cents)", ui: { description: "Dealership offer in integer USD cents" } }),
+    kbbValueCents: (0, import_fields21.float)({ access: { update: () => false }, label: "Reference Value Storage (cents)", ui: { description: "Legacy storage column for an operator-recorded, provider-neutral reference value", itemView: { fieldMode: "hidden" }, listView: { fieldMode: "hidden" } } }),
+    offerAmountCents: (0, import_fields21.float)({ access: { update: () => false }, label: "Offer Amount (cents)", ui: { description: "Dealership offer in integer USD cents" } }),
     referenceValue: (0, import_fields21.virtual)({
       field: import_schema4.graphql.field({ type: import_schema4.graphql.Float, resolve(item) {
         return item.kbbValueCents == null ? null : item.kbbValueCents / 100;
@@ -4114,8 +4114,8 @@ var ServiceOrder = (0, import_core19.list)({
       label: "Line Items"
     }),
     // Totals (can be calculated from line items or entered manually)
-    laborTotalCents: (0, import_fields24.integer)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
-    partsTotalCents: (0, import_fields24.integer)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
+    laborTotalCents: (0, import_fields24.float)({ label: "Labor Total (cents)", ui: { description: "Total labor charges in integer USD cents" } }),
+    partsTotalCents: (0, import_fields24.float)({ label: "Parts Total (cents)", ui: { description: "Total parts charges in integer USD cents" } }),
     laborTotal: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.laborTotalCents == null ? null : item.laborTotalCents / 100;
@@ -4141,8 +4141,8 @@ var ServiceOrder = (0, import_core19.list)({
         itemView: { fieldMode: "read" }
       }
     }),
-    taxCents: (0, import_fields24.integer)({ label: "Tax (cents)" }),
-    grandTotalCents: (0, import_fields24.integer)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
+    taxCents: (0, import_fields24.float)({ label: "Tax (cents)" }),
+    grandTotalCents: (0, import_fields24.float)({ label: "Grand Total (cents)", ui: { description: "Total including labor, parts, and tax in integer USD cents" } }),
     tax: (0, import_fields24.virtual)({
       field: import_schema5.graphql.field({ type: import_schema5.graphql.Float, resolve(item) {
         return item.taxCents == null ? null : item.taxCents / 100;
@@ -4284,9 +4284,9 @@ var RepairOrderLineItem = (0, import_core20.list)({
         description: "Quantity or hours"
       }
     }),
-    unitPriceCents: (0, import_fields25.integer)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
-    priceCents: (0, import_fields25.integer)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
-    costCents: (0, import_fields25.integer)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
+    unitPriceCents: (0, import_fields25.float)({ validation: { isRequired: true }, label: "Unit Price (cents)", ui: { description: "Price per unit or hourly rate in integer USD cents" } }),
+    priceCents: (0, import_fields25.float)({ validation: { isRequired: true }, label: "Total Price (cents)", ui: { description: "Quantity \xD7 unit price in integer USD cents" } }),
+    costCents: (0, import_fields25.float)({ access: { read: permissions.canViewDealerCost }, label: "Cost (cents)", ui: { description: "Dealer cost in integer USD cents" } }),
     unitPrice: (0, import_fields25.virtual)({
       field: import_schema6.graphql.field({ type: import_schema6.graphql.Float, resolve(item) {
         return item.unitPriceCents / 100;
@@ -4353,7 +4353,7 @@ var ServicePackage = (0, import_core21.list)({
       label: "Description"
     }),
     // Pricing and Duration
-    priceCents: (0, import_fields26.integer)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
+    priceCents: (0, import_fields26.float)({ validation: { isRequired: true, min: 0 }, label: "Price (cents)", ui: { description: "Package price in integer USD cents" } }),
     price: (0, import_fields26.virtual)({
       field: import_schema7.graphql.field({ type: import_schema7.graphql.Float, resolve(item) {
         return item.priceCents / 100;
@@ -4461,8 +4461,8 @@ var PartsInventory = (0, import_core22.list)({
       }
     }),
     // Pricing
-    costCents: (0, import_fields27.integer)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
-    priceCents: (0, import_fields27.integer)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
+    costCents: (0, import_fields27.float)({ validation: { min: 0 }, label: "Cost (cents)", ui: { description: "Dealer cost per unit in integer USD cents" } }),
+    priceCents: (0, import_fields27.float)({ validation: { isRequired: true, min: 0 }, label: "Retail Price (cents)", ui: { description: "Retail price in integer USD cents" } }),
     cost: (0, import_fields27.virtual)({
       field: import_schema8.graphql.field({ type: import_schema8.graphql.Float, resolve(item) {
         return item.costCents == null ? null : item.costCents / 100;
@@ -4900,7 +4900,7 @@ var DealershipProfile = (0, import_core23.list)({
       validation: { isRequired: true, min: 0, max: 1e4 },
       ui: { description: "Default deal sales tax rate; 415 is 4.15%" }
     }),
-    docFeeCents: (0, import_fields28.integer)({
+    docFeeCents: (0, import_fields28.float)({
       label: "Documentation fee (cents)",
       defaultValue: 0,
       validation: { isRequired: true, min: 0 },
@@ -5000,12 +5000,12 @@ var FinancingApplication = (0, import_core24.list)({
     applicantEmail: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
     applicantPhone: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
     employmentStatus: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
-    annualIncomeCents: (0, import_fields29.integer)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
+    annualIncomeCents: (0, import_fields29.float)({ access: privateRead, validation: { isRequired: true, min: 1 } }),
     selfReportedCreditTier: (0, import_fields29.text)({ access: privateRead, validation: { isRequired: true } }),
-    requestedAmountCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
-    plannedMonthlyPaymentCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
-    plannedDownPaymentCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
-    tradeInValueCents: (0, import_fields29.integer)({ validation: { min: 0 } }),
+    requestedAmountCents: (0, import_fields29.float)({ validation: { min: 0 } }),
+    plannedMonthlyPaymentCents: (0, import_fields29.float)({ validation: { min: 0 } }),
+    plannedDownPaymentCents: (0, import_fields29.float)({ validation: { min: 0 } }),
+    tradeInValueCents: (0, import_fields29.float)({ validation: { min: 0 } }),
     aprBasisPoints: (0, import_fields29.integer)({ validation: { min: 0 } }),
     loanTermMonths: (0, import_fields29.integer)({ validation: { min: 0 } }),
     consentAt: (0, import_fields29.timestamp)({ validation: { isRequired: true } }),
@@ -5125,10 +5125,10 @@ var LenderDecision = (0, import_core26.list)({
       ],
       validation: { isRequired: true }
     }),
-    approvedAmountCents: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    approvedAmountCents: (0, import_fields31.float)({ validation: { min: 0 } }),
     aprBasisPoints: (0, import_fields31.integer)({ validation: { min: 0 } }),
     termMonths: (0, import_fields31.integer)({ validation: { min: 0 } }),
-    monthlyPaymentCents: (0, import_fields31.integer)({ validation: { min: 0 } }),
+    monthlyPaymentCents: (0, import_fields31.float)({ validation: { min: 0 } }),
     reasonCodes: (0, import_fields31.json)({ access: restricted2, defaultValue: [] }),
     immutableSnapshot: (0, import_fields31.json)({ access: restricted2, defaultValue: {}, ui: { itemView: { fieldMode: "read" } } }),
     decidedAt: (0, import_fields31.timestamp)({ validation: { isRequired: true } }),
@@ -5483,9 +5483,9 @@ var InventoryAcquisition = (0, import_core32.list)({
     make: (0, import_fields37.text)({ validation: { isRequired: true } }),
     model: (0, import_fields37.text)({ validation: { isRequired: true } }),
     odometer: (0, import_fields37.integer)({ validation: { min: 0 } }),
-    appraisalCents: (0, import_fields37.integer)({ validation: { isRequired: true, min: 0 } }),
-    purchaseCents: (0, import_fields37.integer)({ validation: { min: 0 } }),
-    reconEstimateCents: (0, import_fields37.integer)({ validation: { min: 0 } }),
+    appraisalCents: (0, import_fields37.float)({ validation: { isRequired: true, min: 0 } }),
+    purchaseCents: (0, import_fields37.float)({ validation: { min: 0 } }),
+    reconEstimateCents: (0, import_fields37.float)({ validation: { min: 0 } }),
     vehicle: (0, import_fields37.relationship)({ ref: "Vehicle.acquisition", access: { update: import_access49.denyAll } }),
     immutablePurchaseSnapshot: (0, import_fields37.json)({ defaultValue: null, access: { create: () => false, update: () => false } }),
     purchasedAt: (0, import_fields37.timestamp)(),
@@ -5593,10 +5593,10 @@ var InventoryStock = (0, import_core35.list)({
     locationLabel: (0, import_fields40.text)(),
     stockedAt: (0, import_fields40.timestamp)({ validation: { isRequired: true } }),
     frontlineAt: (0, import_fields40.timestamp)(),
-    purchaseCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    reconCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    otherCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    totalCostCents: (0, import_fields40.integer)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    purchaseCostCents: (0, import_fields40.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    reconCostCents: (0, import_fields40.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    otherCostCents: (0, import_fields40.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    totalCostCents: (0, import_fields40.float)({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
     reconStatus: (0, import_fields40.select)({ type: "string", options: ["not-started", "in-progress", "completed"].map((value) => ({ label: value, value })), defaultValue: "not-started" }),
     merchandisingStatus: (0, import_fields40.select)({ type: "string", options: ["draft", "submitted", "approved", "rejected"].map((value) => ({ label: value, value })), defaultValue: "draft" }),
     approvedRevisionHash: (0, import_fields40.text)({ defaultValue: "", access: { create: import_access53.denyAll, update: import_access53.denyAll, read: permissions.canViewInventory }, label: "Approved marketing revision", ui: { itemView: { fieldMode: "read" } } }),
@@ -5623,7 +5623,7 @@ var InventoryStockEvent = (0, import_core36.list)({
     eventKey: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: "unique" }),
     eventType: (0, import_fields41.text)({ validation: { isRequired: true }, isIndexed: true }),
     reason: (0, import_fields41.text)({ validation: { isRequired: true, length: { max: 500 } } }),
-    amountCents: (0, import_fields41.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    amountCents: (0, import_fields41.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
     evidence: (0, import_fields41.json)({ defaultValue: {} }),
     actor: (0, import_fields41.relationship)({ ref: "User" }),
     occurredAt: (0, import_fields41.timestamp)({ validation: { isRequired: true }, defaultValue: { kind: "now" }, isIndexed: true })
@@ -5646,8 +5646,8 @@ var InventoryReconWorkItem = (0, import_core37.list)({
     title: (0, import_fields42.text)({ validation: { isRequired: true, length: { max: 200 } } }),
     category: (0, import_fields42.select)({ type: "string", options: ["mechanical", "body", "detail", "tires", "inspection", "other"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
     status: (0, import_fields42.select)({ type: "string", options: ["open", "in-progress", "completed", "cancelled"].map((value) => ({ label: value, value })), defaultValue: "open" }),
-    estimatedCostCents: (0, import_fields42.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    actualCostCents: (0, import_fields42.integer)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    estimatedCostCents: (0, import_fields42.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    actualCostCents: (0, import_fields42.float)({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
     vendorName: (0, import_fields42.text)({ validation: { length: { max: 200 } } }),
     assignedTo: (0, import_fields42.relationship)({ ref: "User" }),
     dueAt: (0, import_fields42.timestamp)(),
@@ -6079,8 +6079,8 @@ var FinanceProduct = (0, import_core48.list)({
     providerKey: (0, import_fields53.text)({ validation: { isRequired: true } }),
     active: (0, import_fields53.checkbox)({ defaultValue: true }),
     quotes: (0, import_fields53.relationship)({ ref: "FinanceProductQuote.product", many: true }),
-    retailPriceCents: (0, import_fields53.integer)({ validation: { isRequired: true, min: 0 } }),
-    costCents: (0, import_fields53.integer)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
+    retailPriceCents: (0, import_fields53.float)({ validation: { isRequired: true, min: 0 } }),
+    costCents: (0, import_fields53.float)({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } })
   }
 });
 
@@ -6314,8 +6314,8 @@ var FinanceProductQuote = (0, import_core53.list)({
       })),
       validation: { isRequired: true }
     }),
-    retailPriceCents: (0, import_fields58.integer)({ validation: { min: 0 } }),
-    costCents: (0, import_fields58.integer)({
+    retailPriceCents: (0, import_fields58.float)({ validation: { min: 0 } }),
+    costCents: (0, import_fields58.float)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6380,7 +6380,7 @@ var FinanceProductCancellation = (0, import_core54.list)({
       validation: { isRequired: true }
     }),
     reason: (0, import_fields59.text)({ validation: { isRequired: true } }),
-    refundCents: (0, import_fields59.integer)({ validation: { min: 0 } }),
+    refundCents: (0, import_fields59.float)({ validation: { min: 0 } }),
     evidence: (0, import_fields59.json)({ defaultValue: {} }),
     requestedAt: (0, import_fields59.timestamp)({ validation: { isRequired: true } }),
     completedAt: (0, import_fields59.timestamp)(),
@@ -6491,7 +6491,7 @@ var WeOweItem = (0, import_core56.list)({
       ref: "User",
       db: requiredRelationshipDb("owner")
     }),
-    estimatedCostCents: (0, import_fields61.integer)({
+    estimatedCostCents: (0, import_fields61.float)({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,
@@ -6741,11 +6741,11 @@ var AccountingBatch = (0, import_core61.list)({
     }),
     providerKey: (0, import_fields66.text)({ validation: { isRequired: true } }),
     lines: (0, import_fields66.json)({ defaultValue: [] }),
-    totalDebitCents: (0, import_fields66.integer)({ validation: {
+    totalDebitCents: (0, import_fields66.float)({ validation: {
       isRequired: true,
       min: 0
     } }),
-    totalCreditCents: (0, import_fields66.integer)({ validation: {
+    totalCreditCents: (0, import_fields66.float)({ validation: {
       isRequired: true,
       min: 0
     } }),
@@ -6833,7 +6833,7 @@ var PaymentTransaction = (0, import_core63.list)({
     // A storefront vehicle reservation: the shopper's refundable deposit, tied to the lead it created.
     lead: (0, import_fields68.relationship)({ ref: "Lead.paymentTransactions" }),
     sourceType: (0, import_fields68.select)({ type: "string", options: ["deal", "service", "reservation"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    amountCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 1 } }),
+    amountCents: (0, import_fields68.float)({ validation: { isRequired: true, min: 1 } }),
     currency: (0, import_fields68.text)({ validation: { isRequired: true }, defaultValue: "usd" }),
     providerKey: (0, import_fields68.text)({ validation: { isRequired: true } }),
     // How an operator-recorded payment was taken (cash, check, card, wire, ACH, financing); empty for processor payments.
@@ -6843,8 +6843,8 @@ var PaymentTransaction = (0, import_core63.list)({
     providerSessionId: (0, import_fields68.text)(),
     checkoutUrl: (0, import_fields68.text)(),
     status: (0, import_fields68.select)({ type: "string", options: ["creating", "pending", "authorized", "captured", "failed", "canceled", "partially-refunded", "refunded"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
-    capturedCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
-    refundedCents: (0, import_fields68.integer)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    capturedCents: (0, import_fields68.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
+    refundedCents: (0, import_fields68.float)({ validation: { isRequired: true, min: 0 }, defaultValue: 0 }),
     failureCode: (0, import_fields68.text)(),
     reconciliationReference: (0, import_fields68.text)(),
     reconciledAt: (0, import_fields68.timestamp)(),
@@ -6867,7 +6867,7 @@ var PaymentRefund = (0, import_core64.list)({
     ...trackingFields,
     rooftop: rooftopField(),
     transaction: (0, import_fields69.relationship)({ ref: "PaymentTransaction", db: requiredRelationshipDb("transaction") }),
-    amountCents: (0, import_fields69.integer)({ validation: { isRequired: true, min: 1 } }),
+    amountCents: (0, import_fields69.float)({ validation: { isRequired: true, min: 1 } }),
     reason: (0, import_fields69.text)({ validation: { isRequired: true } }),
     status: (0, import_fields69.select)({ type: "string", options: ["creating", "pending", "succeeded", "failed", "canceled"].map((value) => ({ label: value, value })), validation: { isRequired: true } }),
     providerRefundId: (0, import_fields69.text)(),
@@ -9475,14 +9475,6 @@ async function attachTradeInPhoto(_root, { tradeInId, photoToken, photo }, conte
 // features/keystone/mutations/submitTradeIn.ts
 var CONDITIONS = /* @__PURE__ */ new Set(["excellent", "good", "fair", "poor"]);
 var OWNERSHIP = /* @__PURE__ */ new Set(["own", "financing", "lease"]);
-function preliminaryTradeRange(year, mileage, condition) {
-  const age = (/* @__PURE__ */ new Date()).getFullYear() - year;
-  let base = 3e4 - age * 4500;
-  base -= (mileage - age * 12e3) * 0.1;
-  base *= { excellent: 1.1, good: 1, fair: 0.85, poor: 0.7 }[condition];
-  base = Math.max(base, 2e3);
-  return { min: Math.round(base * 0.9), max: Math.round(base * 1.1) };
-}
 async function submitTradeIn(_root, { data }, context) {
   const firstName = requiredText(data.firstName, "First name", 100);
   const lastName = requiredText(data.lastName, "Last name", 100);
@@ -9500,14 +9492,14 @@ async function submitTradeIn(_root, { data }, context) {
   const vin = optionalText(data.vin, 17, "VIN").toUpperCase();
   const condition = requiredText(data.condition, "Condition", 30);
   const ownership = requiredText(data.ownership, "Ownership", 30);
-  const payoffAmount = finiteNumber(data.payoffAmount || 0, "Payoff amount", { min: 0, max: 1e7 });
+  const notes = optionalText(data.notes, 2e3, "Informaci\xF3n adicional");
+  const payoffAmount = finiteNumber(data.payoffAmount || 0, "Saldo de prenda", { min: 0, max: 1e10 });
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
-    throw new SubmissionError("Condition or ownership is invalid.");
+    throw new SubmissionError("El estado o la titularidad no son v\xE1lidos.");
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
-    throw new SubmissionError("VIN must be a valid 17-character identifier when provided.");
+    throw new SubmissionError("Si carg\xE1s el n\xFAmero de chasis, debe tener 17 caracteres.");
   }
-  const estimate = preliminaryTradeRange(year, mileage, condition);
   const summary = `${year} ${make} ${model}${trim ? ` ${trim}` : ""}`;
   const outcome = await runPublicSubmission({
     context,
@@ -9529,13 +9521,14 @@ async function submitTradeIn(_root, { data }, context) {
       condition,
       ownership,
       payoffAmount,
+      notes,
       interestedVehicleId: optionalText(data.interestedVehicleId, 100, "Interested vehicle")
     },
     aggregateType: "TradeIn",
     aggregateId: (result2) => String(result2.tradeInId),
     handler: async (transactionContext, { rooftopId }) => {
       const vehicle = await resolveAvailableVehicle(transactionContext, data.interestedVehicleId, rooftopId);
-      const interested = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "No replacement vehicle selected";
+      const interested = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "Ninguno";
       const rooftop = { connect: { id: rooftopId } };
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
@@ -9554,7 +9547,7 @@ async function submitTradeIn(_root, { data }, context) {
           trim,
           mileage,
           condition,
-          exteriorCondition: "Storefront appraisal request; detailed exterior inspection pending.",
+          exteriorCondition: notes || "Solicitud web; falta inspecci\xF3n del exterior.",
           interiorCondition: `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ""}`,
           lead: {
             create: {
@@ -9569,10 +9562,10 @@ async function submitTradeIn(_root, { data }, context) {
               timeframe: "immediately",
               tradeInVehicle: summary,
               notes: [
-                `Trade-in appraisal request for ${summary}.`,
-                `Automated preliminary range: ${formatCurrency(estimate.min)}\u2013${formatCurrency(estimate.max)}; not a provider-backed valuation or dealership offer.`,
-                `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ""}.`,
-                `Interested inventory: ${interested}.`
+                `Usado ofrecido desde la web: ${summary}, ${mileage} km.`,
+                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo de prenda informado: ${formatCurrency(payoffAmount)}` : ""}.`,
+                ...notes ? [`Informaci\xF3n del cliente: ${notes}`] : [],
+                `Veh\xEDculo de inter\xE9s: ${interested}.`
               ].join("\n"),
               ...vehicle ? { interestedVehicle: { connect: { id: vehicle.id } } } : {}
             }
@@ -9583,9 +9576,9 @@ async function submitTradeIn(_root, { data }, context) {
       return {
         tradeInId: tradeIn.id,
         leadId: tradeIn.lead.id,
-        estimatedMin: estimate.min,
-        estimatedMax: estimate.max,
-        estimateMode: "automated-preliminary",
+        estimatedMin: null,
+        estimatedMax: null,
+        estimateMode: "manual-appraisal",
         providerRequestSent: false,
         vehicle
       };
@@ -19446,6 +19439,7 @@ function extendGraphqlSchema(baseSchema) {
         condition: String!
         ownership: String!
         payoffAmount: Float
+        notes: String
         interestedVehicleId: ID
         rooftopSlug: String
         idempotencyKey: String!

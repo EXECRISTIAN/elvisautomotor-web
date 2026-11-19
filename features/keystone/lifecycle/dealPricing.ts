@@ -1,5 +1,5 @@
 /** Shared, side-effect-free USD cents contract. No UI or provider is a pricing authority. */
-export const MAX_CENTS = 2_147_483_647
+export const MAX_CENTS = Number.MAX_SAFE_INTEGER
 
 export type MoneyLine = {
   code: string

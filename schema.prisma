@@ -154,9 +154,9 @@ model Vehicle {
   engine                String                   @default("")
   isFeatured            Boolean                  @default(false)
   mileage               Int?
-  purchasePriceCents    Int?
-  listPriceCents        Int?
-  priceCents            Int?
+  purchasePriceCents    Float?
+  listPriceCents        Float?
+  priceCents            Float?
   condition             String?
   status                String?                  @default("available")
   description           String                   @default("")
@@ -251,8 +251,8 @@ model PriceHistory {
   vehicle            Vehicle? @relation("PriceHistory_vehicle", fields: [vehicleId], references: [id])
   vehicleId          String?  @map("vehicle")
   effectiveDate      DateTime @default(now())
-  previousPriceCents Int?
-  newPriceCents      Int
+  previousPriceCents Float?
+  newPriceCents      Float
   changeReason       String   @default("")
   changedBy          User?    @relation("PriceHistory_changedBy", fields: [changedById], references: [id])
   changedById        String?  @map("changedBy")
@@ -399,27 +399,27 @@ model Deal {
   vehicleId                   String?                      @map("vehicle")
   salesperson                 User?                        @relation("Deal_salesperson", fields: [salespersonId], references: [id])
   salespersonId               String?                      @map("salesperson")
-  vehiclePriceCents           Int?
-  tradeInValueCents           Int?
+  vehiclePriceCents           Float?
+  tradeInValueCents           Float?
   tradeInVehicle              TradeIn?                     @relation("Deal_tradeInVehicle", fields: [tradeInVehicleId], references: [id])
   tradeInVehicleId            String?                      @unique @map("tradeInVehicle")
   tradeInDetails              Json?                        @default("{}")
-  downPaymentCents            Int?
-  financingAmountCents        Int?
-  monthlyPaymentCents         Int?
+  downPaymentCents            Float?
+  financingAmountCents        Float?
+  monthlyPaymentCents         Float?
   loanTerm                    Int?
   apr                         Float?
   status                      String?                      @default("pencil")
-  taxAmountCents              Int?
+  taxAmountCents              Float?
   fees                        Json?                        @default("[]")
   rebates                     Json?                        @default("[]")
   products                    Json?                        @default("[]")
   taxLines                    Json?                        @default("[]")
   structureType               String                       @default("cash")
-  residualValueCents          Int?
+  residualValueCents          Float?
   moneyFactorBasisPoints      Int?
   worksheetVersion            Int                          @default(0)
-  grossCents                  Int?
+  grossCents                  Float?
   presentedSnapshot           Json?                        @default("{}")
   presentedAt                 DateTime?
   acceptedSnapshot            Json?                        @default("{}")
@@ -481,8 +481,8 @@ model TradeIn {
   exteriorCondition   String         @default("")
   interiorCondition   String         @default("")
   mechanicalIssues    String         @default("")
-  kbbValueCents       Int?
-  offerAmountCents    Int?
+  kbbValueCents       Float?
+  offerAmountCents    Float?
   mainPhoto_id        String?
   mainPhoto_filesize  Int?
   mainPhoto_width     Int?
@@ -582,10 +582,10 @@ model ServiceOrder {
   partsMovements        PartsMovement[]         @relation("PartsMovement_serviceOrder")
   paymentTransactions   PaymentTransaction[]    @relation("PaymentTransaction_serviceOrder")
   lineItems             RepairOrderLineItem[]   @relation("RepairOrderLineItem_serviceOrder")
-  laborTotalCents       Int?
-  partsTotalCents       Int?
-  taxCents              Int?
-  grandTotalCents       Int?
+  laborTotalCents       Float?
+  partsTotalCents       Float?
+  taxCents              Float?
+  grandTotalCents       Float?
   status                String?                 @default("estimate")
   completedAt           DateTime?
   lockedAt              DateTime?
@@ -607,9 +607,9 @@ model RepairOrderLineItem {
   description    String        @default("")
   partNumber     String        @default("")
   quantity       Float         @default(1)
-  unitPriceCents Int
-  priceCents     Int
-  costCents      Int?
+  unitPriceCents Float
+  priceCents     Float
+  costCents      Float?
 
   @@index([rooftopId])
   @@index([serviceOrderId])
@@ -623,7 +623,7 @@ model ServicePackage {
   rooftopId                              String               @map("rooftop")
   name                                   String               @default("")
   description                            String               @default("")
-  priceCents                             Int
+  priceCents                             Float
   estimatedDuration                      Int?
   includedServices                       Json?                @default("[]")
   from_ServiceAppointment_servicePackage ServiceAppointment[] @relation("ServiceAppointment_servicePackage")
@@ -645,8 +645,8 @@ model PartsInventory {
   movements          PartsMovement[] @relation("PartsMovement_part")
   quantity           Int             @default(0)
   minimumQuantity    Int?
-  costCents          Int?
-  priceCents         Int
+  costCents          Float?
+  priceCents         Float
   supplier           String          @default("")
   supplierPartNumber String          @default("")
 
@@ -675,7 +675,7 @@ model DealershipProfile {
   websiteUrl          String   @default("")
   currencyCode        String   @default("ARS")
   salesTaxRateBps     Int      @default(0)
-  docFeeCents         Int      @default(0)
+  docFeeCents         Float    @default(0)
   homepageTitle       String   @default("")
   homepageDescription String   @default("")
   logoIcon            String   @default("")
@@ -699,12 +699,12 @@ model FinancingApplication {
   applicantEmail             String             @default("")
   applicantPhone             String             @default("")
   employmentStatus           String             @default("")
-  annualIncomeCents          Int
+  annualIncomeCents          Float
   selfReportedCreditTier     String             @default("")
-  requestedAmountCents       Int?
-  plannedMonthlyPaymentCents Int?
-  plannedDownPaymentCents    Int?
-  tradeInValueCents          Int?
+  requestedAmountCents       Float?
+  plannedMonthlyPaymentCents Float?
+  plannedDownPaymentCents    Float?
+  tradeInValueCents          Float?
   aprBasisPoints             Int?
   loanTermMonths             Int?
   consentAt                  DateTime
@@ -756,10 +756,10 @@ model LenderDecision {
   providerKey         String                @default("")
   externalReference   String?
   decision            String
-  approvedAmountCents Int?
+  approvedAmountCents Float?
   aprBasisPoints      Int?
   termMonths          Int?
-  monthlyPaymentCents Int?
+  monthlyPaymentCents Float?
   reasonCodes         Json?                 @default("[]")
   immutableSnapshot   Json?                 @default("{}")
   decidedAt           DateTime
@@ -950,9 +950,9 @@ model InventoryAcquisition {
   make                      String                      @default("")
   model                     String                      @default("")
   odometer                  Int?
-  appraisalCents            Int
-  purchaseCents             Int?
-  reconEstimateCents        Int?
+  appraisalCents            Float
+  purchaseCents             Float?
+  reconEstimateCents        Float?
   vehicle                   Vehicle?                    @relation("InventoryAcquisition_vehicle", fields: [vehicleId], references: [id])
   vehicleId                 String?                     @unique @map("vehicle")
   immutablePurchaseSnapshot Json?
@@ -1033,10 +1033,10 @@ model InventoryStock {
   locationLabel                 String                          @default("")
   stockedAt                     DateTime
   frontlineAt                   DateTime?
-  purchaseCostCents             Int?
-  reconCostCents                Int?                            @default(0)
-  otherCostCents                Int?                            @default(0)
-  totalCostCents                Int?                            @default(0)
+  purchaseCostCents             Float?
+  reconCostCents                Float?                          @default(0)
+  otherCostCents                Float?                          @default(0)
+  totalCostCents                Float?                          @default(0)
   reconStatus                   String?                         @default("not-started")
   merchandisingStatus           String?                         @default("draft")
   approvedRevisionHash          String                          @default("")
@@ -1060,7 +1060,7 @@ model InventoryStockEvent {
   eventKey    String         @unique @default("")
   eventType   String         @default("")
   reason      String         @default("")
-  amountCents Int?
+  amountCents Float?
   evidence    Json?          @default("{}")
   actor       User?          @relation("InventoryStockEvent_actor", fields: [actorId], references: [id])
   actorId     String?        @map("actor")
@@ -1084,8 +1084,8 @@ model InventoryReconWorkItem {
   title              String         @default("")
   category           String
   status             String?        @default("open")
-  estimatedCostCents Int?
-  actualCostCents    Int?
+  estimatedCostCents Float?
+  actualCostCents    Float?
   vendorName         String         @default("")
   assignedTo         User?          @relation("InventoryReconWorkItem_assignedTo", fields: [assignedToId], references: [id])
   assignedToId       String?        @map("assignedTo")
@@ -1360,8 +1360,8 @@ model FinanceProduct {
   providerKey      String                @default("")
   active           Boolean               @default(true)
   quotes           FinanceProductQuote[] @relation("FinanceProductQuote_product")
-  retailPriceCents Int
-  costCents        Int
+  retailPriceCents Float
+  costCents        Float
 
   @@unique([rooftopId, code], map: "FinanceProduct_rooftop_code_key")
   @@index([rooftopId])
@@ -1470,8 +1470,8 @@ model FinanceProductQuote {
   productId         String         @map("product")
   providerKey       String         @default("")
   status            String
-  retailPriceCents  Int?
-  costCents         Int?
+  retailPriceCents  Float?
+  costCents         Float?
   evidenceReference String         @default("")
   requestSnapshot   Json?          @default("{}")
   resultSnapshot    Json?          @default("{}")
@@ -1497,7 +1497,7 @@ model FinanceProductCancellation {
   productCode    String             @default("")
   status         String
   reason         String             @default("")
-  refundCents    Int?
+  refundCents    Float?
   evidence       Json?              @default("{}")
   requestedAt    DateTime
   completedAt    DateTime?
@@ -1544,7 +1544,7 @@ model WeOweItem {
   promisedAt             DateTime
   owner                  User         @relation("WeOweItem_owner", fields: [ownerId], references: [id])
   ownerId                String       @map("owner")
-  estimatedCostCents     Int?
+  estimatedCostCents     Float?
   fulfillmentEvidence    String       @default("")
   customerAcknowledgment String       @default("")
   fulfilledAt            DateTime?
@@ -1651,8 +1651,8 @@ model AccountingBatch {
   status                                String
   providerKey                           String                       @default("")
   lines                                 Json?                        @default("[]")
-  totalDebitCents                       Int
-  totalCreditCents                      Int
+  totalDebitCents                       Float
+  totalCreditCents                      Float
   attemptCount                          Int                          @default(0)
   externalReference                     String                       @default("")
   lastErrorCode                         String                       @default("")
@@ -1698,7 +1698,7 @@ model PaymentTransaction {
   lead                                  Lead?                  @relation("PaymentTransaction_lead", fields: [leadId], references: [id])
   leadId                                String?                @map("lead")
   sourceType                            String
-  amountCents                           Int
+  amountCents                           Float
   currency                              String                 @default("usd")
   providerKey                           String                 @default("")
   paymentMethod                         String                 @default("")
@@ -1708,8 +1708,8 @@ model PaymentTransaction {
   providerSessionId                     String                 @default("")
   checkoutUrl                           String                 @default("")
   status                                String
-  capturedCents                         Int                    @default(0)
-  refundedCents                         Int                    @default(0)
+  capturedCents                         Float                  @default(0)
+  refundedCents                         Float                  @default(0)
   failureCode                           String                 @default("")
   reconciliationReference               String                 @default("")
   reconciledAt                          DateTime?
@@ -1733,7 +1733,7 @@ model PaymentRefund {
   rooftopId                        String                 @map("rooftop")
   transaction                      PaymentTransaction     @relation("PaymentRefund_transaction", fields: [transactionId], references: [id])
   transactionId                    String                 @map("transaction")
-  amountCents                      Int
+  amountCents                      Float
   reason                           String                 @default("")
   status                           String
   providerRefundId                 String                 @default("")

@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { checkbox, integer, relationship, select, text } from '@keystone-6/core/fields'
+import { checkbox, integer, relationship, select, text, float } from '@keystone-6/core/fields'
 import { permissions } from '../access'
 import { canCreateRooftopRecord, rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords'
 import { prismaModelDirectives } from './prismaSchema'
@@ -29,6 +29,6 @@ export const FinanceProduct = list({
     category: select({ type: 'string', options: ['service-contract','gap','maintenance','appearance','tire-wheel','other'].map(value => ({ label: value, value })), validation: { isRequired: true } }),
     providerKey: text({ validation: { isRequired: true } }), active: checkbox({ defaultValue: true }),
     quotes: relationship({ ref: 'FinanceProductQuote.product', many: true }),
-    retailPriceCents: integer({ validation: { isRequired: true, min: 0 } }), costCents: integer({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } }),
+    retailPriceCents: float({ validation: { isRequired: true, min: 0 } }), costCents: float({ validation: { isRequired: true, min: 0 }, access: { read: permissions.canViewDealerCost, create: permissions.canManageFinancing, update: permissions.canManageFinancing } }),
   },
 })

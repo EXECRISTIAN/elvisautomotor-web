@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { allOperations } from '@keystone-6/core/access'
-import { relationship, text, select, integer, timestamp, virtual, json } from '@keystone-6/core/fields'
+import { relationship, text, select, integer, timestamp, virtual, json, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions } from '../access'
@@ -125,8 +125,8 @@ export const ServiceOrder = list({
     }),
 
     // Totals (can be calculated from line items or entered manually)
-    laborTotalCents: integer({ label: 'Labor Total (cents)', ui: { description: 'Total labor charges in integer USD cents' } }),
-    partsTotalCents: integer({ label: 'Parts Total (cents)', ui: { description: 'Total parts charges in integer USD cents' } }),
+    laborTotalCents: float({ label: 'Labor Total (cents)', ui: { description: 'Total labor charges in integer USD cents' } }),
+    partsTotalCents: float({ label: 'Parts Total (cents)', ui: { description: 'Total parts charges in integer USD cents' } }),
     laborTotal: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.laborTotalCents == null ? null : item.laborTotalCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },
@@ -148,8 +148,8 @@ export const ServiceOrder = list({
         itemView: { fieldMode: 'read' },
       },
     }),
-    taxCents: integer({ label: 'Tax (cents)' }),
-    grandTotalCents: integer({ label: 'Grand Total (cents)', ui: { description: 'Total including labor, parts, and tax in integer USD cents' } }),
+    taxCents: float({ label: 'Tax (cents)' }),
+    grandTotalCents: float({ label: 'Grand Total (cents)', ui: { description: 'Total including labor, parts, and tax in integer USD cents' } }),
     tax: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.taxCents == null ? null : item.taxCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

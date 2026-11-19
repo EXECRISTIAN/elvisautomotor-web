@@ -2,9 +2,21 @@ import { MAX_CENTS, MAX_TAX_RATE_BPS } from '@/features/keystone/lifecycle/dealP
 
 const amountPattern = /^\d+(\.\d{0,2})?$|^\.\d{1,2}$/
 
-/** "$33,450.50" -> 3345050. Blank is zero; anything else that is not dollars and cents is null. */
+/**
+ * Normaliza un importe escrito en formato argentino o internacional a "1234.56":
+ * "54.900.000", "54.900.000,50", "54900000", "$ 54.900.000", "33,450.50" (formato EE.UU.).
+ */
+export function normalizeMoneyText(text: string): string {
+  const cleaned = text.trim().replace(/^\$\s*/, '').replace(/\s/g, '')
+  if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(cleaned) || /^\d+,\d{1,2}$/.test(cleaned)) {
+    return cleaned.replace(/\./g, '').replace(',', '.')
+  }
+  return cleaned.replace(/,/g, '')
+}
+
+/** "$ 54.900.000" -> 5490000000. Vacío es cero; cualquier otra cosa que no sea un importe devuelve null. */
 export function parseDollarsToCents(text: string): number | null {
-  const cleaned = text.trim().replace(/^\$/, '').replace(/,/g, '').trim()
+  const cleaned = normalizeMoneyText(text)
   if (!cleaned) return 0
   if (!amountPattern.test(cleaned)) return null
   const [whole, fraction = ''] = cleaned.split('.')
@@ -12,10 +24,10 @@ export function parseDollarsToCents(text: string): number | null {
   return Number.isSafeInteger(cents) && cents <= MAX_CENTS ? cents : null
 }
 
-/** 3345050 -> "33,450.50"; whole dollars drop the cents. */
+/** 5490000000 -> "54.900.000"; con centavos: "54.900.000,50". */
 export function formatCentsForInput(cents: number | null | undefined): string {
   const value = Number(cents) || 0
-  return (value / 100).toLocaleString('en-US', { minimumFractionDigits: value % 100 ? 2 : 0, maximumFractionDigits: 2 })
+  return (value / 100).toLocaleString('es-AR', { minimumFractionDigits: value % 100 ? 2 : 0, maximumFractionDigits: 2 })
 }
 
 /** "4.15" or "4.15%" -> 415 basis points; null when it is not 0-100 with two decimals. */

@@ -97,6 +97,7 @@ import {
 } from '../lib/publicFeedRunOutcome'
 import { countLabel } from '@/features/platform/lib/format'
 import { FUEL_OPTIONS, TRANSMISSION_OPTIONS } from '@/features/lib/vehicleSpecs'
+import { normalizeMoneyText } from '@/features/platform/deals/lib/moneyInput'
 
 const SPEC_NONE = 'ninguno'
 const specValue = (value: string) => (value === SPEC_NONE ? '' : value)
@@ -107,13 +108,13 @@ type InventoryTaskType = 'intake' | 'edit' | 'photos' | 'move' | 'cost' | 'recon
 type StagedPhoto = { id: string; file: File | null; url: string; name: string }
 type InventoryTask = { type: InventoryTaskType; vehicle: Vehicle | null; reconWorkItem?: Vehicle['reconWorkItems'][number]; idempotencyKey: string; fields: Record<string, string>; reconCompletionAttempt?: ReconCompletionAttempt }
 
-/** Accepts 33450, 33,450, $33,450.00 and 33450.5. */
+/** Acepta 54900000, 54.900.000, $ 54.900.000,50 y también 33,450.00. */
 function moneyInputCents(value: string) {
-  const trimmed = value.trim().replace(/^\$\s*/, '')
-  if (!/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?$/.test(trimmed)) return null
-  const [whole, fraction = ''] = trimmed.replace(/,/g, '').split('.')
+  const trimmed = normalizeMoneyText(value)
+  if (!/^\d+(?:\.\d{1,2})?$/.test(trimmed)) return null
+  const [whole, fraction = ''] = trimmed.split('.')
   const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
-  return Number.isSafeInteger(cents) && cents <= 2_147_483_647 ? cents : null
+  return Number.isSafeInteger(cents) ? cents : null
 }
 
 const statusTones: Record<string, DeskTone> = {
@@ -373,7 +374,7 @@ export function VehicleListPageClient({
     const field = (name: string) => task.fields[name]?.trim() || ''
     const money = (name: string, label: string) => {
       const cents = moneyInputCents(field(name))
-      if (cents == null) throw new Error(`${label} debe ser un importe, por ejemplo 33450 o 33450.00.`)
+      if (cents == null) throw new Error(`${label} debe ser un importe, por ejemplo 54.900.000 o 54900000.`)
       return cents
     }
     setTaskError(null)

@@ -36,7 +36,7 @@ async function stockAccess(context: any, id: string) {
 
 function nonNegativeInteger(value: unknown, label: string) {
   const result = Number(value)
-  if (!Number.isSafeInteger(result) || result < 0 || result > 2_147_483_647) throw new Error(`${label} must be non-negative integer cents/count`)
+  if (!Number.isSafeInteger(result) || result < 0 || result > Number.MAX_SAFE_INTEGER) throw new Error(`${label} must be non-negative integer cents/count`)
   return result
 }
 

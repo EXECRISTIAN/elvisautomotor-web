@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { integer, relationship, select, text, timestamp } from '@keystone-6/core/fields';
+import { integer, relationship, select, text, timestamp, float } from '@keystone-6/core/fields';
 import { permissions } from '../access';
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords';
 import { requiredRelationshipDb } from './prismaSchema';
@@ -48,7 +48,7 @@ export const WeOweItem = list({
       ref: 'User',
       db: requiredRelationshipDb('owner')
     }),
-    estimatedCostCents: integer({
+    estimatedCostCents: float({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,

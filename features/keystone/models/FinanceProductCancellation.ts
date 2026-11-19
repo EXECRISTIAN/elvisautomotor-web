@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { integer, json, relationship, select, text, timestamp } from '@keystone-6/core/fields';
+import { integer, json, relationship, select, text, timestamp, float } from '@keystone-6/core/fields';
 import { permissions } from '../access';
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords';
 import { requiredRelationshipDb } from './prismaSchema';
@@ -47,7 +47,7 @@ export const FinanceProductCancellation = list({
       validation: { isRequired: true }
     }),
     reason: text({ validation: { isRequired: true } }),
-    refundCents: integer({ validation: { min: 0 } }),
+    refundCents: float({ validation: { min: 0 } }),
     evidence: json({ defaultValue: {} }),
     requestedAt: timestamp({ validation: { isRequired: true } }),
     completedAt: timestamp(),

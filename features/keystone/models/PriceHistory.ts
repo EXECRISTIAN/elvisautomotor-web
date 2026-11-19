@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { relationship, integer, timestamp, text, virtual } from '@keystone-6/core/fields'
+import { relationship, integer, timestamp, text, virtual, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions } from '../access'
@@ -54,8 +54,8 @@ export const PriceHistory = list({
         description: 'Date when price change took effect',
       },
     }),
-    previousPriceCents: integer({ label: 'Previous Price (cents)', ui: { description: 'Previous price in integer USD cents' } }),
-    newPriceCents: integer({ validation: { isRequired: true }, label: 'New Price (cents)', ui: { description: 'New price in integer USD cents' } }),
+    previousPriceCents: float({ label: 'Previous Price (cents)', ui: { description: 'Previous price in integer USD cents' } }),
+    newPriceCents: float({ validation: { isRequired: true }, label: 'New Price (cents)', ui: { description: 'New price in integer USD cents' } }),
     previousPrice: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.previousPriceCents == null ? null : item.previousPriceCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

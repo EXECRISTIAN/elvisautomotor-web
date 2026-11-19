@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { relationship, text, select, integer, image, virtual, timestamp } from '@keystone-6/core/fields'
+import { relationship, text, select, integer, image, virtual, timestamp, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions, rules, TRADE_IN_ACCESS_PERMISSIONS } from '../access'
@@ -107,8 +107,8 @@ export const TradeIn = list({
     }),
 
     // Valuation
-    kbbValueCents: integer({ access: { update: () => false }, label: 'Reference Value Storage (cents)', ui: { description: 'Legacy storage column for an operator-recorded, provider-neutral reference value', itemView: { fieldMode: 'hidden' }, listView: { fieldMode: 'hidden' } } }),
-    offerAmountCents: integer({ access: { update: () => false }, label: 'Offer Amount (cents)', ui: { description: 'Dealership offer in integer USD cents' } }),
+    kbbValueCents: float({ access: { update: () => false }, label: 'Reference Value Storage (cents)', ui: { description: 'Legacy storage column for an operator-recorded, provider-neutral reference value', itemView: { fieldMode: 'hidden' }, listView: { fieldMode: 'hidden' } } }),
+    offerAmountCents: float({ access: { update: () => false }, label: 'Offer Amount (cents)', ui: { description: 'Dealership offer in integer USD cents' } }),
     referenceValue: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.kbbValueCents == null ? null : item.kbbValueCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

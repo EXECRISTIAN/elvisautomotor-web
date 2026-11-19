@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { integer, json, relationship, select, text, timestamp } from '@keystone-6/core/fields'
+import { integer, json, relationship, select, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, withRooftopScope } from '../tenantRecords'
@@ -64,9 +64,9 @@ export const InventoryAcquisition = list({
     make: text({ validation: { isRequired: true } }),
     model: text({ validation: { isRequired: true } }),
     odometer: integer({ validation: { min: 0 } }),
-    appraisalCents: integer({ validation: { isRequired: true, min: 0 } }),
-    purchaseCents: integer({ validation: { min: 0 } }),
-    reconEstimateCents: integer({ validation: { min: 0 } }),
+    appraisalCents: float({ validation: { isRequired: true, min: 0 } }),
+    purchaseCents: float({ validation: { min: 0 } }),
+    reconEstimateCents: float({ validation: { min: 0 } }),
     vehicle: relationship({ ref: 'Vehicle.acquisition', access: { update: denyAll } }),
     immutablePurchaseSnapshot: json({ defaultValue: null, access: { create: () => false, update: () => false } }),
     purchasedAt: timestamp(),

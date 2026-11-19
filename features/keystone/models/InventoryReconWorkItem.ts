@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { integer, relationship, select, text, timestamp } from '@keystone-6/core/fields'
+import { integer, relationship, select, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, withRooftopScope } from '../tenantRecords'
@@ -18,8 +18,8 @@ export const InventoryReconWorkItem = list({
     title: text({ validation: { isRequired: true, length: { max: 200 } } }),
     category: select({ type: 'string', options: ['mechanical', 'body', 'detail', 'tires', 'inspection', 'other'].map(value => ({ label: value, value })), validation: { isRequired: true } }),
     status: select({ type: 'string', options: ['open', 'in-progress', 'completed', 'cancelled'].map(value => ({ label: value, value })), defaultValue: 'open' }),
-    estimatedCostCents: integer({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    actualCostCents: integer({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    estimatedCostCents: float({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    actualCostCents: float({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
     vendorName: text({ validation: { length: { max: 200 } } }),
     assignedTo: relationship({ ref: 'User' }),
     dueAt: timestamp(),

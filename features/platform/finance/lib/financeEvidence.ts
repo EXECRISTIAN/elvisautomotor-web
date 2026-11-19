@@ -62,7 +62,7 @@ export function parseDollarsToCents(raw: string, label: string) {
   if (!/^\d+(?:\.\d{1,2})?$/.test(value)) throw new Error(`${label} must be a dollar amount, for example 1,299.50.`)
   const [whole, fraction = ''] = value.split('.')
   const result = Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
-  if (!Number.isSafeInteger(result) || result > 2_147_483_647) throw new Error(`${label} is outside the supported range.`)
+  if (!Number.isSafeInteger(result) || result > Number.MAX_SAFE_INTEGER) throw new Error(`${label} is outside the supported range.`)
   return result
 }
 

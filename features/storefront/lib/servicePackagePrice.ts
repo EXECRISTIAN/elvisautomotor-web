@@ -1,6 +1,6 @@
 import { storefrontCurrency } from './format'
 
-const MAX_SERVICE_PACKAGE_PRICE_CENTS = 2_147_483_647
+const MAX_SERVICE_PACKAGE_PRICE_CENTS = Number.MAX_SAFE_INTEGER
 
 export function formatServicePackagePrice(value: unknown, currencyCode?: string | null): string | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null

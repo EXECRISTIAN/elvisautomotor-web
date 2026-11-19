@@ -169,7 +169,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         errorCode: String
         errorMessage: String
         leadId: ID
-        amountCents: Int
+        amountCents: Float
         checkoutUrl: String
         selectedVehicle: PublicSubmissionVehicle
         reused: Boolean
@@ -359,8 +359,8 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
 
       input RecordTradeInAppraisalInput {
         id: ID!
-        referenceValueCents: Int!
-        offerAmountCents: Int!
+        referenceValueCents: Float!
+        offerAmountCents: Float!
         idempotencyKey: String!
       }
 
@@ -370,19 +370,19 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         leadId: ID
         salespersonId: ID
         tradeInId: ID
-        vehiclePriceCents: Int!
-        tradeInValueCents: Int
-        downPaymentCents: Int
+        vehiclePriceCents: Float!
+        tradeInValueCents: Float
+        downPaymentCents: Float
         idempotencyKey: String!
       }
 
       input OpenServiceOrderInput {
         appointmentId: ID!
         diagnosis: String
-        laborTotalCents: Int
-        partsTotalCents: Int
-        taxCents: Int
-        grandTotalCents: Int
+        laborTotalCents: Float
+        partsTotalCents: Float
+        taxCents: Float
+        grandTotalCents: Float
         idempotencyKey: String!
       }
 
@@ -397,8 +397,8 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         make: String!
         model: String!
         odometer: Int
-        appraisalCents: Int!
-        reconEstimateCents: Int
+        appraisalCents: Float!
+        reconEstimateCents: Float
         vehicleId: ID
       }
 
@@ -440,10 +440,10 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         idempotencyKey: String!
         externalReference: String
         decision: String!
-        approvedAmountCents: Int
+        approvedAmountCents: Float
         aprBasisPoints: Int
         termMonths: Int
-        monthlyPaymentCents: Int
+        monthlyPaymentCents: Float
         reasonCodes: [String!]
       }
 
@@ -468,28 +468,28 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       input UpdateLeadDetailsInput { leadId: ID!, expectedUpdatedAt: DateTime!, firstName: String!, lastName: String!, email: String, phone: String, source: String!, budgetRange: String, timeframe: String, tradeInVehicle: String, notes: String, interestedVehicleId: ID, idempotencyKey: String! }
       input UpdateCustomerContactInput { customerId: ID!, expectedUpdatedAt: DateTime!, firstName: String!, lastName: String!, primaryEmail: String, primaryPhone: String, idempotencyKey: String! }
       input UnlinkCustomerHouseholdInput { customerId: ID!, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      type DealVehicleResult { id: ID!, vin: String, stockNumber: String, year: Int, make: String, model: String, trim: String, exteriorColor: String, condition: String, status: String, priceCents: Int }
+      type DealVehicleResult { id: ID!, vin: String, stockNumber: String, year: Int, make: String, model: String, trim: String, exteriorColor: String, condition: String, status: String, priceCents: Float }
       type DealLeadResult { id: ID!, firstName: String!, lastName: String!, status: String }
       type DealApprovalResult { id: ID!, decision: String, notes: String, approvalDate: DateTime, approver: OperatorPersonResult }
-      type DealWorkspaceRecord { id: ID!, financeEvidence: JSON, status: String, structureType: String, worksheetVersion: Int, vehiclePriceCents: Int, tradeInValueCents: Int, downPaymentCents: Int, financingAmountCents: Int, monthlyPaymentCents: Int, taxAmountCents: Int, totalPriceCents: Int!, loanTerm: Int, apr: Float, residualValueCents: Int, moneyFactorBasisPoints: Int, grossCents: Int, fees: JSON, rebates: JSON, products: JSON, taxLines: JSON, presentedSnapshot: JSON, presentedAt: DateTime, acceptedSnapshot: JSON, acceptedAt: DateTime, evidenceSnapshot: JSON, lockedAt: DateTime, saleDate: DateTime, createdAt: DateTime!, updatedAt: DateTime!, vehicle: DealVehicleResult, lead: DealLeadResult, salesperson: OperatorPersonResult, approvals: [DealApprovalResult!]! }
+      type DealWorkspaceRecord { id: ID!, financeEvidence: JSON, status: String, structureType: String, worksheetVersion: Int, vehiclePriceCents: Float, tradeInValueCents: Float, downPaymentCents: Float, financingAmountCents: Float, monthlyPaymentCents: Float, taxAmountCents: Float, totalPriceCents: Float!, loanTerm: Int, apr: Float, residualValueCents: Float, moneyFactorBasisPoints: Int, grossCents: Float, fees: JSON, rebates: JSON, products: JSON, taxLines: JSON, presentedSnapshot: JSON, presentedAt: DateTime, acceptedSnapshot: JSON, acceptedAt: DateTime, evidenceSnapshot: JSON, lockedAt: DateTime, saleDate: DateTime, createdAt: DateTime!, updatedAt: DateTime!, vehicle: DealVehicleResult, lead: DealLeadResult, salesperson: OperatorPersonResult, approvals: [DealApprovalResult!]! }
       type DealWorksheetVersionResult { id: ID!, snapshot: JSON, occurredAt: DateTime!, actor: OperatorPersonResult }
       type DealWorkspaceResult { deal: DealWorkspaceRecord!, worksheetVersions: [DealWorksheetVersionResult!]! }
-      type DealDeskRecord { id: ID!, status: String, vehiclePriceCents: Int, totalPriceCents: Int!, saleDate: DateTime, createdAt: DateTime!, updatedAt: DateTime!, vehicle: DealVehicleResult, lead: DealLeadResult, salesperson: OperatorPersonResult }
-      type DealDeskSummary { visibleCount: Int!, pendingCount: Int!, deliveredCount: Int!, totalRevenueCents: Int! }
+      type DealDeskRecord { id: ID!, status: String, vehiclePriceCents: Float, totalPriceCents: Float!, saleDate: DateTime, createdAt: DateTime!, updatedAt: DateTime!, vehicle: DealVehicleResult, lead: DealLeadResult, salesperson: OperatorPersonResult }
+      type DealDeskSummary { visibleCount: Int!, pendingCount: Int!, deliveredCount: Int!, totalRevenueCents: Float! }
       type DealDeskWorkspaceResult { deals: [DealDeskRecord!]!, summary: DealDeskSummary!, pageInfo: OperatorPageInfo! }
       type FinanceSubmissionResult { id: ID!, providerKey: String!, providerMode: String!, externalRequestSent: Boolean!, status: String!, externalReference: String, queuedAt: DateTime!, submittedAt: DateTime }
-      type FinanceDecisionResult { id: ID!, providerKey: String!, decision: String!, approvedAmountCents: Int, aprBasisPoints: Int, termMonths: Int, monthlyPaymentCents: Int, reasonCodes: JSON, decidedAt: DateTime! }
+      type FinanceDecisionResult { id: ID!, providerKey: String!, decision: String!, approvedAmountCents: Float, aprBasisPoints: Int, termMonths: Int, monthlyPaymentCents: Float, reasonCodes: JSON, decidedAt: DateTime! }
       type FinanceTaskResult { id: ID!, title: String, dueDate: DateTime, completed: Boolean, priority: String }
       type FinanceLeadResult { id: ID!, rooftop: InventoryRooftopResult, firstName: String, lastName: String, email: String, phone: String, status: String, createdAt: DateTime, interestedVehicle: DealVehicleResult, tasks: [FinanceTaskResult!]! }
-      type FinanceApplicationResult { id: ID!, reference: String, status: String, applicantName: String, applicantEmail: String, applicantPhone: String, employmentStatus: String, annualIncomeCents: Int, selfReportedCreditTier: String, requestedAmountCents: Int, plannedMonthlyPaymentCents: Int, plannedDownPaymentCents: Int, tradeInValueCents: Int, aprBasisPoints: Int, loanTermMonths: Int, consentAt: DateTime, submittedAt: DateTime, updatedAt: DateTime, vehicle: DealVehicleResult, lead: FinanceLeadResult, submissions: [FinanceSubmissionResult!]!, decisions: [FinanceDecisionResult!]! }
+      type FinanceApplicationResult { id: ID!, reference: String, status: String, applicantName: String, applicantEmail: String, applicantPhone: String, employmentStatus: String, annualIncomeCents: Float, selfReportedCreditTier: String, requestedAmountCents: Float, plannedMonthlyPaymentCents: Float, plannedDownPaymentCents: Float, tradeInValueCents: Float, aprBasisPoints: Int, loanTermMonths: Int, consentAt: DateTime, submittedAt: DateTime, updatedAt: DateTime, vehicle: DealVehicleResult, lead: FinanceLeadResult, submissions: [FinanceSubmissionResult!]!, decisions: [FinanceDecisionResult!]! }
       type FinanceDealLeadResult { id: ID!, firstName: String, lastName: String, email: String, phone: String }
       type FinanceDealVehicleResult { id: ID!, year: Int, make: String, model: String, stockNumber: String, vin: String, purchasePrice: Float }
       type FinanceDealApprovalResult { id: ID!, decision: String, approvalDate: DateTime, notes: String, approver: OperatorPersonResult }
       type FinanceDealResult { id: ID!, worksheetVersion: Int, structureType: String, financeEvidence: JSON, rooftop: InventoryRooftopResult, vehiclePrice: Float, tradeInValue: Float, downPayment: Float, financingAmount: Float, monthlyPayment: Float, loanTerm: Int, apr: Float, taxAmount: Float, status: String, totalPrice: Float, profit: Float, createdAt: DateTime, updatedAt: DateTime, salesperson: OperatorPersonResult, lead: FinanceDealLeadResult, vehicle: FinanceDealVehicleResult, approvals: [FinanceDealApprovalResult!]! }
       type FinanceWorkspaceSummary { visibleCount: Int!, submittedCount: Int!, reviewCount: Int!, approvedCount: Int! }
-      type FinanceProductResult { id: ID!, rooftop: InventoryRooftopResult!, code: String!, name: String!, category: String!, providerKey: String!, active: Boolean!, retailPriceCents: Int!, costCents: Int, updatedAt: DateTime! }
-      type FinanceProductQuoteResult { id: ID!, deal: FinanceDealResult, product: FinanceProductResult, providerKey: String!, status: String!, retailPriceCents: Int, evidenceReference: String, requestedAt: DateTime!, completedAt: DateTime }
-      type FinanceProductCancellationResult { id: ID!, deal: FinanceDealResult, menu: FinanceMenuResult, productCode: String!, status: String!, reason: String!, refundCents: Int, requestedAt: DateTime!, completedAt: DateTime }
+      type FinanceProductResult { id: ID!, rooftop: InventoryRooftopResult!, code: String!, name: String!, category: String!, providerKey: String!, active: Boolean!, retailPriceCents: Float!, costCents: Float, updatedAt: DateTime! }
+      type FinanceProductQuoteResult { id: ID!, deal: FinanceDealResult, product: FinanceProductResult, providerKey: String!, status: String!, retailPriceCents: Float, evidenceReference: String, requestedAt: DateTime!, completedAt: DateTime }
+      type FinanceProductCancellationResult { id: ID!, deal: FinanceDealResult, menu: FinanceMenuResult, productCode: String!, status: String!, reason: String!, refundCents: Float, requestedAt: DateTime!, completedAt: DateTime }
       type FinanceMenuResult { id: ID!, deal: FinanceDealResult, version: Int!, status: String!, optionsSnapshot: JSON, selectedProductCodes: JSON, declinedProductCodes: JSON, disclosureAcknowledgment: String, presentedAt: DateTime!, decidedAt: DateTime }
       type FinanceComplianceResult { id: ID!, deal: FinanceDealResult, checkType: String!, providerKey: String!, status: String!, resultCode: String, requestedAt: DateTime!, completedAt: DateTime }
       type FinanceContractResult { id: ID!, deal: FinanceDealResult, status: String!, providerKey: String!, envelopeReference: String, requiredDocuments: JSON, documentChecklist: JSON, sentAt: DateTime, signedAt: DateTime, lastWebhookAt: DateTime, updatedAt: DateTime! }
@@ -497,26 +497,26 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       type FinanceWorkspaceResult { applications: [FinanceApplicationResult!]!, deals: [FinanceDealResult!]!, products: [FinanceProductResult!]!, productQuotes: [FinanceProductQuoteResult!]!, productCancellations: [FinanceProductCancellationResult!]!, menus: [FinanceMenuResult!]!, complianceChecks: [FinanceComplianceResult!]!, contractPackages: [FinanceContractResult!]!, fundingCases: [FinanceFundingResult!]!, summary: FinanceWorkspaceSummary!, pageInfo: OperatorPageInfo! }
       type DeliveryDealResult { id: ID!, financeEvidence: JSON, status: String, saleDate: DateTime, lockedAt: DateTime, updatedAt: DateTime, vehicle: DealVehicleResult, lead: DealLeadResult, salesperson: OperatorPersonResult }
       type DeliveryCaseResult { id: ID!, deliverySnapshot: JSON, deal: DeliveryDealResult, status: String!, appointmentAt: DateTime, arrivedAt: DateTime, checklist: JSON, customerAcknowledgment: String, acknowledgedAt: DateTime, updatedAt: DateTime!, weOweItems: [WeOweResult!]! }
-      type WeOweResult { id: ID!, description: String!, status: String!, promisedAt: DateTime!, owner: OperatorPersonResult, estimatedCostCents: Int, fulfillmentEvidence: String, customerAcknowledgment: String, fulfilledAt: DateTime, updatedAt: DateTime! }
+      type WeOweResult { id: ID!, description: String!, status: String!, promisedAt: DateTime!, owner: OperatorPersonResult, estimatedCostCents: Float, fulfillmentEvidence: String, customerAcknowledgment: String, fulfilledAt: DateTime, updatedAt: DateTime! }
       type DeliveryWorkspaceSummary { readyCount: Int!, deliveredCount: Int! }
       type DeliveryWorkspaceResult { deliveries: [DeliveryDealResult!]!, cases: [DeliveryCaseResult!]!, summary: DeliveryWorkspaceSummary!, pageInfo: OperatorPageInfo! }
-      type FixedOpsLineResult { id: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Int!, priceCents: Int! }
+      type FixedOpsLineResult { id: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Float!, priceCents: Float! }
       type FixedOpsLeadResult { id: ID!, firstName: String!, lastName: String!, email: String, phone: String }
-      type FixedOpsAppointmentOrderResult { id: ID!, status: String, grandTotalCents: Int }
+      type FixedOpsAppointmentOrderResult { id: ID!, status: String, grandTotalCents: Float }
       type FixedOpsServicePackageResult { id: ID!, name: String }
       type FixedOpsAppointmentResult { id: ID!, appointmentDate: DateTime, serviceType: String, servicePackage: FixedOpsServicePackageResult, status: String, vehicleVin: String, transportationNeed: String, capacitySlot: String, customerVehicleDescription: String, description: String, estimatedDuration: Int, mileageIn: Int, advisorNotes: String, rooftop: InventoryRooftopResult, lead: FixedOpsLeadResult, assignedTech: OperatorPersonResult, serviceOrder: FixedOpsAppointmentOrderResult }
       type FixedOpsLaborResult { id: ID!, operationCode: String!, description: String!, status: String!, technician: OperatorPersonResult, soldHours: Float, actualMinutes: Int, timePunches: JSON, startedAt: DateTime, completedAt: DateTime }
-      type FixedOpsOrderResult { id: ID!, rooftop: InventoryRooftopResult, status: String, concern: String!, cause: String!, correction: String!, payType: String!, authorizationStatus: String!, authorizationEvidence: JSON, inspectionEvidence: JSON, declinedWork: JSON, invoiceNumber: String, diagnosis: String!, workPerformed: String!, recommendations: String!, laborTotalCents: Int!, partsTotalCents: Int!, taxCents: Int!, grandTotalCents: Int!, completedAt: DateTime, settledAt: DateTime, updatedAt: DateTime, appointment: FixedOpsAppointmentResult, laborOperations: [FixedOpsLaborResult!]!, lineItems: [FixedOpsLineResult!]! }
+      type FixedOpsOrderResult { id: ID!, rooftop: InventoryRooftopResult, status: String, concern: String!, cause: String!, correction: String!, payType: String!, authorizationStatus: String!, authorizationEvidence: JSON, inspectionEvidence: JSON, declinedWork: JSON, invoiceNumber: String, diagnosis: String!, workPerformed: String!, recommendations: String!, laborTotalCents: Float!, partsTotalCents: Float!, taxCents: Float!, grandTotalCents: Float!, completedAt: DateTime, settledAt: DateTime, updatedAt: DateTime, appointment: FixedOpsAppointmentResult, laborOperations: [FixedOpsLaborResult!]!, lineItems: [FixedOpsLineResult!]! }
       type FixedOpsWorkspaceSummary { openOrderCount: Int!, awaitingOrderCount: Int! }
-      type FixedOpsPartResult { id: ID!, partNumber: String, description: String, binLocation: String, quantity: Int, committedQuantity: Int, onOrderQuantity: Int, minimumQuantity: Int, priceCents: Int, supplier: String }
+      type FixedOpsPartResult { id: ID!, partNumber: String, description: String, binLocation: String, quantity: Int, committedQuantity: Int, onOrderQuantity: Int, minimumQuantity: Int, priceCents: Float, supplier: String }
       type PartsMovementResult { id: ID!, part: FixedOpsPartResult, serviceOrder: FixedOpsOrderResult, movementType: String!, quantityDelta: Int!, onHandAfter: Int!, committedAfter: Int!, onOrderAfter: Int!, reference: String!, reason: String!, occurredAt: DateTime! }
       type PartsPurchaseOrderResult { id: ID!, reference: String!, supplier: String!, status: String!, lines: JSON, orderedAt: DateTime, receivedAt: DateTime, updatedAt: DateTime! }
       type FixedOpsWorkspaceResult { serviceRooftops: [InventoryRooftopResult!]!, orders: [FixedOpsOrderResult!]!, appointments: [FixedOpsAppointmentResult!]!, parts: [FixedOpsPartResult!]!, partsMovements: [PartsMovementResult!]!, purchaseOrders: [PartsPurchaseOrderResult!]!, summary: FixedOpsWorkspaceSummary!, pageInfo: OperatorPageInfo! }
       type OperatorCommandResult { id: ID!, status: String, updatedAt: DateTime!, reused: Boolean! }
-      type DealLenderOfferResult { id: ID!, providerKey: String!, decision: String!, approvedAmountCents: Int, aprBasisPoints: Int, termMonths: Int, monthlyPaymentCents: Int, reasonCodes: JSON, decidedAt: DateTime!, selected: Boolean! }
+      type DealLenderOfferResult { id: ID!, providerKey: String!, decision: String!, approvedAmountCents: Float, aprBasisPoints: Int, termMonths: Int, monthlyPaymentCents: Float, reasonCodes: JSON, decidedAt: DateTime!, selected: Boolean! }
 
       input TransferLeadOwnershipInput { leadId: ID!, assignedToId: ID!, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input SaveDealWorksheetInput { dealId: ID!, structureType: String, vehiclePriceCents: Int!, tradeInValueCents: Int, downPaymentCents: Int, monthlyPaymentCents: Int, loanTerm: Int, apr: Float, residualValueCents: Int, moneyFactorBasisPoints: Int, fees: JSON, rebates: JSON, products: JSON, taxLines: JSON, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input SaveDealWorksheetInput { dealId: ID!, structureType: String, vehiclePriceCents: Float!, tradeInValueCents: Float, downPaymentCents: Float, monthlyPaymentCents: Float, loanTerm: Int, apr: Float, residualValueCents: Float, moneyFactorBasisPoints: Int, fees: JSON, rebates: JSON, products: JSON, taxLines: JSON, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input PresentDealWorksheetInput { dealId: ID!, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
       input AcceptDealWorksheetInput { dealId: ID!, expectedUpdatedAt: DateTime!, acknowledgment: String!, idempotencyKey: String! }
       input SelectDealLenderOfferInput { dealId: ID!, lenderDecisionId: ID!, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
@@ -525,10 +525,10 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       input ManageDeliveryCaseInput { dealId: ID!, action: String!, appointmentAt: DateTime, checklist: JSON, customerAcknowledgment: String, reason: String, idempotencyKey: String! }
       input CreateWalkInTradeInInput { rooftopId: ID!, leadId: ID, vin: String, year: String!, make: String!, model: String!, trim: String, mileage: Int, condition: String, exteriorCondition: String, interiorCondition: String, mechanicalIssues: String, idempotencyKey: String! }
       input SetDealTradeInInput { dealId: ID!, tradeInId: ID, expectedUpdatedAt: DateTime!, reason: String, idempotencyKey: String! }
-      input ManageWeOweItemInput { dealId: ID!, itemId: ID, action: String!, description: String, promisedAt: DateTime, ownerId: ID, estimatedCostCents: Int, fulfillmentEvidence: String, customerAcknowledgment: String, idempotencyKey: String! }
+      input ManageWeOweItemInput { dealId: ID!, itemId: ID, action: String!, description: String, promisedAt: DateTime, ownerId: ID, estimatedCostCents: Float, fulfillmentEvidence: String, customerAcknowledgment: String, idempotencyKey: String! }
       input RecordServiceOrderEvidenceInput { serviceOrderId: ID!, concern: String!, cause: String!, correction: String!, payType: String!, authorizationStatus: String!, authorizationEvidence: JSON!, inspectionEvidence: JSON!, declinedWork: JSON!, invoiceNumber: String, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
       input ManageLaborOperationInput { serviceOrderId: ID!, operationId: ID, action: String!, operationCode: String, description: String, soldHours: Float, technicianId: ID, actualMinutes: Int, idempotencyKey: String! }
-      input ConfigurePartInput { partId: ID, rooftopId: ID, partNumber: String!, description: String!, binLocation: String, minimumQuantity: Int, costCents: Int!, priceCents: Int!, supplier: String, supplierPartNumber: String, expectedUpdatedAt: DateTime, idempotencyKey: String! }
+      input ConfigurePartInput { partId: ID, rooftopId: ID, partNumber: String!, description: String!, binLocation: String, minimumQuantity: Int, costCents: Float!, priceCents: Float!, supplier: String, supplierPartNumber: String, expectedUpdatedAt: DateTime, idempotencyKey: String! }
       input RecordPartsMovementInput { partId: ID!, serviceOrderId: ID, movementType: String!, quantity: Int!, quantityDelta: Int, reference: String!, reason: String!, idempotencyKey: String! }
       input ManagePartsPurchaseOrderInput { purchaseOrderId: ID, rooftopId: ID, action: String!, reference: String, supplier: String, lines: JSON, receiptLines: JSON, expectedUpdatedAt: DateTime, idempotencyKey: String! }
       input ConfigureAccountingMappingInput { rooftopId: ID!, sourceType: String!, sourceCode: String!, debitAccount: String!, creditAccount: String!, providerKey: String!, idempotencyKey: String! }
@@ -540,59 +540,59 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         statusCode: Int
         error: String
       }
-      input CreatePaymentCheckoutInput { sourceType: String!, sourceId: ID!, amountCents: Int!, providerKey: String!, idempotencyKey: String! }
-      input RequestPaymentRefundInput { transactionId: ID!, amountCents: Int!, reason: String!, idempotencyKey: String! }
+      input CreatePaymentCheckoutInput { sourceType: String!, sourceId: ID!, amountCents: Float!, providerKey: String!, idempotencyKey: String! }
+      input RequestPaymentRefundInput { transactionId: ID!, amountCents: Float!, reason: String!, idempotencyKey: String! }
       input ReconcilePaymentInput { transactionId: ID!, reconciliationReference: String!, idempotencyKey: String! }
       input SaveOperationalReportInput { rooftopId: ID!, reportId: ID, name: String!, reportType: String!, filters: JSON, exportFormat: String!, schedule: String!, active: Boolean = true, expectedUpdatedAt: String, idempotencyKey: String! }
       input RunSavedReportInput { reportId: ID!, runId: ID, idempotencyKey: String! }
-      input AddServiceOrderLineInput { serviceOrderId: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Int!, costCents: Int, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
-      input UpdateServiceOrderLineInput { serviceOrderId: ID!, lineItemId: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Int!, costCents: Int, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
+      input AddServiceOrderLineInput { serviceOrderId: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Float!, costCents: Float, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
+      input UpdateServiceOrderLineInput { serviceOrderId: ID!, lineItemId: ID!, itemType: String!, description: String!, partNumber: String, quantity: Float!, unitPriceCents: Float!, costCents: Float, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
       input RemoveServiceOrderLineInput { serviceOrderId: ID!, lineItemId: ID!, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
-      input SetServiceOrderTaxInput { serviceOrderId: ID!, taxCents: Int!, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
+      input SetServiceOrderTaxInput { serviceOrderId: ID!, taxCents: Float!, expectedUpdatedAt: DateTime!, idempotencyKey: String! }
       input OpenFinanceFollowUpInput { leadId: ID!, reason: String!, idempotencyKey: String! }
-      input ConfigureFinanceProductInput { rooftopId: ID!, code: String!, name: String!, category: String!, providerKey: String!, retailPriceCents: Int!, costCents: Int, active: Boolean, expectNew: Boolean, idempotencyKey: String! }
-      input RecordFinanceProductQuoteInput { dealId: ID!, productId: ID!, status: String!, retailPriceCents: Int, costCents: Int, termMonths: Int, evidenceReference: String, idempotencyKey: String! }
+      input ConfigureFinanceProductInput { rooftopId: ID!, code: String!, name: String!, category: String!, providerKey: String!, retailPriceCents: Float!, costCents: Float, active: Boolean, expectNew: Boolean, idempotencyKey: String! }
+      input RecordFinanceProductQuoteInput { dealId: ID!, productId: ID!, status: String!, retailPriceCents: Float, costCents: Float, termMonths: Int, evidenceReference: String, idempotencyKey: String! }
       input RecordLenderSubmissionStatusInput { submissionId: ID!, status: String!, externalReference: String, errorCode: String, idempotencyKey: String! }
       input PresentFinanceMenuInput { dealId: ID!, expectedUpdatedAt: DateTime!, productCodes: JSON!, idempotencyKey: String! }
       input DecideFinanceMenuInput { dealId: ID!, expectedUpdatedAt: DateTime!, menuId: ID!, selectedProductCodes: JSON!, declinedProductCodes: JSON!, disclosureAcknowledgment: String!, idempotencyKey: String! }
       input RecordFinanceComplianceInput { dealId: ID!, expectedUpdatedAt: DateTime!, checkType: String!, providerKey: String!, status: String!, resultCode: String, evidenceReference: String, idempotencyKey: String! }
       input ManageFinanceContractInput { dealId: ID!, expectedUpdatedAt: DateTime!, action: String!, providerKey: String, requiredDocuments: JSON, documentChecklist: JSON, providerStatus: String, envelopeReference: String, evidenceSource: String, evidenceReference: String, webhookEventId: String, idempotencyKey: String! }
       input ReviewFinancePrerequisitesInput { dealId: ID!, worksheetVersion: Int!, expectedUpdatedAt: DateTime!, expectedPrerequisiteDigest: String!, providerKey: String!, reviewReference: String!, policyReference: String!, policyVersion: String!, reviewerAuthorityReference: String!, idempotencyKey: String! }
-      input ManageFinanceFundingInput { dealId: ID!, worksheetVersion: Int!, expectedUpdatedAt: DateTime!, expectedFundingUpdatedAt: DateTime, status: String!, checklist: JSON!, exceptions: JSON!, fundingReference: String, paymentAmountCents: Int, paymentMethod: String, idempotencyKey: String! }
-      input RecordCashDealDepositInput { dealId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
-      input RecordServiceCounterPaymentInput { serviceOrderId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
-      type ServiceCounterPaymentResult { id: ID!, serviceOrderId: ID!, amountCents: Int!, remainingCents: Int!, reused: Boolean! }
-      type CashDealDepositResult { id: ID!, dealId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, remainingCents: Int!, form8300Required: Boolean!, reused: Boolean! }
-      input RecordFinanceProductCancellationInput { dealId: ID!, menuId: ID!, productCode: String!, status: String!, reason: String!, refundCents: Int, refundBasis: JSON, evidenceReference: String, idempotencyKey: String! }
+      input ManageFinanceFundingInput { dealId: ID!, worksheetVersion: Int!, expectedUpdatedAt: DateTime!, expectedFundingUpdatedAt: DateTime, status: String!, checklist: JSON!, exceptions: JSON!, fundingReference: String, paymentAmountCents: Float, paymentMethod: String, idempotencyKey: String! }
+      input RecordCashDealDepositInput { dealId: ID!, amountCents: Float!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
+      input RecordServiceCounterPaymentInput { serviceOrderId: ID!, amountCents: Float!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
+      type ServiceCounterPaymentResult { id: ID!, serviceOrderId: ID!, amountCents: Float!, remainingCents: Float!, reused: Boolean! }
+      type CashDealDepositResult { id: ID!, dealId: ID!, amountCents: Float!, paymentMethod: String!, receiptReference: String!, remainingCents: Float!, form8300Required: Boolean!, reused: Boolean! }
+      input RecordFinanceProductCancellationInput { dealId: ID!, menuId: ID!, productCode: String!, status: String!, reason: String!, refundCents: Float, refundBasis: JSON, evidenceReference: String, idempotencyKey: String! }
 
       type AccountingWorkspaceResult { mappings: [AccountingMapping!]!, batches: [AccountingBatch!]!, payments: [PaymentTransaction!]!, refunds: [PaymentRefund!]! }
       type OperationalReportResult { generatedAt: String!, metrics: JSON!, exceptions: JSON! }
       type ScheduledReportDispatchResult { queuedCount: Int!, runIds: [ID!]! }
       type InventoryRooftopResult { id: ID!, name: String! }
-      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, isFeatured: Boolean, condition: String, mileage: Int, status: String, priceCents: Int, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
+      type InventoryVehicleResult { id: ID!, vin: String!, stockNumber: String!, year: Int, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, isFeatured: Boolean, condition: String, mileage: Int, status: String, priceCents: Float, description: String, primaryImagePath: String, images: [InventoryVehicleImageResult!]! }
       type InventoryVehicleImageResult { id: ID!, url: String, isPrimary: Boolean!, sortOrder: Int!, uploaded: Boolean! }
       type InventoryPublicListingResult { live: Boolean!, reason: String, action: String }
-      type InventoryCostSummary { purchaseCostCents: Int!, reconCostCents: Int!, otherCostCents: Int!, totalCostCents: Int! }
-      type InventoryReconWorkResult { id: ID!, title: String!, category: String!, status: String!, estimatedCostCents: Int, actualCostCents: Int, dueAt: DateTime, updatedAt: DateTime! }
+      type InventoryCostSummary { purchaseCostCents: Float!, reconCostCents: Float!, otherCostCents: Float!, totalCostCents: Float! }
+      type InventoryReconWorkResult { id: ID!, title: String!, category: String!, status: String!, estimatedCostCents: Float, actualCostCents: Float, dueAt: DateTime, updatedAt: DateTime! }
       type InventoryMerchandisingResult { id: ID!, version: Int!, status: String!, submittedAt: DateTime!, decidedAt: DateTime, decisionReason: String, updatedAt: DateTime! }
       type InventoryStockResult { id: ID!, rooftop: InventoryRooftopResult!, vehicle: InventoryVehicleResult!, acquisition: InventoryAcquisitionResult, stockNumber: String!, locationCode: String!, locationLabel: String, stockedAt: DateTime!, updatedAt: DateTime!, frontlineAt: DateTime, daysInStock: Int!, isAged: Boolean!, reconStatus: String!, merchandisingStatus: String!, feedStatus: String!, cost: InventoryCostSummary, reconWorkItems: [InventoryReconWorkResult!]!, latestMerchandisingVersion: InventoryMerchandisingResult, publicListing: InventoryPublicListingResult! }
-      type InventoryAcquisitionResult { id: ID!, reference: String!, status: String!, vin: String!, year: Int!, make: String!, model: String!, acquisitionSource: String!, appraisalCents: Int!, purchaseCents: Int, reconEstimateCents: Int, updatedAt: DateTime!, vehicleId: ID }
+      type InventoryAcquisitionResult { id: ID!, reference: String!, status: String!, vin: String!, year: Int!, make: String!, model: String!, acquisitionSource: String!, appraisalCents: Float!, purchaseCents: Float, reconEstimateCents: Float, updatedAt: DateTime!, vehicleId: ID }
       type InventoryFeedRunResult { id: ID!, channelKey: String!, status: String!, attemptedCount: Int!, succeededCount: Int!, failedCount: Int!, errorCount: Int!, completedAt: DateTime! }
-      type InventoryWorkspaceSummary { visibleCount: Int!, availableCount: Int!, agedCount: Int!, reconOpenCount: Int!, totalRetailValueCents: Int!, totalCostCents: Int }
+      type InventoryWorkspaceSummary { visibleCount: Int!, availableCount: Int!, agedCount: Int!, reconOpenCount: Int!, totalRetailValueCents: Float!, totalCostCents: Float }
       type InventoryPageInfo { limit: Int!, offset: Int!, hasMore: Boolean! }
       type InventoryWorkspaceResult { items: [InventoryStockResult!]!, acquisitions: [InventoryAcquisitionResult!]!, feedRuns: [InventoryFeedRunResult!]!, channels: [String!]!, intakeRooftops: [InventoryRooftopResult!]!, summary: InventoryWorkspaceSummary!, pageInfo: InventoryPageInfo! }
       type InventoryCommandResult { id: ID!, stockId: ID!, status: String, merchandisingStatus: String!, feedStatus: String!, updatedAt: DateTime!, reused: Boolean! }
       type InventoryIntakeResult { id: ID!, vehicleId: ID!, acquisitionId: ID!, stockId: ID!, status: String, merchandisingStatus: String!, feedStatus: String!, updatedAt: DateTime!, reused: Boolean! }
       type InventoryFeedCommandResult { id: ID!, rooftopId: ID!, channelKey: String!, status: String!, attemptedCount: Int!, succeededCount: Int!, failedCount: Int!, errorCount: Int!, completedAt: DateTime!, reused: Boolean! }
 
-      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, mileage: Int, purchasePriceCents: Int!, listPriceCents: Int!, priceCents: Int!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
-      input EstablishInventoryStockInput { vehicleId: ID, acquisitionId: ID, stockNumber: String!, locationCode: String!, locationLabel: String, purchaseCostCents: Int, condition: String, trim: String, exteriorColor: String, interiorColor: String, reason: String!, idempotencyKey: String! }
+      input IntakeInventoryVehicleInput { rooftopId: ID!, idempotencyKey: String!, reason: String!, acquisitionSource: String!, sourceReference: String, vin: String!, stockNumber: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, mileage: Int, purchasePriceCents: Float!, listPriceCents: Float!, priceCents: Float!, condition: String!, description: String, features: JSON, imagePath: String, locationCode: String!, locationLabel: String }
+      input EstablishInventoryStockInput { vehicleId: ID, acquisitionId: ID, stockNumber: String!, locationCode: String!, locationLabel: String, purchaseCostCents: Float, condition: String, trim: String, exteriorColor: String, interiorColor: String, reason: String!, idempotencyKey: String! }
       input MoveInventoryStockInput { stockId: ID!, locationCode: String!, locationLabel: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input RecordInventoryCostInput { stockId: ID!, costType: String!, amountCents: Int!, reference: String, reason: String!, idempotencyKey: String! }
-      input CreateInventoryReconWorkInput { stockId: ID!, title: String!, category: String!, estimatedCostCents: Int, vendorName: String, assignedToId: ID, dueAt: DateTime, reason: String!, idempotencyKey: String! }
-      input TransitionInventoryReconWorkInput { id: ID!, toStatus: String!, actualCostCents: Int, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Int, priceCents: Int!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
-      input UpdateInventoryMerchandisingDraftInput { stockId: ID!, priceCents: Int!, listPriceCents: Int, mileage: Int, description: String!, imagePath: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input RecordInventoryCostInput { stockId: ID!, costType: String!, amountCents: Float!, reference: String, reason: String!, idempotencyKey: String! }
+      input CreateInventoryReconWorkInput { stockId: ID!, title: String!, category: String!, estimatedCostCents: Float, vendorName: String, assignedToId: ID, dueAt: DateTime, reason: String!, idempotencyKey: String! }
+      input TransitionInventoryReconWorkInput { id: ID!, toStatus: String!, actualCostCents: Float, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input UpdateInventoryVehicleDetailsInput { stockId: ID!, vin: String!, year: Int!, make: String!, model: String!, trim: String, exteriorColor: String, interiorColor: String, fuelType: String, transmission: String, engine: String, condition: String!, mileage: Int, features: JSON, listPriceCents: Float, priceCents: Float!, description: String, priceChangeReason: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
+      input UpdateInventoryMerchandisingDraftInput { stockId: ID!, priceCents: Float!, listPriceCents: Float, mileage: Int, description: String!, imagePath: String, expectedUpdatedAt: DateTime!, reason: String!, idempotencyKey: String! }
       input AddInventoryVehiclePhotoInput { stockId: ID!, photo: ImageFieldInput, imageUrl: String, reason: String!, idempotencyKey: String! }
       input ArrangeInventoryVehiclePhotosInput { stockId: ID!, imageIds: [ID!]!, reason: String!, idempotencyKey: String! }
       input RemoveInventoryVehiclePhotoInput { stockId: ID!, imageId: ID!, reason: String!, idempotencyKey: String! }
@@ -604,7 +604,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       type PaymentReturnStatus {
         state: String!
         retryUrl: String
-        amountCents: Int!
+        amountCents: Float!
         currency: String!
         reference: String!
         purpose: String!
@@ -638,7 +638,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
       }
 
       type CustomerAccountResult { id: ID! }
-      type CustomerRequest { id: ID!, kind: String!, kindKey: String, scheduledAt: DateTime!, status: String!, timezone: String, vehicle: String, amountCents: Int, reference: String }
+      type CustomerRequest { id: ID!, kind: String!, kindKey: String, scheduledAt: DateTime!, status: String!, timezone: String, vehicle: String, amountCents: Float, reference: String }
       type CustomerBookingResult { id: ID!, kind: String!, status: String!, scheduledAt: DateTime }
       type CustomerEmailLinkResult { email: String!, linkedCustomerCount: Int!, newlyLinkedCount: Int, verified: Boolean! }
       type CustomerEmailVerificationRequest { sent: Boolean!, email: String! }
@@ -711,8 +711,8 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
           toStatus: String!
           expectedUpdatedAt: DateTime!
           reason: String!
-          purchaseCents: Int
-          reconEstimateCents: Int
+          purchaseCents: Float
+          reconEstimateCents: Float
           vehicleId: ID
           idempotencyKey: String!
         ): InventoryAcquisition

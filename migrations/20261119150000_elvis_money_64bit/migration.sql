@@ -1,0 +1,115 @@
+-- Elvis Automotores: los importes en pesos superan el máximo de INTEGER (2.147.483.647 centavos =
+-- $21.474.836). Se pasan a DOUBLE PRECISION, que guarda centavos enteros exactos hasta 2^53.
+-- El trigger de publicación depende de columnas de precio: se elimina y se vuelve a crear igual.
+DROP TRIGGER IF EXISTS "Vehicle_invalidate_publication_after_merchandising_change" ON "Vehicle";
+
+-- AlterTable
+ALTER TABLE "AccountingBatch" ALTER COLUMN "totalDebitCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "totalCreditCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "Deal" ALTER COLUMN "vehiclePriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "tradeInValueCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "downPaymentCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "financingAmountCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "monthlyPaymentCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "taxAmountCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "grossCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "residualValueCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "DealershipProfile" ALTER COLUMN "docFeeCents" SET DEFAULT 0,
+ALTER COLUMN "docFeeCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "FinanceProduct" ALTER COLUMN "retailPriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "costCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "FinanceProductCancellation" ALTER COLUMN "refundCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "FinanceProductQuote" ALTER COLUMN "retailPriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "costCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "FinancingApplication" ALTER COLUMN "annualIncomeCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "requestedAmountCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "plannedMonthlyPaymentCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "plannedDownPaymentCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "tradeInValueCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "InventoryAcquisition" ALTER COLUMN "appraisalCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "purchaseCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "reconEstimateCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "InventoryReconWorkItem" ALTER COLUMN "estimatedCostCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "actualCostCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "InventoryStock" ALTER COLUMN "purchaseCostCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "reconCostCents" SET DEFAULT 0,
+ALTER COLUMN "reconCostCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "otherCostCents" SET DEFAULT 0,
+ALTER COLUMN "otherCostCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "totalCostCents" SET DEFAULT 0,
+ALTER COLUMN "totalCostCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "InventoryStockEvent" ALTER COLUMN "amountCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "LenderDecision" ALTER COLUMN "approvedAmountCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "monthlyPaymentCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "PartsInventory" ALTER COLUMN "costCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "priceCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "PaymentRefund" ALTER COLUMN "amountCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "PaymentTransaction" ALTER COLUMN "amountCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "capturedCents" SET DEFAULT 0,
+ALTER COLUMN "capturedCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "refundedCents" SET DEFAULT 0,
+ALTER COLUMN "refundedCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "PriceHistory" ALTER COLUMN "previousPriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "newPriceCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "RepairOrderLineItem" ALTER COLUMN "unitPriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "priceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "costCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "ServiceOrder" ALTER COLUMN "laborTotalCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "partsTotalCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "taxCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "grandTotalCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "ServicePackage" ALTER COLUMN "priceCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "TradeIn" ALTER COLUMN "kbbValueCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "offerAmountCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "Vehicle" ALTER COLUMN "purchasePriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "listPriceCents" SET DATA TYPE DOUBLE PRECISION,
+ALTER COLUMN "priceCents" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "WeOweItem" ALTER COLUMN "estimatedCostCents" SET DATA TYPE DOUBLE PRECISION;
+
+
+
+CREATE TRIGGER "Vehicle_invalidate_publication_after_merchandising_change"
+AFTER UPDATE OF rooftop, vin, "stockNumber", year, make, model, "trim", "exteriorColor", "interiorColor", mileage, condition, "priceCents", "listPriceCents", description, features
+ON "Vehicle" FOR EACH ROW EXECUTE FUNCTION invalidate_publication_for_vehicle_change();

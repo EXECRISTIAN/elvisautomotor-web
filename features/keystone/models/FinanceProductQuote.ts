@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { integer, json, relationship, select, text, timestamp } from '@keystone-6/core/fields';
+import { integer, json, relationship, select, text, timestamp, float } from '@keystone-6/core/fields';
 import { permissions } from '../access';
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords';
 import { requiredRelationshipDb } from './prismaSchema';
@@ -46,8 +46,8 @@ export const FinanceProductQuote = list({
       })),
       validation: { isRequired: true }
     }),
-    retailPriceCents: integer({ validation: { min: 0 } }),
-    costCents: integer({
+    retailPriceCents: float({ validation: { min: 0 } }),
+    costCents: float({
       validation: { min: 0 },
       access: {
         read: permissions.canViewDealerCost,

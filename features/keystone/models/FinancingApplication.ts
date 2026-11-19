@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { integer, json, relationship, select, text, timestamp } from '@keystone-6/core/fields'
+import { integer, json, relationship, select, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords'
@@ -59,12 +59,12 @@ export const FinancingApplication = list({
     applicantEmail: text({ access: privateRead, validation: { isRequired: true } }),
     applicantPhone: text({ access: privateRead, validation: { isRequired: true } }),
     employmentStatus: text({ access: privateRead, validation: { isRequired: true } }),
-    annualIncomeCents: integer({ access: privateRead, validation: { isRequired: true, min: 1 } }),
+    annualIncomeCents: float({ access: privateRead, validation: { isRequired: true, min: 1 } }),
     selfReportedCreditTier: text({ access: privateRead, validation: { isRequired: true } }),
-    requestedAmountCents: integer({ validation: { min: 0 } }),
-    plannedMonthlyPaymentCents: integer({ validation: { min: 0 } }),
-    plannedDownPaymentCents: integer({ validation: { min: 0 } }),
-    tradeInValueCents: integer({ validation: { min: 0 } }),
+    requestedAmountCents: float({ validation: { min: 0 } }),
+    plannedMonthlyPaymentCents: float({ validation: { min: 0 } }),
+    plannedDownPaymentCents: float({ validation: { min: 0 } }),
+    tradeInValueCents: float({ validation: { min: 0 } }),
     aprBasisPoints: integer({ validation: { min: 0 } }),
     loanTermMonths: integer({ validation: { min: 0 } }),
     consentAt: timestamp({ validation: { isRequired: true } }),

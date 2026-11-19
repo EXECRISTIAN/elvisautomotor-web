@@ -87,7 +87,7 @@ export async function updateServiceOrderLineItem(_root: unknown, { data }: any, 
   if (!Number.isFinite(quantity) || quantity <= 0 || quantity > 10_000) throw new Error('Quantity must be greater than zero')
   const unitPriceCents = checkedCents(data.unitPriceCents, 'Unit price')
   const priceCents = Math.round(unitPriceCents * quantity)
-  if (priceCents > 2_147_483_647) throw new Error('Line total is out of range')
+  if (priceCents > Number.MAX_SAFE_INTEGER) throw new Error('Line total is out of range')
   const costCents = data.costCents == null ? undefined : checkedCents(data.costCents, 'Line cost')
   if (costCents !== undefined) await assertSessionRooftopPermission(context, order.rooftop.id, 'canViewDealerCost')
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt)
@@ -131,7 +131,7 @@ export async function removeServiceOrderLineItem(_root: unknown, { data }: any, 
 export async function setServiceOrderTax(_root: unknown, { data }: any, context: any) {
   const order = await scopedOrder(context, data.serviceOrderId)
   const taxCents = checkedCents(data.taxCents, 'Tax')
-  if (taxCents > 2_147_483_647) throw new Error('Tax is out of range')
+  if (taxCents > Number.MAX_SAFE_INTEGER) throw new Error('Tax is out of range')
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt)
   const evidence = { serviceOrderId: order.id, taxCents, expectedUpdatedAt: expectedUpdatedAt.toISOString() }
   const result = await runOrderCommand(context, order, expectedUpdatedAt, {

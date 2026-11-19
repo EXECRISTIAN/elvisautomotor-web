@@ -9,7 +9,7 @@ import { assertActiveInventory } from './inventoryActiveStatus'
 import { normalizeVehicleSpecs } from '../../lib/vehicleSpecs'
 
 const CONDITIONS = new Set(['new', 'used', 'certified'])
-const MAX_CENTS = 2_147_483_647
+const MAX_CENTS = Number.MAX_SAFE_INTEGER
 
 function requiredText(value: unknown, label: string, max: number) {
   const result = String(value ?? '').trim()

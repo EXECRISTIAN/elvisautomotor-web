@@ -95,9 +95,9 @@ export const RepairOrderLineItem = list({
         description: 'Quantity or hours',
       },
     }),
-    unitPriceCents: integer({ validation: { isRequired: true }, label: 'Unit Price (cents)', ui: { description: 'Price per unit or hourly rate in integer USD cents' } }),
-    priceCents: integer({ validation: { isRequired: true }, label: 'Total Price (cents)', ui: { description: 'Quantity × unit price in integer USD cents' } }),
-    costCents: integer({ access: { read: permissions.canViewDealerCost }, label: 'Cost (cents)', ui: { description: 'Dealer cost in integer USD cents' } }),
+    unitPriceCents: float({ validation: { isRequired: true }, label: 'Unit Price (cents)', ui: { description: 'Price per unit or hourly rate in integer USD cents' } }),
+    priceCents: float({ validation: { isRequired: true }, label: 'Total Price (cents)', ui: { description: 'Quantity × unit price in integer USD cents' } }),
+    costCents: float({ access: { read: permissions.canViewDealerCost }, label: 'Cost (cents)', ui: { description: 'Dealer cost in integer USD cents' } }),
     unitPrice: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.unitPriceCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

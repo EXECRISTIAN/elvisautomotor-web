@@ -121,8 +121,8 @@ export const Deal = list({
     }),
 
     // Pricing
-    vehiclePriceCents: integer({ label: 'Negotiated Price (cents)', ui: { description: 'Final negotiated vehicle price in integer USD cents' } }),
-    tradeInValueCents: integer({ label: 'Trade-In Value (cents)', ui: { description: 'Trade-in credit in integer USD cents' } }),
+    vehiclePriceCents: float({ label: 'Negotiated Price (cents)', ui: { description: 'Final negotiated vehicle price in integer USD cents' } }),
+    tradeInValueCents: float({ label: 'Trade-In Value (cents)', ui: { description: 'Trade-in credit in integer USD cents' } }),
     vehiclePrice: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.vehiclePriceCents == null ? null : item.vehiclePriceCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },
@@ -147,9 +147,9 @@ export const Deal = list({
     }),
 
     // Financing
-    downPaymentCents: integer({ label: 'Planned Down Payment (cents)', ui: { description: 'Deal structure only, stored in integer USD cents; not proof of captured funds' } }),
-    financingAmountCents: integer({ label: 'Financing Amount (cents)', ui: { description: 'Amount financed in integer USD cents' } }),
-    monthlyPaymentCents: integer({ label: 'Monthly Payment (cents)' }),
+    downPaymentCents: float({ label: 'Planned Down Payment (cents)', ui: { description: 'Deal structure only, stored in integer USD cents; not proof of captured funds' } }),
+    financingAmountCents: float({ label: 'Financing Amount (cents)', ui: { description: 'Amount financed in integer USD cents' } }),
+    monthlyPaymentCents: float({ label: 'Monthly Payment (cents)' }),
     downPayment: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.downPaymentCents == null ? null : item.downPaymentCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },
@@ -191,7 +191,7 @@ export const Deal = list({
     }),
 
     // Taxes and Fees
-    taxAmountCents: integer({ label: 'Tax Amount (cents)', ui: { description: 'Sales tax in integer USD cents' } }),
+    taxAmountCents: float({ label: 'Tax Amount (cents)', ui: { description: 'Sales tax in integer USD cents' } }),
     taxAmount: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.taxAmountCents == null ? null : item.taxAmountCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },
@@ -210,10 +210,10 @@ export const Deal = list({
       defaultValue: 'cash',
       validation: { isRequired: true },
     }),
-    residualValueCents: integer({ label: 'Lease residual (cents)' }),
+    residualValueCents: float({ label: 'Lease residual (cents)' }),
     moneyFactorBasisPoints: integer({ label: 'Lease money factor (basis points)' }),
     worksheetVersion: integer({ defaultValue: 0, validation: { isRequired: true } }),
-    grossCents: integer({ access: { create: () => false, update: () => false }, label: 'Front gross estimate excluding fees, product margin and recon (cents)' }),
+    grossCents: float({ access: { create: () => false, update: () => false }, label: 'Front gross estimate excluding fees, product margin and recon (cents)' }),
     presentedSnapshot: json({ access: { create: () => false, update: () => false }, defaultValue: {} }),
     presentedAt: timestamp({ access: { create: () => false, update: () => false } }),
     acceptedSnapshot: json({ access: { create: () => false, update: () => false }, defaultValue: {} }),

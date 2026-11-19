@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { integer, json, relationship, select, text, timestamp } from '@keystone-6/core/fields'
+import { integer, json, relationship, select, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords'
@@ -54,10 +54,10 @@ export const LenderDecision = list({
       ],
       validation: { isRequired: true },
     }),
-    approvedAmountCents: integer({ validation: { min: 0 } }),
+    approvedAmountCents: float({ validation: { min: 0 } }),
     aprBasisPoints: integer({ validation: { min: 0 } }),
     termMonths: integer({ validation: { min: 0 } }),
-    monthlyPaymentCents: integer({ validation: { min: 0 } }),
+    monthlyPaymentCents: float({ validation: { min: 0 } }),
     reasonCodes: json({ access: restricted, defaultValue: [] }),
     immutableSnapshot: json({ access: restricted, defaultValue: {}, ui: { itemView: { fieldMode: 'read' } } }),
     decidedAt: timestamp({ validation: { isRequired: true } }),

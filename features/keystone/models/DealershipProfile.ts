@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { integer, text } from '@keystone-6/core/fields'
+import { integer, text, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { normalizeStoreLogoColor } from '../../lib/store-logo'
@@ -51,7 +51,7 @@ export const DealershipProfile = list({
       validation: { isRequired: true, min: 0, max: 10_000 },
       ui: { description: 'Default deal sales tax rate; 415 is 4.15%' },
     }),
-    docFeeCents: integer({
+    docFeeCents: float({
       label: 'Documentation fee (cents)',
       defaultValue: 0,
       validation: { isRequired: true, min: 0 },

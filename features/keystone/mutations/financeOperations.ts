@@ -208,7 +208,7 @@ async function manageFinanceFundingCaseCommand(_root: unknown, { data }: any, co
   if (status === 'funded') required(fundingReference, visible.structureType === 'cash' ? 'Receipt reference' : 'Funding/reconfirmation reference for the current worksheet', 200)
   // Cash: funding is "payment received", recorded with the amount actually taken.
   const paymentAmountCents = data.paymentAmountCents == null ? null : Number(data.paymentAmountCents)
-  if (paymentAmountCents != null && (!Number.isSafeInteger(paymentAmountCents) || paymentAmountCents < 0 || paymentAmountCents > 2_147_483_647)) throw new Error('Payment amount must be a non-negative amount in cents')
+  if (paymentAmountCents != null && (!Number.isSafeInteger(paymentAmountCents) || paymentAmountCents < 0 || paymentAmountCents > Number.MAX_SAFE_INTEGER)) throw new Error('Payment amount must be a non-negative amount in cents')
   const paymentMethod = data.paymentMethod == null || String(data.paymentMethod).trim() === '' ? null : dealPaymentMethod(data.paymentMethod)
   const expectedUpdatedAt = commandDate(data.expectedUpdatedAt)
   const expectedFundingUpdatedAt = data.expectedFundingUpdatedAt == null ? null : commandDate(data.expectedFundingUpdatedAt)
@@ -335,7 +335,7 @@ function cancellationRefundBasis(value: unknown) {
   }
   const method = String(input.method || '')
   if (!['pro-rata-months', 'flat'].includes(method)) throw new Error('Refund basis method is invalid')
-  return { method, retailPriceCents: int('retailPriceCents', 2_147_483_647), termMonths: int('termMonths', 240), monthsUsed: int('monthsUsed', 240), cancellationFeeCents: int('cancellationFeeCents', 2_147_483_647) }
+  return { method, retailPriceCents: int('retailPriceCents', Number.MAX_SAFE_INTEGER), termMonths: int('termMonths', 240), monthsUsed: int('monthsUsed', 240), cancellationFeeCents: int('cancellationFeeCents', Number.MAX_SAFE_INTEGER) }
 }
 
 async function recordFinanceProductCancellationCommand(_r:unknown,{data}:any,context:any){const deal=await dealForFinance(context,data.dealId);const menu=await context.query.FinanceMenuVersion.findOne({where:{id:String(data.menuId||'')},query:'id status selectedProductCodes optionsSnapshot deal { id } rooftop { id }'});const productCode=required(data.productCode,'Product code',80);if(!menu||menu.deal?.id!==deal.id||menu.status!=='accepted'||!Array.isArray(menu.selectedProductCodes)||!menu.selectedProductCodes.includes(productCode))throw new Error('Cancellation must reference an accepted menu product');const status=required(data.status,'Cancellation status',30);if(!['requested','completed','denied'].includes(status))throw new Error('Invalid cancellation status');const reason=required(data.reason,'Cancellation reason',1000),refundCents=data.refundCents==null?0:Number(data.refundCents);if(!Number.isInteger(refundCents)||refundCents<0||status==='completed'&&!required(data.evidenceReference,'Cancellation evidence reference',200))throw new Error('Invalid cancellation evidence');const refundBasis=cancellationRefundBasis(data.refundBasis);

@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { text, integer, json, virtual } from '@keystone-6/core/fields'
+import { text, integer, json, virtual, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions } from '../access'
@@ -49,7 +49,7 @@ export const ServicePackage = list({
     }),
 
     // Pricing and Duration
-    priceCents: integer({ validation: { isRequired: true, min: 0 }, label: 'Price (cents)', ui: { description: 'Package price in integer USD cents' } }),
+    priceCents: float({ validation: { isRequired: true, min: 0 }, label: 'Price (cents)', ui: { description: 'Package price in integer USD cents' } }),
     price: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.priceCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

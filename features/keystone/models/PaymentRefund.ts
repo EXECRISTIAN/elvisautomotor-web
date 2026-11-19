@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { integer, relationship, select, text } from '@keystone-6/core/fields'
+import { integer, relationship, select, text, float } from '@keystone-6/core/fields'
 import { permissions } from '../access'
 import { rooftopField, validateRooftopRecord, withRooftopScope } from '../tenantRecords'
 import { requiredRelationshipDb } from './prismaSchema'
@@ -16,7 +16,7 @@ export const PaymentRefund = list({
     ...trackingFields,
     rooftop: rooftopField(),
     transaction: relationship({ ref: 'PaymentTransaction', db: requiredRelationshipDb('transaction') }),
-    amountCents: integer({ validation: { isRequired: true, min: 1 } }),
+    amountCents: float({ validation: { isRequired: true, min: 1 } }),
     reason: text({ validation: { isRequired: true } }),
     status: select({ type: 'string', options: ['creating', 'pending', 'succeeded', 'failed', 'canceled'].map(value => ({ label: value, value })), validation: { isRequired: true } }),
     providerRefundId: text(),

@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { integer, json, select, text, timestamp } from '@keystone-6/core/fields';
+import { integer, json, select, text, timestamp, float } from '@keystone-6/core/fields';
 import { permissions } from '../access';
 import { rooftopField, withRooftopScope } from '../tenantRecords';
 import { trackingFields } from './trackingFields';
@@ -40,11 +40,11 @@ export const AccountingBatch = list({
     }),
     providerKey: text({ validation: { isRequired: true } }),
     lines: json({ defaultValue: [] }),
-    totalDebitCents: integer({ validation: {
+    totalDebitCents: float({ validation: {
         isRequired: true,
         min: 0
       } }),
-    totalCreditCents: integer({ validation: {
+    totalCreditCents: float({ validation: {
         isRequired: true,
         min: 0
       } }),

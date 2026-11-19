@@ -351,7 +351,7 @@ export async function transitionInventoryAcquisition(variables: {
   reconEstimateCents?: number | null
 }) {
   return runInventoryMutation(`
-    mutation TransitionInventoryAcquisition($id: ID!, $toStatus: String!, $expectedUpdatedAt: DateTime!, $reason: String!, $purchaseCents: Int, $reconEstimateCents: Int, $idempotencyKey: String!) {
+    mutation TransitionInventoryAcquisition($id: ID!, $toStatus: String!, $expectedUpdatedAt: DateTime!, $reason: String!, $purchaseCents: Float, $reconEstimateCents: Float, $idempotencyKey: String!) {
       transitionInventoryAcquisition(id: $id, toStatus: $toStatus, expectedUpdatedAt: $expectedUpdatedAt, reason: $reason, purchaseCents: $purchaseCents, reconEstimateCents: $reconEstimateCents, idempotencyKey: $idempotencyKey) { id status updatedAt }
     }
   `, { ...variables, purchaseCents: variables.purchaseCents ?? null, reconEstimateCents: variables.reconEstimateCents ?? null })

@@ -129,7 +129,7 @@ async function manageWeOweItemCommand(_r: unknown, { data }: any, context: any) 
   }
   const readCost = (value: unknown) => {
     const cost = Number(value || 0)
-    if (!Number.isInteger(cost) || cost < 0 || cost > 2_147_483_647) throw new Error('Estimated cost is invalid')
+    if (!Number.isInteger(cost) || cost < 0 || cost > Number.MAX_SAFE_INTEGER) throw new Error('Estimated cost is invalid')
     return cost
   }
   const readPromisedAt = (value: unknown) => {

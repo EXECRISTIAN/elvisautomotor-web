@@ -1037,9 +1037,9 @@ type Vehicle {
   engine: String
   isFeatured: Boolean
   mileage: Int
-  purchasePriceCents: Int
-  listPriceCents: Int
-  priceCents: Int
+  purchasePriceCents: Float
+  listPriceCents: Float
+  priceCents: Float
   purchasePrice: Float
   listPrice: Float
   price: Float
@@ -1099,9 +1099,9 @@ input VehicleWhereInput {
   engine: StringFilter
   isFeatured: BooleanFilter
   mileage: IntNullableFilter
-  purchasePriceCents: IntNullableFilter
-  listPriceCents: IntNullableFilter
-  priceCents: IntNullableFilter
+  purchasePriceCents: FloatNullableFilter
+  listPriceCents: FloatNullableFilter
+  priceCents: FloatNullableFilter
   condition: StringNullableFilter
   status: StringNullableFilter
   description: StringFilter
@@ -1195,9 +1195,9 @@ input VehicleUpdateInput {
   engine: String
   isFeatured: Boolean
   mileage: Int
-  purchasePriceCents: Int
-  listPriceCents: Int
-  priceCents: Int
+  purchasePriceCents: Float
+  listPriceCents: Float
+  priceCents: Float
   condition: String
   status: String
   description: String
@@ -1290,9 +1290,9 @@ input VehicleCreateInput {
   engine: String
   isFeatured: Boolean
   mileage: Int
-  purchasePriceCents: Int
-  listPriceCents: Int
-  priceCents: Int
+  purchasePriceCents: Float
+  listPriceCents: Float
+  priceCents: Float
   condition: String
   status: String
   description: String
@@ -1625,8 +1625,8 @@ type PriceHistory {
   rooftop: Rooftop
   vehicle: Vehicle
   effectiveDate: DateTime
-  previousPriceCents: Int
-  newPriceCents: Int
+  previousPriceCents: Float
+  newPriceCents: Float
   previousPrice: Float
   newPrice: Float
   changeReason: String
@@ -1648,11 +1648,22 @@ input PriceHistoryWhereInput {
   rooftop: RooftopWhereInput
   vehicle: VehicleWhereInput
   effectiveDate: DateTimeFilter
-  previousPriceCents: IntNullableFilter
-  newPriceCents: IntFilter
+  previousPriceCents: FloatNullableFilter
+  newPriceCents: FloatFilter
   changeReason: StringFilter
   changedBy: UserWhereInput
   notes: StringFilter
+}
+
+input FloatFilter {
+  equals: Float
+  in: [Float!]
+  notIn: [Float!]
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+  not: FloatFilter
 }
 
 input PriceHistoryOrderByInput {
@@ -1672,8 +1683,8 @@ input PriceHistoryUpdateInput {
   rooftop: RooftopRelateToOneForUpdateInput
   vehicle: VehicleRelateToOneForUpdateInput
   effectiveDate: DateTime
-  previousPriceCents: Int
-  newPriceCents: Int
+  previousPriceCents: Float
+  newPriceCents: Float
   changeReason: String
   changedBy: UserRelateToOneForUpdateInput
   notes: String
@@ -1696,8 +1707,8 @@ input PriceHistoryCreateInput {
   rooftop: RooftopRelateToOneForCreateInput
   vehicle: VehicleRelateToOneForCreateInput
   effectiveDate: DateTime
-  previousPriceCents: Int
-  newPriceCents: Int
+  previousPriceCents: Float
+  newPriceCents: Float
   changeReason: String
   changedBy: UserRelateToOneForCreateInput
   notes: String
@@ -2249,32 +2260,32 @@ type Deal {
   lead: Lead
   vehicle: Vehicle
   salesperson: User
-  vehiclePriceCents: Int
-  tradeInValueCents: Int
+  vehiclePriceCents: Float
+  tradeInValueCents: Float
   vehiclePrice: Float
   tradeInValue: Float
   tradeInVehicle: TradeIn
   tradeInDetails: JSON
-  downPaymentCents: Int
-  financingAmountCents: Int
-  monthlyPaymentCents: Int
+  downPaymentCents: Float
+  financingAmountCents: Float
+  monthlyPaymentCents: Float
   downPayment: Float
   financingAmount: Float
   monthlyPayment: Float
   loanTerm: Int
   apr: Float
   status: String
-  taxAmountCents: Int
+  taxAmountCents: Float
   taxAmount: Float
   fees: JSON
   rebates: JSON
   products: JSON
   taxLines: JSON
   structureType: String
-  residualValueCents: Int
+  residualValueCents: Float
   moneyFactorBasisPoints: Int
   worksheetVersion: Int
-  grossCents: Int
+  grossCents: Float
   presentedSnapshot: JSON
   presentedAt: DateTime
   acceptedSnapshot: JSON
@@ -2321,21 +2332,21 @@ input DealWhereInput {
   lead: LeadWhereInput
   vehicle: VehicleWhereInput
   salesperson: UserWhereInput
-  vehiclePriceCents: IntNullableFilter
-  tradeInValueCents: IntNullableFilter
+  vehiclePriceCents: FloatNullableFilter
+  tradeInValueCents: FloatNullableFilter
   tradeInVehicle: TradeInWhereInput
-  downPaymentCents: IntNullableFilter
-  financingAmountCents: IntNullableFilter
-  monthlyPaymentCents: IntNullableFilter
+  downPaymentCents: FloatNullableFilter
+  financingAmountCents: FloatNullableFilter
+  monthlyPaymentCents: FloatNullableFilter
   loanTerm: IntNullableFilter
   apr: FloatNullableFilter
   status: StringNullableFilter
-  taxAmountCents: IntNullableFilter
+  taxAmountCents: FloatNullableFilter
   structureType: StringFilter
-  residualValueCents: IntNullableFilter
+  residualValueCents: FloatNullableFilter
   moneyFactorBasisPoints: IntNullableFilter
   worksheetVersion: IntFilter
-  grossCents: IntNullableFilter
+  grossCents: FloatNullableFilter
   presentedAt: DateTimeNullableFilter
   acceptedAt: DateTimeNullableFilter
   selectedLenderDecision: LenderDecisionWhereInput
@@ -2425,26 +2436,26 @@ input DealUpdateInput {
   lead: LeadRelateToOneForUpdateInput
   vehicle: VehicleRelateToOneForUpdateInput
   salesperson: UserRelateToOneForUpdateInput
-  vehiclePriceCents: Int
-  tradeInValueCents: Int
+  vehiclePriceCents: Float
+  tradeInValueCents: Float
   tradeInVehicle: TradeInRelateToOneForUpdateInput
   tradeInDetails: JSON
-  downPaymentCents: Int
-  financingAmountCents: Int
-  monthlyPaymentCents: Int
+  downPaymentCents: Float
+  financingAmountCents: Float
+  monthlyPaymentCents: Float
   loanTerm: Int
   apr: Float
   status: String
-  taxAmountCents: Int
+  taxAmountCents: Float
   fees: JSON
   rebates: JSON
   products: JSON
   taxLines: JSON
   structureType: String
-  residualValueCents: Int
+  residualValueCents: Float
   moneyFactorBasisPoints: Int
   worksheetVersion: Int
-  grossCents: Int
+  grossCents: Float
   presentedSnapshot: JSON
   presentedAt: DateTime
   acceptedSnapshot: JSON
@@ -2537,26 +2548,26 @@ input DealCreateInput {
   lead: LeadRelateToOneForCreateInput
   vehicle: VehicleRelateToOneForCreateInput
   salesperson: UserRelateToOneForCreateInput
-  vehiclePriceCents: Int
-  tradeInValueCents: Int
+  vehiclePriceCents: Float
+  tradeInValueCents: Float
   tradeInVehicle: TradeInRelateToOneForCreateInput
   tradeInDetails: JSON
-  downPaymentCents: Int
-  financingAmountCents: Int
-  monthlyPaymentCents: Int
+  downPaymentCents: Float
+  financingAmountCents: Float
+  monthlyPaymentCents: Float
   loanTerm: Int
   apr: Float
   status: String
-  taxAmountCents: Int
+  taxAmountCents: Float
   fees: JSON
   rebates: JSON
   products: JSON
   taxLines: JSON
   structureType: String
-  residualValueCents: Int
+  residualValueCents: Float
   moneyFactorBasisPoints: Int
   worksheetVersion: Int
-  grossCents: Int
+  grossCents: Float
   presentedSnapshot: JSON
   presentedAt: DateTime
   acceptedSnapshot: JSON
@@ -2714,8 +2725,8 @@ type TradeIn {
   exteriorCondition: String
   interiorCondition: String
   mechanicalIssues: String
-  kbbValueCents: Int
-  offerAmountCents: Int
+  kbbValueCents: Float
+  offerAmountCents: Float
   referenceValue: Float
   kbbValue: Float
   offerAmount: Float
@@ -2752,8 +2763,8 @@ input TradeInWhereInput {
   exteriorCondition: StringFilter
   interiorCondition: StringFilter
   mechanicalIssues: StringFilter
-  kbbValueCents: IntNullableFilter
-  offerAmountCents: IntNullableFilter
+  kbbValueCents: FloatNullableFilter
+  offerAmountCents: FloatNullableFilter
   photos: TradeInPhotoManyRelationFilter
   photoTokenHash: StringFilter
   photoTokenExpiresAt: DateTimeNullableFilter
@@ -2802,8 +2813,8 @@ input TradeInUpdateInput {
   exteriorCondition: String
   interiorCondition: String
   mechanicalIssues: String
-  kbbValueCents: Int
-  offerAmountCents: Int
+  kbbValueCents: Float
+  offerAmountCents: Float
   mainPhoto: ImageFieldInput
   photos: TradeInPhotoRelateToManyForUpdateInput
   photoTokenHash: String
@@ -2839,8 +2850,8 @@ input TradeInCreateInput {
   exteriorCondition: String
   interiorCondition: String
   mechanicalIssues: String
-  kbbValueCents: Int
-  offerAmountCents: Int
+  kbbValueCents: Float
+  offerAmountCents: Float
   mainPhoto: ImageFieldInput
   photos: TradeInPhotoRelateToManyForCreateInput
   photoTokenHash: String
@@ -3083,13 +3094,13 @@ type ServiceOrder {
   paymentTransactionsCount(where: PaymentTransactionWhereInput! = {}): Int
   lineItems(where: RepairOrderLineItemWhereInput! = {}, orderBy: [RepairOrderLineItemOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: RepairOrderLineItemWhereUniqueInput): [RepairOrderLineItem!]
   lineItemsCount(where: RepairOrderLineItemWhereInput! = {}): Int
-  laborTotalCents: Int
-  partsTotalCents: Int
+  laborTotalCents: Float
+  partsTotalCents: Float
   laborTotal: Float
   partsTotal: Float
   subtotal: Float
-  taxCents: Int
-  grandTotalCents: Int
+  taxCents: Float
+  grandTotalCents: Float
   tax: Float
   grandTotal: Float
   status: String
@@ -3126,10 +3137,10 @@ input ServiceOrderWhereInput {
   partsMovements: PartsMovementManyRelationFilter
   paymentTransactions: PaymentTransactionManyRelationFilter
   lineItems: RepairOrderLineItemManyRelationFilter
-  laborTotalCents: IntNullableFilter
-  partsTotalCents: IntNullableFilter
-  taxCents: IntNullableFilter
-  grandTotalCents: IntNullableFilter
+  laborTotalCents: FloatNullableFilter
+  partsTotalCents: FloatNullableFilter
+  taxCents: FloatNullableFilter
+  grandTotalCents: FloatNullableFilter
   status: StringNullableFilter
   completedAt: DateTimeNullableFilter
   lockedAt: DateTimeNullableFilter
@@ -3198,10 +3209,10 @@ input ServiceOrderUpdateInput {
   partsMovements: PartsMovementRelateToManyForUpdateInput
   paymentTransactions: PaymentTransactionRelateToManyForUpdateInput
   lineItems: RepairOrderLineItemRelateToManyForUpdateInput
-  laborTotalCents: Int
-  partsTotalCents: Int
-  taxCents: Int
-  grandTotalCents: Int
+  laborTotalCents: Float
+  partsTotalCents: Float
+  taxCents: Float
+  grandTotalCents: Float
   status: String
   completedAt: DateTime
   lockedAt: DateTime
@@ -3262,10 +3273,10 @@ input ServiceOrderCreateInput {
   partsMovements: PartsMovementRelateToManyForCreateInput
   paymentTransactions: PaymentTransactionRelateToManyForCreateInput
   lineItems: RepairOrderLineItemRelateToManyForCreateInput
-  laborTotalCents: Int
-  partsTotalCents: Int
-  taxCents: Int
-  grandTotalCents: Int
+  laborTotalCents: Float
+  partsTotalCents: Float
+  taxCents: Float
+  grandTotalCents: Float
   status: String
   completedAt: DateTime
   lockedAt: DateTime
@@ -3303,9 +3314,9 @@ type RepairOrderLineItem {
   description: String
   partNumber: String
   quantity: Float
-  unitPriceCents: Int
-  priceCents: Int
-  costCents: Int
+  unitPriceCents: Float
+  priceCents: Float
+  costCents: Float
   unitPrice: Float
   price: Float
   cost: Float
@@ -3328,20 +3339,9 @@ input RepairOrderLineItemWhereInput {
   description: StringFilter
   partNumber: StringFilter
   quantity: FloatFilter
-  unitPriceCents: IntFilter
-  priceCents: IntFilter
-  costCents: IntNullableFilter
-}
-
-input FloatFilter {
-  equals: Float
-  in: [Float!]
-  notIn: [Float!]
-  lt: Float
-  lte: Float
-  gt: Float
-  gte: Float
-  not: FloatFilter
+  unitPriceCents: FloatFilter
+  priceCents: FloatFilter
+  costCents: FloatNullableFilter
 }
 
 input RepairOrderLineItemOrderByInput {
@@ -3366,9 +3366,9 @@ input RepairOrderLineItemUpdateInput {
   description: String
   partNumber: String
   quantity: Float
-  unitPriceCents: Int
-  priceCents: Int
-  costCents: Int
+  unitPriceCents: Float
+  priceCents: Float
+  costCents: Float
 }
 
 input RepairOrderLineItemUpdateArgs {
@@ -3385,9 +3385,9 @@ input RepairOrderLineItemCreateInput {
   description: String
   partNumber: String
   quantity: Float
-  unitPriceCents: Int
-  priceCents: Int
-  costCents: Int
+  unitPriceCents: Float
+  priceCents: Float
+  costCents: Float
 }
 
 type ServicePackage {
@@ -3397,7 +3397,7 @@ type ServicePackage {
   rooftop: Rooftop
   name: String
   description: String
-  priceCents: Int
+  priceCents: Float
   price: Float
   estimatedDuration: Int
   includedServices: JSON
@@ -3417,7 +3417,7 @@ input ServicePackageWhereInput {
   rooftop: RooftopWhereInput
   name: StringFilter
   description: StringFilter
-  priceCents: IntFilter
+  priceCents: FloatFilter
   estimatedDuration: IntNullableFilter
 }
 
@@ -3437,7 +3437,7 @@ input ServicePackageUpdateInput {
   rooftop: RooftopRelateToOneForUpdateInput
   name: String
   description: String
-  priceCents: Int
+  priceCents: Float
   estimatedDuration: Int
   includedServices: JSON
 }
@@ -3453,7 +3453,7 @@ input ServicePackageCreateInput {
   rooftop: RooftopRelateToOneForCreateInput
   name: String
   description: String
-  priceCents: Int
+  priceCents: Float
   estimatedDuration: Int
   includedServices: JSON
 }
@@ -3472,8 +3472,8 @@ type PartsInventory {
   movementsCount(where: PartsMovementWhereInput! = {}): Int
   quantity: Int
   minimumQuantity: Int
-  costCents: Int
-  priceCents: Int
+  costCents: Float
+  priceCents: Float
   cost: Float
   price: Float
   supplier: String
@@ -3500,8 +3500,8 @@ input PartsInventoryWhereInput {
   movements: PartsMovementManyRelationFilter
   quantity: IntFilter
   minimumQuantity: IntNullableFilter
-  costCents: IntNullableFilter
-  priceCents: IntFilter
+  costCents: FloatNullableFilter
+  priceCents: FloatFilter
   supplier: StringFilter
   supplierPartNumber: StringFilter
 }
@@ -3535,8 +3535,8 @@ input PartsInventoryUpdateInput {
   movements: PartsMovementRelateToManyForUpdateInput
   quantity: Int
   minimumQuantity: Int
-  costCents: Int
-  priceCents: Int
+  costCents: Float
+  priceCents: Float
   supplier: String
   supplierPartNumber: String
 }
@@ -3558,8 +3558,8 @@ input PartsInventoryCreateInput {
   movements: PartsMovementRelateToManyForCreateInput
   quantity: Int
   minimumQuantity: Int
-  costCents: Int
-  priceCents: Int
+  costCents: Float
+  priceCents: Float
   supplier: String
   supplierPartNumber: String
 }
@@ -3585,7 +3585,7 @@ type DealershipProfile {
   websiteUrl: String
   currencyCode: String
   salesTaxRateBps: Int
-  docFeeCents: Int
+  docFeeCents: Float
   homepageTitle: String
   homepageDescription: String
   logoIcon: String
@@ -3620,7 +3620,7 @@ input DealershipProfileWhereInput {
   websiteUrl: StringFilter
   currencyCode: StringFilter
   salesTaxRateBps: IntFilter
-  docFeeCents: IntFilter
+  docFeeCents: FloatFilter
   homepageTitle: StringFilter
   homepageDescription: StringFilter
   logoIcon: StringFilter
@@ -3675,7 +3675,7 @@ input DealershipProfileUpdateInput {
   websiteUrl: String
   currencyCode: String
   salesTaxRateBps: Int
-  docFeeCents: Int
+  docFeeCents: Float
   homepageTitle: String
   homepageDescription: String
   logoIcon: String
@@ -3707,7 +3707,7 @@ input DealershipProfileCreateInput {
   websiteUrl: String
   currencyCode: String
   salesTaxRateBps: Int
-  docFeeCents: Int
+  docFeeCents: Float
   homepageTitle: String
   homepageDescription: String
   logoIcon: String
@@ -3728,12 +3728,12 @@ type FinancingApplication {
   applicantEmail: String
   applicantPhone: String
   employmentStatus: String
-  annualIncomeCents: Int
+  annualIncomeCents: Float
   selfReportedCreditTier: String
-  requestedAmountCents: Int
-  plannedMonthlyPaymentCents: Int
-  plannedDownPaymentCents: Int
-  tradeInValueCents: Int
+  requestedAmountCents: Float
+  plannedMonthlyPaymentCents: Float
+  plannedDownPaymentCents: Float
+  tradeInValueCents: Float
   aprBasisPoints: Int
   loanTermMonths: Int
   consentAt: DateTime
@@ -3769,12 +3769,12 @@ input FinancingApplicationWhereInput {
   applicantEmail: StringFilter
   applicantPhone: StringFilter
   employmentStatus: StringFilter
-  annualIncomeCents: IntFilter
+  annualIncomeCents: FloatFilter
   selfReportedCreditTier: StringFilter
-  requestedAmountCents: IntNullableFilter
-  plannedMonthlyPaymentCents: IntNullableFilter
-  plannedDownPaymentCents: IntNullableFilter
-  tradeInValueCents: IntNullableFilter
+  requestedAmountCents: FloatNullableFilter
+  plannedMonthlyPaymentCents: FloatNullableFilter
+  plannedDownPaymentCents: FloatNullableFilter
+  tradeInValueCents: FloatNullableFilter
   aprBasisPoints: IntNullableFilter
   loanTermMonths: IntNullableFilter
   consentAt: DateTimeFilter
@@ -3833,12 +3833,12 @@ input FinancingApplicationUpdateInput {
   applicantEmail: String
   applicantPhone: String
   employmentStatus: String
-  annualIncomeCents: Int
+  annualIncomeCents: Float
   selfReportedCreditTier: String
-  requestedAmountCents: Int
-  plannedMonthlyPaymentCents: Int
-  plannedDownPaymentCents: Int
-  tradeInValueCents: Int
+  requestedAmountCents: Float
+  plannedMonthlyPaymentCents: Float
+  plannedDownPaymentCents: Float
+  tradeInValueCents: Float
   aprBasisPoints: Int
   loanTermMonths: Int
   consentAt: DateTime
@@ -3881,12 +3881,12 @@ input FinancingApplicationCreateInput {
   applicantEmail: String
   applicantPhone: String
   employmentStatus: String
-  annualIncomeCents: Int
+  annualIncomeCents: Float
   selfReportedCreditTier: String
-  requestedAmountCents: Int
-  plannedMonthlyPaymentCents: Int
-  plannedDownPaymentCents: Int
-  tradeInValueCents: Int
+  requestedAmountCents: Float
+  plannedMonthlyPaymentCents: Float
+  plannedDownPaymentCents: Float
+  tradeInValueCents: Float
   aprBasisPoints: Int
   loanTermMonths: Int
   consentAt: DateTime
@@ -4019,10 +4019,10 @@ type LenderDecision {
   providerKey: String
   externalReference: String
   decision: String
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: JSON
   immutableSnapshot: JSON
   decidedAt: DateTime
@@ -4050,10 +4050,10 @@ input LenderDecisionWhereInput {
   providerKey: StringFilter
   externalReference: StringNullableFilter
   decision: StringFilter
-  approvedAmountCents: IntNullableFilter
+  approvedAmountCents: FloatNullableFilter
   aprBasisPoints: IntNullableFilter
   termMonths: IntNullableFilter
-  monthlyPaymentCents: IntNullableFilter
+  monthlyPaymentCents: FloatNullableFilter
   decidedAt: DateTimeFilter
   recordedBy: UserWhereInput
   selectedForDeals: DealManyRelationFilter
@@ -4084,10 +4084,10 @@ input LenderDecisionUpdateInput {
   providerKey: String
   externalReference: String
   decision: String
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: JSON
   immutableSnapshot: JSON
   decidedAt: DateTime
@@ -4116,10 +4116,10 @@ input LenderDecisionCreateInput {
   providerKey: String
   externalReference: String
   decision: String
-  approvedAmountCents: Int
+  approvedAmountCents: Float
   aprBasisPoints: Int
   termMonths: Int
-  monthlyPaymentCents: Int
+  monthlyPaymentCents: Float
   reasonCodes: JSON
   immutableSnapshot: JSON
   decidedAt: DateTime
@@ -4579,9 +4579,9 @@ type InventoryAcquisition {
   make: String
   model: String
   odometer: Int
-  appraisalCents: Int
-  purchaseCents: Int
-  reconEstimateCents: Int
+  appraisalCents: Float
+  purchaseCents: Float
+  reconEstimateCents: Float
   vehicle: Vehicle
   immutablePurchaseSnapshot: JSON
   purchasedAt: DateTime
@@ -4620,9 +4620,9 @@ input InventoryAcquisitionWhereInput {
   make: StringFilter
   model: StringFilter
   odometer: IntNullableFilter
-  appraisalCents: IntFilter
-  purchaseCents: IntNullableFilter
-  reconEstimateCents: IntNullableFilter
+  appraisalCents: FloatFilter
+  purchaseCents: FloatNullableFilter
+  reconEstimateCents: FloatNullableFilter
   vehicle: VehicleWhereInput
   purchasedAt: DateTimeNullableFilter
   arrivedAt: DateTimeNullableFilter
@@ -4675,9 +4675,9 @@ input InventoryAcquisitionUpdateInput {
   make: String
   model: String
   odometer: Int
-  appraisalCents: Int
-  purchaseCents: Int
-  reconEstimateCents: Int
+  appraisalCents: Float
+  purchaseCents: Float
+  reconEstimateCents: Float
   vehicle: VehicleRelateToOneForUpdateInput
   immutablePurchaseSnapshot: JSON
   purchasedAt: DateTime
@@ -4715,9 +4715,9 @@ input InventoryAcquisitionCreateInput {
   make: String
   model: String
   odometer: Int
-  appraisalCents: Int
-  purchaseCents: Int
-  reconEstimateCents: Int
+  appraisalCents: Float
+  purchaseCents: Float
+  reconEstimateCents: Float
   vehicle: VehicleRelateToOneForCreateInput
   immutablePurchaseSnapshot: JSON
   purchasedAt: DateTime
@@ -4910,10 +4910,10 @@ type InventoryStock {
   locationLabel: String
   stockedAt: DateTime
   frontlineAt: DateTime
-  purchaseCostCents: Int
-  reconCostCents: Int
-  otherCostCents: Int
-  totalCostCents: Int
+  purchaseCostCents: Float
+  reconCostCents: Float
+  otherCostCents: Float
+  totalCostCents: Float
   reconStatus: String
   merchandisingStatus: String
   approvedRevisionHash: String
@@ -4949,10 +4949,10 @@ input InventoryStockWhereInput {
   locationLabel: StringFilter
   stockedAt: DateTimeFilter
   frontlineAt: DateTimeNullableFilter
-  purchaseCostCents: IntNullableFilter
-  reconCostCents: IntNullableFilter
-  otherCostCents: IntNullableFilter
-  totalCostCents: IntNullableFilter
+  purchaseCostCents: FloatNullableFilter
+  reconCostCents: FloatNullableFilter
+  otherCostCents: FloatNullableFilter
+  totalCostCents: FloatNullableFilter
   reconStatus: StringNullableFilter
   merchandisingStatus: StringNullableFilter
   approvedRevisionHash: StringFilter
@@ -5012,10 +5012,10 @@ input InventoryStockUpdateInput {
   locationLabel: String
   stockedAt: DateTime
   frontlineAt: DateTime
-  purchaseCostCents: Int
-  reconCostCents: Int
-  otherCostCents: Int
-  totalCostCents: Int
+  purchaseCostCents: Float
+  reconCostCents: Float
+  otherCostCents: Float
+  totalCostCents: Float
   reconStatus: String
   merchandisingStatus: String
   approvedRevisionHash: String
@@ -5063,10 +5063,10 @@ input InventoryStockCreateInput {
   locationLabel: String
   stockedAt: DateTime
   frontlineAt: DateTime
-  purchaseCostCents: Int
-  reconCostCents: Int
-  otherCostCents: Int
-  totalCostCents: Int
+  purchaseCostCents: Float
+  reconCostCents: Float
+  otherCostCents: Float
+  totalCostCents: Float
   reconStatus: String
   merchandisingStatus: String
   approvedRevisionHash: String
@@ -5100,7 +5100,7 @@ type InventoryStockEvent {
   eventKey: String
   eventType: String
   reason: String
-  amountCents: Int
+  amountCents: Float
   evidence: JSON
   actor: User
   occurredAt: DateTime
@@ -5123,7 +5123,7 @@ input InventoryStockEventWhereInput {
   eventKey: StringFilter
   eventType: StringFilter
   reason: StringFilter
-  amountCents: IntNullableFilter
+  amountCents: FloatNullableFilter
   actor: UserWhereInput
   occurredAt: DateTimeFilter
 }
@@ -5147,7 +5147,7 @@ input InventoryStockEventUpdateInput {
   eventKey: String
   eventType: String
   reason: String
-  amountCents: Int
+  amountCents: Float
   evidence: JSON
   actor: UserRelateToOneForUpdateInput
   occurredAt: DateTime
@@ -5166,7 +5166,7 @@ input InventoryStockEventCreateInput {
   eventKey: String
   eventType: String
   reason: String
-  amountCents: Int
+  amountCents: Float
   evidence: JSON
   actor: UserRelateToOneForCreateInput
   occurredAt: DateTime
@@ -5181,8 +5181,8 @@ type InventoryReconWorkItem {
   title: String
   category: String
   status: String
-  estimatedCostCents: Int
-  actualCostCents: Int
+  estimatedCostCents: Float
+  actualCostCents: Float
   vendorName: String
   assignedTo: User
   dueAt: DateTime
@@ -5205,8 +5205,8 @@ input InventoryReconWorkItemWhereInput {
   title: StringFilter
   category: StringFilter
   status: StringNullableFilter
-  estimatedCostCents: IntNullableFilter
-  actualCostCents: IntNullableFilter
+  estimatedCostCents: FloatNullableFilter
+  actualCostCents: FloatNullableFilter
   vendorName: StringFilter
   assignedTo: UserWhereInput
   dueAt: DateTimeNullableFilter
@@ -5235,8 +5235,8 @@ input InventoryReconWorkItemUpdateInput {
   title: String
   category: String
   status: String
-  estimatedCostCents: Int
-  actualCostCents: Int
+  estimatedCostCents: Float
+  actualCostCents: Float
   vendorName: String
   assignedTo: UserRelateToOneForUpdateInput
   dueAt: DateTime
@@ -5256,8 +5256,8 @@ input InventoryReconWorkItemCreateInput {
   title: String
   category: String
   status: String
-  estimatedCostCents: Int
-  actualCostCents: Int
+  estimatedCostCents: Float
+  actualCostCents: Float
   vendorName: String
   assignedTo: UserRelateToOneForCreateInput
   dueAt: DateTime
@@ -6241,8 +6241,8 @@ type FinanceProduct {
   active: Boolean
   quotes(where: FinanceProductQuoteWhereInput! = {}, orderBy: [FinanceProductQuoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FinanceProductQuoteWhereUniqueInput): [FinanceProductQuote!]
   quotesCount(where: FinanceProductQuoteWhereInput! = {}): Int
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
 }
 
 input FinanceProductWhereUniqueInput {
@@ -6263,8 +6263,8 @@ input FinanceProductWhereInput {
   providerKey: StringFilter
   active: BooleanFilter
   quotes: FinanceProductQuoteManyRelationFilter
-  retailPriceCents: IntFilter
-  costCents: IntFilter
+  retailPriceCents: FloatFilter
+  costCents: FloatFilter
 }
 
 input FinanceProductOrderByInput {
@@ -6290,8 +6290,8 @@ input FinanceProductUpdateInput {
   providerKey: String
   active: Boolean
   quotes: FinanceProductQuoteRelateToManyForUpdateInput
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
 }
 
 input FinanceProductUpdateArgs {
@@ -6309,8 +6309,8 @@ input FinanceProductCreateInput {
   providerKey: String
   active: Boolean
   quotes: FinanceProductQuoteRelateToManyForCreateInput
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
 }
 
 type FinanceMenuVersion {
@@ -6676,8 +6676,8 @@ type FinanceProductQuote {
   product: FinanceProduct
   providerKey: String
   status: String
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
   evidenceReference: String
   requestSnapshot: JSON
   resultSnapshot: JSON
@@ -6703,8 +6703,8 @@ input FinanceProductQuoteWhereInput {
   product: FinanceProductWhereInput
   providerKey: StringFilter
   status: StringFilter
-  retailPriceCents: IntNullableFilter
-  costCents: IntNullableFilter
+  retailPriceCents: FloatNullableFilter
+  costCents: FloatNullableFilter
   evidenceReference: StringFilter
   requestedAt: DateTimeFilter
   completedAt: DateTimeNullableFilter
@@ -6733,8 +6733,8 @@ input FinanceProductQuoteUpdateInput {
   product: FinanceProductRelateToOneForUpdateInput
   providerKey: String
   status: String
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
   evidenceReference: String
   requestSnapshot: JSON
   resultSnapshot: JSON
@@ -6762,8 +6762,8 @@ input FinanceProductQuoteCreateInput {
   product: FinanceProductRelateToOneForCreateInput
   providerKey: String
   status: String
-  retailPriceCents: Int
-  costCents: Int
+  retailPriceCents: Float
+  costCents: Float
   evidenceReference: String
   requestSnapshot: JSON
   resultSnapshot: JSON
@@ -6787,7 +6787,7 @@ type FinanceProductCancellation {
   productCode: String
   status: String
   reason: String
-  refundCents: Int
+  refundCents: Float
   evidence: JSON
   requestedAt: DateTime
   completedAt: DateTime
@@ -6812,7 +6812,7 @@ input FinanceProductCancellationWhereInput {
   productCode: StringFilter
   status: StringFilter
   reason: StringFilter
-  refundCents: IntNullableFilter
+  refundCents: FloatNullableFilter
   requestedAt: DateTimeFilter
   completedAt: DateTimeNullableFilter
   idempotencyKey: StringFilter
@@ -6840,7 +6840,7 @@ input FinanceProductCancellationUpdateInput {
   productCode: String
   status: String
   reason: String
-  refundCents: Int
+  refundCents: Float
   evidence: JSON
   requestedAt: DateTime
   completedAt: DateTime
@@ -6867,7 +6867,7 @@ input FinanceProductCancellationCreateInput {
   productCode: String
   status: String
   reason: String
-  refundCents: Int
+  refundCents: Float
   evidence: JSON
   requestedAt: DateTime
   completedAt: DateTime
@@ -6997,7 +6997,7 @@ type WeOweItem {
   status: String
   promisedAt: DateTime
   owner: User
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   fulfillmentEvidence: String
   customerAcknowledgment: String
   fulfilledAt: DateTime
@@ -7022,7 +7022,7 @@ input WeOweItemWhereInput {
   status: StringFilter
   promisedAt: DateTimeFilter
   owner: UserWhereInput
-  estimatedCostCents: IntNullableFilter
+  estimatedCostCents: FloatNullableFilter
   fulfillmentEvidence: StringFilter
   customerAcknowledgment: StringFilter
   fulfilledAt: DateTimeNullableFilter
@@ -7052,7 +7052,7 @@ input WeOweItemUpdateInput {
   status: String
   promisedAt: DateTime
   owner: UserRelateToOneForUpdateInput
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   fulfillmentEvidence: String
   customerAcknowledgment: String
   fulfilledAt: DateTime
@@ -7079,7 +7079,7 @@ input WeOweItemCreateInput {
   status: String
   promisedAt: DateTime
   owner: UserRelateToOneForCreateInput
-  estimatedCostCents: Int
+  estimatedCostCents: Float
   fulfillmentEvidence: String
   customerAcknowledgment: String
   fulfilledAt: DateTime
@@ -7456,8 +7456,8 @@ type AccountingBatch {
   status: String
   providerKey: String
   lines: JSON
-  totalDebitCents: Int
-  totalCreditCents: Int
+  totalDebitCents: Float
+  totalCreditCents: Float
   attemptCount: Int
   externalReference: String
   lastErrorCode: String
@@ -7484,8 +7484,8 @@ input AccountingBatchWhereInput {
   sourceId: StringFilter
   status: StringFilter
   providerKey: StringFilter
-  totalDebitCents: IntFilter
-  totalCreditCents: IntFilter
+  totalDebitCents: FloatFilter
+  totalCreditCents: FloatFilter
   attemptCount: IntFilter
   externalReference: StringFilter
   lastErrorCode: StringFilter
@@ -7523,8 +7523,8 @@ input AccountingBatchUpdateInput {
   status: String
   providerKey: String
   lines: JSON
-  totalDebitCents: Int
-  totalCreditCents: Int
+  totalDebitCents: Float
+  totalCreditCents: Float
   attemptCount: Int
   externalReference: String
   lastErrorCode: String
@@ -7548,8 +7548,8 @@ input AccountingBatchCreateInput {
   status: String
   providerKey: String
   lines: JSON
-  totalDebitCents: Int
-  totalCreditCents: Int
+  totalDebitCents: Float
+  totalCreditCents: Float
   attemptCount: Int
   externalReference: String
   lastErrorCode: String
@@ -7661,7 +7661,7 @@ type PaymentTransaction {
   serviceOrder: ServiceOrder
   lead: Lead
   sourceType: String
-  amountCents: Int
+  amountCents: Float
   currency: String
   providerKey: String
   paymentMethod: String
@@ -7670,8 +7670,8 @@ type PaymentTransaction {
   providerSessionId: String
   checkoutUrl: String
   status: String
-  capturedCents: Int
-  refundedCents: Int
+  capturedCents: Float
+  refundedCents: Float
   failureCode: String
   reconciliationReference: String
   reconciledAt: DateTime
@@ -7696,7 +7696,7 @@ input PaymentTransactionWhereInput {
   serviceOrder: ServiceOrderWhereInput
   lead: LeadWhereInput
   sourceType: StringFilter
-  amountCents: IntFilter
+  amountCents: FloatFilter
   currency: StringFilter
   providerKey: StringFilter
   paymentMethod: StringFilter
@@ -7705,8 +7705,8 @@ input PaymentTransactionWhereInput {
   providerSessionId: StringFilter
   checkoutUrl: StringFilter
   status: StringFilter
-  capturedCents: IntFilter
-  refundedCents: IntFilter
+  capturedCents: FloatFilter
+  refundedCents: FloatFilter
   failureCode: StringFilter
   reconciliationReference: StringFilter
   reconciledAt: DateTimeNullableFilter
@@ -7744,7 +7744,7 @@ input PaymentTransactionUpdateInput {
   serviceOrder: ServiceOrderRelateToOneForUpdateInput
   lead: LeadRelateToOneForUpdateInput
   sourceType: String
-  amountCents: Int
+  amountCents: Float
   currency: String
   providerKey: String
   paymentMethod: String
@@ -7753,8 +7753,8 @@ input PaymentTransactionUpdateInput {
   providerSessionId: String
   checkoutUrl: String
   status: String
-  capturedCents: Int
-  refundedCents: Int
+  capturedCents: Float
+  refundedCents: Float
   failureCode: String
   reconciliationReference: String
   reconciledAt: DateTime
@@ -7781,7 +7781,7 @@ input PaymentTransactionCreateInput {
   serviceOrder: ServiceOrderRelateToOneForCreateInput
   lead: LeadRelateToOneForCreateInput
   sourceType: String
-  amountCents: Int
+  amountCents: Float
   currency: String
   providerKey: String
   paymentMethod: String
@@ -7790,8 +7790,8 @@ input PaymentTransactionCreateInput {
   providerSessionId: String
   checkoutUrl: String
   status: String
-  capturedCents: Int
-  refundedCents: Int
+  capturedCents: Float
+  refundedCents: Float
   failureCode: String
   reconciliationReference: String
   reconciledAt: DateTime
@@ -7810,7 +7810,7 @@ type PaymentRefund {
   updatedAt: DateTime
   rooftop: Rooftop
   transaction: PaymentTransaction
-  amountCents: Int
+  amountCents: Float
   reason: String
   status: String
   providerRefundId: String
@@ -7832,7 +7832,7 @@ input PaymentRefundWhereInput {
   updatedAt: DateTimeFilter
   rooftop: RooftopWhereInput
   transaction: PaymentTransactionWhereInput
-  amountCents: IntFilter
+  amountCents: FloatFilter
   reason: StringFilter
   status: StringFilter
   providerRefundId: StringFilter
@@ -7857,7 +7857,7 @@ input PaymentRefundUpdateInput {
   updatedAt: DateTime
   rooftop: RooftopRelateToOneForUpdateInput
   transaction: PaymentTransactionRelateToOneForUpdateInput
-  amountCents: Int
+  amountCents: Float
   reason: String
   status: String
   providerRefundId: String
@@ -7881,7 +7881,7 @@ input PaymentRefundCreateInput {
   updatedAt: DateTime
   rooftop: RooftopRelateToOneForCreateInput
   transaction: PaymentTransactionRelateToOneForCreateInput
-  amountCents: Int
+  amountCents: Float
   reason: String
   status: String
   providerRefundId: String
@@ -9531,6 +9531,7 @@ input SubmitTradeInInput {
   condition: String!
   ownership: String!
   payoffAmount: Float
+  notes: String
   interestedVehicleId: ID
   rooftopSlug: String
   idempotencyKey: String!

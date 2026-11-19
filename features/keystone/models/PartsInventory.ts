@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { text, integer, relationship, virtual } from '@keystone-6/core/fields'
+import { text, integer, relationship, virtual, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions } from '../access'
@@ -64,8 +64,8 @@ export const PartsInventory = list({
     }),
 
     // Pricing
-    costCents: integer({ validation: { min: 0 }, label: 'Cost (cents)', ui: { description: 'Dealer cost per unit in integer USD cents' } }),
-    priceCents: integer({ validation: { isRequired: true, min: 0 }, label: 'Retail Price (cents)', ui: { description: 'Retail price in integer USD cents' } }),
+    costCents: float({ validation: { min: 0 }, label: 'Cost (cents)', ui: { description: 'Dealer cost per unit in integer USD cents' } }),
+    priceCents: float({ validation: { isRequired: true, min: 0 }, label: 'Retail Price (cents)', ui: { description: 'Retail price in integer USD cents' } }),
     cost: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.costCents == null ? null : item.costCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },

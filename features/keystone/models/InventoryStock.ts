@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { integer, relationship, select, text, timestamp } from '@keystone-6/core/fields'
+import { integer, relationship, select, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, withRooftopScope } from '../tenantRecords'
@@ -27,10 +27,10 @@ export const InventoryStock = list({
     locationLabel: text(),
     stockedAt: timestamp({ validation: { isRequired: true } }),
     frontlineAt: timestamp(),
-    purchaseCostCents: integer({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
-    reconCostCents: integer({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    otherCostCents: integer({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
-    totalCostCents: integer({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    purchaseCostCents: float({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    reconCostCents: float({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    otherCostCents: float({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
+    totalCostCents: float({ validation: { min: 0 }, defaultValue: 0, access: { read: permissions.canViewDealerCost } }),
     reconStatus: select({ type: 'string', options: ['not-started', 'in-progress', 'completed'].map(value => ({ label: value, value })), defaultValue: 'not-started' }),
     merchandisingStatus: select({ type: 'string', options: ['draft', 'submitted', 'approved', 'rejected'].map(value => ({ label: value, value })), defaultValue: 'draft' }),
     approvedRevisionHash: text({ defaultValue: '', access: { create: denyAll, update: denyAll, read: permissions.canViewInventory }, label: 'Approved marketing revision', ui: { itemView: { fieldMode: 'read' } } }),

@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core'
-import { integer, json, relationship, text, timestamp } from '@keystone-6/core/fields'
+import { integer, json, relationship, text, timestamp, float } from '@keystone-6/core/fields'
 
 import { permissions } from '../access'
 import { rooftopField, withRooftopScope } from '../tenantRecords'
@@ -18,7 +18,7 @@ export const InventoryStockEvent = list({
     eventKey: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
     eventType: text({ validation: { isRequired: true }, isIndexed: true }),
     reason: text({ validation: { isRequired: true, length: { max: 500 } } }),
-    amountCents: integer({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
+    amountCents: float({ validation: { min: 0 }, access: { read: permissions.canViewDealerCost } }),
     evidence: json({ defaultValue: {} }),
     actor: relationship({ ref: 'User' }),
     occurredAt: timestamp({ validation: { isRequired: true }, defaultValue: { kind: 'now' }, isIndexed: true }),

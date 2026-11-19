@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
-import { relationship, text, select, integer, checkbox, image, json, timestamp, virtual } from '@keystone-6/core/fields'
+import { relationship, text, select, integer, checkbox, image, json, timestamp, virtual, float } from '@keystone-6/core/fields'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions, rules } from '../access'
@@ -187,18 +187,18 @@ export const Vehicle = list({
     }),
 
     // Pricing
-    purchasePriceCents: integer({
+    purchasePriceCents: float({
       access: { read: permissions.canViewDealerCost },
       isFilterable: permissions.canViewDealerCost,
       isOrderable: permissions.canViewDealerCost,
       label: 'Purchase Price (cents)',
       ui: { description: 'Dealer acquisition cost in integer USD cents' },
     }),
-    listPriceCents: integer({
+    listPriceCents: float({
       label: 'List Price (cents)',
       ui: { description: 'Current listing price in integer USD cents' },
     }),
-    priceCents: integer({
+    priceCents: float({
       label: 'Price (cents)',
       ui: { description: 'Compatibility listing price in integer USD cents' },
     }),
