@@ -1,0 +1,52 @@
+# Elvis Automotores — Fase 1: Auditoría de Openfront Dealership
+
+Base: `openshiporg/openfront-dealership` (licencia **MIT**: permite uso comercial y modificación; hay que conservar el archivo `LICENSE` con el aviso de copyright).
+Referencia visual: `docs/elvis/referencia-diseno.webp`.
+
+## 1. Arquitectura actual
+| Capa | Tecnología |
+|---|---|
+| Frontend | Next.js (App Router) + React, Tailwind, Radix/shadcn (`components/`) |
+| Storefront público | `app/(storefront)/*` → pantallas en `features/storefront/screens` |
+| Panel admin | `app/dashboard` → `features/dashboard` (UI propia sobre Keystone, no el Admin UI por defecto) |
+| Backend / API | Keystone 6 (GraphQL) — `keystone.ts`, `features/keystone` |
+| Base de datos | PostgreSQL vía Prisma (`schema.prisma`, 53 migraciones en `migrations/`) |
+| Archivos | S3 compatible (`S3_*`) para imágenes |
+| Servicios externos | SMTP (emails), Stripe (pagos), OpenRouter (chat IA del panel), MCP |
+| Deploy | Vercel / Railway (`railway.toml`) |
+
+## 2. Funcionalidades existentes (se reutilizan, no se reconstruyen)
+- **Inventario**: `Vehicle` (marca, modelo, versión/trim, año, km, precio, color, descripción, estado, `features`, `metadata` JSON), `VehicleImage` (múltiples fotos, principal, orden), `Make`/`Model`, historial de precios. Listado con filtros, detalle por vehículo, comparador.
+- **Financiación**: `FinancingApplication` (solicitud con anticipo, plazo, tasa), `LenderSubmission`/`LenderDecision` (envío a entidades y decisión), página `/financing`. Ya existe el concepto de "proveedor" (`providerKey`) → punto de enganche para APIs bancarias futuras.
+- **Toma de usados**: `TradeIn` + página `/trade-in` (una sola foto principal).
+- **CRM**: `Lead`, `Customer`, `CustomerInteraction`, `Task`, reglas de asignación, `TestDrive`, `Deal`.
+- **Auth y permisos**: `@keystone-6/auth`, sesiones firmadas (`SESSION_SECRET` ≥ 32 chars), contraseñas con hash, roles con permisos granulares (`canManageLeads`, `canManageFinancing`, …), multi‑sucursal (`Rooftop`), API keys con scopes, throttling de login.
+- **Configuración del negocio**: `DealershipProfile` (nombre, teléfono, dirección, horarios, moneda, logo).
+- Además: servicio/taller, repuestos, contabilidad, pagos (fuera de alcance de Elvis; se ocultan del menú, no se borran).
+
+## 3. Faltantes respecto del pedido
+| Requisito | Estado | Propuesta |
+|---|---|---|
+| Combustible, transmisión, cilindrada | No hay campos | Agregar columnas a `Vehicle` (migración) + filtros |
+| Destacados en home | No hay flag | Campo `isFeatured` |
+| Bancos y productos financieros (TNA, TEA, CFT, plazos, montos, % financiable, vigencia, sistema de amortización, gastos) | **No existe** (`FinanceProduct` es para seguros/garantías F&I, no créditos) | Nuevos modelos `Bank` y `FinancingPlan`, administrables |
+| Simulador de cuotas | No existe | Cálculo francés/alemán **en servidor**, con leyenda "estimativo, sujeto a aprobación bancaria"; sin planes cargados no se muestra simulación |
+| Toma de usado con varias fotos | 1 foto | Modelo de fotos múltiples para `TradeIn` |
+| WhatsApp | No existe | Número en `DealershipProfile` + botón con mensaje (vehículo, año, precio, link) |
+| Español argentino / ARS | Todo en inglés, USD | Traducción de storefront y panel, `lang="es-AR"`, formato `$ 54.900.000` |
+| Marca Elvis | Branding Openfront | Nuevo tema negro/dorado según referencia |
+
+## 4. Problemas / riesgos detectados
+- **Datos de ejemplo**: el seed trae vehículos/fotos de demo en `public/images/vehicles` — se deben reemplazar por stock real antes de publicar.
+- **Contenido ficticio de la referencia visual**: las cifras "150+ vehículos", "5000+ clientes", "5 estrellas en Google", "7 días de garantía de cambio" y los autos/precios del mockup **no se publicarán** salvo que Elvis confirme que son reales; quedarán como textos editables.
+- Funcionalidades no usadas (Stripe, IA/OpenRouter, MCP) amplían la superficie de ataque: se desactivan si no hay variables configuradas y se ocultan del menú.
+- Requiere PostgreSQL y bucket S3 para correr; no hay `.env` en el repo (correcto, `.gitignore` ya excluye `.env*`).
+- El logotipo AE original todavía no fue entregado como archivo (solo aparece dentro de la imagen de referencia).
+
+## 5. Plan de implementación (por etapas, cada una verificada con `lint` + `build`)
+1. **Identidad visual + Home** (Fases 2–3): tokens de color, tipografías, header/footer, hero, accesos, destacados, secciones financiación / tomamos tu usado / beneficios / contacto. Español.
+2. **Inventario** (Fase 4): nuevos campos, filtros, detalle y botón WhatsApp (Fase 8).
+3. **Panel administrativo** (Fase 7): traducción, menú simplificado, alta/edición de autos, destacados, configuración de WhatsApp.
+4. **Financiación bancaria** (Fase 5): modelos Bank/FinancingPlan, simulador, solicitud, interfaz `BankProvider` para integraciones futuras.
+5. **Tomamos tu usado** (Fase 6): fotos múltiples, bandeja en el panel.
+6. **Calidad y seguridad** (Fase 9): SEO es-AR, validaciones, revisión de permisos, documentación de despliegue.
