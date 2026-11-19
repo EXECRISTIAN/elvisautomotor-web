@@ -1,6 +1,7 @@
 # Elvis Automotores — pendientes y material para mostrar
 
 ## Material listo para mostrar al dueño
+- **Isotipo AE original vectorizado tal cual** (mismos trazos, espacios y colores neón; 99% de coincidencia con el JPG original): `docs/elvis/logo/isotipo-original/` (SVG con fondo negro y transparente, PNG 2048 px).
 - **Logo AE recreado** (aprobado por el autor del proyecto): `docs/elvis/logo/`
   - `elvis-logo-completo.svg` / `-fondo-negro.png` / `-transparente.png`: imagotipo final (isotipo AE redibujado del original + barra + "ELVIS AUTOMOTORES"). En la web va como un único SVG embebido (`features/storefront/components/ElvisLogo.tsx`).
   - `elvis-ae-monograma.svg` / `elvis-ae-monograma.png` (solo AE, fondo transparente)
