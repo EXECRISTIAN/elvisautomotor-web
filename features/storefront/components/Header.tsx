@@ -16,6 +16,7 @@ const NAV = [
   { href: '/inventory', label: 'Inventario' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/nosotros', label: 'Nosotros' },
   { href: '/contact', label: 'Contacto' },
 ]
 
@@ -26,6 +27,7 @@ const MENU = [
   { href: '/trade-in', label: 'Vendé tu auto' },
   { href: '/test-drive', label: 'Prueba de manejo' },
   { href: '/compare', label: 'Comparar' },
+  { href: '/nosotros', label: 'Nosotros' },
   { href: '/contact', label: 'Contacto' },
   { href: '/account', label: 'Mi cuenta' },
 ]
@@ -95,7 +97,7 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className="sf-caps sf-nav-link relative whitespace-nowrap px-2.5 py-2 text-[0.75rem] font-semibold xl:px-4 transition-colors hover:text-[var(--sf-accent)]"
+                  className="sf-caps sf-nav-link relative whitespace-nowrap px-2.5 py-2 text-[0.72rem] font-semibold xl:px-3 transition-colors hover:text-[var(--sf-accent)]"
                   data-active={active || undefined}
                   style={{ color: active ? 'var(--sf-accent)' : 'var(--sf-ink)' }}
                 >
@@ -126,13 +128,13 @@ export function Header() {
             <Link
               href="/account"
               aria-current={isActive(pathname, '/account') ? 'page' : undefined}
-              className="hidden size-10 place-items-center rounded-[3px] transition-colors hover:text-[var(--sf-accent)] sm:grid"
+              className="hidden size-10 place-items-center rounded-[3px] transition-colors hover:text-[var(--sf-accent)] sm:grid lg:hidden 2xl:grid"
               aria-label="Mi cuenta"
             >
               <UserRound className="size-5" aria-hidden="true" />
             </Link>
 
-            <WhatsAppButton label="Consultá por WhatsApp" className="sf-btn sf-btn-outline ml-1 hidden min-h-[2.75rem] rounded-[6px] px-5 text-[0.75rem] md:inline-flex" />
+            <WhatsAppButton label="WhatsApp" className="sf-btn sf-btn-outline ml-1 hidden min-h-[2.75rem] rounded-[6px] px-4 text-[0.75rem] md:inline-flex" />
             <WhatsAppButton iconOnly label="Consultá por WhatsApp" className="grid size-11 place-items-center text-[var(--sf-accent)] md:hidden" />
 
             <button

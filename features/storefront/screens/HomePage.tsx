@@ -10,6 +10,7 @@ import { WhatsAppButton } from '../components/WhatsAppButton'
 import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
 import { createStorefrontBusiness } from '../lib/business'
+import { ELVIS_ABOUT } from '../lib/elvisContent'
 
 const HERO_PHOTO = '/images/showroom-dusk.jpg'
 
@@ -32,16 +33,16 @@ async function getFeaturedVehicles() {
 
 const HIGHLIGHTS = [
   { icon: ShieldCheck, title: 'Compra segura', text: 'Transparencia y confianza en cada operación.', href: '/inventory' },
-  { icon: Handshake, title: 'Financiación', text: 'Simulá tu cuota con financiación bancaria.', href: '/financing' },
-  { icon: CarFront, title: 'Tomamos tu usado', text: 'Entregá tu auto como parte de pago.', href: '/trade-in' },
+  { icon: Handshake, title: 'Venta a crédito', text: 'Financiación de hasta el 100%, sujeta a aprobación.', href: '/financing' },
+  { icon: CarFront, title: 'Vendelo en Elvis', text: 'Compramos tu usado de forma ágil y segura.', href: '/trade-in' },
   { icon: Headset, title: 'Asesoramiento', text: 'Te acompañamos en todo el proceso.', href: '/contact' },
 ]
 
 const BENEFITS = [
-  { icon: BadgeCheck, title: 'Vehículos seleccionados', text: 'Usados y 0 km revisados antes de publicarse, con la información clara desde el primer contacto.' },
-  { icon: Landmark, title: 'Financiación bancaria', text: 'Trabajamos con entidades bancarias para que puedas acceder a tu próximo auto en cuotas.' },
-  { icon: CarFront, title: 'Tu usado vale', text: 'Lo tasamos y lo tomamos como parte de pago para simplificar el cambio.' },
-  { icon: Headset, title: 'Atención personalizada', text: 'Un asesor te acompaña antes, durante y después de la compra.' },
+  { icon: BadgeCheck, title: `Desde ${ELVIS_ABOUT.since}`, text: 'Compra y venta de usados y 0 km con seguridad, honestidad y eficiencia.' },
+  { icon: Landmark, title: 'Hasta 100% financiado', text: 'Entrega inmediata: el vehículo lo pagás mientras lo usás. Sujeto a calificación y aprobación crediticia.' },
+  { icon: CarFront, title: 'Compramos tu usado', text: 'Resolvemos todo para que cobres tu dinero de manera ágil, segura e inmediata.' },
+  { icon: Headset, title: 'Consulta gratuita', text: 'Consultá tu crédito de forma presencial, personalizada, inmediata y sin costo en nuestro salón.' },
 ]
 
 function SectionTitle({ eyebrow, title, id }: { eyebrow: string; title: string; id?: string }) {
@@ -148,13 +149,13 @@ export async function HomePage() {
         <Container className="grid gap-6 lg:grid-cols-2">
           <article className="elv-panel" aria-labelledby="fin-title">
             <Landmark className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
-            <p className="elv-eyebrow mt-5">Financiación bancaria</p>
-            <h2 id="fin-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Tu auto en cuotas</h2>
+            <p className="elv-eyebrow mt-5">Venta a crédito</p>
+            <h2 id="fin-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Hasta 100% financiado</h2>
             <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-              Elegí el vehículo, indicá cuánto podés entregar y consultá las opciones de financiación con bancos.
+              {ELVIS_ABOUT.credit} {ELVIS_ABOUT.creditVisit}
             </p>
             <p className="mt-3 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>
-              Las simulaciones son estimativas y están sujetas a la aprobación de la entidad bancaria.
+              {ELVIS_ABOUT.creditDisclaimer} Las simulaciones son estimativas.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/financing" className="sf-btn sf-btn-primary rounded-[8px]">
@@ -170,10 +171,10 @@ export async function HomePage() {
             <span className="elv-panel-photo-shade" aria-hidden="true" />
             <div className="relative">
               <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
-              <p className="elv-eyebrow mt-5">Tomamos tu usado</p>
-              <h2 id="usado-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Entregalo como parte de pago</h2>
+              <p className="elv-eyebrow mt-5">Vendelo en Elvis</p>
+              <h2 id="usado-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Compramos tu usado</h2>
               <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-                Contanos marca, modelo, año y kilometraje, sumá algunas fotos y un asesor te contacta con una propuesta.
+                {ELVIS_ABOUT.buying}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/trade-in" className="sf-btn sf-btn-primary rounded-[8px]">
@@ -209,7 +210,7 @@ export async function HomePage() {
           <div>
             <SectionTitle eyebrow="Contacto" title="Visitanos o escribinos" id="contact-title" />
             <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-              Coordiná una visita, pedí información sobre una unidad o consultá por financiación.
+              {ELVIS_ABOUT.attention} {ELVIS_ABOUT.hoursNote}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <WhatsAppButton className="sf-btn sf-btn-primary rounded-[8px]" />

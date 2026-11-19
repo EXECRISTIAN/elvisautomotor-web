@@ -63,7 +63,8 @@ export async function signUpCustomer(_state: AccountState, data: FormData): Prom
   const name = String(data.get('name') || '').trim()
   const email = String(data.get('email') || '').trim().toLowerCase()
   const password = String(data.get('password') || '')
-  if (!name || !email || !password) return { error: 'Enter your name, email and password.' }
+  if (process.env.DEMO_MODE === 'true') return { error: 'Sitio de demostración: el registro de clientes está desactivado.' }
+  if (!name || !email || !password) return { error: 'Ingresá tu nombre, email y contraseña.' }
   try {
     await openfrontClient.request(
       `mutation RegisterCustomer($name: String!, $email: String!, $password: String!) {

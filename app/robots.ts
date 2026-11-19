@@ -5,6 +5,7 @@ import { storefrontOrigin } from '@/features/storefront/lib/data/site-origin'
 export const dynamic = 'force-dynamic'
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
+  if (process.env.DEMO_MODE === 'true') return { rules: { userAgent: '*', disallow: '/' } }
   const origin = await storefrontOrigin()
   return {
     rules: { userAgent: '*', allow: '/', disallow: ['/dashboard', '/api', '/account'] },

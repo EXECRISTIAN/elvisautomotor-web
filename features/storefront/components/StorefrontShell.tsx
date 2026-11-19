@@ -49,6 +49,7 @@ export function StorefrontShell({
   const { business } = settings
   const brandStyle: StorefrontBrandStyle = { '--sf-logo-hue': business.logoColor }
   const hideBranding = process.env.HIDE_OPENFRONT_BRANDING === 'true'
+  const demo = process.env.DEMO_MODE === 'true'
 
   return (
     <StorefrontBusinessProvider business={business}>
@@ -56,6 +57,11 @@ export function StorefrontShell({
         className={`storefront ${display.variable} min-h-screen flex flex-col`}
         style={brandStyle}
       >
+        {demo && (
+          <div role="note" className="px-4 py-2 text-center text-[0.75rem] font-semibold" style={{ background: 'var(--sf-accent-fill)', color: 'var(--sf-accent-ink)' }}>
+            Propuesta de sitio web — versión de demostración, no oficial. Los formularios no envían datos.
+          </div>
+        )}
         <Header />
         <main className="sf-main flex-1">{children}</main>
         <Footer branding={!hideBranding} />

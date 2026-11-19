@@ -70,3 +70,9 @@ Referencia visual: `docs/elvis/referencia-diseno.webp`.
 - Ficha de vehículo en español, con botón "Consultar por WhatsApp" que envía marca, modelo, versión, año, precio y enlace.
 - Se quitó el botón "Reservar este vehículo" (seña de USD 500 con tarjeta vía Stripe, no aplica a Elvis); se reemplazó por "Simular financiación".
 - Test `tests/store-settings-save.test.cjs` actualizado para el monograma AE. Los 5 tests que fallan (módulo de chat IA) ya fallaban en el código original.
+
+## Datos del negocio y modo demostración (realizado)
+- Página **Nosotros** (`/nosotros`) con la información institucional; textos y redes en `features/storefront/lib/elvisContent.ts`.
+- Home, footer y SEO con datos reales: venta a crédito hasta 100% (con la aclaración "sujeto a calificación y aprobación crediticia"), "Vendelo en Elvis", horarios y atención con turno.
+- Perfil del negocio listo para cargar: `docs/elvis/perfil-elvis.sql`.
+- **Modo demostración** (`DEMO_MODE`, `DEMO_PASSWORD`) para mostrar la propuesta sin que se indexe ni se confunda con el sitio oficial. Ver `docs/elvis/DEMO.md`.

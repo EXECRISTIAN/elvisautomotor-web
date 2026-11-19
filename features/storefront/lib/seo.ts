@@ -21,12 +21,12 @@ function oneLine(text: string, max = 160) {
 export function businessDescription(business: StorefrontBusiness) {
   if (business.homepageDescription.trim()) return oneLine(business.homepageDescription)
   const town = place(business)
-  return oneLine(`${business.fullName}${town ? ` in ${town}` : ''}: browse new and pre-owned vehicles, book a test drive, apply for financing and get an offer on your trade-in.`)
+  return oneLine(`${business.fullName}${town ? ` en ${town}` : ''}: autos usados y 0 km, financiación y compra de tu usado.`)
 }
 
 const PAGE_DESCRIPTIONS = {
-  inventory: (b: StorefrontBusiness) => `Browse every vehicle on the lot at ${b.fullName}, with prices, mileage and photos. Filter by make, model, year and budget.`,
-  financing: (b: StorefrontBusiness) => `Estimate a monthly payment on any vehicle at ${b.fullName}, then send a financing application to the finance team.`,
+  inventory: (b: StorefrontBusiness) => `Todos los vehículos disponibles en ${b.fullName}, con precio, kilometraje y fotos. Filtrá por marca, modelo, año y presupuesto.`,
+  financing: (b: StorefrontBusiness) => `Consultá opciones de financiación para tu próximo vehículo en ${b.fullName}. Sujeto a calificación y aprobación crediticia.`,
 } as const
 
 export function pageMetadata(business: StorefrontBusiness, page: keyof typeof PAGE_DESCRIPTIONS, title: string): Metadata {
@@ -42,7 +42,7 @@ export function vehicleMetadata(business: StorefrontBusiness, vehicle: Vehicle):
     vehicle.color || '',
     vehicle.stockNumber ? `stock #${vehicle.stockNumber}` : '',
   ].filter(Boolean).join(', ')
-  const description = oneLine(`${title}${facts ? `: ${facts}` : ''}. Available at ${business.fullName}. Book a test drive or apply for financing online.`)
+  const description = oneLine(`${title}${facts ? `: ${facts}` : ''}. Disponible en ${business.fullName}. Consultá por financiación.`)
   const photo = vehicleImageUrl(primaryVehicleImage(vehicle.images))
   return {
     title,
@@ -64,8 +64,9 @@ export function storefrontMetadata(business: StorefrontBusiness, origin: string 
       siteName: business.fullName,
       title: business.homepageTitle || business.fullName,
       description,
-      images: [{ url: SHARE_PHOTO, width: 2400, height: 1029, alt: `${business.fullName} showroom` }],
+      images: [{ url: SHARE_PHOTO, width: 2400, height: 1029, alt: `Salón de ${business.fullName}` }],
     },
     twitter: { card: 'summary_large_image' },
+    ...(process.env.DEMO_MODE === 'true' ? { robots: { index: false, follow: false } } : {}),
   }
 }

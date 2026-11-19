@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
 import { WhatsAppButton } from './WhatsAppButton'
+import { ELVIS_ABOUT, ELVIS_LINKS } from '../lib/elvisContent'
 import { BrandMark } from './BrandMark'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
@@ -15,6 +16,7 @@ const SHOP = [
 ]
 
 const VISIT = [
+  { href: '/nosotros', label: 'Nosotros' },
   { href: '/test-drive', label: 'Prueba de manejo' },
   { href: '/contact', label: 'Contacto' },
   { href: '/account', label: 'Mi cuenta' },
@@ -58,6 +60,12 @@ export function Footer({ branding = true }: { branding?: boolean }) {
               </div>
             )}
             <WhatsAppButton className="sf-btn sf-btn-outline sf-btn-sm mt-3 min-h-11" />
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--sf-text-xs)]" aria-label="Redes sociales">
+              {ELVIS_LINKS.social.map((link) => (
+                <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center hover:text-[var(--sf-accent)]">{link.label}</a></li>
+              ))}
+              <li><a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center hover:text-[var(--sf-accent)]">Canal de WhatsApp</a></li>
+            </ul>
           </div>
 
           <nav aria-label="Comprar" className="min-w-0">
@@ -96,6 +104,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
             ) : (
               <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Consultá nuestros horarios</p>
             )}
+            <p className="mt-3 text-[length:var(--sf-text-xs)]" style={{ color: 'var(--sf-on-dark-2)' }}>{ELVIS_ABOUT.hoursNote}</p>
             {business.salesEmail && (
               <a href={`mailto:${business.salesEmail}`} className="mt-4 flex min-h-11 items-center break-all text-[length:var(--sf-text-sm)] underline-offset-4 hover:underline">
                 {business.salesEmail}
@@ -105,7 +114,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t pt-6 text-[length:var(--sf-text-xs)] sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--sf-rule-dark)', color: 'var(--sf-on-dark-2)' }}>
-          <p>© {year} {business.fullName}. Todos los derechos reservados.</p>
+          <p>© {year} {business.fullName.replace(/\.$/, '')}. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link href="/photo-credits" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Créditos de fotos</Link>
             {branding && <a href="https://github.com/openshiporg/openfront-dealership" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Basado en Openfront (MIT)</a>}

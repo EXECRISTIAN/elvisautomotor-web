@@ -2,6 +2,7 @@
 
 import { openfrontClient } from '../lib/config'
 import { getAuthHeaders } from '../lib/data/cookies'
+import { DEMO_SUBMISSION_MESSAGE, isDemoMode } from '@/features/lib/demoMode'
 
 export type StorefrontSubmissionResult<T> =
   | { success: true; data: T }
@@ -19,13 +20,14 @@ type CommonSubmissionInput = {
   website?: string
 }
 
-const SUBMISSION_FAILED = 'Unable to submit this request.'
+const SUBMISSION_FAILED = 'No pudimos enviar la solicitud. Intentá de nuevo.'
 
 async function executeSubmission<T extends SubmissionPayload>(
   field: string,
   document: string,
   input: CommonSubmissionInput & Record<string, unknown>
 ): Promise<StorefrontSubmissionResult<T>> {
+  if (isDemoMode()) return { success: false, error: DEMO_SUBMISSION_MESSAGE, code: 'demo-mode' }
   let response: Record<string, T>
   try {
     response = await openfrontClient.request<Record<string, T>>(
