@@ -1,252 +1,254 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { CalendarCheck, CarFront, ChevronRight, CircleDollarSign, House, MapPin, Search, Tag, Wrench } from 'lucide-react'
+import { ArrowRight, BadgeCheck, CarFront, Clock, Handshake, Headset, Landmark, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react'
 import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
-import { GET_VEHICLES, GET_VEHICLES_COUNT } from '@/features/storefront/lib/data/queries'
+import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import { Container } from '../components/Container'
-import { HeroSearch, HeroSearchCompact } from '../components/HeroSearch'
-import { ShowroomCard, ShowroomRow } from '../components/ShowroomCard'
-import { loadHomeQuery, selectHomeFeaturedVehicles, selectHomeInventoryCount } from '../lib/data/home-inventory'
+import { FeaturedVehicleCard } from '../components/FeaturedVehicleCard'
+import { WhatsAppButton } from '../components/WhatsAppButton'
+import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
-import { createStorefrontBusiness, type StorefrontBusiness } from '../lib/business'
+import { createStorefrontBusiness } from '../lib/business'
 
 const HERO_PHOTO = '/images/showroom-dusk.jpg'
 
+// Hasta que exista la marca "destacado" (etapa 2), se muestran las unidades disponibles más recientes por año.
 async function getFeaturedVehicles() {
   return loadHomeQuery(
     () => fetchGraphQL<unknown>(GET_VEHICLES, {
       where: { status: { equals: 'available' } },
       orderBy: [{ year: 'desc' }],
-      take: 3,
+      take: 4,
     }),
     selectHomeFeaturedVehicles<Vehicle>,
   )
 }
 
-async function getInventoryCount() {
-  return loadHomeQuery(
-    () => fetchGraphQL<unknown>(GET_VEHICLES_COUNT, {
-      where: { status: { equals: 'available' } },
-    }),
-    selectHomeInventoryCount,
-  )
-}
-
-// "Springfield, VA, 22150" -> "Springfield"
-function cityOf(business: StorefrontBusiness) {
-  return business.addressLine2.split(',')[0]?.trim() || ''
-}
-
-function heroCopy(business: StorefrontBusiness) {
-  const title = business.homepageTitle.trim()
-  const custom = title && title !== business.fullName && title !== business.shortName
-  const city = cityOf(business)
-  const address = [business.addressLine1, business.addressLine2].filter(Boolean).join(', ')
-  return {
-    lead: custom ? title : 'Find your next drive:',
-    accent: custom ? '' : city ? `In ${city}.` : `${business.shortName}.`,
-    sub: business.homepageDescription || [business.fullName, address].filter(Boolean).join('. '),
-  }
-}
-
-const STRIP = [
-  { title: 'Financing available', action: 'Estimate your payment', href: '/financing' },
-  { title: 'Sell us your car', action: 'Get a free offer', href: '/trade-in' },
-  { title: 'Your test drive awaits', action: 'Book now', href: '/test-drive' },
+const HIGHLIGHTS = [
+  { icon: ShieldCheck, title: 'Compra segura', text: 'Transparencia y confianza en cada operación.', href: '/inventory' },
+  { icon: Handshake, title: 'Financiación', text: 'Simulá tu cuota con financiación bancaria.', href: '/financing' },
+  { icon: CarFront, title: 'Tomamos tu usado', text: 'Entregá tu auto como parte de pago.', href: '/trade-in' },
+  { icon: Headset, title: 'Asesoramiento', text: 'Te acompañamos en todo el proceso.', href: '/contact' },
 ]
 
-const QUICK = [
-  { href: '/financing', label: 'Financing', icon: CircleDollarSign },
-  { href: '/trade-in', label: 'Trade in', icon: CarFront },
-  { href: '/test-drive', label: 'Test drive', icon: CalendarCheck },
+const BENEFITS = [
+  { icon: BadgeCheck, title: 'Vehículos seleccionados', text: 'Usados y 0 km revisados antes de publicarse, con la información clara desde el primer contacto.' },
+  { icon: Landmark, title: 'Financiación bancaria', text: 'Trabajamos con entidades bancarias para que puedas acceder a tu próximo auto en cuotas.' },
+  { icon: CarFront, title: 'Tu usado vale', text: 'Lo tasamos y lo tomamos como parte de pago para simplificar el cambio.' },
+  { icon: Headset, title: 'Atención personalizada', text: 'Un asesor te acompaña antes, durante y después de la compra.' },
 ]
 
-const VISIT = [
-  { href: '/inventory', label: 'Vehicle inventory', icon: CarFront },
-  { href: '/contact', label: 'Contact sales', icon: Tag },
-  { href: '/service', label: 'Service center', icon: Wrench },
-]
-
-function InventoryState({ state }: { state: 'unavailable' | 'empty' }) {
+function SectionTitle({ eyebrow, title, id }: { eyebrow: string; title: string; id?: string }) {
   return (
-    <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between" role={state === 'unavailable' ? 'alert' : undefined}>
-      <p className="sf-title-line font-semibold">
-        <span className="sf-dot" data-tone={state === 'unavailable' ? 'bad' : undefined} aria-hidden="true" />
-        {state === 'unavailable' ? 'Inventory couldn\u2019t be loaded.' : 'No vehicles listed'}
-      </p>
-      {state === 'unavailable' ? (
-        <Link href="/" prefetch={false} className="sf-btn sf-btn-ghost sf-btn-sm">Retry</Link>
-      ) : (
-        <Link href="/contact" className="sf-btn sf-btn-ghost sf-btn-sm">Contact sales</Link>
-      )}
+    <div>
+      <p className="elv-eyebrow">{eyebrow}</p>
+      <h2 id={id} className="sf-display mt-2 text-[clamp(1.5rem,3vw,2.1rem)]">{title}</h2>
     </div>
   )
 }
 
 export async function HomePage() {
-  const [featured, inventoryCount, settings] = await Promise.all([
-    getFeaturedVehicles(),
-    getInventoryCount(),
-    loadStorefrontBusiness(),
-  ])
+  const [featured, settings] = await Promise.all([getFeaturedVehicles(), loadStorefrontBusiness()])
   const business = settings.status === 'ready' ? settings.business : createStorefrontBusiness()
-  const vehicles = featured.status === 'ready' ? featured.value.slice(0, 3) : []
-  const count = inventoryCount.status === 'ready' ? inventoryCount.value : null
-  const copy = heroCopy(business)
-  const inventoryState = featured.status === 'unavailable' ? 'unavailable' : vehicles.length === 0 ? 'empty' : null
-  const city = cityOf(business)
+  const vehicles = featured.status === 'ready' ? featured.value.slice(0, 4) : []
+  const words = business.shortName.trim().split(/\s+/)
+  const lead = words[0] || 'Elvis'
+  const rest = words.slice(1).join(' ')
+  const tagline = business.homepageTitle && business.homepageTitle !== business.fullName && business.homepageTitle !== business.shortName
+    ? business.homepageTitle
+    : 'Tu próximo auto, más cerca.'
+  const address = [business.addressLine1, business.addressLine2].filter(Boolean)
+  const hours = [
+    ['Lunes a viernes', business.hoursMonFri],
+    ['Sábados', business.hoursSaturday],
+    ['Domingos', business.hoursSunday],
+  ].filter(([, value]) => value)
 
   return (
-    <div className="sf-home" data-flush-end>
-      {/* ---------- Desktop and tablet ---------- */}
-      <section className="relative hidden overflow-hidden md:block">
-        <Image src={HERO_PHOTO} alt="" fill priority sizes="100vw" className="object-cover object-[60%_55%]" />
-        <span className="sf-hero-shade" aria-hidden="true" />
-        <Container className="relative flex min-h-[26.25rem] flex-col pb-[1.125rem] pt-[3.25rem]">
-          <h1 className="sf-display sf-hero-title">
-            <span className="block max-w-[40rem]" style={{ color: 'var(--sf-bone)' }}>{copy.lead}</span>
-            {copy.accent && <span className="block" style={{ color: 'var(--sf-accent)' }}>{copy.accent}</span>}
+    <div className="sf-home elv-home" data-flush-end>
+      {/* ---------- Hero ---------- */}
+      <section className="elv-hero" aria-labelledby="hero-title">
+        <Image src={HERO_PHOTO} alt="" fill priority sizes="100vw" className="object-cover object-[65%_55%]" />
+        <span className="elv-hero-shade" aria-hidden="true" />
+        <span className="elv-hero-stripe" aria-hidden="true" />
+        <Container className="relative flex min-h-[34rem] flex-col justify-center pb-28 pt-14 md:min-h-[38rem] md:pb-36">
+          <p className="elv-kicker">Calidad <span aria-hidden="true">•</span> Confianza <span aria-hidden="true">•</span> Respaldo</p>
+          <h1 id="hero-title" className="mt-4">
+            <span className="block text-[clamp(3rem,9vw,5.75rem)] font-semibold uppercase leading-none tracking-[0.12em]" style={{ color: 'var(--sf-bone)' }}>{lead}</span>
+            {rest && <span className="sf-gold-text mt-2 block text-[clamp(1.6rem,5vw,3.25rem)] font-bold uppercase leading-none tracking-[0.12em]">{rest}</span>}
           </h1>
-          {copy.sub && (
-            <p className="mt-4 max-w-[46rem] text-[0.8125rem] font-medium uppercase" style={{ color: 'var(--sf-ink)' }}>
-              {copy.sub}
-            </p>
+          <p className="elv-tagline mt-5">{tagline}</p>
+          {business.homepageDescription && (
+            <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }}>{business.homepageDescription}</p>
           )}
-          <div className="mt-auto pt-5">
-            <HeroSearch />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
+              Explorá nuestro inventario
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+            <WhatsAppButton className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6" />
           </div>
         </Container>
       </section>
 
-      <section className="hidden pt-3 md:block">
-        <Container>
-          <h2 className="mb-3 flex items-center gap-4">
-            <Link href="/inventory" className="sf-caps inline-flex items-center gap-4 text-[0.875rem] font-medium hover:text-[var(--sf-accent)]">
-              Inventory
-              {count !== null && <span className="sr-only">, {count} vehicles</span>}
-              <ChevronRight className="size-4" style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+      {/* ---------- Accesos rápidos ---------- */}
+      <Container className="relative z-10 -mt-20 md:-mt-24">
+        <nav aria-label="Accesos rápidos" className="elv-highlights">
+          {HIGHLIGHTS.map(({ icon: Icon, title, text, href }) => (
+            <Link key={title} href={href} className="elv-highlight group">
+              <Icon className="size-9 shrink-0" strokeWidth={1.4} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+              <span className="min-w-0">
+                <span className="block text-[0.85rem] font-bold uppercase tracking-[0.04em] group-hover:text-[var(--sf-accent)]">{title}</span>
+                <span className="mt-1 block text-[0.8rem] leading-snug" style={{ color: 'var(--sf-ink-2)' }}>{text}</span>
+              </span>
             </Link>
-          </h2>
-          {inventoryState ? (
-            <InventoryState state={inventoryState} />
-          ) : (
-            <div className="grid grid-cols-2 gap-5 lg:grid-cols-3 lg:gap-[1.25rem]">
+          ))}
+        </nav>
+      </Container>
+
+      {/* ---------- Vehículos destacados ---------- */}
+      <section className="elv-cream -mt-16 pb-16 pt-28 md:-mt-20 md:pt-32" aria-labelledby="featured-title">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionTitle eyebrow="Buscá tu auto ideal" title="Encontrá el auto perfecto" id="featured-title" />
+            <Link href="/inventory" className="sf-btn sf-btn-outline rounded-[8px]" style={{ color: 'var(--elv-cream-ink)' }}>
+              Ver todo el inventario
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+          {vehicles.length > 0 ? (
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {vehicles.map((vehicle, index) => (
-                <ShowroomCard key={vehicle.id} vehicle={vehicle} currencyCode={business.currencyCode} priority={index < 3} />
+                <FeaturedVehicleCard key={vehicle.id} vehicle={vehicle} currencyCode={business.currencyCode} priority={index < 2} />
               ))}
             </div>
-          )}
-
-          <div className="mt-4 grid grid-cols-3 border-t py-5" style={{ borderColor: 'var(--sf-rule)' }}>
-            {STRIP.map((item, index) => (
-              <div key={item.href} className={`min-w-0 ${index > 0 ? 'border-l pl-11' : ''}`} style={{ borderColor: 'var(--sf-rule)' }}>
-                <h3 className="sf-caps text-[0.875rem] font-medium">{item.title}</h3>
-                <Link href={item.href} className="mt-1 inline-flex items-center gap-2 text-[0.9375rem] hover:text-[var(--sf-accent)]" style={{ color: 'var(--sf-ink-2)' }}>
-                  {item.action}
-                  <ChevronRight className="size-4" style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
-                </Link>
+          ) : (
+            <div className="elv-empty mt-8" role={featured.status === 'unavailable' ? 'alert' : undefined}>
+              <p className="font-semibold">
+                {featured.status === 'unavailable' ? 'No pudimos cargar el inventario en este momento.' : 'Estamos actualizando nuestro inventario.'}
+              </p>
+              <p className="mt-1 text-[0.9rem]" style={{ color: 'var(--elv-cream-ink-2)' }}>Escribinos y te contamos qué unidades tenemos disponibles.</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/contact" className="sf-btn sf-btn-primary rounded-[8px]">Contactanos</Link>
+                <WhatsAppButton className="sf-btn sf-btn-outline rounded-[8px]" />
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </Container>
       </section>
 
-      {/* ---------- Phone ---------- */}
-      <section className="sf-dock-clear relative overflow-hidden md:hidden">
-        <span className="sf-phone-glow" aria-hidden="true">
-          {/* Drawn blurred at a third opacity, so a thumbnail-sized source looks the same and lands first. */}
-          <Image src={HERO_PHOTO} alt="" fill priority sizes="160px" className="object-cover object-[45%_70%]" />
-        </span>
-        <Container className="relative">
-          <h1 className="sf-display sf-phone-title mx-auto mt-2 w-fit" aria-label={`Driven by you. ${business.fullName}`}>
-            <span className="block">Driven</span>
-            <span className="flex items-start">
-              <span className="sf-phone-title-small">By</span>
-              <span>You</span>
-            </span>
-          </h1>
-
-          <p className="sf-eyebrow sf-eyebrow-accent mt-3 font-bold">Find your next ride</p>
-          <div className="mt-2">
-            <HeroSearchCompact />
-          </div>
-
-          <nav aria-label="Shopping tools" className="mt-4 grid grid-cols-3 gap-2 px-3">
-            {QUICK.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} className="sf-quick-tile">
-                <Icon className="size-5" strokeWidth={1.4} aria-hidden="true" />
-                <span>{label}</span>
+      {/* ---------- Financiación + Tomamos tu usado ---------- */}
+      <section className="py-16 md:py-20" aria-label="Financiación y toma de usados">
+        <Container className="grid gap-6 lg:grid-cols-2">
+          <article className="elv-panel" aria-labelledby="fin-title">
+            <Landmark className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+            <p className="elv-eyebrow mt-5">Financiación bancaria</p>
+            <h2 id="fin-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Tu auto en cuotas</h2>
+            <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
+              Elegí el vehículo, indicá cuánto podés entregar y consultá las opciones de financiación con bancos.
+            </p>
+            <p className="mt-3 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>
+              Las simulaciones son estimativas y están sujetas a la aprobación de la entidad bancaria.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/financing" className="sf-btn sf-btn-primary rounded-[8px]">
+                Consultar financiación
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
-            ))}
-          </nav>
-
-          <div className="mt-5 flex items-end gap-3">
-            <div className="min-w-0">
-              <p className="sf-eyebrow sf-eyebrow-accent" style={{ letterSpacing: '0.04em' }}>Inventory</p>
-              <h2 className="sf-display whitespace-nowrap text-[1.1875rem] leading-none" style={{ fontStretch: '80%' }}>Real cars. Real deals.</h2>
+              <WhatsAppButton label="Consultar por WhatsApp" message={`Hola ${business.shortName}, quiero consultar por financiación.`} className="sf-btn sf-btn-ghost rounded-[8px]" />
             </div>
-            <span className="mb-1 h-px min-w-4 flex-1" style={{ background: 'var(--sf-accent)' }} aria-hidden="true" />
-            <Link href="/inventory" className="sf-caps inline-flex min-h-11 shrink-0 items-center gap-1 text-[0.8125rem] font-medium" style={{ color: 'var(--sf-accent)' }}>
-              View all
-              <ChevronRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
+          </article>
 
-          <div className="mt-3 space-y-2.5">
-            {inventoryState ? (
-              <InventoryState state={inventoryState} />
-            ) : (
-              vehicles.map((vehicle, index) => (
-                <ShowroomRow key={vehicle.id} vehicle={vehicle} currencyCode={business.currencyCode} priority={index < 2} />
-              ))
-            )}
-
-            <section className="sf-visit-card" aria-labelledby="home-visit">
-              <Image src={HERO_PHOTO} alt="" fill sizes="(max-width: 767px) 100vw, 1px" className="object-cover object-[88%_60%]" />
-              <span className="sf-showroom-row-shade" aria-hidden="true" />
-              <div className="relative max-w-[70%] px-4 py-3">
-                <h2 id="home-visit" className="sf-display text-[1.25rem] leading-[0.95]" style={{ fontStretch: '100%' }}>
-                  <span className="block" style={{ color: 'var(--sf-accent)' }}>{city ? `Visit ${city}` : 'Visit us'}</span>
-                  <span className="mt-0.5 block text-[1.0625rem]">{business.fullName}</span>
-                </h2>
-                {(business.addressLine1 || business.addressLine2) && (
-                  <a href={business.directionsHref || '/contact'} target={business.directionsHref ? '_blank' : undefined} rel="noreferrer" className="mt-1.5 flex items-start gap-1.5 text-[0.8125rem] leading-snug">
-                    <MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                    <span>
-                      {business.addressLine1 && <span className="block">{business.addressLine1}</span>}
-                      {business.addressLine2 && <span className="block">{business.addressLine2}</span>}
-                    </span>
-                  </a>
-                )}
+          <article className="elv-panel elv-panel-photo" aria-labelledby="usado-title">
+            <Image src={HERO_PHOTO} alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-[80%_60%]" />
+            <span className="elv-panel-photo-shade" aria-hidden="true" />
+            <div className="relative">
+              <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+              <p className="elv-eyebrow mt-5">Tomamos tu usado</p>
+              <h2 id="usado-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Entregalo como parte de pago</h2>
+              <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
+                Contanos marca, modelo, año y kilometraje, sumá algunas fotos y un asesor te contacta con una propuesta.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/trade-in" className="sf-btn sf-btn-primary rounded-[8px]">
+                  Cotizar mi usado
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+                <WhatsAppButton label="Enviar por WhatsApp" message={`Hola ${business.shortName}, quiero cotizar mi usado.`} className="sf-btn sf-btn-ghost rounded-[8px]" />
               </div>
-            </section>
-          </div>
-
-          <nav aria-label="Visit" className="mt-3 grid grid-cols-3 gap-2 px-3">
-            {VISIT.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} className="sf-quick-tile">
-                <Icon className="size-4" strokeWidth={1.4} aria-hidden="true" />
-                <span>{label}</span>
-              </Link>
-            ))}
-          </nav>
+            </div>
+          </article>
         </Container>
+      </section>
 
-        <nav aria-label="Quick" className="sf-dock">
-          <Link href="/" aria-current="page" className="sf-dock-item" data-active="true">
-            <House className="size-5" aria-hidden="true" />
-            Home
-          </Link>
-          <Link href="/inventory" className="sf-dock-item">
-            <Search className="size-5" aria-hidden="true" />
-            Browse
-          </Link>
-          <Link href="/financing" className="sf-dock-item">
-            <Tag className="size-5" aria-hidden="true" />
-            Finance
-          </Link>
-        </nav>
+      {/* ---------- Beneficios ---------- */}
+      <section className="elv-band py-16" aria-labelledby="benefits-title">
+        <Container>
+          <SectionTitle eyebrow={`Por qué ${business.shortName}`} title="Comprar con respaldo" id="benefits-title" />
+          <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {BENEFITS.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="elv-benefit">
+                <Icon className="size-9" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
+                <h3 className="mt-4 text-[0.95rem] font-bold uppercase tracking-[0.04em]">{title}</h3>
+                <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: 'var(--sf-ink-2)' }}>{text}</p>
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
+      {/* ---------- Contacto ---------- */}
+      <section className="py-16 md:py-20" aria-labelledby="contact-title">
+        <Container className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+          <div>
+            <SectionTitle eyebrow="Contacto" title="Visitanos o escribinos" id="contact-title" />
+            <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
+              Coordiná una visita, pedí información sobre una unidad o consultá por financiación.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <WhatsAppButton className="sf-btn sf-btn-primary rounded-[8px]" />
+              <Link href="/contact" className="sf-btn sf-btn-ghost rounded-[8px]">Formulario de contacto</Link>
+            </div>
+          </div>
+          <dl className="elv-contact-grid">
+            {address.length > 0 && (
+              <div>
+                <dt><MapPin className="size-5" aria-hidden="true" /> Dirección</dt>
+                <dd>
+                  {address.map((line) => <span key={line} className="block">{line}</span>)}
+                  {business.directionsHref && (
+                    <a href={business.directionsHref} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[var(--sf-accent)] underline-offset-4 hover:underline">Cómo llegar</a>
+                  )}
+                </dd>
+              </div>
+            )}
+            {business.phoneDisplay && (
+              <div>
+                <dt><Phone className="size-5" aria-hidden="true" /> Teléfono</dt>
+                <dd><a href={business.phoneHref} className="hover:text-[var(--sf-accent)]">{business.phoneDisplay}</a></dd>
+              </div>
+            )}
+            {business.salesEmail && (
+              <div>
+                <dt><Mail className="size-5" aria-hidden="true" /> Email</dt>
+                <dd><a href={`mailto:${business.salesEmail}`} className="break-all hover:text-[var(--sf-accent)]">{business.salesEmail}</a></dd>
+              </div>
+            )}
+            {hours.length > 0 && (
+              <div>
+                <dt><Clock className="size-5" aria-hidden="true" /> Horarios</dt>
+                <dd>{hours.map(([label, value]) => <span key={label} className="block">{label}: {value}</span>)}</dd>
+              </div>
+            )}
+            {address.length === 0 && !business.phoneDisplay && !business.salesEmail && hours.length === 0 && (
+              <div>
+                <dt><MapPin className="size-5" aria-hidden="true" /> Datos de contacto</dt>
+                <dd>Usá el formulario de contacto y te respondemos a la brevedad.</dd>
+              </div>
+            )}
+          </dl>
+        </Container>
       </section>
     </div>
   )

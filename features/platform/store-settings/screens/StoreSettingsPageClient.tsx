@@ -31,6 +31,7 @@ const EMPTY_SETTINGS: DealershipStoreSettings = {
   salesEmail: '',
   serviceEmail: '',
   phone: '',
+  whatsappNumber: '',
   addressLine1: '',
   addressLine2: '',
   city: '',
@@ -40,7 +41,7 @@ const EMPTY_SETTINGS: DealershipStoreSettings = {
   hoursSaturday: '',
   hoursSunday: '',
   websiteUrl: '',
-  currencyCode: 'USD',
+  currencyCode: 'ARS',
   homepageTitle: '',
   homepageDescription: '',
   logoIcon: LOGO_ICONS[0].lightSvg,
@@ -298,6 +299,7 @@ export function StoreSettingsPageClient({
           <Section title="Contact">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Phone" type="tel" value={form.phone} onChange={value => update('phone', value)} />
+              <Field label="WhatsApp (con código de país)" type="tel" value={form.whatsappNumber} onChange={value => update('whatsappNumber', value)} placeholder="5491122334455" />
               <Field label="Sales email" type="email" value={form.salesEmail} onChange={value => update('salesEmail', value)} />
               <Field label="Service email" type="email" value={form.serviceEmail} onChange={value => update('serviceEmail', value)} />
               <Field label="Website URL" type="url" value={form.websiteUrl} onChange={value => update('websiteUrl', value)} placeholder="https://example.com" />

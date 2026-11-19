@@ -155,6 +155,9 @@ async function createPaymentFunction({ amount, currency, description, metadata, 
     ],
     metadata,
     payment_intent_data: { metadata },
+    // The page closes before a held car or open invoice is released (35 minutes), so an old page can never be paid
+    // after a second checkout has started. Stripe's minimum is 30 minutes.
+    expires_at: Math.floor(Date.now() / 1e3) + CHECKOUT_PAGE_LIFETIME_SECONDS,
     // Prefill the email we already have so the buyer is not asked for it again.
     ...customerEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) ? { customer_email: customerEmail } : {}
   }, idempotencyKey6 ? { idempotencyKey: idempotencyKey6 } : void 0);
@@ -233,7 +236,7 @@ async function handleWebhookFunction({ event: event2, headers }) {
     throw new Error(`Webhook signature verification failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
-var import_stripe, getStripeClient;
+var import_stripe, getStripeClient, CHECKOUT_PAGE_LIFETIME_SECONDS;
 var init_stripe = __esm({
   "features/integrations/payment/stripe.ts"() {
     "use strict";
@@ -245,6 +248,7 @@ var init_stripe = __esm({
       }
       return new import_stripe.default(stripeKey);
     };
+    CHECKOUT_PAGE_LIFETIME_SECONDS = 31 * 60;
   }
 });
 
@@ -4785,6 +4789,12 @@ var DealershipProfile = (0, import_core22.list)({
     salesEmail: (0, import_fields27.text)({ defaultValue: "" }),
     serviceEmail: (0, import_fields27.text)({ defaultValue: "" }),
     phone: (0, import_fields27.text)({ defaultValue: "" }),
+    whatsappNumber: (0, import_fields27.text)({
+      defaultValue: "",
+      label: "WhatsApp",
+      ui: { description: "N\xFAmero con c\xF3digo de pa\xEDs, sin espacios ni signos. Ej.: 5491122334455" },
+      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: "Us\xE1 solo d\xEDgitos, con c\xF3digo de pa\xEDs (8 a 15 d\xEDgitos)." } }
+    }),
     addressLine1: (0, import_fields27.text)({ defaultValue: "" }),
     addressLine2: (0, import_fields27.text)({ defaultValue: "" }),
     city: (0, import_fields27.text)({ defaultValue: "" }),
@@ -4794,7 +4804,7 @@ var DealershipProfile = (0, import_core22.list)({
     hoursSaturday: (0, import_fields27.text)({ defaultValue: "" }),
     hoursSunday: (0, import_fields27.text)({ defaultValue: "" }),
     websiteUrl: (0, import_fields27.text)({ defaultValue: "" }),
-    currencyCode: (0, import_fields27.text)({ validation: { isRequired: true }, defaultValue: "USD" }),
+    currencyCode: (0, import_fields27.text)({ validation: { isRequired: true }, defaultValue: "ARS" }),
     salesTaxRateBps: (0, import_fields27.integer)({
       label: "Sales tax rate (basis points)",
       defaultValue: 0,
@@ -7675,7 +7685,9 @@ async function resolveCustomerInTransaction(tx, input2) {
   await lockCustomerIdentityScope(tx, input2.rooftopId);
   const identities = [
     ...normalizedEmail ? [{ normalizedEmail }] : [],
-    ...normalizedPhone.length >= 7 ? [{ normalizedPhone }] : []
+    // A phone match alone never joins a different person: when this submission has an email, only
+    // customers without an email of their own can be matched by phone.
+    ...normalizedPhone.length >= 7 ? [normalizedEmail ? { normalizedPhone, normalizedEmail: "" } : { normalizedPhone }] : []
   ];
   const matches2 = await tx.prisma.customer.findMany({
     where: {
@@ -8968,8 +8980,19 @@ async function reserveVehicle(_root, { data }, context) {
       const vehicle2 = await resolveAvailableVehicle(transactionContext, vehicleId, rooftopId);
       if (!vehicle2) throw new SubmissionError("This vehicle is no longer available.", 409, "VEHICLE_UNAVAILABLE");
       await transactionContext.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`vehicle-reservation:${vehicle2.id}`}, 0))`;
-      const held = await transactionContext.prisma.paymentTransaction.count({ where: { rooftopId, ...activeReservationWhere(vehicle2.id) } });
-      if (held > 0) throw new SubmissionError("Another shopper has already reserved this vehicle. Ask about it or browse similar vehicles.", 409, "VEHICLE_RESERVED");
+      const holds = await transactionContext.prisma.paymentTransaction.findMany({
+        where: { rooftopId, ...activeReservationWhere(vehicle2.id) },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, status: true, leadId: true, checkoutUrl: true, createdAt: true, lead: { select: { email: true } } }
+      });
+      if (holds.length > 0) {
+        const ownUnpaid = holds.every((hold) => ["creating", "pending"].includes(hold.status) && String(hold.lead?.email || "").trim().toLowerCase() === email.toLowerCase());
+        if (!ownUnpaid) throw new SubmissionError("Another shopper has already reserved this vehicle. Ask about it or browse similar vehicles.", 409, "VEHICLE_RESERVED");
+        const latest = holds[0];
+        if (latest.checkoutUrl && Date.now() - new Date(latest.createdAt).getTime() < 31 * 60 * 1e3) {
+          return { leadId: latest.leadId, transactionId: latest.id, amountCents: reservationDepositCents(vehicle2.priceCents ?? vehicle2.listPriceCents), selectedVehicle: vehicle2 };
+        }
+      }
       const rooftop = await transactionContext.sudo().prisma.rooftop.findUnique({ where: { id: rooftopId }, select: { currencyCode: true } });
       const amountCents = reservationDepositCents(vehicle2.priceCents ?? vehicle2.listPriceCents);
       const { customer } = await resolveCustomerInTransaction(transactionContext, { rooftopId, firstName, lastName, email, phone });
@@ -9070,7 +9093,7 @@ async function reserveVehicle(_root, { data }, context) {
 var paymentReturnSecret2 = () => process.env.SESSION_SECRET || "";
 var SETTLED = ["captured", "partially-refunded", "refunded"];
 var OPEN = ["creating", "pending", "authorized"];
-var OPEN_CHECKOUT_MS = 30 * 60 * 1e3;
+var OPEN_CHECKOUT_MS = 35 * 60 * 1e3;
 async function cardProvider2(context) {
   const providers = await context.sudo().query.PaymentProvider.findMany({
     where: { isInstalled: { equals: true }, createPaymentFunction: { equals: "stripe" } },
@@ -9858,7 +9881,7 @@ async function storefrontProfile(_root, { rooftopSlug }, context) {
   const profile = await context.sudo().query.DealershipProfile.findOne({
     where: { id: 1 },
     query: `
-      id name shortName salesEmail serviceEmail phone
+      id name shortName salesEmail serviceEmail phone whatsappNumber
       addressLine1 addressLine2 city state postalCode
       hoursMonFri hoursSaturday hoursSunday websiteUrl currencyCode
       homepageTitle homepageDescription logoIcon logoColor
@@ -9878,6 +9901,7 @@ async function storefrontProfile(_root, { rooftopSlug }, context) {
     serviceEmail: text71(profile?.serviceEmail),
     phoneDisplay: phone,
     phoneHref: phoneHref(phone),
+    whatsappNumber: text71(profile?.whatsappNumber).replace(/\D/g, ""),
     addressLine1: text71(profile?.addressLine1),
     addressLine2: [text71(profile?.addressLine2), locality].filter(Boolean).join(" \xB7 "),
     hoursMonFri: text71(profile?.hoursMonFri),
@@ -10562,6 +10586,11 @@ async function transitionDealCommand(_root, { id, toStatus, notes, idempotencyKe
         data: { status: "available" }
       });
       if (released.count !== 1) throw new Error("Reserved vehicle could not be released");
+    }
+    if (toStatus === "cancelled" && deal.status === "pencil" && deal.vehicle?.id) {
+      await transactionContext.prisma.$queryRaw`SELECT "id" FROM "Vehicle" WHERE "id" = ${deal.vehicle.id} FOR UPDATE`;
+      const holding = await transactionContext.prisma.deal.count({ where: { id: { not: deal.id }, vehicleId: deal.vehicle.id, status: { in: ["submitted", "approved", "financed"] } } });
+      if (!holding) await transactionContext.prisma.vehicle.updateMany({ where: { id: deal.vehicle.id, status: "pending" }, data: { status: "available" } });
     }
     if (toStatus === "cancelled") {
       const reason = String(notes || "").trim();
@@ -11815,7 +11844,7 @@ function assertServicePermission(context) {
 async function advisoryLock(tx, key7) {
   await tx.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key7}, 0))`;
 }
-function computePartsMovement(stock, type, quantity, quantityDelta) {
+function computePartsMovement(stock, type, quantity, quantityDelta, heldForOrder) {
   let onHand = Number(stock.quantity || 0);
   let committed = Number(stock.committedQuantity || 0);
   let onOrder = Number(stock.onOrderQuantity || 0);
@@ -11826,7 +11855,7 @@ function computePartsMovement(stock, type, quantity, quantityDelta) {
     delta = quantity;
   } else if (type === "issue") {
     onHand -= quantity;
-    committed = Math.max(0, committed - quantity);
+    committed = Math.max(0, committed - Math.min(quantity, heldForOrder ?? quantity));
     delta = -quantity;
   } else if (type === "return") {
     onHand += quantity;
@@ -11839,8 +11868,10 @@ function computePartsMovement(stock, type, quantity, quantityDelta) {
     delta = quantity - onHand;
     onHand = quantity;
   } else if (type === "commit") committed += quantity;
-  else if (type === "release") committed -= quantity;
-  else if (type === "po-order") onOrder += quantity;
+  else if (type === "release") {
+    if (heldForOrder !== void 0 && quantity > heldForOrder) throw new Error(`Only ${heldForOrder} held for this repair order`);
+    committed -= quantity;
+  } else if (type === "po-order") onOrder += quantity;
   else if (type === "po-cancel") onOrder -= quantity;
   else throw new Error("Invalid parts movement");
   if (onHand < 0) throw new Error("Not enough stock on hand");
@@ -11849,13 +11880,28 @@ function computePartsMovement(stock, type, quantity, quantityDelta) {
   if (committed > onHand) throw new Error("Committed quantity would exceed stock on hand");
   return { onHand, committed, onOrder, delta };
 }
+async function heldForServiceOrder(tx, partId, serviceOrderId) {
+  const rows = await tx.prisma.partsMovement.findMany({ where: { partId, serviceOrderId, movementType: { in: ["commit", "release", "issue"] } }, select: { movementType: true, evidence: true } });
+  let held = 0;
+  for (const row of rows) {
+    const evidence = row.evidence || {};
+    if (evidence.quantity === void 0 || evidence.committedBefore === void 0) return void 0;
+    const used = Math.max(0, Number(evidence.committedBefore ?? 0) - Number(evidence.committedAfter ?? 0));
+    const size = Math.abs(Number(evidence.quantity ?? 0));
+    if (row.movementType === "commit") held += size;
+    else if (row.movementType === "release") held -= size;
+    else held -= used;
+  }
+  return Math.max(0, held);
+}
 async function applyMovementInTransaction(tx, input2) {
   const part = await tx.prisma.partsInventory.findFirst({
     where: { id: input2.partId, rooftopId: input2.rooftopId },
     select: { id: true, partNumber: true, quantity: true, committedQuantity: true, onOrderQuantity: true }
   });
   if (!part) throw new Error("Part not found in this rooftop");
-  const after = computePartsMovement(part, input2.type, input2.quantity, input2.quantityDelta);
+  const heldForOrder = input2.serviceOrderId && ["issue", "release"].includes(input2.type) ? await heldForServiceOrder(tx, part.id, input2.serviceOrderId) : void 0;
+  const after = computePartsMovement(part, input2.type, input2.quantity, input2.quantityDelta, heldForOrder);
   const changed = await tx.prisma.partsInventory.updateMany({
     where: { id: part.id, quantity: part.quantity, committedQuantity: part.committedQuantity, onOrderQuantity: part.onOrderQuantity },
     data: { quantity: after.onHand, committedQuantity: after.committed, onOrderQuantity: after.onOrder }
@@ -11988,7 +12034,7 @@ async function recordPartsMovement(_root, { data }, context) {
   if (SERVICE_LINKED_TYPES.has(type) && !serviceOrderId) throw new Error("A repair order is required for this parts movement");
   if (serviceOrderId) {
     const serviceOrder = await context.query.ServiceOrder.findOne({ where: { id: serviceOrderId }, query: "id status rooftop { id }" });
-    if (!serviceOrder || serviceOrder.rooftop?.id !== rooftopId || !OPEN_ORDER_STATUSES.includes(serviceOrder.status)) {
+    if (!serviceOrder || serviceOrder.rooftop?.id !== rooftopId || type !== "release" && !OPEN_ORDER_STATUSES.includes(serviceOrder.status)) {
       throw new Error("Repair order not found, inaccessible, or closed to parts movements");
     }
   }
@@ -12021,7 +12067,7 @@ async function recordPartsMovement(_root, { data }, context) {
     }
     if (serviceOrderId) {
       const scopedOrder2 = await tx.prisma.serviceOrder.findFirst({
-        where: { id: serviceOrderId, rooftopId, status: { in: OPEN_ORDER_STATUSES } },
+        where: { id: serviceOrderId, rooftopId, ...type === "release" ? {} : { status: { in: OPEN_ORDER_STATUSES } } },
         select: { id: true }
       });
       if (!scopedOrder2) throw new Error("Repair order changed or is outside the parts rooftop");
@@ -14744,11 +14790,9 @@ async function createLeadTask(_root, { data }, context) {
       if (!taskId) throw new Error("Task replay evidence is incomplete");
       return;
     }
-    const [groupAccess, directAccess] = await Promise.all([
-      tx.prisma.dealerGroupMembership.count({ where: { userId: assignedToId, status: "active", accessAllRooftops: true, dealerGroup: { rooftops: { some: { id: lead.rooftop.id } } } } }),
-      tx.prisma.rooftopMembership.count({ where: { userId: assignedToId, status: "active", rooftopId: lead.rooftop.id } })
-    ]);
-    if (groupAccess === 0 && directAccess === 0) throw new Error("Task assignee must have active rooftop access");
+    await assertUserRooftopAccess(context, assignedToId, lead.rooftop.id).catch(() => {
+      throw new Error("Task assignee must have active rooftop access");
+    });
     const task = await tx.prisma.task.create({ data: { rooftopId: lead.rooftop.id, leadId, assignedToId, title, description, priority, completed: false, dueDate }, select: { id: true } });
     taskId = task.id;
     await recordDomainEventInTransaction(tx, { ...event2, metadata: { taskId } });
@@ -16328,7 +16372,7 @@ async function completeDealDelivery(_root, { data }, context) {
 }
 async function openFinanceFollowUp(_root, { data }, context) {
   if (!context.session?.itemId || !permissions.canManageFinancing({ session: context.session })) throw new Error("Financing management permission is required");
-  const lead = await context.query.Lead.findOne({ where: { id: String(data.leadId || "") }, query: "id firstName lastName rooftop { id } tasks(where: { completed: { equals: false } }) { id }" });
+  const lead = await context.query.Lead.findOne({ where: { id: String(data.leadId || "") }, query: 'id firstName lastName rooftop { id } tasks(where: { completed: { equals: false }, title: { startsWith: "F&I follow-up" } }) { id }' });
   if (!lead?.rooftop?.id) throw new Error("Lead not found or not accessible");
   await assertSessionRooftopPermission(context, lead.rooftop.id, "canManageFinancing");
   const eventKey = `finance-follow-up:${idempotencyKey3(data.idempotencyKey)}`;
@@ -16380,9 +16424,10 @@ async function addServiceOrderLineItem(_root, { data }, context) {
       await recordDomainEventInTransaction(tx, { eventKey, rooftopId: order2.rooftop.id, aggregateType: "ServiceOrder", aggregateId: order2.id, action: "line-item-added", actorId: context.session.itemId, afterSnapshot: evidence, metadata: { lineItemId: priorLineId } });
       return { id: priorLineId, reused: true };
     }
-    if (!["estimate", "approved", "in-progress"].includes(order2.status)) throw new Error("Service order lines are locked at completion");
-    const current2 = await tx.prisma.serviceOrder.findUnique({ where: { id: order2.id }, select: { updatedAt: true, taxCents: true } });
-    if (!current2 || current2.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("Service order changed concurrently; reload and retry");
+    await lockServiceOrder(tx, order2.id);
+    const current2 = await tx.prisma.serviceOrder.findUnique({ where: { id: order2.id }, select: { status: true, updatedAt: true, taxCents: true } });
+    if (!current2 || !["estimate", "approved", "in-progress"].includes(current2.status)) throw new Error("Service order lines are locked at completion");
+    if (current2.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("Service order changed concurrently; reload and retry");
     await tx.prisma.repairOrderLineItem.create({ data: { id: lineId, rooftopId: order2.rooftop.id, serviceOrderId: order2.id, itemType, description, partNumber: evidence.partNumber, quantity, unitPriceCents, priceCents, costCents } });
     await recomputeServiceOrderTotals(tx, order2.id, current2.taxCents ?? 0);
     await recordDomainEventInTransaction(tx, { eventKey, rooftopId: order2.rooftop.id, aggregateType: "ServiceOrder", aggregateId: order2.id, action: "line-item-added", actorId: context.session.itemId, afterSnapshot: evidence, metadata: { lineItemId: lineId } });
@@ -17242,6 +17287,31 @@ async function deliverReservationConfirmation(context, transactionId) {
     console.error("Reservation confirmation email failed:", error instanceof Error ? error.message : "Unknown error");
   }
 }
+async function recordReservationRefundInTransaction(tx, transactionId) {
+  const transaction = await tx.prisma.paymentTransaction.findUnique({
+    where: { id: transactionId },
+    select: { id: true, rooftopId: true, leadId: true, sourceType: true, status: true, capturedCents: true, refundedCents: true }
+  });
+  if (!transaction || transaction.sourceType !== "reservation" || !transaction.leadId || !(transaction.refundedCents > 0)) return null;
+  const eventKey = `reservation-refunded:${transaction.id}:${transaction.refundedCents}`;
+  const prior = await tx.prisma.domainAuditEvent.findUnique({ where: { eventKey }, select: { id: true } });
+  if (prior) return null;
+  const lead = await tx.prisma.lead.findUnique({ where: { id: transaction.leadId }, select: { id: true, rooftopId: true, notes: true } });
+  if (!lead || lead.rooftopId !== transaction.rooftopId) return null;
+  const full = transaction.refundedCents >= transaction.capturedCents;
+  const line = `Deposit ${full ? "refunded in full" : "partly refunded"}: ${usd(transaction.refundedCents)} of ${usd(transaction.capturedCents)}. The vehicle is no longer held by this deposit.`;
+  await tx.prisma.lead.update({ where: { id: lead.id }, data: { notes: [String(lead.notes || "").trim(), line].filter(Boolean).join("\n") } });
+  await recordDomainEventInTransaction(tx, {
+    eventKey,
+    rooftopId: transaction.rooftopId,
+    aggregateType: "Lead",
+    aggregateId: lead.id,
+    action: full ? "deposit-refunded" : "deposit-partly-refunded",
+    actorId: null,
+    afterSnapshot: { transactionId: transaction.id, refundedCents: transaction.refundedCents, capturedCents: transaction.capturedCents }
+  });
+  return lead.id;
+}
 
 // features/keystone/mutations/paymentOperations.ts
 var paymentReturnSecret3 = () => process.env.SESSION_SECRET || "";
@@ -17325,6 +17395,7 @@ async function createPaymentCheckout(_root, { data }, context) {
     const origin = `${requestHeaders["x-forwarded-proto"] || "https"}://${requestHeaders["x-forwarded-host"] || requestHeaders.host}`;
     const { successUrl, cancelUrl } = paymentReturnUrls(origin, transactionId, paymentReturnSecret3());
     const response = await executeAdapterFunction({ provider, functionName: "createPaymentFunction", args: { amount: amountCents, currency, description: source.description, metadata: { openfront_transaction_id: transactionId }, idempotencyKey: idempotencyKey6, successUrl, cancelUrl } });
+    if (!response?.checkoutUrl) throw new Error("This provider has no online checkout. Record a counter payment instead.");
     await context.sudo().prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_STARTABLE] } }, data: { status: "pending", checkoutUrl: response?.checkoutUrl, providerSessionId: response?.providerSessionId, providerTransactionId: response?.providerTransactionId, version: { increment: 1 } } });
   } catch (error) {
     await context.sudo().prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_FAILABLE] } }, data: { status: "failed", failureCode: String(error?.code || error?.message || "PROVIDER_ERROR").slice(0, 100), version: { increment: 1 } } });
@@ -17379,6 +17450,7 @@ async function settleSucceededRefunds(tx, transactionId) {
     await tx.prisma.paymentTransaction.update({ where: { id: transactionId }, data: { status, refundedCents, version: { increment: 1 } } });
   }
   if (transaction.serviceOrderId) await cancelServiceOrderIfFullyRefunded(tx, transaction.serviceOrderId);
+  await recordReservationRefundInTransaction(tx, transactionId);
 }
 async function requestPaymentRefund(_root, { data }, context) {
   assertPaymentAdmin(context);
@@ -17389,7 +17461,8 @@ async function requestPaymentRefund(_root, { data }, context) {
   const transaction = await context.query.PaymentTransaction.findOne({ where: { id: transactionId }, query: "id status amountCents currency capturedCents refundedCents providerKey providerTransactionId rooftop { id }" });
   if (!transaction?.rooftop?.id || !["captured", "partially-refunded"].includes(transaction.status) || !transaction.providerTransactionId) throw new Error("Captured payment transaction required");
   await assertSessionRooftopPermission(context, transaction.rooftop.id, "canManagePayments");
-  const provider = await installedPaymentProvider(context, transaction.providerKey);
+  const handRecorded = transaction.providerKey === "operator-recorded";
+  const provider = handRecorded ? null : await installedPaymentProvider(context, transaction.providerKey);
   const refundId = await context.transaction(async (tx) => {
     await tx.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`payment-refund:${transactionId}`}, 0))`;
     const existing2 = await tx.prisma.paymentRefund.findUnique({ where: { idempotencyKey: idempotencyKey6 } });
@@ -17400,6 +17473,12 @@ async function requestPaymentRefund(_root, { data }, context) {
     }
     const reserved = await tx.prisma.paymentRefund.aggregate({ where: { transactionId, status: { in: ["creating", "pending", "succeeded"] } }, _sum: { amountCents: true } });
     if (amountCents > transaction.capturedCents - Number(reserved._sum.amountCents || 0)) throw new Error("Refund exceeds remaining captured amount");
+    if (handRecorded) {
+      const created = await tx.prisma.paymentRefund.create({ data: { rooftopId: transaction.rooftop.id, transactionId, amountCents, reason, status: "succeeded", idempotencyKey: idempotencyKey6, providerRefundId: `hand:${idempotencyKey6}`.slice(0, 200) }, select: { id: true } });
+      await tx.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`payment-webhook:${transactionId}`}, 0))`;
+      await settleSucceededRefunds(tx, transactionId);
+      return created.id;
+    }
     return (await tx.prisma.paymentRefund.create({ data: { rooftopId: transaction.rooftop.id, transactionId, amountCents, reason, status: "creating", idempotencyKey: idempotencyKey6 }, select: { id: true } })).id;
   }, { timeout: 3e4 });
   const existing = await context.sudo().prisma.paymentRefund.findUnique({ where: { id: refundId } });
@@ -17478,6 +17557,7 @@ async function processVerifiedPaymentWebhook(event2, context) {
       if (order2?.status === "invoiced" && Number(totals._sum.capturedCents || 0) - Number(totals._sum.refundedCents || 0) >= Number(order2.grandTotalCents || 0)) await tx.prisma.serviceOrder.update({ where: { id: transaction.serviceOrderId }, data: { status: "paid", settledAt: /* @__PURE__ */ new Date() } });
     }
     if (["refunded", "partially-refunded"].includes(status) && transaction.serviceOrderId) await cancelServiceOrderIfFullyRefunded(tx, transaction.serviceOrderId);
+    if (["refunded", "partially-refunded"].includes(status)) await recordReservationRefundInTransaction(tx, transaction.id);
     if (status === "captured" && transaction.sourceType === "reservation" && transaction.leadId) {
       await applyPaidReservationInTransaction(tx, { id: transaction.id, rooftopId: transaction.rooftopId, leadId: transaction.leadId, capturedCents });
     }
@@ -18458,6 +18538,69 @@ async function recordCashDealDepositCommand(_root, { data }, context) {
   }, { timeout: 3e4, isolationLevel: "Serializable" });
 }
 var recordCashDealDeposit = operatorCommand(recordCashDealDepositCommand);
+async function recordServiceCounterPaymentCommand(_root, { data }, context) {
+  if (!context.session?.itemId || !permissions.canManagePayments({ session: context.session })) throw new Error("Payment permission is required");
+  const serviceOrderId = text76(data?.serviceOrderId, "Repair order", 100);
+  const idempotencyKey6 = text76(data?.idempotencyKey, "Idempotency key", 200);
+  const amountCents = Number(data?.amountCents);
+  if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > 2147483647) throw new Error("Enter an amount greater than $0");
+  const paymentMethod = dealPaymentMethod(data?.paymentMethod);
+  const receiptReference = text76(data?.receiptReference, "Receipt reference", 200);
+  const visible = await context.query.ServiceOrder.findOne({ where: { id: serviceOrderId }, query: "id rooftop { id }" });
+  if (!visible?.rooftop?.id) throw new Error("Repair order not found or not accessible");
+  await assertSessionRooftopPermission(context, visible.rooftop.id, "canManagePayments");
+  const paymentIdempotencyKey = `service-counter:${idempotencyKey6}`;
+  return context.transaction(async (tx) => {
+    await tx.prisma.$queryRaw`SELECT "id" FROM "ServiceOrder" WHERE "id" = ${serviceOrderId} FOR UPDATE`;
+    const order2 = await tx.prisma.serviceOrder.findUnique({ where: { id: serviceOrderId }, select: { id: true, rooftopId: true, status: true, grandTotalCents: true } });
+    if (failed2(order2) || order2.rooftopId !== visible.rooftop.id) throw new Error("Repair order changed; reload and try again");
+    const prior = await tx.prisma.paymentTransaction.findUnique({ where: { idempotencyKey: paymentIdempotencyKey }, select: { id: true, serviceOrderId: true, amountCents: true, paymentMethod: true, providerTransactionId: true } });
+    if (prior && !failed2(prior)) {
+      if (prior.serviceOrderId !== order2.id || prior.amountCents !== amountCents || prior.paymentMethod !== paymentMethod || prior.providerTransactionId !== receiptReference) throw new Error("This payment was already recorded with different details; reload and try again");
+      return { id: prior.id, serviceOrderId: order2.id, amountCents, remainingCents: await serviceRemainingCents(tx, order2), reused: true };
+    }
+    if (order2.status !== "invoiced") throw new Error("Counter payments are recorded on an invoiced repair order");
+    const remainingCents = await serviceRemainingCents(tx, order2);
+    if (remainingCents <= 0) throw new Error("This invoice is already paid in full");
+    if (amountCents > remainingCents) throw new Error(`The payment can't be more than the ${formatUsdCents(remainingCents)} still due`);
+    if ((await tx.prisma.paymentTransaction.findFirst({ where: { providerTransactionId: receiptReference }, select: { id: true } }))?.id) {
+      throw new Error("That receipt reference is already recorded on another payment");
+    }
+    const payment = await tx.prisma.paymentTransaction.create({
+      data: {
+        rooftopId: order2.rooftopId,
+        serviceOrderId: order2.id,
+        sourceType: "service",
+        amountCents,
+        currency: "usd",
+        providerKey: "operator-recorded",
+        paymentMethod,
+        providerTransactionId: receiptReference,
+        status: "captured",
+        capturedCents: amountCents,
+        idempotencyKey: paymentIdempotencyKey
+      },
+      select: { id: true }
+    });
+    if (failed2(payment) || !payment.id) throw new Error("Nothing was saved: the payment could not be recorded");
+    await recordDomainEventInTransaction(tx, {
+      eventKey: `service-counter-payment:${idempotencyKey6}`,
+      rooftopId: order2.rooftopId,
+      aggregateType: "ServiceOrder",
+      aggregateId: order2.id,
+      action: "counter-payment-recorded",
+      actorId: context.session.itemId,
+      afterSnapshot: { version: 1, request: { serviceOrderId, amountCents, paymentMethod, receiptReference }, paymentId: payment.id, remainingCents: remainingCents - amountCents }
+    });
+    return { id: payment.id, serviceOrderId: order2.id, amountCents, remainingCents: remainingCents - amountCents, reused: false };
+  }, { timeout: 3e4, isolationLevel: "Serializable" });
+}
+async function serviceRemainingCents(tx, order2) {
+  const settled = await tx.prisma.paymentTransaction.findMany({ where: { serviceOrderId: order2.id, status: { in: ["captured", "partially-refunded", "refunded"] } }, select: { capturedCents: true, refundedCents: true } });
+  const net = settled.reduce((sum, row) => sum + Number(row.capturedCents || 0) - Number(row.refundedCents || 0), 0);
+  return Math.max(0, Number(order2.grandTotalCents || 0) - net);
+}
+var recordServiceCounterPayment = operatorCommand(recordServiceCounterPaymentCommand);
 
 // features/keystone/mutations/lenderSubmissionOperations.ts
 async function recordLenderSubmissionStatusCommand(_root, { data }, context) {
@@ -19423,6 +19566,8 @@ function extendGraphqlSchema(baseSchema) {
       input ReviewFinancePrerequisitesInput { dealId: ID!, worksheetVersion: Int!, expectedUpdatedAt: DateTime!, expectedPrerequisiteDigest: String!, providerKey: String!, reviewReference: String!, policyReference: String!, policyVersion: String!, reviewerAuthorityReference: String!, idempotencyKey: String! }
       input ManageFinanceFundingInput { dealId: ID!, worksheetVersion: Int!, expectedUpdatedAt: DateTime!, expectedFundingUpdatedAt: DateTime, status: String!, checklist: JSON!, exceptions: JSON!, fundingReference: String, paymentAmountCents: Int, paymentMethod: String, idempotencyKey: String! }
       input RecordCashDealDepositInput { dealId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
+      input RecordServiceCounterPaymentInput { serviceOrderId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, idempotencyKey: String! }
+      type ServiceCounterPaymentResult { id: ID!, serviceOrderId: ID!, amountCents: Int!, remainingCents: Int!, reused: Boolean! }
       type CashDealDepositResult { id: ID!, dealId: ID!, amountCents: Int!, paymentMethod: String!, receiptReference: String!, remainingCents: Int!, form8300Required: Boolean!, reused: Boolean! }
       input RecordFinanceProductCancellationInput { dealId: ID!, menuId: ID!, productCode: String!, status: String!, reason: String!, refundCents: Int, refundBasis: JSON, evidenceReference: String, idempotencyKey: String! }
 
@@ -19483,6 +19628,7 @@ function extendGraphqlSchema(baseSchema) {
         serviceEmail: String!
         phoneDisplay: String!
         phoneHref: String!
+        whatsappNumber: String!
         addressLine1: String!
         addressLine2: String!
         hoursMonFri: String!
@@ -19615,6 +19761,7 @@ function extendGraphqlSchema(baseSchema) {
         reviewFinancePrerequisites(data: ReviewFinancePrerequisitesInput!): OperatorCommandResult!
         manageFinanceFundingCase(data: ManageFinanceFundingInput!): FinanceFundingCase!
         recordCashDealDeposit(data: RecordCashDealDepositInput!): CashDealDepositResult!
+        recordServiceCounterPayment(data: RecordServiceCounterPaymentInput!): ServiceCounterPaymentResult!
         recordFinanceProductCancellation(data: RecordFinanceProductCancellationInput!): FinanceProductCancellation!
         intakeInventoryVehicle(data: IntakeInventoryVehicleInput!): InventoryIntakeResult!
         establishInventoryStock(data: EstablishInventoryStockInput!): InventoryCommandResult!
@@ -19753,6 +19900,7 @@ function extendGraphqlSchema(baseSchema) {
         reviewFinancePrerequisites,
         manageFinanceFundingCase,
         recordCashDealDeposit,
+        recordServiceCounterPayment,
         recordFinanceProductCancellation,
         intakeInventoryVehicle,
         establishInventoryStock,

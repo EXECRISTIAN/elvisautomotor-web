@@ -50,3 +50,12 @@ Referencia visual: `docs/elvis/referencia-diseno.webp`.
 4. **Financiación bancaria** (Fase 5): modelos Bank/FinancingPlan, simulador, solicitud, interfaz `BankProvider` para integraciones futuras.
 5. **Tomamos tu usado** (Fase 6): fotos múltiples, bandeja en el panel.
 6. **Calidad y seguridad** (Fase 9): SEO es-AR, validaciones, revisión de permisos, documentación de despliegue.
+
+## Etapa 1 — Identidad visual y página principal (realizada)
+- Logo AE recreado en vector: `public/brand/elvis-ae.svg` (también favicon).
+- Tema negro / dorado metálico / blanco (`styles/tokens.css`, `styles/elvis.css`), tipografía Montserrat.
+- Header, menú móvil y footer en español; página principal nueva (`screens/HomePage.tsx`).
+- WhatsApp configurable: campo `whatsappNumber` en Configuración de la tienda (migración `20261119120000_elvis_whatsapp`). Si no está cargado, los botones no se muestran.
+- Moneda por defecto ARS, formato es-AR y kilómetros.
+- Next.js actualizado a 16.4.6 (la versión instalada tenía una vulnerabilidad conocida y bloqueaba el build).
+- Capturas: `etapa1-escritorio.png`, `etapa1-celular.png`.

@@ -32,10 +32,9 @@ body:has(.storefront) {
 
 .sf-display {
   font-family: var(--sf-font-display);
-  font-weight: 900;
-  font-stretch: 112%;
-  letter-spacing: -0.02em;
-  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
   text-transform: uppercase;
   overflow-wrap: anywhere;
   min-width: 0;
@@ -351,12 +350,13 @@ body:has(.storefront) {
 }
 
 .sf-btn-primary {
-  background: var(--sf-accent-fill);
+  background: var(--sf-gold-gradient, var(--sf-accent-fill));
   color: var(--sf-accent-ink);
 }
 
 .sf-btn-primary:hover:not(:disabled) {
   background: var(--sf-accent-fill-hover);
+  filter: brightness(1.05);
 }
 
 .sf-btn-secondary {

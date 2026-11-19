@@ -17,6 +17,7 @@ const STOREFRONT_PROFILE = `
       serviceEmail
       phoneDisplay
       phoneHref
+      whatsappNumber
       addressLine1
       addressLine2
       hoursMonFri

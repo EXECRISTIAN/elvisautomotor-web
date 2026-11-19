@@ -1,16 +1,16 @@
 export function storefrontCurrency(currencyCode?: string | null) {
   const code = String(currencyCode || '').trim().toUpperCase()
-  return /^[A-Z]{3}$/.test(code) ? code : 'USD'
+  return /^[A-Z]{3}$/.test(code) ? code : 'ARS'
 }
 
 export function currencySymbol(currencyCode?: string | null) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: storefrontCurrency(currencyCode) })
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: storefrontCurrency(currencyCode) })
     .formatToParts(0)
     .find((part) => part.type === 'currency')?.value ?? '$'
 }
 
 export function formatPrice(price: number, currencyCode?: string | null) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: storefrontCurrency(currencyCode),
     minimumFractionDigits: 0,
@@ -19,7 +19,7 @@ export function formatPrice(price: number, currencyCode?: string | null) {
 }
 
 export function formatMileage(mileage: number) {
-  return `${new Intl.NumberFormat('en-US').format(mileage)} mi`
+  return `${new Intl.NumberFormat('es-AR').format(mileage)} km`
 }
 
 export function vehicleTitle(vehicle: { year: number; make: string; model: string; trim?: string }) {

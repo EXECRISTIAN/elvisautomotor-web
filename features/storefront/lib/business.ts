@@ -1,7 +1,7 @@
 import { sanitizeStoreLogoSvg } from '../../lib/sanitize-store-logo'
 import { DEFAULT_STORE_LOGO_ICON, normalizeStoreLogoColor } from '../../lib/store-logo'
 
-export const DEFAULT_STOREFRONT_NAME = 'Openfront Dealership'
+export const DEFAULT_STOREFRONT_NAME = 'Elvis Automotores'
 
 export type StorefrontBusiness = {
   rooftopSlug: string
@@ -11,6 +11,7 @@ export type StorefrontBusiness = {
   serviceEmail: string
   phoneDisplay: string
   phoneHref: string
+  whatsappNumber: string
   directionsHref: string
   addressLine1: string
   addressLine2: string
@@ -57,6 +58,7 @@ export function createStorefrontBusiness(profile: StorefrontProfileDto = {}): St
     serviceEmail: clean(profile.serviceEmail),
     phoneDisplay: clean(profile.phoneDisplay),
     phoneHref: clean(profile.phoneHref),
+    whatsappNumber: clean(profile.whatsappNumber).replace(/\D/g, ''),
     directionsHref: address
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
       : '',

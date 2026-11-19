@@ -23,7 +23,7 @@ export async function storefrontProfile(
   const profile = await context.sudo().query.DealershipProfile.findOne({
     where: { id: 1 },
     query: `
-      id name shortName salesEmail serviceEmail phone
+      id name shortName salesEmail serviceEmail phone whatsappNumber
       addressLine1 addressLine2 city state postalCode
       hoursMonFri hoursSaturday hoursSunday websiteUrl currencyCode
       homepageTitle homepageDescription logoIcon logoColor
@@ -48,6 +48,7 @@ export async function storefrontProfile(
     serviceEmail: text(profile?.serviceEmail),
     phoneDisplay: phone,
     phoneHref: phoneHref(phone),
+    whatsappNumber: text(profile?.whatsappNumber).replace(/\D/g, ''),
     addressLine1: text(profile?.addressLine1),
     addressLine2: [text(profile?.addressLine2), locality].filter(Boolean).join(' · '),
     hoursMonFri: text(profile?.hoursMonFri),

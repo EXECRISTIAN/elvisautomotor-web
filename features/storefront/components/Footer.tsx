@@ -3,31 +3,30 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
-import OpenfrontCTA from './OpenfrontCTA'
+import { WhatsAppButton } from './WhatsAppButton'
 import { BrandMark } from './BrandMark'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 const SHOP = [
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/compare', label: 'Compare' },
-  { href: '/financing', label: 'Financing' },
-  { href: '/trade-in', label: 'Trade-in' },
+  { href: '/inventory', label: 'Inventario' },
+  { href: '/compare', label: 'Comparar' },
+  { href: '/financing', label: 'Financiación' },
+  { href: '/trade-in', label: 'Vendé tu auto' },
 ]
 
 const VISIT = [
-  { href: '/test-drive', label: 'Test drive' },
-  { href: '/service', label: 'Service' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/account', label: 'Account' },
+  { href: '/test-drive', label: 'Prueba de manejo' },
+  { href: '/contact', label: 'Contacto' },
+  { href: '/account', label: 'Mi cuenta' },
 ]
 
 export function Footer({ branding = true }: { branding?: boolean }) {
   const year = new Date().getFullYear()
   const business = useStorefrontBusiness()
   const hours = [
-    { label: 'Mon–Fri', value: business.hoursMonFri },
-    { label: 'Sat', value: business.hoursSaturday },
-    { label: 'Sun', value: business.hoursSunday },
+    { label: 'Lun–Vie', value: business.hoursMonFri },
+    { label: 'Sáb', value: business.hoursSaturday },
+    { label: 'Dom', value: business.hoursSunday },
   ].filter((row) => row.value)
   const hasAddress = business.addressLine1 || business.addressLine2
 
@@ -52,16 +51,17 @@ export function Footer({ branding = true }: { branding?: boolean }) {
                 )}
                 {business.directionsHref && (
                   <a href={business.directionsHref} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost sf-btn-sm min-h-11">
-                    Directions
+                    Cómo llegar
                     <ArrowUpRight className="size-4" aria-hidden="true" />
                   </a>
                 )}
               </div>
             )}
+            <WhatsAppButton className="sf-btn sf-btn-outline sf-btn-sm mt-3 min-h-11" />
           </div>
 
-          <nav aria-label="Shop" className="min-w-0">
-            <p className="sf-eyebrow mb-4">Shop</p>
+          <nav aria-label="Comprar" className="min-w-0">
+            <p className="sf-eyebrow mb-4">Comprar</p>
             <ul className="text-[length:var(--sf-text-sm)] md:space-y-2.5">
               {SHOP.map((link) => (
                 <li key={link.href}>
@@ -71,8 +71,8 @@ export function Footer({ branding = true }: { branding?: boolean }) {
             </ul>
           </nav>
 
-          <nav aria-label="Visit" className="min-w-0">
-            <p className="sf-eyebrow mb-4">Visit</p>
+          <nav aria-label="Visitanos" className="min-w-0">
+            <p className="sf-eyebrow mb-4">Visitanos</p>
             <ul className="text-[length:var(--sf-text-sm)] md:space-y-2.5">
               {VISIT.map((link) => (
                 <li key={link.href}>
@@ -83,7 +83,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
           </nav>
 
           <div className="col-span-2 min-w-0 md:col-span-1">
-            <p className="sf-eyebrow mb-4">Hours</p>
+            <p className="sf-eyebrow mb-4">Horarios</p>
             {hours.length > 0 ? (
               <dl className="space-y-2 text-[length:var(--sf-text-sm)]">
                 {hours.map((row) => (
@@ -94,7 +94,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
                 ))}
               </dl>
             ) : (
-              <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Hours not listed</p>
+              <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Consultá nuestros horarios</p>
             )}
             {business.salesEmail && (
               <a href={`mailto:${business.salesEmail}`} className="mt-4 flex min-h-11 items-center break-all text-[length:var(--sf-text-sm)] underline-offset-4 hover:underline">
@@ -105,10 +105,10 @@ export function Footer({ branding = true }: { branding?: boolean }) {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t pt-6 text-[length:var(--sf-text-xs)] sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--sf-rule-dark)', color: 'var(--sf-on-dark-2)' }}>
-          <p>© {year} {business.fullName}</p>
+          <p>© {year} {business.fullName}. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <Link href="/photo-credits" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Photo credits</Link>
-            {branding && <OpenfrontCTA />}
+            <Link href="/photo-credits" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Créditos de fotos</Link>
+            {branding && <a href="https://github.com/openshiporg/openfront-dealership" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Basado en Openfront (MIT)</a>}
           </div>
         </div>
       </Container>

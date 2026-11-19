@@ -1,17 +1,19 @@
-import { Archivo } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 import type { CSSProperties, ReactNode } from 'react'
 import '@/features/storefront/styles/signage.css'
+import '@/features/storefront/styles/elvis.css'
 import { ComparisonBar } from './ComparisonBar'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { StorefrontBusinessProvider } from './StorefrontBusinessProvider'
 import type { StorefrontSettingsState } from '../lib/business'
 
-// Archivo carries the whole showroom: expanded and black for headlines, normal width for text.
-const display = Archivo({
+// Montserrat: geométrica y espaciada para títulos, legible en textos. Identidad Elvis Automotores.
+const display = Montserrat({
   variable: '--font-storefront-display',
   subsets: ['latin'],
-  axes: ['wdth'],
+  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
 })
 
 type StorefrontBrandStyle = CSSProperties & {
@@ -23,9 +25,9 @@ function StorefrontUnavailable() {
     <div className={`storefront ${display.variable} min-h-screen`}>
       <main className="sf-container flex min-h-screen items-center justify-center py-16">
         <section className="max-w-md text-center" aria-live="polite">
-          <h1 className="sf-display text-[length:var(--sf-text-2xl)]">We couldn&apos;t load this page.</h1>
+          <h1 className="sf-display text-[length:var(--sf-text-2xl)]">No pudimos cargar esta página.</h1>
           <div className="sf-track mt-6">
-            <a href="" className="sf-pill sf-pill-primary">Retry</a>
+            <a href="" className="sf-pill sf-pill-primary">Reintentar</a>
           </div>
         </section>
       </main>

@@ -1,1 +1,15 @@
-<svg aria-label="lightspeed" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="m0 24c0 6.6274 5.37258 12 12 12v-12c0 6.6274 5.3726 12 12 12v-12c0 6.6274 5.3726 12 12 12s12-5.3726 12-12-5.3726-12-12-12-12 5.3726-12 12v-12c-6.6274 0-12 5.3726-12 12v-12c-6.62742 0-12 5.3726-12 12z" fill="#9d5400"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 100" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="72" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F3D58A"/>
+      <stop offset="0.45" stop-color="#C9A04A"/>
+      <stop offset="0.75" stop-color="#E8C46F"/>
+      <stop offset="1" stop-color="#9C7428"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#g)" stroke-width="4" stroke-linecap="square">
+    <path d="M8 96V30C8 16 15 6 24 6s16 10 16 24v66"/>
+    <path d="M8 56h32"/>
+    <path d="M40 6h26M40 52h20M40 96h26"/>
+  </g>
+</svg>

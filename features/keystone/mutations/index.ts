@@ -607,6 +607,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         serviceEmail: String!
         phoneDisplay: String!
         phoneHref: String!
+        whatsappNumber: String!
         addressLine1: String!
         addressLine2: String!
         hoursMonFri: String!

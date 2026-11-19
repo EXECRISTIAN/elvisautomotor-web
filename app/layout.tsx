@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Openfront Dealership",
-  description: "Vehicle inventory, leads, deal desk, test drives, trade-ins, finance intake, service, and delivery.",
+  title: "Elvis Automotores",
+  description: "Concesionaria de vehículos usados y 0 km. Financiación bancaria y toma de usados.",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es-AR" suppressHydrationWarning>
       <head>
         <link href="/favicon.svg" rel="icon" />
       </head>

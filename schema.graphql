@@ -3464,6 +3464,7 @@ type DealershipProfile {
   salesEmail: String
   serviceEmail: String
   phone: String
+  whatsappNumber: String
   addressLine1: String
   addressLine2: String
   city: String
@@ -3498,6 +3499,7 @@ input DealershipProfileWhereInput {
   salesEmail: StringFilter
   serviceEmail: StringFilter
   phone: StringFilter
+  whatsappNumber: StringFilter
   addressLine1: StringFilter
   addressLine2: StringFilter
   city: StringFilter
@@ -3525,6 +3527,7 @@ input DealershipProfileOrderByInput {
   salesEmail: OrderDirection
   serviceEmail: OrderDirection
   phone: OrderDirection
+  whatsappNumber: OrderDirection
   addressLine1: OrderDirection
   addressLine2: OrderDirection
   city: OrderDirection
@@ -3551,6 +3554,7 @@ input DealershipProfileUpdateInput {
   salesEmail: String
   serviceEmail: String
   phone: String
+  whatsappNumber: String
   addressLine1: String
   addressLine2: String
   city: String
@@ -3582,6 +3586,7 @@ input DealershipProfileCreateInput {
   salesEmail: String
   serviceEmail: String
   phone: String
+  whatsappNumber: String
   addressLine1: String
   addressLine2: String
   city: String
@@ -11188,6 +11193,7 @@ type StorefrontProfilePayload {
   serviceEmail: String!
   phoneDisplay: String!
   phoneHref: String!
+  whatsappNumber: String!
   addressLine1: String!
   addressLine2: String!
   hoursMonFri: String!

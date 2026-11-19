@@ -14,6 +14,7 @@ export type DealershipStoreSettings = {
   salesEmail: string
   serviceEmail: string
   phone: string
+  whatsappNumber: string
   addressLine1: string
   addressLine2: string
   city: string
@@ -40,7 +41,7 @@ export type StoreSettingsResult =
   | { success: false; error: string }
 
 const SETTINGS_FIELDS = `
-  id name shortName salesEmail serviceEmail phone
+  id name shortName salesEmail serviceEmail phone whatsappNumber
   addressLine1 addressLine2 city state postalCode
   hoursMonFri hoursSaturday hoursSunday websiteUrl currencyCode
   homepageTitle homepageDescription logoIcon logoColor
@@ -89,6 +90,9 @@ function prepareSettings(input: DealershipStoreSettings): DealershipStoreSetting
   const logoIcon = sanitizeStoreLogoSvg(submittedMark)
   if (submittedMark && !logoIcon) throw new Error('Brand mark must be a valid, safe SVG document.')
 
+  const whatsappDigits = boundedText(input.whatsappNumber, 40).replace(/\D/g, '')
+  if (whatsappDigits && !/^\d{8,15}$/.test(whatsappDigits)) throw new Error('El WhatsApp debe tener entre 8 y 15 dígitos, con código de país.')
+
   const timezone = boundedText(input.timezone, 100)
   if (timezone && !isTimeZone(timezone)) throw new Error('Choose a valid timezone.')
 
@@ -102,6 +106,7 @@ function prepareSettings(input: DealershipStoreSettings): DealershipStoreSetting
     salesEmail: boundedText(input.salesEmail, 320),
     serviceEmail: boundedText(input.serviceEmail, 320),
     phone: boundedText(input.phone, 80),
+    whatsappNumber: boundedText(input.whatsappNumber, 40).replace(/\D/g, ''),
     addressLine1: boundedText(input.addressLine1, 300),
     addressLine2: boundedText(input.addressLine2, 300),
     city: boundedText(input.city, 120),

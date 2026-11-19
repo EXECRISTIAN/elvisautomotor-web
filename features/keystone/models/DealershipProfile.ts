@@ -29,6 +29,12 @@ export const DealershipProfile = list({
     salesEmail: text({ defaultValue: '' }),
     serviceEmail: text({ defaultValue: '' }),
     phone: text({ defaultValue: '' }),
+    whatsappNumber: text({
+      defaultValue: '',
+      label: 'WhatsApp',
+      ui: { description: 'Número con código de país, sin espacios ni signos. Ej.: 5491122334455' },
+      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: 'Usá solo dígitos, con código de país (8 a 15 dígitos).' } },
+    }),
     addressLine1: text({ defaultValue: '' }),
     addressLine2: text({ defaultValue: '' }),
     city: text({ defaultValue: '' }),
@@ -38,7 +44,7 @@ export const DealershipProfile = list({
     hoursSaturday: text({ defaultValue: '' }),
     hoursSunday: text({ defaultValue: '' }),
     websiteUrl: text({ defaultValue: '' }),
-    currencyCode: text({ validation: { isRequired: true }, defaultValue: 'USD' }),
+    currencyCode: text({ validation: { isRequired: true }, defaultValue: 'ARS' }),
     salesTaxRateBps: integer({
       label: 'Sales tax rate (basis points)',
       defaultValue: 0,

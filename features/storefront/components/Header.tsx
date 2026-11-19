@@ -8,28 +8,30 @@ import { getComparisonVehicles } from '@/features/storefront/lib/comparison'
 import { isEscapeKey, restoreFocusAfterClose } from '../lib/dialogAccessibility'
 import { BrandMark } from './BrandMark'
 import { Container } from './Container'
+import { WhatsAppButton } from './WhatsAppButton'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 const NAV = [
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/financing', label: 'Financing' },
-  { href: '/trade-in', label: 'Trade-in' },
-  { href: '/service', label: 'Service' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/', label: 'Inicio' },
+  { href: '/inventory', label: 'Inventario' },
+  { href: '/financing', label: 'Financiación' },
+  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/contact', label: 'Contacto' },
 ]
 
 const MENU = [
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/test-drive', label: 'Test drive' },
-  { href: '/financing', label: 'Financing' },
-  { href: '/trade-in', label: 'Trade-in' },
-  { href: '/service', label: 'Service' },
-  { href: '/compare', label: 'Compare' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/account', label: 'Account' },
+  { href: '/', label: 'Inicio' },
+  { href: '/inventory', label: 'Inventario' },
+  { href: '/financing', label: 'Financiación' },
+  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/test-drive', label: 'Prueba de manejo' },
+  { href: '/compare', label: 'Comparar' },
+  { href: '/contact', label: 'Contacto' },
+  { href: '/account', label: 'Mi cuenta' },
 ]
 
 function isActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/'
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
@@ -82,10 +84,10 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50" onKeyDown={handleHeaderKeyDown}>
       <div className="sf-band border-b" style={{ borderColor: 'var(--sf-rule-dark)' }}>
-        <Container className="flex h-16 items-center gap-3">
+        <Container className="flex h-[4.5rem] items-center gap-3 md:h-24">
           <BrandMark className="flex-1 lg:flex-none lg:shrink-0" />
 
-          <nav className="mx-auto hidden min-w-0 items-center gap-0 lg:flex xl:gap-2" aria-label="Primary">
+          <nav className="mx-auto hidden min-w-0 items-center gap-0 lg:flex xl:gap-2" aria-label="Principal">
             {NAV.map((item) => {
               const active = isActive(pathname, item.href)
               return (
@@ -93,7 +95,8 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className="sf-caps relative whitespace-nowrap px-2.5 py-2 text-[0.75rem] font-medium xl:px-3.5 transition-colors hover:text-[var(--sf-accent)]"
+                  className="sf-caps sf-nav-link relative whitespace-nowrap px-2.5 py-2 text-[0.75rem] font-semibold xl:px-4 transition-colors hover:text-[var(--sf-accent)]"
+                  data-active={active || undefined}
                   style={{ color: active ? 'var(--sf-accent)' : 'var(--sf-ink)' }}
                 >
                   {item.label}
@@ -102,12 +105,12 @@ export function Header() {
             })}
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5 lg:ml-0">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5 lg:ml-6">
             {/* On phones Compare lives in the menu (and the compare bar) until something is selected. */}
             <Link
               href="/compare"
               className={`relative size-11 place-items-center rounded-[3px] transition-colors hover:text-[var(--sf-accent)] ${savedCount > 0 ? 'grid' : 'hidden sm:grid lg:hidden'}`}
-              aria-label={`Compare vehicles${savedCount ? `, ${savedCount} selected` : ''}`}
+              aria-label={`Comparar vehículos${savedCount ? `, ${savedCount} seleccionados` : ''}`}
             >
               <SquareStack className="size-5" aria-hidden="true" />
               {savedCount > 0 && (
@@ -124,17 +127,13 @@ export function Header() {
               href="/account"
               aria-current={isActive(pathname, '/account') ? 'page' : undefined}
               className="hidden size-10 place-items-center rounded-[3px] transition-colors hover:text-[var(--sf-accent)] sm:grid"
-              aria-label="Account"
+              aria-label="Mi cuenta"
             >
               <UserRound className="size-5" aria-hidden="true" />
             </Link>
 
-            <Link href="/test-drive" className="sf-btn sf-btn-primary ml-1 hidden min-h-[2rem] px-6 py-1 text-[0.75rem] md:inline-flex">
-              Test drive
-            </Link>
-            <Link href="/trade-in" className="sf-btn sf-btn-ghost hidden min-h-[2rem] px-6 py-1 text-[0.75rem] xl:inline-flex" style={{ borderColor: 'var(--sf-accent)' }}>
-              Trade-in
-            </Link>
+            <WhatsAppButton label="Consultá por WhatsApp" className="sf-btn sf-btn-outline ml-1 hidden min-h-[2.75rem] rounded-[6px] px-5 text-[0.75rem] md:inline-flex" />
+            <WhatsAppButton iconOnly label="Consultá por WhatsApp" className="grid size-11 place-items-center text-[var(--sf-accent)] md:hidden" />
 
             <button
               ref={menuButtonRef}
@@ -143,7 +142,7 @@ export function Header() {
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-controls="storefront-mobile-menu"
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
             >
               {menuOpen ? <X className="size-6" aria-hidden="true" /> : <Menu className="size-7" strokeWidth={1.5} aria-hidden="true" />}
             </button>
@@ -164,12 +163,12 @@ export function Header() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Make, model, stock #"
+                placeholder="Marca, modelo…"
                 className="sf-input sf-input-icon"
-                aria-label="Search inventory"
+                aria-label="Buscar en el inventario"
               />
             </form>
-            <nav aria-label="Mobile">
+            <nav aria-label="Menú móvil">
               {MENU.map((item) => {
                 const active = isActive(pathname, item.href)
                 return (
@@ -191,12 +190,12 @@ export function Header() {
                 {hasPhone && (
                   <a href={business.phoneHref} className="sf-btn sf-btn-ghost">
                     <Phone className="size-4" aria-hidden="true" />
-                    Call
+                    Llamar
                   </a>
                 )}
                 {business.directionsHref && (
                   <a href={business.directionsHref} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost">
-                    Directions
+                    Cómo llegar
                     <ArrowUpRight className="size-4" aria-hidden="true" />
                   </a>
                 )}
