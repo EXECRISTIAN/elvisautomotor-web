@@ -6,9 +6,9 @@ import { zonedDayBounds } from '../lib/leadOptions'
 export async function TaskQueuePage() {
   const [viewer, rooftops, timeZone] = await Promise.all([getCrmViewer(), getCrmRooftops(), getDealershipTimeZone()])
   const { start, end } = zonedDayBounds(timeZone)
-  // "Due today" (mine, overdue then today) leads the page; the full list below opens on upcoming work.
+  // "Vence hoy" (mine, overdue then today) leads the page; the full list below opens on upcoming work.
   const initialFilters: TaskQueueFilters = { bucket: 'upcoming', scope: 'mine', assigneeId: 'all', todayStart: start, todayEnd: end }
-  const signedOut = { success: false as const, error: 'Sign in to view tasks' }
+  const signedOut = { success: false as const, error: 'Ingresá para ver las tareas' }
   const [response, overdueResponse, todayResponse, staff] = await Promise.all([
     viewer ? getTaskQueue(initialFilters, viewer.id) : Promise.resolve(signedOut),
     viewer ? getTaskQueue({ ...initialFilters, bucket: 'overdue' }, viewer.id) : Promise.resolve(signedOut),

@@ -6,10 +6,10 @@ import { tradeInStatus } from '@/features/keystone/lifecycle/tradeInStatus'
 export type TradeInQueue = 'appraise' | 'offered' | 'on-deal' | 'acquired' | 'closed' | 'all'
 
 export const CONDITION_OPTIONS = [
-  { value: 'excellent', label: 'Excellent' },
-  { value: 'good', label: 'Good' },
-  { value: 'fair', label: 'Fair' },
-  { value: 'poor', label: 'Poor' },
+  { value: 'excellent', label: 'Excelente' },
+  { value: 'good', label: 'Bueno' },
+  { value: 'fair', label: 'Regular' },
+  { value: 'poor', label: 'Malo' },
 ] as const
 
 export const conditionTone: Record<string, DeskTone> = {
@@ -20,11 +20,11 @@ export const conditionTone: Record<string, DeskTone> = {
 }
 
 export function conditionLabel(value: string | null | undefined) {
-  return CONDITION_OPTIONS.find(option => option.value === value)?.label ?? (value || 'Not graded')
+  return CONDITION_OPTIONS.find(option => option.value === value)?.label ?? (value || 'Sin calificar')
 }
 
 // Storefront requests store "Ownership: <own|financing|lease>[; customer-reported payoff: $X]" (submitTradeIn).
-const ownershipLabel: Record<string, string> = { own: 'Owned', financing: 'Financed', lease: 'Leased' }
+const ownershipLabel: Record<string, string> = { own: 'Propio', financing: 'Financiada', lease: 'En leasing' }
 
 export function conditionNotes(value: string) {
   return value
@@ -44,11 +44,11 @@ export function tradeInQueue(tradeIn: TradeIn, acquisition: TradeInAcquisition |
 
 export function tradeInState(tradeIn: TradeIn, acquisition: TradeInAcquisition | null | undefined): { tone: DeskTone; label: string } {
   const queue = tradeInQueue(tradeIn, acquisition)
-  if (queue === 'acquired') return { tone: 'ok', label: 'In acquisition' }
-  if (queue === 'on-deal') return { tone: tradeIn.deal?.status === 'cancelled' ? 'idle' : 'ok', label: tradeIn.deal?.status === 'pencil' ? 'On pencil deal' : 'On deal' }
-  if (queue === 'closed') return { tone: 'idle', label: 'Closed' }
-  if (queue === 'offered') return { tone: 'info', label: 'Offered' }
-  return { tone: 'warn', label: 'Needs appraisal' }
+  if (queue === 'acquired') return { tone: 'ok', label: 'En ingreso' }
+  if (queue === 'on-deal') return { tone: tradeIn.deal?.status === 'cancelled' ? 'idle' : 'ok', label: tradeIn.deal?.status === 'pencil' ? 'En operación borrador' : 'En operación' }
+  if (queue === 'closed') return { tone: 'idle', label: 'Cerrado' }
+  if (queue === 'offered') return { tone: 'info', label: 'Ofertado' }
+  return { tone: 'warn', label: 'Requiere tasación' }
 }
 
 /** The reference the customer saw on the storefront confirmation, e.g. TRADE-7DGA0XWI. */
@@ -70,8 +70,8 @@ export function tradeInActions(tradeIn: TradeIn, acquisition: TradeInAcquisition
 }
 
 const lostReasonLabels: Record<string, string> = {
-  'purchased-elsewhere': 'Purchased elsewhere', price: 'Price', financing: 'Financing',
-  'vehicle-unavailable': 'Vehicle unavailable', 'no-response': 'No response', timing: 'Timing', other: 'Other',
+  'purchased-elsewhere': 'Compró en otro lado', price: 'Precio', financing: 'Financiación',
+  'vehicle-unavailable': 'Vehículo no disponible', 'no-response': 'Sin respuesta', timing: 'Momento', other: 'Otro',
 }
 
 /** Why a closed trade-in was closed, from its lost lead: "Other: QA test submission". */
@@ -80,7 +80,7 @@ export function tradeInClosedReason(tradeIn: Pick<TradeIn, 'lead'>) {
   const details = tradeIn.lead?.lostReason?.trim()
   const reason = code ? lostReasonLabels[code] || code : null
   if (reason && details) return `${reason}: ${details}`
-  return reason || details || 'No reason recorded'
+  return reason || details || 'Sin motivo registrado'
 }
 
 export function tradeInVehicleLabel(tradeIn: Pick<TradeIn, 'year' | 'make' | 'model' | 'trim'>) {
@@ -88,7 +88,7 @@ export function tradeInVehicleLabel(tradeIn: Pick<TradeIn, 'year' | 'make' | 'mo
 }
 
 export function tradeInCustomer(tradeIn: Pick<TradeIn, 'lead'>) {
-  return tradeIn.lead ? [tradeIn.lead.firstName, tradeIn.lead.lastName].filter(Boolean).join(' ') || 'Customer' : null
+  return tradeIn.lead ? [tradeIn.lead.firstName, tradeIn.lead.lastName].filter(Boolean).join(' ') || 'Cliente' : null
 }
 
 export function formatWholeUsd(value: number | null | undefined) {

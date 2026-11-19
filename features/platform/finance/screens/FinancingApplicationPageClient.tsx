@@ -22,15 +22,15 @@ type DialogState =
   | { kind: 'follow-up'; values: Record<string, string>; idempotencyKey: string }
 
 const statusLabels: Record<string, string> = {
-  submitted: 'Submitted',
-  'under-review': 'Under review',
-  approved: 'Approved',
-  declined: 'Declined',
-  expired: 'Expired',
-  cancelled: 'Cancelled',
+  submitted: 'Enviada',
+  'under-review': 'En revisión',
+  approved: 'Aprobada',
+  declined: 'Rechazada',
+  expired: 'Vencida',
+  cancelled: 'Cancelada',
 }
 
-const decisionLabels: Record<string, string> = { approved: 'Approved', conditional: 'Conditional', declined: 'Declined', expired: 'Expired', cancelled: 'Cancelled' }
+const decisionLabels: Record<string, string> = { approved: 'Aprobada', conditional: 'Condicional', declined: 'Rechazada', expired: 'Vencida', cancelled: 'Cancelada' }
 
 /** Decisions the server accepts from each application status (financingLifecycle). */
 const decisionsByStatus: Record<string, string[]> = {
@@ -39,7 +39,7 @@ const decisionsByStatus: Record<string, string[]> = {
   approved: ['expired', 'cancelled'],
 }
 
-const providerLabels: Record<string, string> = { 'operator-recorded': 'Operator-recorded lender' }
+const providerLabels: Record<string, string> = { 'operator-recorded': 'Entidad cargada manualmente' }
 
 function label(value: string) {
   const words = value.replace(/[-_]+/g, ' ').trim()
@@ -85,12 +85,12 @@ export function FinancingApplicationPageClient({
 
   if (!application) {
     return (
-      <PageContainer title="Financing application" breadcrumbs={breadcrumbs} header={<DeskHeader title="Financing application" tone="bad" status="Unavailable" />}>
+      <PageContainer title="Solicitud de financiación" breadcrumbs={breadcrumbs} header={<DeskHeader title="Solicitud de financiación" tone="bad" status="No disponible" />}>
         <div className="space-y-3 px-4 pb-24 md:px-6">
-          <Notice tone="bad"><p className="font-medium">Application is unavailable</p><p className="mt-0.5 text-muted-foreground">{error}</p></Notice>
+          <Notice tone="bad"><p className="font-medium">La solicitud no está disponible</p><p className="mt-0.5 text-muted-foreground">{error}</p></Notice>
           <Track>
-            <Pill onClick={reload} disabled={loading}>Retry</Pill>
-            <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}>Finance</Link></Pill>
+            <Pill onClick={reload} disabled={loading}>Reintentar</Pill>
+            <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}>Financiación</Link></Pill>
           </Track>
         </div>
       </PageContainer>
@@ -114,28 +114,28 @@ export function FinancingApplicationPageClient({
     const v = dialog.values
     const errors: FieldErrors = {}
     let run: (() => Promise<{ success: boolean; error?: string }>) | null = null
-    let message = 'Saved.'
+    let message = 'Guardado.'
     if (dialog.kind === 'queue') {
       if (!providerLabels[v.providerKey]) errors.providerKey = 'Select a lender channel.'
       run = () => queueApplicationToLender({ applicationId: app.id, providerKey: v.providerKey, idempotencyKey: dialog.idempotencyKey })
-      message = 'Queued to lender.'
+      message = 'Enviada a la entidad.'
     } else if (dialog.kind === 'sent') {
       const reference = (v.reference || '').trim()
       if (!reference) errors.reference = 'Enter the lender or portal reference.'
-      else if (reference.length > 200) errors.reference = 'Use 200 characters or fewer.'
+      else if (reference.length > 200) errors.reference = 'Usá 200 caracteres o menos.'
       run = () => recordSubmissionStatus(app.id, { submissionId: dialog.submission.id, status: 'submitted', externalReference: reference, idempotencyKey: dialog.idempotencyKey })
-      message = 'Submission recorded as sent.'
+      message = 'Envío registrado.'
     } else if (dialog.kind === 'failed') {
       const reason = (v.reason || '').trim()
-      if (!reason) errors.reason = 'Enter why it could not be sent.'
-      else if (reason.length > 200) errors.reason = 'Use 200 characters or fewer.'
+      if (!reason) errors.reason = 'Indicá por qué no se pudo enviar.'
+      else if (reason.length > 200) errors.reason = 'Usá 200 caracteres o menos.'
       run = () => recordSubmissionStatus(app.id, { submissionId: dialog.submission.id, status: 'failed', errorCode: reason, idempotencyKey: dialog.idempotencyKey })
-      message = 'Submission recorded as failed.'
+      message = 'Envío registrado como fallido.'
     } else if (dialog.kind === 'follow-up') {
       const reason = (v.reason || '').trim()
-      if (!reason) errors.reason = 'Enter what to follow up on.'
+      if (!reason) errors.reason = 'Indicá qué hay que seguir.'
       if (app.lead) run = () => openApplicationFollowUp(app.id, { leadId: app.lead!.id, reason, idempotencyKey: dialog.idempotencyKey })
-      message = 'Follow-up task created.'
+      message = 'Tarea de seguimiento creada.'
     } else {
       const decision = v.decision
       if (!allowedDecisions.includes(decision)) errors.decision = 'Select a decision.'
@@ -157,7 +157,7 @@ export function FinancingApplicationPageClient({
         termMonths = Number(v.term)
         if (!Number.isInteger(termMonths) || termMonths < 1 || termMonths > 120) errors.term = 'Enter 1 to 120 months.'
         monthlyPaymentCents = (v.payment || '').trim() ? parseDollarsToCents(v.payment) : null
-        if ((v.payment || '').trim() && monthlyPaymentCents == null) errors.payment = 'Enter a dollar amount.'
+        if ((v.payment || '').trim() && monthlyPaymentCents == null) errors.payment = 'Ingresá un importe.'
       }
       if (app.submissions.length && !submission && decision !== 'cancelled') errors.submissionId = 'Select the submission this decision answers.'
       run = () => recordApplicationDecision({
@@ -180,7 +180,7 @@ export function FinancingApplicationPageClient({
     setBusy(true); setFormError(null)
     const response = await run()
     setBusy(false)
-    if (!response.success) { setFormError(response.error || 'Unable to save.'); return }
+    if (!response.success) { setFormError(response.error || 'No se pudo guardar.'); return }
     setDialog(null)
     setNotice(message)
     await reload()
@@ -188,29 +188,29 @@ export function FinancingApplicationPageClient({
 
   const decisionValue = dialog?.kind === 'decision' ? dialog.values.decision : ''
   const fields: FinanceFormField[] = !dialog ? [] : dialog.kind === 'queue' ? [
-    { name: 'providerKey', label: 'Lender channel', type: 'select', options: Object.entries(providerLabels).map(([value, label]) => ({ value, label })), wide: true },
+    { name: 'providerKey', label: 'Canal de la entidad', type: 'select', options: Object.entries(providerLabels).map(([value, label]) => ({ value, label })), wide: true },
   ] : dialog.kind === 'sent' ? [
-    { name: 'reference', label: 'Lender reference', placeholder: 'Portal or lender application number', maxLength: 200, wide: true },
+    { name: 'reference', label: 'Referencia de la entidad', placeholder: 'Número de solicitud en la entidad', maxLength: 200, wide: true },
   ] : dialog.kind === 'failed' ? [
-    { name: 'reason', label: 'Failure reason', maxLength: 200, wide: true },
+    { name: 'reason', label: 'Motivo del fallo', maxLength: 200, wide: true },
   ] : dialog.kind === 'follow-up' ? [
-    { name: 'reason', label: 'Follow-up', type: 'textarea', maxLength: 500 },
+    { name: 'reason', label: 'Seguimiento', type: 'textarea', maxLength: 500 },
   ] : [
-    ...(app.submissions.length ? [{ name: 'submissionId', label: 'Submission', type: 'select' as const, wide: true, options: app.submissions.map(item => ({ value: item.id, label: `${providerLabels[item.providerKey] || item.providerKey} · ${item.status}${item.externalReference ? ` · ${item.externalReference}` : ''} · ${formatDay(item.queuedAt, timeZone)}` })) }] : []),
-    { name: 'decision', label: 'Decision', type: 'select', options: allowedDecisions.map(value => ({ value, label: decisionLabels[value] })) },
+    ...(app.submissions.length ? [{ name: 'submissionId', label: 'Envío', type: 'select' as const, wide: true, options: app.submissions.map(item => ({ value: item.id, label: `${providerLabels[item.providerKey] || item.providerKey} · ${item.status}${item.externalReference ? ` · ${item.externalReference}` : ''} · ${formatDay(item.queuedAt, timeZone)}` })) }] : []),
+    { name: 'decision', label: 'Decisión', type: 'select', options: allowedDecisions.map(value => ({ value, label: decisionLabels[value] })) },
     ...(decisionValue === 'cancelled' && !app.submissions.length
-      ? [{ name: 'reference', label: 'Note', maxLength: 200, placeholder: 'Optional', description: 'Not sent to a lender, so no lender reference is needed.' }]
-      : [{ name: 'reference', label: 'Decision reference', maxLength: 200 }]),
-    ...(decisionValue === 'declined' ? [{ name: 'reasonCodes', label: 'Reason codes', placeholder: 'DTI, THIN-FILE', wide: true, description: 'Comma separated' }] : []),
+      ? [{ name: 'reference', label: 'Nota', maxLength: 200, placeholder: 'Opcional', description: 'No se envió a una entidad, así que no hace falta referencia.' }]
+      : [{ name: 'reference', label: 'Referencia de la decisión', maxLength: 200 }]),
+    ...(decisionValue === 'declined' ? [{ name: 'reasonCodes', label: 'Motivos', placeholder: 'DTI, THIN-FILE', wide: true, description: 'Separados por coma' }] : []),
     ...(['approved', 'conditional'].includes(decisionValue) ? [
-      { name: 'amount', label: 'Approved amount', type: 'money' as const },
-      { name: 'apr', label: 'APR (%)', placeholder: '6.49' },
-      { name: 'term', label: 'Term (months)', type: 'number' as const, placeholder: '72' },
-      { name: 'payment', label: 'Monthly payment (optional)', type: 'money' as const },
+      { name: 'amount', label: 'Monto aprobado', type: 'money' as const },
+      { name: 'apr', label: 'Tasa (TNA %)', placeholder: '6.49' },
+      { name: 'term', label: 'Plazo (meses)', type: 'number' as const, placeholder: '72' },
+      { name: 'payment', label: 'Cuota (opcional)', type: 'money' as const },
     ] : []),
   ]
   const dialogTitles: Record<DialogState['kind'], string> = {
-    queue: 'Queue to lender', sent: 'Record sent to lender', failed: 'Record submission failed', decision: 'Record lender decision', 'follow-up': 'Create follow-up task',
+    queue: 'Enviar a una entidad', sent: 'Registrar envío a la entidad', failed: 'Registrar envío fallido', decision: 'Registrar decisión de la entidad', 'follow-up': 'Crear tarea de seguimiento',
   }
 
   const reasons = [queueReason ? `Queue: ${queueReason}` : null, decisionReason ? `Decision: ${decisionReason}` : null, followUpReason ? `Follow-up: ${followUpReason}` : null].filter(Boolean)
@@ -226,15 +226,15 @@ export function FinancingApplicationPageClient({
         <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
           <Status tone={stateTone(app.status)}>{statusLabels[app.status] || app.status}</Status>
           <Code>{app.reference}</Code>
-          <span>{vehicleName(app.vehicle, 'No vehicle selected')}</span>
+          <span>{vehicleName(app.vehicle, 'Sin vehículo elegido')}</span>
           <span>Submitted {formatDay(app.submittedAt, timeZone)}</span>
           {app.rooftop && <span>{app.rooftop.name}</span>}
         </span>
       }
       actions={
         <>
-          <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}><ArrowLeft />Finance</Link></Pill>
-          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Refresh"><RefreshCw className={loading ? 'animate-spin' : undefined} />Refresh</Pill>
+          <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}><ArrowLeft />Financiación</Link></Pill>
+          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Actualizar"><RefreshCw className={loading ? 'animate-spin' : undefined} />Actualizar</Pill>
         </>
       }
     />
@@ -247,21 +247,21 @@ export function FinancingApplicationPageClient({
           <Notice tone="ok">
             <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
               <p className="min-w-0">{notice}</p>
-              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Dismiss</Pill></Track>
+              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Descartar</Pill></Track>
             </div>
           </Notice>
         )}
         {error && <Notice tone="bad">{error}</Notice>}
 
         <div className="space-y-2">
-          <Track aria-label="Application actions" className="flex-wrap">
+          <Track aria-label="Acciones de la solicitud" className="flex-wrap">
             <Pill variant={queuePrimary ? 'primary' : 'raised'} disabled={!canQueue || busy} onClick={() => start({ kind: 'queue', values: { providerKey: 'operator-recorded' }, idempotencyKey: newIdempotencyKey(`lender-queue:${app.id}`) })}>
-              {app.submissions.length ? 'Queue to another lender' : 'Queue to lender'}
+              {app.submissions.length ? 'Enviar a otra entidad' : 'Enviar a una entidad'}
             </Pill>
             <Pill variant={decisionPrimary ? 'primary' : 'raised'} disabled={!allowedDecisions.length || busy} onClick={() => start({ kind: 'decision', values: { submissionId: app.submissions[0]?.id || '', decision: '', reference: '', reasonCodes: '', amount: '', apr: '', term: '', payment: '' }, idempotencyKey: newIdempotencyKey(`lender-decision:${app.id}`) })}>
-              Record decision
+              Registrar decisión
             </Pill>
-            <Pill disabled={Boolean(followUpReason) || busy} onClick={() => start({ kind: 'follow-up', values: { reason: 'Review the finance application and decide the next step.' }, idempotencyKey: newIdempotencyKey(`finance-follow-up:${app.lead?.id}`) })}>
+            <Pill disabled={Boolean(followUpReason) || busy} onClick={() => start({ kind: 'follow-up', values: { reason: 'Revisá la solicitud de financiación y decidí el próximo paso.' }, idempotencyKey: newIdempotencyKey(`finance-follow-up:${app.lead?.id}`) })}>
               Create follow-up
             </Pill>
           </Track>
@@ -269,55 +269,55 @@ export function FinancingApplicationPageClient({
         </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-2">
-          <DeskSection title="Applicant">
+          <DeskSection title="Solicitante">
             <Facts items={[
-              { label: 'Name', value: app.applicantName || '-' },
+              { label: 'Nombre', value: app.applicantName || '-' },
               { label: 'Email', value: app.applicantEmail || '-' },
-              { label: 'Phone', value: app.applicantPhone ? formatPhone(app.applicantPhone) : '-' },
-              { label: 'Employment', value: employmentLabel(app.employmentStatus) },
-              { label: 'Annual income', value: formatCents(app.annualIncomeCents) },
-              { label: 'Credit (self-reported)', value: creditTierLabel(app.selfReportedCreditTier) },
-              { label: 'Consent', value: formatDateTime(app.consentAt, timeZone) },
-              { label: 'Locked', value: formatDateTime(app.lockedAt, timeZone) },
+              { label: 'Teléfono', value: app.applicantPhone ? formatPhone(app.applicantPhone) : '-' },
+              { label: 'Situación laboral', value: employmentLabel(app.employmentStatus) },
+              { label: 'Ingreso anual', value: formatCents(app.annualIncomeCents) },
+              { label: 'Situación crediticia (declarada)', value: creditTierLabel(app.selfReportedCreditTier) },
+              { label: 'Consentimiento', value: formatDateTime(app.consentAt, timeZone) },
+              { label: 'Bloqueada', value: formatDateTime(app.lockedAt, timeZone) },
             ]} />
           </DeskSection>
 
-          <DeskSection title="Request">
+          <DeskSection title="Solicitud">
             <Facts items={[
-              { label: 'Vehicle', value: app.vehicle ? <Link className="hover:underline" href={`${basePath}/platform/vehicles`}>{vehicleName(app.vehicle)}{app.vehicle.trim ? ` ${app.vehicle.trim}` : ''}</Link> : 'Not selected' },
+              { label: 'Vehículo', value: app.vehicle ? <Link className="hover:underline" href={`${basePath}/platform/vehicles`}>{vehicleName(app.vehicle)}{app.vehicle.trim ? ` ${app.vehicle.trim}` : ''}</Link> : 'Sin elegir' },
               app.vehicle?.stockNumber ? { label: 'Stock', value: <Code className="text-foreground">#{app.vehicle.stockNumber}</Code> } : null,
-              app.vehicle?.vin ? { label: 'VIN', value: <Code className="text-foreground">{app.vehicle.vin}</Code> } : null,
-              { label: 'Vehicle price', value: formatCents(app.vehicle?.priceCents ?? null) },
-              { label: 'Amount requested', value: formatCents(app.requestedAmountCents) },
-              { label: 'Down payment', value: formatCents(app.plannedDownPaymentCents) },
-              { label: 'Trade-in', value: formatCents(app.tradeInValueCents) },
-              { label: 'Planned payment', value: formatCents(app.plannedMonthlyPaymentCents) },
-              { label: 'APR · term', value: `${formatApr(app.aprBasisPoints)} · ${app.loanTermMonths ?? '-'} mo` },
+              app.vehicle?.vin ? { label: 'VIN / chasis', value: <Code className="text-foreground">{app.vehicle.vin}</Code> } : null,
+              { label: 'Precio del vehículo', value: formatCents(app.vehicle?.priceCents ?? null) },
+              { label: 'Monto solicitado', value: formatCents(app.requestedAmountCents) },
+              { label: 'Anticipo', value: formatCents(app.plannedDownPaymentCents) },
+              { label: 'Usado', value: formatCents(app.tradeInValueCents) },
+              { label: 'Cuota deseada', value: formatCents(app.plannedMonthlyPaymentCents) },
+              { label: 'Tasa · plazo', value: `${formatApr(app.aprBasisPoints)} · ${app.loanTermMonths ?? '-'} mo` },
             ]} />
           </DeskSection>
         </div>
 
         <ReadoutStrip>
-          <Readout label="Requested" value={formatCents(app.requestedAmountCents)} />
-          <Readout label="Down payment" value={formatCents(app.plannedDownPaymentCents)} />
-          <Readout label="Submissions" value={app.submissions.length} tone={app.submissions.some(item => item.status === 'queued') ? 'warn' : 'idle'} />
-          <Readout label="Latest approval" value={latestApproval ? formatCents(latestApproval.approvedAmountCents) : '-'} tone={latestApproval ? 'ok' : 'idle'} sub={latestApproval ? `${formatApr(latestApproval.aprBasisPoints)} · ${latestApproval.termMonths ?? '-'} mo` : undefined} />
+          <Readout label="Solicitado" value={formatCents(app.requestedAmountCents)} />
+          <Readout label="Anticipo" value={formatCents(app.plannedDownPaymentCents)} />
+          <Readout label="Envíos" value={app.submissions.length} tone={app.submissions.some(item => item.status === 'queued') ? 'warn' : 'idle'} />
+          <Readout label="Última aprobación" value={latestApproval ? formatCents(latestApproval.approvedAmountCents) : '-'} tone={latestApproval ? 'ok' : 'idle'} sub={latestApproval ? `${formatApr(latestApproval.aprBasisPoints)} · ${latestApproval.termMonths ?? '-'} mo` : undefined} />
         </ReadoutStrip>
 
-        <DeskSection title="Lender submissions" count={app.submissions.length}>
+        <DeskSection title="Envíos a entidades" count={app.submissions.length}>
           {app.submissions.length === 0 ? (
-            <p className="py-3 text-sm text-muted-foreground">Not queued to a lender</p>
+            <p className="py-3 text-sm text-muted-foreground">Sin enviar a una entidad</p>
           ) : (
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Lender</Th>
-                  <Th>Status</Th>
-                  <Th priority={2}>Queued</Th>
-                  <Th priority={3}>Sent</Th>
-                  <Th priority={2}>Reference</Th>
-                  <Th priority={3} align="right">Decisions</Th>
-                  <Th align="right"><span className="sr-only">Actions</span></Th>
+                  <Th>Entidad</Th>
+                  <Th>Estado</Th>
+                  <Th priority={2}>Enviada</Th>
+                  <Th priority={3}>Enviado</Th>
+                  <Th priority={2}>Referencia</Th>
+                  <Th priority={3} align="right">Decisiones</Th>
+                  <Th align="right"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -328,7 +328,7 @@ export function FinancingApplicationPageClient({
                     <Tr key={submission.id}>
                       <Td className="font-medium">{providerLabels[submission.providerKey] || submission.providerKey}</Td>
                       <Td>
-                        <Status tone={submission.status === 'submitted' ? 'ok' : stateTone(submission.status)}>{submission.status === 'submitted' ? 'Sent' : label(submission.status)}</Status>
+                        <Status tone={submission.status === 'submitted' ? 'ok' : stateTone(submission.status)}>{submission.status === 'submitted' ? 'Enviado' : label(submission.status)}</Status>
                         {submission.errorCode && <p className="mt-0.5 break-words text-xs text-muted-foreground">{submission.errorCode}</p>}
                       </Td>
                       <Td priority={2} className="whitespace-nowrap text-muted-foreground">{formatDateTime(submission.queuedAt, timeZone)}</Td>
@@ -338,8 +338,8 @@ export function FinancingApplicationPageClient({
                       <Td align="right">
                         {manual && (
                           <span className="inline-flex flex-wrap justify-end gap-2">
-                            <Pill size="sm" variant="primary" className="max-md:h-10" disabled={busy} onClick={() => start({ kind: 'sent', submission, values: { reference: '' }, idempotencyKey: newIdempotencyKey(`lender-sent:${submission.id}`) })}>Mark sent</Pill>
-                            <Pill size="sm" className="max-md:h-10" disabled={busy} onClick={() => start({ kind: 'failed', submission, values: { reason: '' }, idempotencyKey: newIdempotencyKey(`lender-failed:${submission.id}`) })}>Mark failed</Pill>
+                            <Pill size="sm" variant="primary" className="max-md:h-10" disabled={busy} onClick={() => start({ kind: 'sent', submission, values: { reference: '' }, idempotencyKey: newIdempotencyKey(`lender-sent:${submission.id}`) })}>Marcar enviada</Pill>
+                            <Pill size="sm" className="max-md:h-10" disabled={busy} onClick={() => start({ kind: 'failed', submission, values: { reason: '' }, idempotencyKey: newIdempotencyKey(`lender-failed:${submission.id}`) })}>Marcar fallida</Pill>
                           </span>
                         )}
                       </Td>
@@ -351,20 +351,20 @@ export function FinancingApplicationPageClient({
           )}
         </DeskSection>
 
-        <DeskSection title="Lender decisions" count={app.decisions.length}>
+        <DeskSection title="Decisiones de entidades" count={app.decisions.length}>
           {app.decisions.length === 0 ? (
-            <p className="py-3 text-sm text-muted-foreground">No decisions</p>
+            <p className="py-3 text-sm text-muted-foreground">Sin decisiones</p>
           ) : (
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Decision</Th>
-                  <Th priority={2}>Decided</Th>
-                  <Th priority={3}>Reference</Th>
-                  <Th priority={3}>Reasons</Th>
-                  <Th align="right">Approved</Th>
-                  <Th priority={2} align="right">APR · term</Th>
-                  <Th priority={3} align="right">Payment</Th>
+                  <Th>Decisión</Th>
+                  <Th priority={2}>Decidido</Th>
+                  <Th priority={3}>Referencia</Th>
+                  <Th priority={3}>Motivos</Th>
+                  <Th align="right">Aprobada</Th>
+                  <Th priority={2} align="right">Tasa · plazo</Th>
+                  <Th priority={3} align="right">Pago</Th>
                 </tr>
               </thead>
               <tbody>
@@ -389,35 +389,35 @@ export function FinancingApplicationPageClient({
 
         <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-2">
           <DeskSection
-            title="Lead"
-            actions={app.lead ? <Track><Pill size="sm" asChild><Link href={`${basePath}/platform/crm/${app.lead.id}`}>Open lead</Link></Pill></Track> : undefined}
+            title="Consulta"
+            actions={app.lead ? <Track><Pill size="sm" asChild><Link href={`${basePath}/platform/crm/${app.lead.id}`}>Abrir consulta</Link></Pill></Track> : undefined}
           >
             {app.lead ? (
               <ul className="divide-y text-sm">
-                {app.lead.tasks.length === 0 && <li className="py-2 text-muted-foreground">No tasks</li>}
+                {app.lead.tasks.length === 0 && <li className="py-2 text-muted-foreground">Sin tareas</li>}
                 {app.lead.tasks.map(task => (
                   <li key={task.id} className="flex min-w-0 items-center justify-between gap-4 py-2">
-                    <TitleLine as="p" tone={task.completed ? 'ok' : 'warn'} status={task.completed ? 'Done' : 'Open'}>{task.title || 'Task'}</TitleLine>
-                    <p className="shrink-0 text-xs tabular-nums text-muted-foreground">{task.completed ? 'Done' : formatDay(task.dueDate, timeZone)}</p>
+                    <TitleLine as="p" tone={task.completed ? 'ok' : 'warn'} status={task.completed ? 'Listo' : 'Abierta'}>{task.title || 'Tarea'}</TitleLine>
+                    <p className="shrink-0 text-xs tabular-nums text-muted-foreground">{task.completed ? 'Listo' : formatDay(task.dueDate, timeZone)}</p>
                   </li>
                 ))}
               </ul>
-            ) : <p className="py-3 text-sm text-muted-foreground">No lead</p>}
+            ) : <p className="py-3 text-sm text-muted-foreground">Sin consulta</p>}
           </DeskSection>
 
           <DeskSection
-            title="Deals"
+            title="Operaciones"
             count={app.lead?.deals.length ?? 0}
-            actions={<Track><Pill size="sm" asChild><Link href={`${basePath}/platform/deals/create`}>New deal</Link></Pill></Track>}
+            actions={<Track><Pill size="sm" asChild><Link href={`${basePath}/platform/deals/create`}>Nueva operación</Link></Pill></Track>}
           >
             {(app.lead?.deals || []).length === 0 ? (
-              <p className="py-3 text-sm text-muted-foreground">No deals for this lead</p>
+              <p className="py-3 text-sm text-muted-foreground">Sin operaciones para esta consulta</p>
             ) : (
               <ul className="divide-y text-sm">
                 {app.lead!.deals.map(deal => (
                   <li key={deal.id} className="flex min-w-0 items-center justify-between gap-4 py-2">
                     <TitleLine as="p" tone={stateTone(deal.status)} status={deal.status || undefined} className="capitalize">{deal.status || 'pencil'}</TitleLine>
-                    <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/deals/${deal.id}`}>Open</Link></Pill></Track>
+                    <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/deals/${deal.id}`}>Abierta</Link></Pill></Track>
                   </li>
                 ))}
               </ul>

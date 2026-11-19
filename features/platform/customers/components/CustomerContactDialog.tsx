@@ -42,11 +42,11 @@ export function CustomerContactDialog({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const found: Partial<Record<keyof CustomerContactValues, string>> = {}
-    if (!values.firstName.trim()) found.firstName = 'Required'
-    if (!values.lastName.trim()) found.lastName = 'Required'
+    if (!values.firstName.trim()) found.firstName = 'Obligatorio'
+    if (!values.lastName.trim()) found.lastName = 'Obligatorio'
     const email = values.primaryEmail.trim()
     const digits = values.primaryPhone.replace(/\D/g, '')
-    if (!email && !values.primaryPhone.trim()) found.primaryPhone = 'Email or phone required'
+    if (!email && !values.primaryPhone.trim()) found.primaryPhone = 'Ingresá email o teléfono'
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) found.primaryEmail = 'Invalid email'
     if (values.primaryPhone.trim() && (digits.length < 7 || digits.length > 15)) found.primaryPhone = 'Invalid phone'
     setErrors(found)
@@ -63,27 +63,27 @@ export function CustomerContactDialog({
   return (
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader><DialogTitle>Edit contact</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Editar contacto</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField id="customer-first-name" label="First name" error={errors.firstName}>
+            <FormField id="customer-first-name" label="Nombre" error={errors.firstName}>
               <Input id="customer-first-name" className={fieldClass} maxLength={100} value={values.firstName} aria-invalid={Boolean(errors.firstName)} onChange={event => set('firstName', event.target.value)} />
             </FormField>
-            <FormField id="customer-last-name" label="Last name" error={errors.lastName}>
+            <FormField id="customer-last-name" label="Apellido" error={errors.lastName}>
               <Input id="customer-last-name" className={fieldClass} maxLength={100} value={values.lastName} aria-invalid={Boolean(errors.lastName)} onChange={event => set('lastName', event.target.value)} />
             </FormField>
             <FormField id="customer-email" label="Email" error={errors.primaryEmail}>
               <Input id="customer-email" type="email" inputMode="email" className={fieldClass} maxLength={320} value={values.primaryEmail} aria-invalid={Boolean(errors.primaryEmail)} onChange={event => set('primaryEmail', event.target.value)} />
             </FormField>
-            <FormField id="customer-phone" label="Phone" error={errors.primaryPhone}>
+            <FormField id="customer-phone" label="Teléfono" error={errors.primaryPhone}>
               <Input id="customer-phone" type="tel" inputMode="tel" className={fieldClass} maxLength={50} value={values.primaryPhone} aria-invalid={Boolean(errors.primaryPhone)} onChange={event => set('primaryPhone', event.target.value)} />
             </FormField>
           </div>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Saving…' : 'Save'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Guardando…' : 'Guardar'}</Pill>
             </Track>
           </DialogFooter>
         </form>

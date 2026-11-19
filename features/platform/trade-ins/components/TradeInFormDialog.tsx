@@ -39,11 +39,11 @@ export function validateTradeInForm(values: TradeInFormValues, mode: 'create' | 
   const vin = values.vin.trim().toUpperCase()
   if (vin && !VIN_PATTERN.test(vin)) errors.vin = '17 letters and numbers, no I, O or Q'
   const year = Number(values.year)
-  if (!/^\d{4}$/.test(values.year.trim()) || year < 1900 || year > new Date().getFullYear() + 2) errors.year = 'Enter a 4-digit year'
-  if (!values.make.trim()) errors.make = 'Make is required'
-  if (!values.model.trim()) errors.model = 'Model is required'
+  if (!/^\d{4}$/.test(values.year.trim()) || year < 1900 || year > new Date().getFullYear() + 2) errors.year = 'Ingresá un año de 4 dígitos'
+  if (!values.make.trim()) errors.make = 'La marca es obligatoria'
+  if (!values.model.trim()) errors.model = 'El modelo es obligatorio'
   const mileage = values.mileage.trim().replace(/,/g, '')
-  if (mileage && (!/^\d+$/.test(mileage) || Number(mileage) > 2_000_000)) errors.mileage = 'Enter whole miles'
+  if (mileage && (!/^\d+$/.test(mileage) || Number(mileage) > 2_000_000)) errors.mileage = 'Ingresá kilómetros enteros'
   return errors
 }
 
@@ -136,48 +136,48 @@ export function TradeInFormDialog({
     <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? 'New trade-in' : 'Edit trade-in'}</DialogTitle>
-          <DialogDescription>{mode === 'create' ? 'Walk-in or phone appraisal' : 'Vehicle and condition'}</DialogDescription>
+          <DialogTitle>{mode === 'create' ? 'Nuevo usado ofrecido' : 'Editar usado ofrecido'}</DialogTitle>
+          <DialogDescription>{mode === 'create' ? 'Tasación en el salón o por teléfono' : 'Vehículo y estado'}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             {mode === 'create' && (
               <>
-                <Field label="Rooftop" htmlFor="trade-in-rooftopId" error={shown.rooftopId}>
+                <Field label="Sucursal" htmlFor="trade-in-rooftopId" error={shown.rooftopId}>
                   <Select value={values.rooftopId} onValueChange={value => setValues(current => ({ ...current, rooftopId: value, leadId: '' }))}>
-                    <SelectTrigger className="rounded-[4px]" id="trade-in-rooftopId" aria-invalid={shown.rooftopId ? true : undefined}><SelectValue placeholder="Select rooftop" /></SelectTrigger>
+                    <SelectTrigger className="rounded-[4px]" id="trade-in-rooftopId" aria-invalid={shown.rooftopId ? true : undefined}><SelectValue placeholder="Elegí la sucursal" /></SelectTrigger>
                     <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
-                <Field label={leadRequired ? 'Customer lead' : 'Customer lead (optional)'} htmlFor="trade-in-leadId" error={shown.leadId}>
+                <Field label={leadRequired ? 'Consulta del cliente' : 'Consulta del cliente (opcional)'} htmlFor="trade-in-leadId" error={shown.leadId}>
                   <Select value={values.leadId || (leadRequired ? '' : NO_LEAD)} onValueChange={value => set('leadId', value === NO_LEAD ? '' : value)} disabled={!values.rooftopId}>
-                    <SelectTrigger className="rounded-[4px]" id="trade-in-leadId" aria-invalid={shown.leadId ? true : undefined}><SelectValue placeholder={values.rooftopId ? 'Select lead' : 'Choose a rooftop first'} /></SelectTrigger>
+                    <SelectTrigger className="rounded-[4px]" id="trade-in-leadId" aria-invalid={shown.leadId ? true : undefined}><SelectValue placeholder={values.rooftopId ? 'Elegí la consulta' : 'Primero elegí la sucursal'} /></SelectTrigger>
                     <SelectContent>
-                      {!leadRequired && <SelectItem value={NO_LEAD}>No lead</SelectItem>}
+                      {!leadRequired && <SelectItem value={NO_LEAD}>Sin consulta</SelectItem>}
                       {rooftopLeads.map(lead => (
-                        <SelectItem key={lead.id} value={lead.id}>{[lead.firstName, lead.lastName].filter(Boolean).join(' ') || lead.email || 'Customer'}</SelectItem>
+                        <SelectItem key={lead.id} value={lead.id}>{[lead.firstName, lead.lastName].filter(Boolean).join(' ') || lead.email || 'Cliente'}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
               </>
             )}
-            <Field label="VIN" htmlFor="trade-in-vin" error={shown.vin} wide>
-              {input('vin', { maxLength: 17, autoComplete: 'off', className: 'font-mono uppercase', placeholder: 'Optional until acquisition' })}
+            <Field label="VIN / chasis" htmlFor="trade-in-vin" error={shown.vin} wide>
+              {input('vin', { maxLength: 17, autoComplete: 'off', className: 'font-mono uppercase', placeholder: 'Opcional hasta el ingreso' })}
             </Field>
-            <Field label="Year" htmlFor="trade-in-year" error={shown.year}>{input('year', { inputMode: 'numeric', maxLength: 4 })}</Field>
-            <Field label="Make" htmlFor="trade-in-make" error={shown.make}>{input('make', { maxLength: 100 })}</Field>
-            <Field label="Model" htmlFor="trade-in-model" error={shown.model}>{input('model', { maxLength: 100 })}</Field>
-            <Field label="Trim" htmlFor="trade-in-trim">{input('trim', { maxLength: 100 })}</Field>
-            <Field label="Mileage" htmlFor="trade-in-mileage" error={shown.mileage}>{input('mileage', { inputMode: 'numeric' })}</Field>
-            <Field label="Condition" htmlFor="trade-in-condition">
+            <Field label="Año" htmlFor="trade-in-year" error={shown.year}>{input('year', { inputMode: 'numeric', maxLength: 4 })}</Field>
+            <Field label="Marca" htmlFor="trade-in-make" error={shown.make}>{input('make', { maxLength: 100 })}</Field>
+            <Field label="Modelo" htmlFor="trade-in-model" error={shown.model}>{input('model', { maxLength: 100 })}</Field>
+            <Field label="Versión" htmlFor="trade-in-trim">{input('trim', { maxLength: 100 })}</Field>
+            <Field label="Kilometraje" htmlFor="trade-in-mileage" error={shown.mileage}>{input('mileage', { inputMode: 'numeric' })}</Field>
+            <Field label="Estado" htmlFor="trade-in-condition">
               <Select value={values.condition} onValueChange={value => set('condition', value)}>
-                <SelectTrigger className="rounded-[4px]" id="trade-in-condition"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                <SelectTrigger className="rounded-[4px]" id="trade-in-condition"><SelectValue placeholder="Elegí el estado" /></SelectTrigger>
                 <SelectContent>{CONDITION_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
             {(['exteriorCondition', 'interiorCondition', 'mechanicalIssues'] as const).map(name => (
-              <Field key={name} wide htmlFor={`trade-in-${name}`} label={name === 'exteriorCondition' ? 'Exterior notes' : name === 'interiorCondition' ? 'Interior notes' : 'Mechanical issues'}>
+              <Field key={name} wide htmlFor={`trade-in-${name}`} label={name === 'exteriorCondition' ? 'Exterior notes' : name === 'interiorCondition' ? 'Notas del interior' : 'Problemas mecánicos'}>
                 <Textarea className="rounded-[4px]" id={`trade-in-${name}`} rows={2} maxLength={2000} value={values[name]} onChange={event => set(name, event.target.value)} />
               </Field>
             ))}
@@ -185,8 +185,8 @@ export function TradeInFormDialog({
           {error && <Notice tone="bad">{error}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Saving…' : mode === 'create' ? 'Create trade-in' : 'Save'}</Pill>
+              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Guardando…' : mode === 'create' ? 'Crear usado ofrecido' : 'Guardar'}</Pill>
             </Track>
           </DialogFooter>
         </form>

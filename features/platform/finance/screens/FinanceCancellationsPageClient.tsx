@@ -31,7 +31,7 @@ type DialogState =
   | { kind: 'new'; values: Record<string, string>; idempotencyKey: string }
   | { kind: 'complete' | 'deny'; item: CancellationCase; values: Record<string, string>; idempotencyKey: string }
 
-const statusLabels: Record<string, string> = { requested: 'Requested', completed: 'Completed', denied: 'Denied' }
+const statusLabels: Record<string, string> = { requested: 'Solicitado', completed: 'Completada', denied: 'Denegada' }
 
 function buildCases(records: CancellationRecord[]): CancellationCase[] {
   const groups = new Map<string, CancellationRecord[]>()
@@ -143,14 +143,14 @@ export function FinanceCancellationsPageClient({
     if (!dialog) return
     const v = dialog.values
     const errors: FieldErrors = {}
-    if (!(v.reason || '').trim()) errors.reason = dialog.kind === 'deny' ? 'Enter why the cancellation was denied.' : 'Enter the cancellation reason.'
+    if (!(v.reason || '').trim()) errors.reason = dialog.kind === 'deny' ? 'Indicá por qué se denegó la cancelación.' : 'Indicá el motivo de la cancelación.'
     let payload: Parameters<typeof recordProductCancellation>[0] | null = null
     if (dialog.kind === 'new') {
       const [menuId, code] = (v.product || '').split('|')
       const target = cancellable.find(item => item.menu.id === menuId && item.code === code)
       if (!target?.menu.deal) errors.product = 'Select a sold product.'
       const estimate = (v.estimate || '').trim() ? parseDollarsToCents(v.estimate) : 0
-      if (estimate == null) errors.estimate = 'Enter a dollar amount.'
+      if (estimate == null) errors.estimate = 'Ingresá un importe.'
       if (target?.menu.deal && estimate != null) payload = {
         dealId: target.menu.deal.id, menuId: target.menu.id, productCode: target.code, status: 'requested',
         reason: v.reason.trim(), refundCents: estimate, refundBasis: null, idempotencyKey: dialog.idempotencyKey,
@@ -186,41 +186,41 @@ export function FinanceCancellationsPageClient({
 
   const dialogFields: FinanceFormField[] = !dialog ? [] : dialog.kind === 'new' ? [
     {
-      name: 'product', label: 'Sold product', type: 'select', wide: true,
+      name: 'product', label: 'Producto vendido', type: 'select', wide: true,
       options: cancellableForFilter.map(item => ({
         value: `${item.menu.id}|${item.code}`,
         label: `${personName(item.menu.deal?.lead)} · ${item.option?.name || item.code} (${item.code}) · ${formatCents(item.option?.retailPriceCents ?? null)}`,
       })),
-      placeholder: cancellableForFilter.length ? 'Select a product' : 'No sold products to cancel',
+      placeholder: cancellableForFilter.length ? 'Elegí un producto' : 'No hay productos vendidos para cancelar',
     },
-    { name: 'reason', label: 'Reason', type: 'textarea', maxLength: 1000 },
-    { name: 'estimate', label: 'Estimated refund (optional)', type: 'money' },
+    { name: 'reason', label: 'Motivo', type: 'textarea', maxLength: 1000 },
+    { name: 'estimate', label: 'Devolución estimada (opcional)', type: 'money' },
   ] : dialog.kind === 'complete' ? [
-    { name: 'refund', label: 'Refund amount', type: 'money', description: `Calculated ${formatCents(calculateRefund(basisFor(dialog.item)).refundCents)}` },
-    { name: 'reference', label: 'Cancellation reference', maxLength: 200 },
-    { name: 'reason', label: 'Reason', type: 'textarea', maxLength: 1000 },
+    { name: 'refund', label: 'Importe a devolver', type: 'money', description: `Calculated ${formatCents(calculateRefund(basisFor(dialog.item)).refundCents)}` },
+    { name: 'reference', label: 'Referencia de cancelación', maxLength: 200 },
+    { name: 'reason', label: 'Motivo', type: 'textarea', maxLength: 1000 },
   ] : [
-    { name: 'reason', label: 'Denial reason', type: 'textarea', maxLength: 1000 },
+    { name: 'reason', label: 'Motivo del rechazo', type: 'textarea', maxLength: 1000 },
   ]
 
   const breadcrumbs = [
     { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Solicitudes de crédito', href: `${basePath}/platform/finance` },
-    { type: 'page' as const, label: 'Cancellations' },
+    { type: 'page' as const, label: 'Cancelaciones' },
   ]
   const header = (
     <DeskHeader
-      title="Product cancellations"
+      title="Cancelaciones de productos"
       tone={error ? 'bad' : counts.requested > 0 ? 'warn' : 'ok'}
-      status={error ? 'Unavailable' : `${counts.requested} requested`}
-      meta={error ? 'Unavailable' : `${counts.requested} requested · ${counts.completed} completed · ${counts.denied} denied`}
+      status={error ? 'No disponible' : `${counts.requested} requested`}
+      meta={error ? 'No disponible' : `${counts.requested} solicitadas · ${counts.completed} completadas · ${counts.denied} denegadas`}
       actions={
         <>
-          <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}><ArrowLeft />Finance</Link></Pill>
-          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Refresh"><RefreshCw className={loading ? 'animate-spin' : undefined} />Refresh</Pill>
+          <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}><ArrowLeft />Financiación</Link></Pill>
+          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Actualizar"><RefreshCw className={loading ? 'animate-spin' : undefined} />Actualizar</Pill>
           <Pill variant="primary" onClick={openNew} disabled={!cancellableForFilter.length} title={!cancellableForFilter.length ? 'No accepted menu products to cancel' : undefined}>
-            <Plus />New cancellation
+            <Plus />Nueva cancelación
           </Pill>
         </>
       }
@@ -229,10 +229,10 @@ export function FinanceCancellationsPageClient({
 
   if (error && !workspace) {
     return (
-      <PageContainer title="Product cancellations" header={header} breadcrumbs={breadcrumbs}>
+      <PageContainer title="Cancelaciones de productos" header={header} breadcrumbs={breadcrumbs}>
         <div className="space-y-3 px-4 pb-24 md:px-6">
-          <Notice tone="bad"><p className="font-medium">Cancellations are unavailable</p><p className="mt-0.5 text-muted-foreground">{error}</p></Notice>
-          <Track><Pill onClick={reload} disabled={loading}>Retry</Pill></Track>
+          <Notice tone="bad"><p className="font-medium">Las cancelaciones no están disponibles</p><p className="mt-0.5 text-muted-foreground">{error}</p></Notice>
+          <Track><Pill onClick={reload} disabled={loading}>Reintentar</Pill></Track>
         </div>
       </PageContainer>
     )
@@ -259,54 +259,54 @@ export function FinanceCancellationsPageClient({
             <span>{vehicleName(item.deal?.vehicle)}</span>
             {item.deal?.vehicle?.stockNumber && (<><span>·</span><Code>#{item.deal.vehicle.stockNumber}</Code></>)}
           </p>
-          <Track aria-label="Cancellation actions">
-            <Pill size="sm" variant="primary" disabled={!open || busy || !item.deal} title={!open ? `Already ${item.latest.status}` : undefined} onClick={() => openDecision('complete', item)}>Complete</Pill>
-            <Pill size="sm" variant="danger" disabled={!open || busy || !item.deal} title={!open ? `Already ${item.latest.status}` : undefined} onClick={() => openDecision('deny', item)}>Deny</Pill>
-            {item.deal && <Pill size="sm" asChild><Link href={`${basePath}/platform/deals/${item.deal.id}`}>Deal</Link></Pill>}
+          <Track aria-label="Acciones de cancelación">
+            <Pill size="sm" variant="primary" disabled={!open || busy || !item.deal} title={!open ? `Already ${item.latest.status}` : undefined} onClick={() => openDecision('complete', item)}>Completar</Pill>
+            <Pill size="sm" variant="danger" disabled={!open || busy || !item.deal} title={!open ? `Already ${item.latest.status}` : undefined} onClick={() => openDecision('deny', item)}>Denegar</Pill>
+            {item.deal && <Pill size="sm" asChild><Link href={`${basePath}/platform/deals/${item.deal.id}`}>Operación</Link></Pill>}
           </Track>
           {!open && <p className="pl-4 text-xs text-muted-foreground">{statusLabels[item.latest.status]} {formatDay(item.latest.completedAt || item.latest.createdAt, timeZone)}{reference ? ` · ${reference}` : ''}</p>}
         </div>
 
-        <DeskSection title="Product">
+        <DeskSection title="Producto">
           <Facts items={[
-            { label: 'Retail price', value: formatCents(item.option?.retailPriceCents ?? null) },
-            { label: 'Term', value: item.option?.termMonths ? `${item.option.termMonths} mo` : 'Not recorded' },
-            { label: 'Sold', value: formatDay(saleDateOf(item), timeZone) },
-            { label: 'Menu', value: `v${item.menu.version}` },
-            item.deal?.rooftop ? { label: 'Rooftop', value: item.deal.rooftop.name } : null,
-            { label: 'Refund recorded', value: formatCents(item.latest.refundCents ?? 0) },
+            { label: 'Precio de venta', value: formatCents(item.option?.retailPriceCents ?? null) },
+            { label: 'Plazo', value: item.option?.termMonths ? `${item.option.termMonths} mo` : 'Sin registrar' },
+            { label: 'Vendido', value: formatDay(saleDateOf(item), timeZone) },
+            { label: 'Menú', value: `v${item.menu.version}` },
+            item.deal?.rooftop ? { label: 'Sucursal', value: item.deal.rooftop.name } : null,
+            { label: 'Devolución registrada', value: formatCents(item.latest.refundCents ?? 0) },
           ]} />
         </DeskSection>
 
-        <DeskSection title="Refund calculation">
+        <DeskSection title="Cálculo de la devolución">
           <div className="space-y-3">
             {open ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1.5 text-sm">
-                  <span className="text-[12px] font-medium text-muted-foreground">Months used</span>
+                  <span className="text-[12px] font-medium text-muted-foreground">Meses usados</span>
                   <Input className="h-10 rounded-[4px]" inputMode="numeric" value={calcState.monthsUsed} aria-invalid={monthsInvalid} onChange={event => setCalc({ ...calcState, monthsUsed: event.target.value })} />
-                  {monthsInvalid && <span className="text-xs text-red-600 dark:text-red-400">Enter whole months.</span>}
+                  {monthsInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresá meses enteros.</span>}
                 </label>
                 <label className="grid gap-1.5 text-sm">
-                  <span className="text-[12px] font-medium text-muted-foreground">Cancellation fee</span>
+                  <span className="text-[12px] font-medium text-muted-foreground">Cargo por cancelación</span>
                   <Input className="h-10 rounded-[4px]" inputMode="decimal" value={calcState.fee} aria-invalid={feeInvalid} onChange={event => setCalc({ ...calcState, fee: event.target.value })} />
-                  {feeInvalid && <span className="text-xs text-red-600 dark:text-red-400">Enter a dollar amount.</span>}
+                  {feeInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresá un importe.</span>}
                 </label>
               </div>
             ) : null}
             <Facts items={[
-              { label: 'Method', value: basis.method === 'pro-rata-months' ? 'Pro-rata by month' : 'Flat (no term)' },
-              basis.method === 'pro-rata-months' ? { label: 'Unused months', value: `${result.unusedMonths} of ${basis.termMonths}` } : null,
-              { label: 'Unused value', value: formatCents(result.unusedCents) },
-              { label: 'Fee', value: formatCents(basis.cancellationFeeCents) },
-              { label: open ? 'Refund due' : 'Calculated refund', value: <span className="font-semibold">{formatCents(result.refundCents)}</span> },
+              { label: 'Método', value: basis.method === 'pro-rata-months' ? 'Proporcional por mes' : 'Fijo (sin plazo)' },
+              basis.method === 'pro-rata-months' ? { label: 'Meses sin usar', value: `${result.unusedMonths} of ${basis.termMonths}` } : null,
+              { label: 'Valor no usado', value: formatCents(result.unusedCents) },
+              { label: 'Cargo', value: formatCents(basis.cancellationFeeCents) },
+              { label: open ? 'Devolución pendiente' : 'Devolución calculada', value: <span className="font-semibold">{formatCents(result.refundCents)}</span> },
             ]} />
           </div>
         </DeskSection>
 
-        <DeskSection title="Payment refund" count={dealRefunds?.length}>
+        <DeskSection title="Devolución del pago" count={dealRefunds?.length}>
           {dealRefunds == null ? (
-            <p className="py-3 text-sm text-muted-foreground">Payments unavailable for your role</p>
+            <p className="py-3 text-sm text-muted-foreground">Pagos no disponibles para tu rol</p>
           ) : dealRefunds.length > 0 ? (
             <ul className="divide-y text-sm">
               {dealRefunds.map(refund => (
@@ -316,25 +316,25 @@ export function FinanceCancellationsPageClient({
                     <p className="truncate pl-4 text-xs text-muted-foreground">{refund.reason} · {formatDay(refund.createdAt, timeZone)}</p>
                   </div>
                   {refund.transaction && (
-                    <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/payments/${refund.transaction.id}`}>Open</Link></Pill></Track>
+                    <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/payments/${refund.transaction.id}`}>Abierta</Link></Pill></Track>
                   )}
                 </li>
               ))}
             </ul>
           ) : (
             <div className="space-y-2 py-1">
-              <p className="text-sm text-muted-foreground">No refund on this deal</p>
+              <p className="text-sm text-muted-foreground">Sin devolución en esta operación</p>
               {(dealPayments || []).filter(payment => ['captured', 'partially-refunded'].includes(payment.status)).map(payment => (
                 <div key={payment.id} className="flex min-w-0 items-center justify-between gap-4 text-sm">
                   <span className="min-w-0 truncate">Payment {formatCents(payment.capturedCents ?? payment.amountCents)} · {payment.status}</span>
-                  <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/payments/${payment.id}`}>Payment</Link></Pill></Track>
+                  <Track className="shrink-0"><Pill size="sm" asChild><Link href={`${basePath}/platform/payments/${payment.id}`}>Pago</Link></Pill></Track>
                 </div>
               ))}
             </div>
           )}
         </DeskSection>
 
-        <DeskSection title="History" count={item.records.length}>
+        <DeskSection title="Historial" count={item.records.length}>
           <ul className="divide-y text-sm">
             {item.records.map(record => (
               <li key={record.id} className="flex min-w-0 items-start justify-between gap-4 py-2">
@@ -357,13 +357,13 @@ export function FinanceCancellationsPageClient({
   const filteredDeal = dealFilter ? cases.find(item => item.deal?.id === dealFilter)?.deal || cancellable.find(item => item.menu.deal?.id === dealFilter)?.menu.deal : null
 
   return (
-    <PageContainer title="Product cancellations" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Cancelaciones de productos" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-6 px-4 pb-24 md:px-6">
         {notice && (
           <Notice tone="ok">
             <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
               <p className="min-w-0">{notice}</p>
-              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Dismiss</Pill></Track>
+              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Descartar</Pill></Track>
             </div>
           </Notice>
         )}
@@ -371,59 +371,59 @@ export function FinanceCancellationsPageClient({
 
         <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
           <Segmented
-            label="Cancellation status"
+            label="Estado de la cancelación"
             value={tab}
             onChange={setTab}
             options={[
-              { value: 'requested', label: 'Requested', count: counts.requested, tone: 'warn' },
-              { value: 'completed', label: 'Completed', count: counts.completed, tone: 'ok' },
-              { value: 'denied', label: 'Denied', count: counts.denied, tone: 'bad' },
-              { value: 'all', label: 'All', count: counts.all },
+              { value: 'requested', label: 'Solicitado', count: counts.requested, tone: 'warn' },
+              { value: 'completed', label: 'Completada', count: counts.completed, tone: 'ok' },
+              { value: 'denied', label: 'Denegada', count: counts.denied, tone: 'bad' },
+              { value: 'all', label: 'Todas', count: counts.all },
             ]}
           />
           <div className="relative min-w-0 flex-1 lg:max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="h-10 rounded-[4px] pl-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search customer, stock or product" aria-label="Search cancellations" />
+            <Input className="h-10 rounded-[4px] pl-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar cliente, stock o producto" aria-label="Buscar cancelaciones" />
           </div>
           {dealFilter && (
             <Track>
-              <Pill size="sm" onClick={() => setDealFilter(null)} aria-label="Clear deal filter">
-                {filteredDeal ? `${personName(filteredDeal.lead)} · ${vehicleName(filteredDeal.vehicle)}` : 'One deal'}
+              <Pill size="sm" onClick={() => setDealFilter(null)} aria-label="Quitar filtro de operación">
+                {filteredDeal ? `${personName(filteredDeal.lead)} · ${vehicleName(filteredDeal.vehicle)}` : 'Una operación'}
                 <X />
               </Pill>
             </Track>
           )}
-          {loading && <span className="text-sm text-muted-foreground" role="status">Refreshing…</span>}
+          {loading && <span className="text-sm text-muted-foreground" role="status">Actualizando…</span>}
         </div>
 
         {selected && (
-          <Panel className="p-4 md:p-5" aria-label="Selected cancellation">
+          <Panel className="p-4 md:p-5" aria-label="Cancelación seleccionada">
             <div className="mb-3 flex justify-end">
-              <Pill size="sm" variant="plain" className="max-md:h-10" onClick={() => setSelectedKey(null)}><X />Close</Pill>
+              <Pill size="sm" variant="plain" className="max-md:h-10" onClick={() => setSelectedKey(null)}><X />Cerrar</Pill>
             </div>
             {renderDetail(selected)}
           </Panel>
         )}
 
-        <DeskSection title="Cancellations" count={visible.length}>
+        <DeskSection title="Cancelaciones" count={visible.length}>
           {visible.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center text-sm text-muted-foreground">
-              <p>{scoped.length === 0 ? 'No cancellations' : 'No matching cancellations'}</p>
+              <p>{scoped.length === 0 ? 'Sin cancelaciones' : 'No hay cancelaciones que coincidan'}</p>
               <Track>
-                {scoped.length > 0 && <Pill size="sm" onClick={() => { setSearch(''); setTab('all') }}>Reset filters</Pill>}
-                {cancellableForFilter.length > 0 && <Pill size="sm" variant="primary" onClick={openNew}>New cancellation</Pill>}
+                {scoped.length > 0 && <Pill size="sm" onClick={() => { setSearch(''); setTab('all') }}>Limpiar filtros</Pill>}
+                {cancellableForFilter.length > 0 && <Pill size="sm" variant="primary" onClick={openNew}>Nueva cancelación</Pill>}
               </Track>
             </div>
           ) : (
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Customer · product</Th>
-                  <Th>Status</Th>
-                  <Th priority={3}>Vehicle</Th>
-                  <Th priority={2}>Requested</Th>
-                  <Th priority={2} align="right">Age</Th>
-                  <Th align="right">Refund</Th>
+                  <Th>Cliente · producto</Th>
+                  <Th>Estado</Th>
+                  <Th priority={3}>Vehículo</Th>
+                  <Th priority={2}>Solicitado</Th>
+                  <Th priority={2} align="right">Antigüedad</Th>
+                  <Th align="right">Devolución</Th>
                 </tr>
               </thead>
               <tbody>
@@ -461,21 +461,21 @@ export function FinanceCancellationsPageClient({
         </DeskSection>
 
         <ReadoutStrip>
-          <Readout label="Requested" value={counts.requested} tone={counts.requested ? 'warn' : 'idle'} />
-          <Readout label="Completed" value={counts.completed} tone="ok" />
-          <Readout label="Refunded" value={formatCents(refundedTotal)} sub="Completed cancellations" />
-          <Readout label="Cancellable" value={cancellableForFilter.length} sub="Sold products" />
+          <Readout label="Solicitado" value={counts.requested} tone={counts.requested ? 'warn' : 'idle'} />
+          <Readout label="Completada" value={counts.completed} tone="ok" />
+          <Readout label="Devuelto" value={formatCents(refundedTotal)} sub="Completed cancellations" />
+          <Readout label="Cancelable" value={cancellableForFilter.length} sub="Sold products" />
         </ReadoutStrip>
 
         <FinanceFormDialog
           open={Boolean(dialog)}
-          title={dialog?.kind === 'new' ? 'New cancellation' : dialog?.kind === 'complete' ? `Complete ${dialog.item.productCode} cancellation` : `Deny ${dialog?.kind === 'deny' ? dialog.item.productCode : ''} cancellation`}
+          title={dialog?.kind === 'new' ? 'Nueva cancelación' : dialog?.kind === 'complete' ? `Complete ${dialog.item.productCode} cancellation` : `Deny ${dialog?.kind === 'deny' ? dialog.item.productCode : ''} cancellation`}
           fields={dialogFields}
           values={dialog?.values || {}}
           errors={fieldErrors}
           error={formError}
           busy={busy}
-          submitLabel={dialog?.kind === 'new' ? 'Record request' : dialog?.kind === 'complete' ? 'Complete' : 'Deny'}
+          submitLabel={dialog?.kind === 'new' ? 'Record request' : dialog?.kind === 'complete' ? 'Completar' : 'Denegar'}
           onValuesChange={values => setDialog(current => current ? { ...current, values } as DialogState : current)}
           onSubmit={submit}
           onOpenChange={open => { if (!open && !busy) setDialog(null) }}

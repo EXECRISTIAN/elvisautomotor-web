@@ -22,7 +22,7 @@ export async function LeadDetailPage({ params }: { params: Promise<{ id: string 
       viewer={viewer}
       staff={staff}
       timeZone={timeZone}
-      initialError={response.success ? (lead ? null : 'This lead was not found.') : response.error}
+      initialError={response.success ? (lead ? null : 'No se encontró esta consulta.') : response.error}
     />
   )
 }

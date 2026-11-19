@@ -20,7 +20,7 @@ export async function CustomerDetailPage({ params }: { params: Promise<{ id: str
       initialDuplicateError={duplicates && !duplicates.success ? duplicates.error : null}
       viewer={viewer}
       timeZone={timeZone}
-      initialError={response.success ? (customer ? null : 'This customer was not found.') : response.error}
+      initialError={response.success ? (customer ? null : 'No se encontró este cliente.') : response.error}
     />
   )
 }

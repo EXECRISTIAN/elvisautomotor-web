@@ -36,7 +36,7 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
   const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null)
 
   const rooftops = catalog?.rooftops || []
-  const rooftopName = (id: string) => rooftops.find(rooftop => rooftop.id === id)?.name || 'Rooftop'
+  const rooftopName = (id: string) => rooftops.find(rooftop => rooftop.id === id)?.name || 'Sucursal'
 
   const reload = async () => {
     setLoading(true)
@@ -88,7 +88,7 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
       else if ((catalog?.products || []).some(product => product.rooftop?.id === v.rooftopId && product.code === code)) errors.code = 'This code already exists at this rooftop.'
     }
     if (!(v.name || '').trim()) errors.name = 'Enter a product name.'
-    else if (v.name.trim().length > 200) errors.name = 'Use 200 characters or fewer.'
+    else if (v.name.trim().length > 200) errors.name = 'Usá 200 caracteres o menos.'
     if (!PRODUCT_CATEGORIES.includes(v.category as typeof PRODUCT_CATEGORIES[number])) errors.category = 'Select a category.'
     const retail = (v.retail || '').trim() ? parseDollarsToCents(v.retail) : null
     if (retail == null) errors.retail = 'Enter a dollar amount, for example 1,299.50.'
@@ -137,41 +137,41 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
 
   const editorFields: FinanceFormField[] = !editor ? [] : [
     editor.mode === 'create'
-      ? { name: 'rooftopId', label: 'Rooftop', type: 'select', options: rooftops.map(rooftop => ({ value: rooftop.id, label: rooftop.name })), wide: true }
-      : { name: 'rooftopName', label: 'Rooftop', type: 'readonly', wide: true },
-    editor.mode === 'create' ? { name: 'code', label: 'Code', placeholder: 'VSC-60', maxLength: 80 } : { name: 'code', label: 'Code', type: 'readonly' },
-    { name: 'category', label: 'Category', type: 'select', options: PRODUCT_CATEGORIES.map(value => ({ value, label: categoryLabels[value] })) },
-    { name: 'name', label: 'Name', maxLength: 200, wide: true },
-    { name: 'retail', label: 'Retail price', type: 'money', placeholder: '$1,299' },
-    { name: 'cost', label: 'Dealer cost', type: 'money', placeholder: editor.mode === 'edit' && editor.product?.costCents == null ? 'Unchanged' : '$899', description: editor.mode === 'edit' && editor.product?.costCents == null ? 'Hidden for your role; blank keeps the current cost' : undefined },
-    ...(editor.mode === 'edit' ? [{ name: 'active', label: 'Active on menus', type: 'checkbox' as const }] : []),
+      ? { name: 'rooftopId', label: 'Sucursal', type: 'select', options: rooftops.map(rooftop => ({ value: rooftop.id, label: rooftop.name })), wide: true }
+      : { name: 'rooftopName', label: 'Sucursal', type: 'readonly', wide: true },
+    editor.mode === 'create' ? { name: 'code', label: 'Código', placeholder: 'VSC-60', maxLength: 80 } : { name: 'code', label: 'Código', type: 'readonly' },
+    { name: 'category', label: 'Categoría', type: 'select', options: PRODUCT_CATEGORIES.map(value => ({ value, label: categoryLabels[value] })) },
+    { name: 'name', label: 'Nombre', maxLength: 200, wide: true },
+    { name: 'retail', label: 'Precio de venta', type: 'money', placeholder: '$1,299' },
+    { name: 'cost', label: 'Costo', type: 'money', placeholder: editor.mode === 'edit' && editor.product?.costCents == null ? 'Unchanged' : '$899', description: editor.mode === 'edit' && editor.product?.costCents == null ? 'Hidden for your role; blank keeps the current cost' : undefined },
+    ...(editor.mode === 'edit' ? [{ name: 'active', label: 'Activo en menús', type: 'checkbox' as const }] : []),
   ]
 
   const breadcrumbs = [
     { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Solicitudes de crédito', href: `${basePath}/platform/finance` },
-    { type: 'page' as const, label: 'F&I products' },
+    { type: 'page' as const, label: 'Productos adicionales' },
   ]
 
   const header = (
     <DeskHeader
-      title="F&I products"
+      title="Productos adicionales"
       tone={error ? 'bad' : counts.active > 0 ? 'ok' : 'warn'}
-      status={error ? 'Unavailable' : `${counts.active} active`}
-      meta={error ? 'Unavailable' : `${rooftopId ? rooftopName(rooftopId) : 'All rooftops'} · ${counts.active} active · ${counts.inactive} inactive`}
+      status={error ? 'No disponible' : `${counts.active} active`}
+      meta={error ? 'No disponible' : `${rooftopId ? rooftopName(rooftopId) : 'Todas las sucursales'} · ${counts.active} activos · ${counts.inactive} inactivos`}
       actions={
         <>
           <Pill asChild variant="plain">
-            <Link href={`${basePath}/platform/finance`}><ArrowLeft />Finance</Link>
+            <Link href={`${basePath}/platform/finance`}><ArrowLeft />Financiación</Link>
           </Pill>
-          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Refresh">
+          <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Actualizar">
             <RefreshCw className={loading ? 'animate-spin' : undefined} />
-            Refresh
+            Actualizar
           </Pill>
           <Pill variant="primary" onClick={openCreate} disabled={!rooftops.length || Boolean(error)} title={!rooftops.length ? 'No rooftop available' : undefined}>
             <Plus />
-            New product
+            Nuevo producto
           </Pill>
         </>
       }
@@ -180,26 +180,26 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
 
   if (error && !catalog) {
     return (
-      <PageContainer title="F&I products" header={header} breadcrumbs={breadcrumbs}>
+      <PageContainer title="Productos adicionales" header={header} breadcrumbs={breadcrumbs}>
         <div className="space-y-3 px-4 pb-24 md:px-6">
           <Notice tone="bad">
-            <p className="font-medium">Products are unavailable</p>
+            <p className="font-medium">Los productos no están disponibles</p>
             <p className="mt-0.5 text-muted-foreground">{error}</p>
           </Notice>
-          <Track><Pill onClick={reload} disabled={loading}>Retry</Pill></Track>
+          <Track><Pill onClick={reload} disabled={loading}>Reintentar</Pill></Track>
         </div>
       </PageContainer>
     )
   }
 
   return (
-    <PageContainer title="F&I products" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Productos adicionales" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-6 px-4 pb-24 md:px-6">
         {notice && (
           <Notice tone={notice.tone}>
             <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
               <p className="min-w-0">{notice.text}</p>
-              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Dismiss</Pill></Track>
+              <Track><Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Descartar</Pill></Track>
             </div>
           </Notice>
         )}
@@ -208,60 +208,60 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
         <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
           {rooftops.length > 1 && (
             <Select value={rooftopId || 'all'} onValueChange={value => setRooftopId(value === 'all' ? '' : value)}>
-              <SelectTrigger className="h-10 w-full rounded-[4px] lg:w-[220px]" aria-label="Rooftop"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 w-full rounded-[4px] lg:w-[220px]" aria-label="Sucursal"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All rooftops</SelectItem>
+                <SelectItem value="all">Todas las sucursales</SelectItem>
                 {rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}
               </SelectContent>
             </Select>
           )}
           <Segmented
-            label="Product status"
+            label="Estado del producto"
             value={tab}
             onChange={setTab}
             options={[
-              { value: 'active', label: 'Active', count: counts.active, tone: 'ok' },
-              { value: 'inactive', label: 'Inactive', count: counts.inactive, tone: 'idle' },
-              { value: 'all', label: 'All', count: counts.all },
+              { value: 'active', label: 'Activo', count: counts.active, tone: 'ok' },
+              { value: 'inactive', label: 'Inactivo', count: counts.inactive, tone: 'idle' },
+              { value: 'all', label: 'Todas', count: counts.all },
             ]}
           />
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="h-10 w-full rounded-[4px] lg:w-[190px]" aria-label="Category"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-10 w-full rounded-[4px] lg:w-[190px]" aria-label="Categoría"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">Todas las categorías</SelectItem>
               {PRODUCT_CATEGORIES.map(value => <SelectItem key={value} value={value}>{categoryLabels[value]}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="relative min-w-0 flex-1 lg:max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="h-10 rounded-[4px] pl-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search code or name" aria-label="Search products" />
+            <Input className="h-10 rounded-[4px] pl-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por código o nombre" aria-label="Buscar productos" />
           </div>
-          {loading && <span className="text-sm text-muted-foreground" role="status">Refreshing…</span>}
+          {loading && <span className="text-sm text-muted-foreground" role="status">Actualizando…</span>}
         </div>
 
-        <DeskSection title="Catalog" count={visible.length}>
+        <DeskSection title="Catálogo" count={visible.length}>
           {visible.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center text-sm text-muted-foreground">
-              <p>{rooftopProducts.length === 0 ? 'No products at this rooftop' : 'No matching products'}</p>
+              <p>{rooftopProducts.length === 0 ? 'No hay productos en esta sucursal' : 'No hay productos que coincidan'}</p>
               <Track>
                 {rooftopProducts.length === 0
-                  ? <Pill size="sm" variant="primary" onClick={openCreate} disabled={!rooftops.length}>New product</Pill>
-                  : <Pill size="sm" onClick={() => { setSearch(''); setCategory('all'); setTab('all') }}>Reset filters</Pill>}
+                  ? <Pill size="sm" variant="primary" onClick={openCreate} disabled={!rooftops.length}>Nuevo producto</Pill>
+                  : <Pill size="sm" onClick={() => { setSearch(''); setCategory('all'); setTab('all') }}>Limpiar filtros</Pill>}
               </Track>
             </div>
           ) : (
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Product</Th>
-                  <Th>Status</Th>
-                  <Th priority={2}>Category</Th>
-                  {!rooftopId && <Th priority={3}>Rooftop</Th>}
-                  <Th priority={3} align="right">Quotes</Th>
-                  <Th align="right">Retail</Th>
-                  <Th priority={2} align="right">Cost</Th>
-                  <Th priority={2} align="right">Margin</Th>
-                  <Th align="right"><span className="sr-only">Actions</span></Th>
+                  <Th>Producto</Th>
+                  <Th>Estado</Th>
+                  <Th priority={2}>Categoría</Th>
+                  {!rooftopId && <Th priority={3}>Sucursal</Th>}
+                  <Th priority={3} align="right">Cotizaciones</Th>
+                  <Th align="right">Precio de venta</Th>
+                  <Th priority={2} align="right">Costo</Th>
+                  <Th priority={2} align="right">Margen</Th>
+                  <Th align="right"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +274,7 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
                         <p className="font-medium text-foreground">{product.name}</p>
                         <Code>{product.code}</Code>
                       </Td>
-                      <Td><Status tone={product.active ? 'ok' : 'idle'}>{product.active ? 'Active' : 'Inactive'}</Status></Td>
+                      <Td><Status tone={product.active ? 'ok' : 'idle'}>{product.active ? 'Activo' : 'Inactivo'}</Status></Td>
                       <Td priority={2} className="text-muted-foreground">{categoryLabels[product.category] || product.category}</Td>
                       {!rooftopId && <Td priority={3} className="text-muted-foreground">{product.rooftop?.name || '-'}</Td>}
                       <Td priority={3} align="right">{product.quotesCount || 0}</Td>
@@ -283,9 +283,9 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
                       <Td priority={2} align="right">{margin != null ? formatCents(margin) : '-'}</Td>
                       <Td align="right">
                         <span className="inline-flex flex-wrap justify-end gap-2">
-                          <Pill size="sm" className="max-md:h-10" onClick={() => openEdit(product)} disabled={busy}>Edit</Pill>
+                          <Pill size="sm" className="max-md:h-10" onClick={() => openEdit(product)} disabled={busy}>Editar</Pill>
                           <Pill size="sm" className="max-md:h-10" variant={product.active ? 'plain' : 'raised'} onClick={() => toggleActive(product)} disabled={busy}>
-                            {busy ? 'Saving…' : product.active ? 'Deactivate' : 'Activate'}
+                            {busy ? 'Guardando…' : product.active ? 'Desactivar' : 'Activar'}
                           </Pill>
                         </span>
                       </Td>
@@ -298,9 +298,9 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
         </DeskSection>
 
         <ReadoutStrip>
-          <Readout label="Active" value={counts.active} tone={counts.active > 0 ? 'ok' : 'warn'} />
-          <Readout label="Inactive" value={counts.inactive} />
-          <Readout label="Avg margin" value={averageMargin == null ? '-' : formatCents(Math.round(averageMargin))} sub={averageMargin == null ? 'Cost hidden or no products' : 'Active products'} />
+          <Readout label="Activo" value={counts.active} tone={counts.active > 0 ? 'ok' : 'warn'} />
+          <Readout label="Inactivo" value={counts.inactive} />
+          <Readout label="Margen promedio" value={averageMargin == null ? '-' : formatCents(Math.round(averageMargin))} sub={averageMargin == null ? 'Costo oculto o sin productos' : 'Productos activos'} />
         </ReadoutStrip>
 
         <FinanceFormDialog
@@ -311,7 +311,7 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
           errors={fieldErrors}
           error={formError}
           busy={busyId === 'editor'}
-          submitLabel={editor?.mode === 'create' ? 'Add product' : 'Save'}
+          submitLabel={editor?.mode === 'create' ? 'Agregar producto' : 'Guardar'}
           onValuesChange={values => setEditor(current => current ? { ...current, values } : current)}
           onSubmit={submit}
           onOpenChange={open => { if (!open) setEditor(null) }}

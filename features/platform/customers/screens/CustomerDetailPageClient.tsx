@@ -35,8 +35,8 @@ const SERVICE_TONE: Record<string, DeskTone> = { scheduled: 'info', 'checked-in'
 const RO_TONE: Record<string, DeskTone> = { estimate: 'idle', approved: 'info', 'in-progress': 'warn', completed: 'ok', invoiced: 'warn', paid: 'ok' }
 
 function vehicleName(vehicle: VehicleRef) {
-  if (!vehicle) return 'No vehicle'
-  return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehicle'
+  if (!vehicle) return 'Sin vehículo'
+  return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehículo'
 }
 
 function money(value: number | null | undefined) {
@@ -47,24 +47,24 @@ function money(value: number | null | undefined) {
 const label = (value: string | null | undefined) => (value ? value.replaceAll('-', ' ') : '-')
 
 function consentState(consent: boolean | null | undefined, suppressed: boolean | null | undefined): { text: string; tone: DeskTone } {
-  if (suppressed) return { text: 'Suppressed', tone: 'bad' }
-  if (consent) return { text: 'Consented', tone: 'ok' }
-  return { text: 'No consent', tone: 'idle' }
+  if (suppressed) return { text: 'Bloqueado', tone: 'bad' }
+  if (consent) return { text: 'Aceptó', tone: 'ok' }
+  return { text: 'Sin consentimiento', tone: 'idle' }
 }
 
 function snapshotSummary(snapshot: any) {
   const value = snapshot?.mergedAfter || snapshot
   if (!value || typeof value !== 'object') return ''
   const channels = (['email', 'sms', 'phone'] as const).map(channel => {
-    const state = value[`${channel}Suppressed`] ? 'suppressed' : value[`${channel}Consent`] ? 'consent' : 'no consent'
+    const state = value[`${channel}Suppressed`] ? 'bloqueado' : value[`${channel}Consent`] ? 'con consentimiento' : 'sin consentimiento'
     return `${channel === 'sms' ? 'SMS' : channel.charAt(0).toUpperCase() + channel.slice(1)} ${state}`
   })
-  const preferred = value.preferredChannel && value.preferredChannel !== 'none' ? `prefers ${value.preferredChannel === 'sms' ? 'SMS' : value.preferredChannel}` : 'no preferred channel'
+  const preferred = value.preferredChannel && value.preferredChannel !== 'none' ? `prefiere ${value.preferredChannel === 'sms' ? 'SMS' : value.preferredChannel}` : 'no preferred channel'
   return [...channels, preferred].join(' · ')
 }
 
 function sourceName(value: string | null | undefined) {
-  if (value === 'customer-merge') return 'Customer merge'
+  if (value === 'customer-merge') return 'Unificación de clientes'
   return PREFERENCE_SOURCES.find(source => source.value === value)?.label || label(value)
 }
 
@@ -125,7 +125,7 @@ export function CustomerDetailPageClient({
       }
     } else {
       setCustomer(null)
-      setError(response.success ? 'This customer was not found.' : response.error)
+      setError(response.success ? 'No se encontró este cliente.' : response.error)
     }
     setLoading(false)
   }
@@ -134,13 +134,13 @@ export function CustomerDetailPageClient({
     { type: 'link' as const, label: 'Inicio', href: basePath },
     { type: 'page' as const, label: 'Gestión' },
     { type: 'link' as const, label: 'Clientes', href: `${basePath}/platform/customers` },
-    { type: 'page' as const, label: customer ? personName(customer.firstName, customer.lastName) : 'Customer' },
+    { type: 'page' as const, label: customer ? personName(customer.firstName, customer.lastName) : 'Cliente' },
   ]
 
   if (loading) {
     return (
-      <PageContainer title="Customers" breadcrumbs={breadcrumbs}>
-        <div className="space-y-3 px-4 pb-24 md:px-6" role="status" aria-label="Loading customer">
+      <PageContainer title="Clientes" breadcrumbs={breadcrumbs}>
+        <div className="space-y-3 px-4 pb-24 md:px-6" role="status" aria-label="Cargando cliente">
           <div className="h-7 w-56 max-w-full animate-pulse rounded-[2px] bg-muted" />
           <div className="h-4 w-72 max-w-full animate-pulse rounded-[2px] bg-muted" />
           <div className="h-48 animate-pulse rounded-md bg-muted" />
@@ -151,12 +151,12 @@ export function CustomerDetailPageClient({
 
   if (!customer) {
     return (
-      <PageContainer title="Customers" breadcrumbs={breadcrumbs} header={<DeskHeader title="Customer unavailable" tone="bad" status="Unavailable" />}>
+      <PageContainer title="Clientes" breadcrumbs={breadcrumbs} header={<DeskHeader title="Cliente no disponible" tone="bad" status="No disponible" />}>
         <div className="space-y-3 px-4 pb-24 md:px-6">
-          <Notice tone="bad">{error || 'This customer was not found.'}</Notice>
+          <Notice tone="bad">{error || 'No se encontró este cliente.'}</Notice>
           <Track>
-            <Pill onClick={() => load()}>Retry</Pill>
-            <Pill asChild><Link href={`${basePath}/platform/customers`}>Back to customers</Link></Pill>
+            <Pill onClick={() => load()}>Reintentar</Pill>
+            <Pill asChild><Link href={`${basePath}/platform/customers`}>Volver a clientes</Link></Pill>
           </Track>
         </div>
       </PageContainer>
@@ -166,7 +166,7 @@ export function CustomerDetailPageClient({
   const name = personName(customer.firstName, customer.lastName)
   const merged = customer.status === 'merged'
   const canManage = viewer?.canManageLeads === true
-  const disabledReason = merged ? 'Merged customers are read only' : canManage ? undefined : 'Requires lead management permission'
+  const disabledReason = merged ? 'Los clientes unificados son de solo lectura' : canManage ? undefined : 'Requiere permiso de gestión de consultas'
   const canAct = canManage && !merged
   const leads = customer.leads
   const openLeadCount = leads.filter(lead => !CLOSED_LEAD_STATUSES.includes(lead.status || '')).length
@@ -187,7 +187,7 @@ export function CustomerDetailPageClient({
     if (!response.success) return response.error
     clearKey('customer-contact')
     setContactOpen(false)
-    setNotice({ tone: 'ok', text: 'Contact saved' })
+    setNotice({ tone: 'ok', text: 'Contacto guardado' })
     await load(true)
     return null
   }
@@ -197,7 +197,7 @@ export function CustomerDetailPageClient({
     if (!response.success) return response.error
     clearKey('customer-preferences')
     setPreferencesOpen(false)
-    setNotice({ tone: 'ok', text: 'Preferences saved' })
+    setNotice({ tone: 'ok', text: 'Preferencias guardadas' })
     await load(true)
     return null
   }
@@ -214,14 +214,14 @@ export function CustomerDetailPageClient({
     if (!response.success) return response.error
     clearKey('customer-household')
     setHouseholdOpen(false)
-    setNotice({ tone: 'ok', text: 'Household linked' })
+    setNotice({ tone: 'ok', text: 'Grupo familiar vinculado' })
     await load(true)
     return null
   }
 
   const submitUnlink = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!unlinkValues.reason?.trim()) { setUnlinkError('Reason is required'); return }
+    if (!unlinkValues.reason?.trim()) { setUnlinkError('El motivo es obligatorio'); return }
     setUnlinkBusy(true)
     setUnlinkError(null)
     const response = await unlinkCustomerHousehold({ customerId: customer.id, expectedUpdatedAt: customer.updatedAt, reason: unlinkValues.reason.trim(), idempotencyKey: keyFor('customer-household-unlink') })
@@ -229,7 +229,7 @@ export function CustomerDetailPageClient({
     if (!response.success) { setUnlinkError(response.error); return }
     clearKey('customer-household-unlink')
     setUnlinkOpen(false)
-    setNotice({ tone: 'ok', text: 'Removed from household' })
+    setNotice({ tone: 'ok', text: 'Quitado del grupo familiar' })
     await load(true)
   }
 
@@ -256,14 +256,14 @@ export function CustomerDetailPageClient({
     <DeskHeader
       title={name}
       tone={merged ? 'idle' : 'ok'}
-      status={merged ? 'Merged' : 'Active'}
-      meta={<span>{merged ? 'Merged' : 'Active'} · {openLeadCount} open lead{openLeadCount === 1 ? '' : 's'}{customer.rooftop?.name ? ` · ${customer.rooftop.name}` : ''} · Customer since {formatDay(customer.createdAt, timeZone)} · <Code>{recordReference('CUS', customer.id)}</Code></span>}
+      status={merged ? 'Unificado' : 'Activo'}
+      meta={<span>{merged ? 'Unificado' : 'Activo'} · {openLeadCount} consulta{openLeadCount === 1 ? '' : 's'} abierta{openLeadCount === 1 ? '' : 's'}{customer.rooftop?.name ? ` · ${customer.rooftop.name}` : ''} · Cliente desde {formatDay(customer.createdAt, timeZone)} · <Code>{recordReference('CUS', customer.id)}</Code></span>}
       actions={
         <>
-          <Pill variant="plain" className="max-md:h-10" onClick={() => load()} aria-label="Refresh"><RefreshCw /></Pill>
-          <Pill variant={!customer.primaryPhone && !customer.primaryEmail ? 'primary' : 'raised'} className="max-md:h-10" onClick={() => { keyFor('customer-contact', true); setContactOpen(true) }} disabled={!canAct} title={disabledReason}><Pencil />Edit contact</Pill>
+          <Pill variant="plain" className="max-md:h-10" onClick={() => load()} aria-label="Actualizar"><RefreshCw /></Pill>
+          <Pill variant={!customer.primaryPhone && !customer.primaryEmail ? 'primary' : 'raised'} className="max-md:h-10" onClick={() => { keyFor('customer-contact', true); setContactOpen(true) }} disabled={!canAct} title={disabledReason}><Pencil />Editar contacto</Pill>
           {customer.primaryEmail && <Pill asChild className="max-md:h-10" variant={customer.primaryPhone ? 'raised' : 'primary'}><a href={`mailto:${customer.primaryEmail}`}><Mail />Email</a></Pill>}
-          {customer.primaryPhone && <Pill asChild className="max-md:h-10" variant="primary"><a href={`tel:${customer.primaryPhone}`}><Phone />Call</a></Pill>}
+          {customer.primaryPhone && <Pill asChild className="max-md:h-10" variant="primary"><a href={`tel:${customer.primaryPhone}`}><Phone />Llamar</a></Pill>}
         </>
       }
     />
@@ -275,7 +275,7 @@ export function CustomerDetailPageClient({
   )
 
   return (
-    <PageContainer title="Customers" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Clientes" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full px-4 pb-24 md:px-6">
         {merged && (
           <Notice tone="warn" className="mb-4">
@@ -284,27 +284,27 @@ export function CustomerDetailPageClient({
           </Notice>
         )}
         {notice && <Notice tone={notice.tone} className="mb-4">{notice.text}</Notice>}
-        {!canManage && <p className="mb-4 text-xs text-muted-foreground">Read only · requires lead management permission</p>}
+        {!canManage && <p className="mb-4 text-xs text-muted-foreground">Solo lectura · requiere permiso de gestión de consultas</p>}
 
-        <DeskSection title="Contact" id="customer-contact" className="mb-8">
+        <DeskSection title="Contacto" id="customer-contact" className="mb-8">
           <div className="grid min-w-0 grid-cols-1 gap-x-8 md:grid-cols-2">
             <Facts items={[
-              { label: 'Phone', value: customer.primaryPhone ? <a className="underline-offset-2 hover:underline" href={`tel:${customer.primaryPhone}`}>{formatPhone(customer.primaryPhone)}</a> : '-' },
+              { label: 'Teléfono', value: customer.primaryPhone ? <a className="underline-offset-2 hover:underline" href={`tel:${customer.primaryPhone}`}>{formatPhone(customer.primaryPhone)}</a> : '-' },
               { label: 'Email', value: customer.primaryEmail ? <a className="break-all underline-offset-2 hover:underline" href={`mailto:${customer.primaryEmail}`}>{customer.primaryEmail}</a> : '-' },
-              { label: 'Preferred', value: <span className="capitalize">{customer.preferredChannel && customer.preferredChannel !== 'none' ? (customer.preferredChannel === 'sms' ? 'SMS' : customer.preferredChannel) : 'None'}</span> },
+              { label: 'Preferido', value: <span className="capitalize">{customer.preferredChannel && customer.preferredChannel !== 'none' ? (customer.preferredChannel === 'sms' ? 'SMS' : customer.preferredChannel) : 'Ninguno'}</span> },
             ]} />
             <Facts items={[
-              { label: 'Name', value: name },
-              { label: 'Household', value: customer.household?.displayName || 'None' },
-              { label: 'Updated', value: formatDateTime(customer.updatedAt, timeZone) },
+              { label: 'Nombre', value: name },
+              { label: 'Grupo familiar', value: customer.household?.displayName || 'Ninguno' },
+              { label: 'Actualizado', value: formatDateTime(customer.updatedAt, timeZone) },
             ]} />
           </div>
         </DeskSection>
 
         <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="min-w-0 space-y-8">
-            <DeskSection title="Leads" count={leads.length}>
-              {leads.length === 0 ? empty('No leads') : (
+            <DeskSection title="Consultas" count={leads.length}>
+              {leads.length === 0 ? empty('No hay consultas') : (
                 <Panel className="divide-y">
                   {leads.map(lead => {
                     const status = leadStatus(lead.status)
@@ -312,13 +312,13 @@ export function CustomerDetailPageClient({
                       <Link key={lead.id} href={`${basePath}/platform/crm/${lead.id}`} className="flex min-h-11 min-w-0 flex-col gap-1 px-4 py-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                         <div className="min-w-0">
                           <TitleLine as="p" tone={status.tone} status={status.label} className="text-sm font-medium">
-                            {lead.interestedVehicle ? vehicleName(lead.interestedVehicle) : personName(lead.firstName, lead.lastName, 'Lead')}
+                            {lead.interestedVehicle ? vehicleName(lead.interestedVehicle) : personName(lead.firstName, lead.lastName, 'Consulta')}
                           </TitleLine>
                           <p className="pl-4 text-xs text-muted-foreground">{[status.label, sourceLabel(lead.source), `Created ${formatDay(lead.createdAt, timeZone)}`].join(' · ')}</p>
                         </div>
                         <div className="pl-4 text-xs sm:shrink-0 sm:pl-0 sm:text-right">
-                          <p className={lead.assignedSalesperson ? 'font-medium' : 'text-muted-foreground'}>{lead.assignedSalesperson?.name || 'Unassigned'}</p>
-                          <p className="text-muted-foreground">{lead.lastContact ? `Contacted ${formatDay(lead.lastContact, timeZone)}` : 'Not contacted'}</p>
+                          <p className={lead.assignedSalesperson ? 'font-medium' : 'text-muted-foreground'}>{lead.assignedSalesperson?.name || 'Sin asignar'}</p>
+                          <p className="text-muted-foreground">{lead.lastContact ? `Contacted ${formatDay(lead.lastContact, timeZone)}` : 'Sin contactar'}</p>
                         </div>
                       </Link>
                     )
@@ -327,8 +327,8 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Deals" count={deals.length}>
-              {deals.length === 0 ? empty('No deals') : (
+            <DeskSection title="Operaciones" count={deals.length}>
+              {deals.length === 0 ? empty('Sin operaciones') : (
                 <Panel className="divide-y">
                   {deals.map(deal => (
                     <Link key={deal.id} href={`${basePath}/platform/deals/${deal.id}`} className="flex min-h-11 min-w-0 items-start justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40">
@@ -343,11 +343,11 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Test drives" count={testDrives.length}>
-              {testDrives.length === 0 ? empty('No test drives') : (
+            <DeskSection title="Pruebas de manejo" count={testDrives.length}>
+              {testDrives.length === 0 ? empty('Sin pruebas de manejo') : (
                 <Panel className="divide-y">
                   {testDrives.map(drive => {
-                    const state = drive.completed ? 'Completed' : drive.noShow ? 'No-show' : 'Scheduled'
+                    const state = drive.completed ? 'Completada' : drive.noShow ? 'Ausente' : 'Agendada'
                     return (
                       <div key={drive.id} className="flex min-w-0 items-baseline justify-between gap-3 px-4 py-2.5">
                         <TitleLine as="p" tone={drive.completed ? 'ok' : drive.noShow ? 'bad' : 'info'} status={state} className="text-sm">{vehicleName(drive.vehicle)}</TitleLine>
@@ -359,18 +359,18 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Trade-ins" count={tradeIns.length}>
-              {tradeIns.length === 0 ? empty('No trade-ins') : (
+            <DeskSection title="Usados ofrecidos" count={tradeIns.length}>
+              {tradeIns.length === 0 ? empty('No hay usados ofrecidos') : (
                 <Panel className="divide-y">
                   {tradeIns.map(tradeIn => (
                     <div key={tradeIn.id} className="flex min-w-0 items-start justify-between gap-3 px-4 py-2.5">
                       <div className="min-w-0">
-                        <TitleLine as="p" tone={tradeIn.offerAmount != null ? 'ok' : 'warn'} status={tradeIn.offerAmount != null ? 'Appraised' : 'Awaiting appraisal'} className="text-sm font-medium">{vehicleName(tradeIn)}</TitleLine>
-                        <p className="pl-4 text-xs text-muted-foreground">{[tradeIn.mileage != null ? `${tradeIn.mileage.toLocaleString('es-AR')} km` : null, `Submitted ${formatDay(tradeIn.createdAt, timeZone)}`, tradeIn.offerAmount != null ? 'Appraised' : 'Awaiting appraisal'].filter(Boolean).join(' · ')}</p>
+                        <TitleLine as="p" tone={tradeIn.offerAmount != null ? 'ok' : 'warn'} status={tradeIn.offerAmount != null ? 'Tasado' : 'Esperando tasación'} className="text-sm font-medium">{vehicleName(tradeIn)}</TitleLine>
+                        <p className="pl-4 text-xs text-muted-foreground">{[tradeIn.mileage != null ? `${tradeIn.mileage.toLocaleString('es-AR')} km` : null, `Recibido ${formatDay(tradeIn.createdAt, timeZone)}`, tradeIn.offerAmount != null ? 'Tasado' : 'Esperando tasación'].filter(Boolean).join(' · ')}</p>
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-medium tabular-nums">{money(tradeIn.offerAmount)}</p>
-                        <Link href={`${basePath}/platform/trade-ins`} className="text-xs underline underline-offset-2">Trade-ins</Link>
+                        <Link href={`${basePath}/platform/trade-ins`} className="text-xs underline underline-offset-2">Usados ofrecidos</Link>
                       </div>
                     </div>
                   ))}
@@ -378,14 +378,14 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Service" count={appointments.length}>
+            <DeskSection title="Taller" count={appointments.length}>
               {appointments.length === 0 ? empty('No service appointments') : (
                 <Panel className="divide-y">
                   {appointments.map(appointment => (
                     <div key={appointment.id} className="space-y-1 px-4 py-2.5">
                       <div className="flex min-w-0 items-baseline justify-between gap-3">
                         <TitleLine as="p" tone={SERVICE_TONE[appointment.status || ''] ?? 'idle'} status={appointment.status || undefined} className="text-sm font-medium capitalize">
-                          {label(appointment.serviceType)} · {appointment.customerVehicleDescription || 'Vehicle'}
+                          {label(appointment.serviceType)} · {appointment.customerVehicleDescription || 'Vehículo'}
                         </TitleLine>
                         <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatDateTime(appointment.appointmentDate, timeZone)}</span>
                       </div>
@@ -397,7 +397,7 @@ export function CustomerDetailPageClient({
                           </TitleLine>
                           <span className="capitalize text-muted-foreground">{label(appointment.serviceOrder.status)}</span>
                           <span className="tabular-nums">{money(appointment.serviceOrder.grandTotal)}</span>
-                          <Link href={`${basePath}/platform/service`} className="underline underline-offset-2">Service</Link>
+                          <Link href={`${basePath}/platform/service`} className="underline underline-offset-2">Taller</Link>
                         </p>
                       )}
                     </div>
@@ -406,20 +406,20 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Visits" count={customer.salesVisits.length}>
-              {customer.salesVisits.length === 0 ? empty('No visits') : (
+            <DeskSection title="Visitas" count={customer.salesVisits.length}>
+              {customer.salesVisits.length === 0 ? empty('Sin visitas') : (
                 <Panel className="divide-y">
                   {customer.salesVisits.map(visit => {
                     const status = VISIT_STATUSES[visit.status || ''] || { label: label(visit.status), tone: 'idle' as DeskTone }
                     return (
                       <div key={visit.id} className="flex min-w-0 items-start justify-between gap-3 px-4 py-2.5">
                         <div className="min-w-0">
-                          <TitleLine as="p" tone={status.tone} status={status.label} className="text-sm font-medium">{visit.kind === 'showroom' ? 'Showroom visit' : 'Sales appointment'} · {status.label}</TitleLine>
+                          <TitleLine as="p" tone={status.tone} status={status.label} className="text-sm font-medium">{visit.kind === 'showroom' ? 'Visita al salón' : 'Cita de venta'} · {status.label}</TitleLine>
                           <p className="pl-4 text-xs text-muted-foreground">{[visit.vehicle ? vehicleName(visit.vehicle) : null, visit.outcome ? `Outcome: ${label(visit.outcome)}` : null].filter(Boolean).join(' · ') || '-'}</p>
                         </div>
                         <div className="shrink-0 text-right text-xs">
                           <p className="tabular-nums text-muted-foreground">{formatDateTime(visit.completedAt || visit.scheduledAt, timeZone)}</p>
-                          {visit.lead && leadLink({ id: visit.lead.id, firstName: null, lastName: null }, 'Lead')}
+                          {visit.lead && leadLink({ id: visit.lead.id, firstName: null, lastName: null }, 'Consulta')}
                         </div>
                       </div>
                     )
@@ -431,16 +431,16 @@ export function CustomerDetailPageClient({
 
           <div className="min-w-0 space-y-8">
             <DeskSection
-              title="Household"
+              title="Grupo familiar"
               actions={
                 <Track>
                   {customer.household && (
                     <Pill size="sm" className="h-11 sm:h-7" onClick={() => { keyFor('customer-household-unlink', true); setUnlinkValues({ reason: '' }); setUnlinkError(null); setUnlinkOpen(true) }} disabled={!canAct} title={disabledReason}>
-                      <Unlink />Unlink
+                      <Unlink />Desvincular
                     </Pill>
                   )}
                   <Pill size="sm" className="h-11 sm:h-7" onClick={() => { keyFor('customer-household', true); setHouseholdOpen(true) }} disabled={!canAct} title={disabledReason}>
-                    <Home />{customer.household ? 'Add member' : 'Link'}
+                    <Home />{customer.household ? 'Agregar integrante' : 'Vincular'}
                   </Pill>
                 </Track>
               }
@@ -457,7 +457,7 @@ export function CustomerDetailPageClient({
                               <Link href={`${basePath}/platform/customers/${member.id}`} className="underline underline-offset-2">{personName(member.firstName, member.lastName)}</Link>
                             )}
                           </TitleLine>
-                          <p className="truncate pl-4 text-xs text-muted-foreground">{[member.primaryEmail, formatPhone(member.primaryPhone), member.status === 'merged' ? 'Merged' : null].filter(Boolean).join(' · ') || '-'}</p>
+                          <p className="truncate pl-4 text-xs text-muted-foreground">{[member.primaryEmail, formatPhone(member.primaryPhone), member.status === 'merged' ? 'Unificado' : null].filter(Boolean).join(' · ') || '-'}</p>
                         </div>
                       </div>
                     ))}
@@ -466,8 +466,8 @@ export function CustomerDetailPageClient({
               ) : empty('No household')}
             </DeskSection>
 
-            <DeskSection title="Possible duplicates" count={merged ? undefined : duplicates.length} id="duplicates">
-              {merged ? empty('Not checked for merged customers') : duplicateError ? (
+            <DeskSection title="Posibles duplicados" count={merged ? undefined : duplicates.length} id="duplicates">
+              {merged ? empty('No se verifica en clientes unificados') : duplicateError ? (
                 <Notice tone="bad">{duplicateError}</Notice>
               ) : duplicates.length === 0 ? empty('No duplicates') : (
                 <Panel className="divide-y">
@@ -481,7 +481,7 @@ export function CustomerDetailPageClient({
                         <p className="pl-4 text-xs text-muted-foreground">{candidate.leadsCount} lead{candidate.leadsCount === 1 ? '' : 's'} · since {formatDay(candidate.createdAt, timeZone)}</p>
                       </div>
                       <Track className="shrink-0">
-                        <Pill size="sm" className="h-11 sm:h-7" onClick={() => setMergeCandidate(candidate)} disabled={!canAct} title={disabledReason}><GitMerge />Merge</Pill>
+                        <Pill size="sm" className="h-11 sm:h-7" onClick={() => setMergeCandidate(candidate)} disabled={!canAct} title={disabledReason}><GitMerge />Unificar</Pill>
                       </Track>
                     </div>
                   ))}
@@ -490,11 +490,11 @@ export function CustomerDetailPageClient({
             </DeskSection>
 
             <DeskSection
-              title="Contact preferences"
+              title="Preferencias de contacto"
               actions={
                 <Track>
                   <Pill size="sm" className="h-11 sm:h-7" onClick={() => { keyFor('customer-preferences', true); setPreferencesOpen(true) }} disabled={!canAct} title={disabledReason}>
-                    <SlidersHorizontal />Edit
+                    <SlidersHorizontal />Editar
                   </Pill>
                 </Track>
               }
@@ -503,11 +503,11 @@ export function CustomerDetailPageClient({
                 const state = consentState(customer[`${channel}Consent`], customer[`${channel}Suppressed`])
                 return { label: channel === 'sms' ? 'SMS' : channel.charAt(0).toUpperCase() + channel.slice(1), value: <TitleLine as="span" tone={state.tone} className="justify-end">{state.text}</TitleLine> }
               }).concat([
-                { label: 'Preferred', value: <span className="capitalize">{customer.preferredChannel && customer.preferredChannel !== 'none' ? (customer.preferredChannel === 'sms' ? 'SMS' : customer.preferredChannel) : 'None'}</span> },
-                ...(customer.suppressionReason ? [{ label: 'Suppression', value: <span>{customer.suppressionReason}</span> }] : []),
+                { label: 'Preferido', value: <span className="capitalize">{customer.preferredChannel && customer.preferredChannel !== 'none' ? (customer.preferredChannel === 'sms' ? 'SMS' : customer.preferredChannel) : 'Ninguno'}</span> },
+                ...(customer.suppressionReason ? [{ label: 'Bloqueo', value: <span>{customer.suppressionReason}</span> }] : []),
               ])} />
-              <p className="mt-4 text-[12px] font-medium text-muted-foreground">History</p>
-              {customer.contactPreferenceEvents.length === 0 ? <p className="mt-1 text-sm text-muted-foreground">No changes</p> : (
+              <p className="mt-4 text-[12px] font-medium text-muted-foreground">Historial</p>
+              {customer.contactPreferenceEvents.length === 0 ? <p className="mt-1 text-sm text-muted-foreground">Sin cambios</p> : (
                 <ol className="mt-2 space-y-0">
                   {customer.contactPreferenceEvents.map(event => (
                     <li key={event.id} className="relative border-l pb-3 pl-4 last:pb-0">
@@ -522,7 +522,7 @@ export function CustomerDetailPageClient({
               )}
             </DeskSection>
 
-            <DeskSection title="Merge history" count={mergeEvents.length}>
+            <DeskSection title="Historial de unificaciones" count={mergeEvents.length}>
               {mergeEvents.length === 0 ? empty('No merges') : (
                 <ol className="space-y-0">
                   {mergeEvents.map(event => {
@@ -536,7 +536,7 @@ export function CustomerDetailPageClient({
                           {other ? <Link href={`${basePath}/platform/customers/${other.id}`} className="underline underline-offset-2">{personName(other.firstName, other.lastName)}</Link> : 'customer'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {[formatDateTime(event.mergedAt, timeZone), event.actor?.name ? `by ${event.actor.name}` : null, `${(event.movedLeadIds || []).length} lead${(event.movedLeadIds || []).length === 1 ? '' : 's'} moved`].filter(Boolean).join(' · ')}
+                          {[formatDateTime(event.mergedAt, timeZone), event.actor?.name ? `por ${event.actor.name}` : null, `${(event.movedLeadIds || []).length} lead${(event.movedLeadIds || []).length === 1 ? '' : 's'} moved`].filter(Boolean).join(' · ')}
                         </p>
                         {event.reason && <p className="break-words text-xs">{event.reason}</p>}
                       </li>
@@ -587,12 +587,12 @@ export function CustomerDetailPageClient({
       )}
       <OperatorActionDialog
         open={unlinkOpen}
-        title="Remove from household"
-        fields={[{ name: 'reason', label: 'Reason', type: 'textarea', maxLength: 1000 }]}
+        title="Quitar del grupo familiar"
+        fields={[{ name: 'reason', label: 'Motivo', type: 'textarea', maxLength: 1000 }]}
         values={unlinkValues}
         error={unlinkError}
         busy={unlinkBusy}
-        submitLabel="Unlink"
+        submitLabel="Desvincular"
         onValuesChange={setUnlinkValues}
         onSubmit={submitUnlink}
         onOpenChange={setUnlinkOpen}

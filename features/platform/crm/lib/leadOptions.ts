@@ -1,28 +1,28 @@
 import type { DeskTone } from '@/features/platform/components/desk'
 
 export const LEAD_STATUSES: ReadonlyArray<{ value: string; label: string; tone: DeskTone }> = [
-  { value: 'new', label: 'New', tone: 'info' },
-  { value: 'contacted', label: 'Contacted', tone: 'accent' },
-  { value: 'test-drive-scheduled', label: 'Test drive', tone: 'info' },
-  { value: 'negotiating', label: 'Negotiating', tone: 'warn' },
-  { value: 'closed-won', label: 'Closed won', tone: 'ok' },
-  { value: 'closed-lost', label: 'Closed lost', tone: 'bad' },
+  { value: 'new', label: 'Nueva', tone: 'info' },
+  { value: 'contacted', label: 'Contactado', tone: 'accent' },
+  { value: 'test-drive-scheduled', label: 'Prueba de manejo', tone: 'info' },
+  { value: 'negotiating', label: 'Negociando', tone: 'warn' },
+  { value: 'closed-won', label: 'Vendido', tone: 'ok' },
+  { value: 'closed-lost', label: 'Perdido', tone: 'bad' },
 ]
 
 export const CLOSED_LEAD_STATUSES = ['closed-won', 'closed-lost']
 
 export function leadStatus(value: string | null | undefined) {
-  return LEAD_STATUSES.find(status => status.value === value) || { value: value || 'new', label: value || 'New', tone: 'idle' as DeskTone }
+  return LEAD_STATUSES.find(status => status.value === value) || { value: value || 'new', label: value || 'Nueva', tone: 'idle' as DeskTone }
 }
 
 export const LEAD_SOURCES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'walk-in', label: 'Walk-in' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'website', label: 'Website' },
-  { value: 'referral', label: 'Referral' },
-  { value: 'ad', label: 'Advertisement' },
-  { value: 'social', label: 'Social' },
-  { value: 'third-party', label: '3rd party' },
+  { value: 'walk-in', label: 'Se acercó al salón' },
+  { value: 'phone', label: 'Teléfono' },
+  { value: 'website', label: 'Sitio web' },
+  { value: 'referral', label: 'Recomendación' },
+  { value: 'ad', label: 'Publicidad' },
+  { value: 'social', label: 'Redes sociales' },
+  { value: 'third-party', label: 'Portal externo' },
 ]
 
 /** Sources staff can pick when taking a lead by hand. Website leads arrive through the storefront. */
@@ -33,13 +33,13 @@ export function sourceLabel(value: string | null | undefined) {
 }
 
 export const BUDGET_RANGES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'under-20k', label: 'Under $20,000' },
+  { value: 'under-20k', label: 'Hasta $20.000.000' },
   { value: '20-30k', label: '$20,000 - $30,000' },
   { value: '30-40k', label: '$30,000 - $40,000' },
   { value: '40-50k', label: '$40,000 - $50,000' },
   { value: '50-75k', label: '$50,000 - $75,000' },
   { value: '75-100k', label: '$75,000 - $100,000' },
-  { value: 'over-100k', label: 'Over $100,000' },
+  { value: 'over-100k', label: 'Más de $100.000.000' },
 ]
 
 export function budgetLabel(value: string | null | undefined) {
@@ -47,10 +47,10 @@ export function budgetLabel(value: string | null | undefined) {
 }
 
 export const TIMEFRAMES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'immediately', label: 'Immediately' },
-  { value: 'this-week', label: 'This week' },
-  { value: 'this-month', label: 'This month' },
-  { value: 'just-looking', label: 'Just looking' },
+  { value: 'immediately', label: 'Inmediato' },
+  { value: 'this-week', label: 'Esta semana' },
+  { value: 'this-month', label: 'Este mes' },
+  { value: 'just-looking', label: 'Solo mirando' },
 ]
 
 export function timeframeLabel(value: string | null | undefined) {
@@ -58,12 +58,12 @@ export function timeframeLabel(value: string | null | undefined) {
 }
 
 export const VISIT_STATUSES: Record<string, { label: string; tone: DeskTone }> = {
-  scheduled: { label: 'Scheduled', tone: 'info' },
-  arrived: { label: 'Arrived', tone: 'warn' },
-  'manager-turn': { label: 'Manager turn', tone: 'warn' },
-  completed: { label: 'Completed', tone: 'ok' },
-  cancelled: { label: 'Cancelled', tone: 'idle' },
-  'no-show': { label: 'No show', tone: 'bad' },
+  scheduled: { label: 'Agendada', tone: 'info' },
+  arrived: { label: 'Llegó', tone: 'warn' },
+  'manager-turn': { label: 'Pase al gerente', tone: 'warn' },
+  completed: { label: 'Completada', tone: 'ok' },
+  cancelled: { label: 'Cancelada', tone: 'idle' },
+  'no-show': { label: 'No se presentó', tone: 'bad' },
 }
 
 /** Mirrors VISIT_TRANSITIONS in features/keystone/mutations/crmEngagementWorkflows.ts. */
@@ -140,11 +140,11 @@ export const LEAD_TRANSITIONS: Record<string, string[]> = {
 }
 
 export const VISIT_OUTCOMES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'sold', label: 'Sold' },
-  { value: 'follow-up-required', label: 'Follow-up required' },
-  { value: 'be-back', label: 'Be-back scheduled' },
-  { value: 'not-interested', label: 'Not interested' },
-  { value: 'credit-declined', label: 'Credit declined' },
+  { value: 'sold', label: 'Vendido' },
+  { value: 'follow-up-required', label: 'Requiere seguimiento' },
+  { value: 'be-back', label: 'Vuelve a venir' },
+  { value: 'not-interested', label: 'No le interesa' },
+  { value: 'credit-declined', label: 'Crédito rechazado' },
 ]
 
 /** Elapsed time as a short windshield figure: "35m", "4h", "3d". */

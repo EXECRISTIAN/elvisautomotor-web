@@ -27,11 +27,11 @@ const EMPTY_SCHEDULE = { customerName: '', customerPhone: '', customerEmail: '',
 
 function scheduleFields(vehicles: Array<{ value: string; label: string }>): OperatorActionField[] {
   return [
-    { name: 'customerName', label: 'Customer name', maxLength: 200 },
-    { name: 'customerPhone', label: 'Phone', maxLength: 50, placeholder: '(202) 555-0147' },
+    { name: 'customerName', label: 'Nombre del cliente', maxLength: 200 },
+    { name: 'customerPhone', label: 'Teléfono', maxLength: 50, placeholder: '(202) 555-0147' },
     { name: 'customerEmail', label: 'Email', type: 'email', maxLength: 320 },
-    { name: 'scheduledAt', label: 'Date and time', type: 'datetime-local', description: 'Dealership time' },
-    { name: 'vehicleId', label: 'Vehicle', type: 'select', options: vehicles, placeholder: vehicles.length ? 'Select vehicle' : 'No available vehicles' },
+    { name: 'scheduledAt', label: 'Fecha y hora', type: 'datetime-local', description: 'Hora del negocio' },
+    { name: 'vehicleId', label: 'Vehículo', type: 'select', options: vehicles, placeholder: vehicles.length ? 'Elegí el vehículo' : 'No hay vehículos disponibles' },
   ]
 }
 
@@ -109,23 +109,23 @@ function formatElapsedSince(value: string, nowMs: number) {
 
 function formatDay(value: string | null | undefined, timeZone: string) {
   if (!value) return 'Unscheduled'
-  if (isToday(value, timeZone)) return 'Today'
+  if (isToday(value, timeZone)) return 'Hoy'
   return new Date(value).toLocaleDateString('es-AR', { timeZone, weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 function driveState(testDrive: TestDrive): { tone: DeskTone; label: string } {
-  if (testDrive.cancelledAt) return { tone: 'idle', label: 'Cancelled' }
-  if (testDrive.noShow) return { tone: 'idle', label: 'No-show' }
-  if (testDrive.completed) return { tone: 'ok', label: 'Completed' }
-  if (isPastDue(testDrive)) return { tone: 'bad', label: 'Past due' }
-  if (!testDrive.driverLicenseVerified) return { tone: 'warn', label: 'Upcoming' }
-  return { tone: 'info', label: 'Upcoming' }
+  if (testDrive.cancelledAt) return { tone: 'idle', label: 'Cancelada' }
+  if (testDrive.noShow) return { tone: 'idle', label: 'Ausente' }
+  if (testDrive.completed) return { tone: 'ok', label: 'Completada' }
+  if (isPastDue(testDrive)) return { tone: 'bad', label: 'Atrasadas' }
+  if (!testDrive.driverLicenseVerified) return { tone: 'warn', label: 'Próximas' }
+  return { tone: 'info', label: 'Próximas' }
 }
 
 const interestLabels: Record<string, string> = {
-  'not-interested': 'Not interested',
-  maybe: 'Maybe',
-  'very-interested': 'Very interested',
+  'not-interested': 'No le interesa',
+  maybe: 'Tal vez',
+  'very-interested': 'Muy interesado',
 }
 
 function feedbackDraftsFor(testDrives: TestDrive[]) {
@@ -172,10 +172,10 @@ export function TestDriveDeskPageClient({
     if (response.success && response.data) {
       const options = response.data.vehicles.map(vehicle => ({
         value: vehicle.id,
-        label: [[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehicle', vehicle.stockNumber ? `#${vehicle.stockNumber}` : null].filter(Boolean).join(' · '),
+        label: [[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehículo', vehicle.stockNumber ? `#${vehicle.stockNumber}` : null].filter(Boolean).join(' · '),
       }))
       setVehicleOptions(options)
-      if (!options.length) setScheduleError('No available vehicles')
+      if (!options.length) setScheduleError('No hay vehículos disponibles')
     } else {
       setVehicleOptions([])
       setScheduleError(response.error || 'Unable to load vehicles')
@@ -187,8 +187,8 @@ export function TestDriveDeskPageClient({
     if (!schedule) return
     const values = schedule.values
     const match = (values.scheduledAt || '').match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/)
-    if (!match) { setScheduleError('Date and time are required'); return }
-    if (!values.vehicleId) { setScheduleError('Vehicle is required'); return }
+    if (!match) { setScheduleError('La fecha y la hora son obligatorias'); return }
+    if (!values.vehicleId) { setScheduleError('El vehículo es obligatorio'); return }
     setScheduleBusy(true)
     setScheduleError(null)
     const response = await scheduleTestDrive({
@@ -347,19 +347,19 @@ export function TestDriveDeskPageClient({
 
   const header = (
     <DeskHeader
-      title="Test drives"
+      title="Pruebas de manejo"
       tone={error ? 'bad' : counts.pastDue > 0 ? 'warn' : counts.today > 0 ? 'info' : 'idle'}
-      status={error ? 'Unavailable' : counts.pastDue > 0 ? `${counts.pastDue} past due` : `${counts.today} today`}
-      meta={`${counts.today} today · ${counts.upcoming} upcoming · ${counts.pastDue} past due`}
+      status={error ? 'No disponible' : counts.pastDue > 0 ? `${counts.pastDue} past due` : `${counts.today} today`}
+      meta={`${counts.today} hoy · ${counts.upcoming} próximas · ${counts.pastDue} atrasadas`}
       actions={
         <>
           <Pill variant="plain" className="max-md:h-10" onClick={loadTestDrives} disabled={loading}>
             <RefreshCw className={loading ? 'animate-spin' : undefined} />
-            Refresh
+            Actualizar
           </Pill>
           <Pill variant="primary" className="max-md:h-10" onClick={openSchedule}>
             <Plus />
-            Schedule test drive
+            Agendar prueba de manejo
           </Pill>
         </>
       }
@@ -382,8 +382,8 @@ export function TestDriveDeskPageClient({
 
   const licenseStatus = (testDrive: TestDrive) => (
     testDrive.driverLicenseVerified
-      ? <Status tone="ok">License verified</Status>
-      : <Status tone="warn">License needs check</Status>
+      ? <Status tone="ok">Registro verificado</Status>
+      : <Status tone="warn">Verificar registro</Status>
   )
 
   const driveActions = (testDrive: TestDrive, section: string, align: 'start' | 'end' = 'end') => {
@@ -394,7 +394,7 @@ export function TestDriveDeskPageClient({
       <div className={`flex flex-wrap gap-2 ${align === 'end' ? 'justify-end' : 'justify-start'}`}>
         {isPastDue(testDrive) && (
           <Pill size="sm" className="h-10 md:h-7" onClick={() => { setNoShowError(null); setNoShowTarget(testDrive) }} disabled={busy}>
-            No-show
+            Ausente
           </Pill>
         )}
         {!testDrive.driverLicenseVerified && (
@@ -410,13 +410,13 @@ export function TestDriveDeskPageClient({
           aria-controls={`complete-${key}`}
           onClick={() => setExpandedKey(current => (current === key ? null : key))}
           disabled={busy || !testDrive.driverLicenseVerified}
-          title={testDrive.driverLicenseVerified ? undefined : 'Verify the license first'}
+          title={testDrive.driverLicenseVerified ? undefined : 'Primero verificá el registro'}
         >
-          Complete
+          Completar
         </Pill>
         {isUpcoming(testDrive.scheduledTime) && (
           <Pill size="sm" variant="plain" className="h-10 md:h-7" onClick={() => { setCancelError(null); setCancelTarget(testDrive) }} disabled={busy}>
-            Cancel
+            Cancelar
           </Pill>
         )}
       </div>
@@ -436,32 +436,32 @@ export function TestDriveDeskPageClient({
               onValueChange={value => setInterestDrafts(prev => ({ ...prev, [testDrive.id]: value }))}
               disabled={Boolean(testDrive.completed)}
             >
-              <SelectTrigger className="h-10 rounded-[4px] text-[13px] md:h-9" aria-label={`Interest level for ${leadName(testDrive)}`}>
+              <SelectTrigger className="h-10 rounded-[4px] text-[13px] md:h-9" aria-label={`Nivel de interés de ${leadName(testDrive)}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="not-interested">Not interested</SelectItem>
-                <SelectItem value="maybe">Maybe</SelectItem>
-                <SelectItem value="very-interested">Very interested</SelectItem>
+                <SelectItem value="not-interested">No le interesa</SelectItem>
+                <SelectItem value="maybe">Tal vez</SelectItem>
+                <SelectItem value="very-interested">Muy interesado</SelectItem>
               </SelectContent>
             </Select>
             <Textarea
               value={feedbackDrafts[testDrive.id] || ''}
               onChange={event => setFeedbackDrafts(prev => ({ ...prev, [testDrive.id]: event.target.value }))}
-              placeholder="Feedback"
-              aria-label={`Feedback for ${leadName(testDrive)}`}
+              placeholder="Comentarios"
+              aria-label={`Comentarios de ${leadName(testDrive)}`}
               disabled={Boolean(testDrive.completed)}
               className="min-h-14 rounded-[4px] text-sm"
             />
             <div className="flex justify-end gap-2">
-              <Pill variant="plain" className="h-10 md:h-8" onClick={() => setExpandedKey(null)} disabled={busy}>Cancel</Pill>
+              <Pill variant="plain" className="h-10 md:h-8" onClick={() => setExpandedKey(null)} disabled={busy}>Cancelar</Pill>
               <Pill
                 variant="primary"
                 className="h-10 md:h-8"
                 onClick={async () => { await completeDrive(testDrive); setExpandedKey(null) }}
                 disabled={busy || !testDrive.driverLicenseVerified}
               >
-                {busy ? 'Saving…' : 'Complete drive'}
+                {busy ? 'Guardando…' : 'Terminar prueba'}
               </Pill>
             </div>
           </div>
@@ -471,39 +471,39 @@ export function TestDriveDeskPageClient({
   }
 
   return (
-    <PageContainer title="Test Drives" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Pruebas de manejo" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-8 px-4 pb-24 md:px-6">
         {notice && (
           <Notice tone="ok">
             <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
               <p className="min-w-0">{notice}</p>
               <Track>
-                <Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Dismiss</Pill>
+                <Pill size="sm" variant="plain" onClick={() => setNotice(null)}>Descartar</Pill>
               </Track>
             </div>
           </Notice>
         )}
 
-        <DeskSection id="test-drives-today" title="Today and past due" count={error ? undefined : onDeck.length}>
+        <DeskSection id="test-drives-today" title="Hoy y atrasadas" count={error ? undefined : onDeck.length}>
           {error ? (
             <Notice tone="bad">
-              <p className="font-medium">Test drives unavailable</p>
+              <p className="font-medium">Pruebas de manejo no disponibles</p>
               <p className="mt-0.5 text-muted-foreground">{error}</p>
               <Track className="mt-2">
-                <Pill size="sm" onClick={loadTestDrives}>Retry</Pill>
+                <Pill size="sm" onClick={loadTestDrives}>Reintentar</Pill>
               </Track>
             </Notice>
           ) : onDeck.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground">No drives today</p>
+            <p className="text-[13px] text-muted-foreground">No hay pruebas hoy</p>
           ) : (
-            <DeskTable aria-label="Test drives today and past due">
+            <DeskTable aria-label="Pruebas de hoy y atrasadas">
               <thead>
                 <tr>
-                  <Th align="right" className="w-24">Time</Th>
-                  <Th>Customer</Th>
-                  <Th priority={2}>Vehicle</Th>
-                  <Th priority={3}>License</Th>
-                  <Th className="w-0 max-md:hidden"><span className="sr-only">Actions</span></Th>
+                  <Th align="right" className="w-24">Hora</Th>
+                  <Th>Cliente</Th>
+                  <Th priority={2}>Vehículo</Th>
+                  <Th priority={3}>Registro de conducir</Th>
+                  <Th className="w-0 max-md:hidden"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -524,14 +524,14 @@ export function TestDriveDeskPageClient({
                         <Td className="min-w-0">
                           {customerCell(testDrive)}
                           <p className="break-words text-xs text-muted-foreground">
-                            {pastDue ? 'Past due' : 'Today'}
+                            {pastDue ? 'Atrasadas' : 'Hoy'}
                             {' · '}
                             {formatPhone(testDrive.lead?.phone) || testDrive.lead?.email || 'No contact'}
                             {testDrive.salesperson?.name ? ` · ${testDrive.salesperson.name}` : ''}
                           </p>
                           <p className="break-words text-xs md:hidden">{vehicleCell(testDrive)}</p>
                           <div className="mt-2 md:hidden">{driveActions(testDrive, 'today', 'start')}</div>
-                          <p className="text-xs lg:hidden">{testDrive.driverLicenseVerified ? <span className="text-muted-foreground">License verified</span> : <span className="text-amber-700 dark:text-amber-300">License needs check</span>}</p>
+                          <p className="text-xs lg:hidden">{testDrive.driverLicenseVerified ? <span className="text-muted-foreground">Registro verificado</span> : <span className="text-amber-700 dark:text-amber-300">Verificar registro</span>}</p>
                         </Td>
                         <Td priority={2} className="min-w-0">
                           {vehicleCell(testDrive)}
@@ -550,20 +550,20 @@ export function TestDriveDeskPageClient({
         </DeskSection>
 
         <section aria-labelledby="test-drives-all" className="min-w-0 space-y-3">
-          <h2 id="test-drives-all" className="text-[15px] font-semibold text-foreground">All test drives</h2>
+          <h2 id="test-drives-all" className="text-[15px] font-semibold text-foreground">Todas las pruebas</h2>
           <Segmented<QueueFilter>
-            label="Filter test drives"
+            label="Filtrar pruebas"
             value={filter}
             onChange={setFilter}
             className="max-md:[&_button]:h-10"
             options={[
-              { value: 'today', label: 'Today', count: counts.today },
-              { value: 'upcoming', label: 'Upcoming', count: counts.upcoming },
-              { value: 'past-due', label: 'Past due', count: counts.pastDue },
-              { value: 'completed', label: 'Completed', count: counts.completed },
-              { value: 'no-show', label: 'No-show', count: counts.noShow },
-              { value: 'cancelled', label: 'Cancelled', count: counts.cancelled },
-              { value: 'all', label: 'All', count: counts.all },
+              { value: 'today', label: 'Hoy', count: counts.today },
+              { value: 'upcoming', label: 'Próximas', count: counts.upcoming },
+              { value: 'past-due', label: 'Atrasadas', count: counts.pastDue },
+              { value: 'completed', label: 'Completada', count: counts.completed },
+              { value: 'no-show', label: 'Ausente', count: counts.noShow },
+              { value: 'cancelled', label: 'Cancelada', count: counts.cancelled },
+              { value: 'all', label: 'Todas', count: counts.all },
             ]}
           />
           <div className="flex min-w-0 items-center gap-2">
@@ -573,22 +573,22 @@ export function TestDriveDeskPageClient({
                 className="h-10 rounded-[4px] pl-9 text-[13px] sm:h-9"
                 value={search}
                 onChange={event => setSearch(event.target.value)}
-                placeholder="Customer, stock or VIN"
-                aria-label="Search test drives"
+                placeholder="Cliente, stock o chasis"
+                aria-label="Buscar pruebas"
               />
             </div>
             <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="h-10 w-[9.5rem] shrink-0 rounded-[4px] px-2.5 text-[13px] sm:h-9" aria-label="Sort test drives">
+              <SelectTrigger className="h-10 w-[9.5rem] shrink-0 rounded-[4px] px-2.5 text-[13px] sm:h-9" aria-label="Ordenar pruebas">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="scheduled">Soonest first</SelectItem>
-                <SelectItem value="recent">Latest first</SelectItem>
+                <SelectItem value="scheduled">Más próximas primero</SelectItem>
+                <SelectItem value="recent">Más recientes primero</SelectItem>
               </SelectContent>
             </Select>
             {loading && (
               <span className="text-xs text-muted-foreground" role="status">
-                Refreshing…
+                Actualizando…
               </span>
             )}
           </div>
@@ -596,24 +596,24 @@ export function TestDriveDeskPageClient({
           {error ? null : filteredTestDrives.length === 0 ? (
             <Panel className="flex flex-col items-center gap-3 px-4 py-12 text-center">
               <p className="text-sm text-muted-foreground">
-                {testDrives.length > 0 && isFiltered ? 'No matching test drives' : 'No test drives'}
+                {testDrives.length > 0 && isFiltered ? 'No hay pruebas que coincidan' : 'No hay pruebas de manejo'}
               </p>
               {testDrives.length > 0 && isFiltered && (
                 <Track>
-                  <Pill size="sm" className="max-md:h-10" onClick={resetFilters}>Reset filters</Pill>
+                  <Pill size="sm" className="max-md:h-10" onClick={resetFilters}>Limpiar filtros</Pill>
                 </Track>
               )}
             </Panel>
           ) : (
-            <DeskTable aria-label="Test drives">
+            <DeskTable aria-label="Pruebas de manejo">
               <thead>
                 <tr>
-                  <Th className="w-28">When</Th>
-                  <Th>Customer</Th>
-                  <Th priority={2}>Vehicle</Th>
-                  <Th priority={3}>License</Th>
-                  <Th>Status</Th>
-                  <Th className="w-0 max-md:hidden"><span className="sr-only">Actions</span></Th>
+                  <Th className="w-28">Cuándo</Th>
+                  <Th>Cliente</Th>
+                  <Th priority={2}>Vehículo</Th>
+                  <Th priority={3}>Registro de conducir</Th>
+                  <Th>Estado</Th>
+                  <Th className="w-0 max-md:hidden"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -641,7 +641,7 @@ export function TestDriveDeskPageClient({
                             </p>
                           )}
                           {(testDrive.cancelledAt || testDrive.noShow) && (
-                            <p className="text-xs text-muted-foreground">{testDrive.cancelledAt ? 'Cancelled' : 'No-show'}</p>
+                            <p className="text-xs text-muted-foreground">{testDrive.cancelledAt ? 'Cancelada' : 'Ausente'}</p>
                           )}
                         </Td>
                         <Td priority={2} className="min-w-0">
@@ -672,7 +672,7 @@ export function TestDriveDeskPageClient({
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Mark no-show?</DialogTitle>
+              <DialogTitle>¿Marcar como ausente?</DialogTitle>
               <DialogDescription>
                 {noShowTarget ? `${leadName(noShowTarget)} · ${vehicleName(noShowTarget)} · ${formatDateTime(noShowTarget.scheduledTime, timeZone)}` : null}
               </DialogDescription>
@@ -681,10 +681,10 @@ export function TestDriveDeskPageClient({
             <DialogFooter>
               <Track>
                 <Pill variant="plain" className="max-sm:h-11" onClick={() => { setNoShowTarget(null); setNoShowError(null) }} disabled={Boolean(updatingId)}>
-                  Cancel
+                  Cancelar
                 </Pill>
                 <Pill variant="primary" className="max-sm:h-11" onClick={markNoShow} disabled={Boolean(updatingId)}>
-                  {updatingId && updatingId === noShowTarget?.id ? 'Saving' : 'Mark no-show'}
+                  {updatingId && updatingId === noShowTarget?.id ? 'Guardando' : 'Marcar ausente'}
                 </Pill>
               </Track>
             </DialogFooter>
@@ -697,7 +697,7 @@ export function TestDriveDeskPageClient({
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Cancel this test drive?</DialogTitle>
+              <DialogTitle>¿Cancelar esta prueba de manejo?</DialogTitle>
               <DialogDescription>
                 {cancelTarget ? `${leadName(cancelTarget)} · ${vehicleName(cancelTarget)} · ${formatDateTime(cancelTarget.scheduledTime, timeZone)}. The time goes back on the vehicle's schedule. This can't be undone.` : null}
               </DialogDescription>
@@ -709,7 +709,7 @@ export function TestDriveDeskPageClient({
                   Keep it
                 </Pill>
                 <Pill variant="primary" className="max-sm:h-11" onClick={confirmCancel} disabled={Boolean(updatingId)}>
-                  {updatingId && updatingId === cancelTarget?.id ? 'Cancelling' : 'Cancel test drive'}
+                  {updatingId && updatingId === cancelTarget?.id ? 'Cancelando' : 'Cancelar prueba'}
                 </Pill>
               </Track>
             </DialogFooter>
@@ -718,12 +718,12 @@ export function TestDriveDeskPageClient({
 
         <OperatorActionDialog
           open={Boolean(schedule)}
-          title="Schedule test drive"
+          title="Agendar prueba de manejo"
           fields={scheduleFields(vehicleOptions)}
           values={schedule?.values || {}}
           error={scheduleError}
           busy={scheduleBusy}
-          submitLabel="Schedule"
+          submitLabel="Agendar"
           onValuesChange={values => setSchedule(current => (current ? { ...current, values } : null))}
           onSubmit={submitSchedule}
           onOpenChange={open => {

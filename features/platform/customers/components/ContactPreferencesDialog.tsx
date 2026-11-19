@@ -23,15 +23,15 @@ export type PreferenceValues = {
 const CHANNELS = [
   { key: 'email', label: 'Email' },
   { key: 'sms', label: 'SMS' },
-  { key: 'phone', label: 'Phone' },
+  { key: 'phone', label: 'Teléfono' },
 ] as const
 
 export const PREFERENCE_SOURCES = [
-  { value: 'operator-recorded', label: 'Recorded by staff' },
-  { value: 'customer-request', label: 'Customer request' },
-  { value: 'phone-call', label: 'Phone call' },
-  { value: 'in-person', label: 'In person' },
-  { value: 'written', label: 'Written consent' },
+  { value: 'operator-recorded', label: 'Registrado por el personal' },
+  { value: 'customer-request', label: 'Pedido del cliente' },
+  { value: 'phone-call', label: 'Llamada' },
+  { value: 'in-person', label: 'En persona' },
+  { value: 'written', label: 'Consentimiento escrito' },
 ]
 
 export function ContactPreferencesDialog({
@@ -72,10 +72,10 @@ export function ContactPreferencesDialog({
     if (channel !== 'none') {
       const consent = values[`${channel}Consent` as keyof PreferenceValues]
       const suppressed = values[`${channel}Suppressed` as keyof PreferenceValues]
-      if (!consent || suppressed) found.preferredChannel = 'Needs consent and no suppression'
+      if (!consent || suppressed) found.preferredChannel = 'Requiere consentimiento y sin bloqueo'
     }
-    if (!values.reason.trim()) found.reason = 'Required'
-    else if (values.reason.length > 1000) found.reason = 'At most 1000 characters'
+    if (!values.reason.trim()) found.reason = 'Obligatorio'
+    else if (values.reason.length > 1000) found.reason = 'Máximo 1000 caracteres'
     setErrors(found)
     if (found.preferredChannel || found.reason) return
     setBusy(true)
@@ -88,11 +88,11 @@ export function ContactPreferencesDialog({
   return (
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader><DialogTitle>Contact preferences</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Preferencias de contacto</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="overflow-hidden rounded-md border">
             <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 border-b bg-muted/40 px-3 py-2 text-[12px] font-medium text-muted-foreground">
-              <span>Channel</span><span>Consent</span><span>Suppressed</span>
+              <span>Canal</span><span>Consentimiento</span><span>Bloqueado</span>
             </div>
             {CHANNELS.map(channel => (
               <div key={channel.key} className="grid min-h-11 grid-cols-[1fr_auto_auto] items-center gap-x-4 border-b px-3 py-1 last:border-b-0">
@@ -117,32 +117,32 @@ export function ContactPreferencesDialog({
             ))}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField id="pref-channel" label="Preferred channel" error={errors.preferredChannel}>
+            <FormField id="pref-channel" label="Canal preferido" error={errors.preferredChannel}>
               <Select value={values.preferredChannel} onValueChange={value => { setValues(prev => ({ ...prev, preferredChannel: value })); setErrors(prev => ({ ...prev, preferredChannel: undefined })) }}>
                 <SelectTrigger id="pref-channel" className="rounded-[4px] h-11 sm:h-9" aria-invalid={Boolean(errors.preferredChannel)}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No outbound contact</SelectItem>
+                  <SelectItem value="none">No contactar</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
                   <SelectItem value="sms">SMS</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
+                  <SelectItem value="phone">Teléfono</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField id="pref-source" label="Source">
+            <FormField id="pref-source" label="Origen">
               <Select value={values.source} onValueChange={value => setValues(prev => ({ ...prev, source: value }))}>
                 <SelectTrigger id="pref-source" className="rounded-[4px] h-11 sm:h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>{PREFERENCE_SOURCES.map(source => <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>
-            <FormField id="pref-reason" label="Reason" error={errors.reason} className="sm:col-span-2">
+            <FormField id="pref-reason" label="Motivo" error={errors.reason} className="sm:col-span-2">
               <Textarea className="rounded-[4px]" id="pref-reason" rows={3} maxLength={1000} value={values.reason} aria-invalid={Boolean(errors.reason)} onChange={event => { setValues(prev => ({ ...prev, reason: event.target.value })); setErrors(prev => ({ ...prev, reason: undefined })) }} />
             </FormField>
           </div>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Saving…' : 'Save preferences'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Guardando…' : 'Guardar preferencias'}</Pill>
             </Track>
           </DialogFooter>
         </form>

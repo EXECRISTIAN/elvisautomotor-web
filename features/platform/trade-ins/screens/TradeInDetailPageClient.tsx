@@ -48,12 +48,12 @@ type DialogKind = 'edit' | 'appraise' | 'attach' | 'detach' | 'acquire' | null
 const fieldLabel = 'text-[12px] font-medium text-muted-foreground'
 
 const timelineLabel: Record<string, string> = {
-  created: 'Created',
-  submitted: 'Submitted online',
-  appraised: 'Appraised',
-  'attached-to-deal': 'Attached to deal',
-  'detached-from-deal': 'Detached from deal',
-  'released-from-deal': 'Released by cancelled deal',
+  created: 'Creado',
+  submitted: 'Enviado por la web',
+  appraised: 'Tasado',
+  'attached-to-deal': 'Vinculado a la operación',
+  'detached-from-deal': 'Desvinculado de la operación',
+  'released-from-deal': 'Liberado por operación cancelada',
 }
 
 function FieldRow({ label, htmlFor, error, children }: { label: string; htmlFor: string; error?: string | null; children: ReactNode }) {
@@ -89,8 +89,8 @@ function ActionDialog({ open, title, description, busy, error, submitLabel, onSu
           {error && <Notice tone="bad">{error}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Saving…' : submitLabel}</Pill>
+              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Guardando…' : submitLabel}</Pill>
             </Track>
           </DialogFooter>
         </form>
@@ -100,7 +100,7 @@ function ActionDialog({ open, title, description, busy, error, submitLabel, onSu
 }
 
 function dealLabel(deal: { vehicle: { year: number | null; make: string | null; model: string | null; stockNumber?: string | null } | null }) {
-  return deal.vehicle ? [deal.vehicle.year, deal.vehicle.make, deal.vehicle.model].filter(Boolean).join(' ') : 'Deal'
+  return deal.vehicle ? [deal.vehicle.year, deal.vehicle.make, deal.vehicle.model].filter(Boolean).join(' ') : 'Operación'
 }
 
 export function TradeInDetailPageClient({
@@ -144,7 +144,7 @@ export function TradeInDetailPageClient({
       setData(response.data)
       setError(null)
     } else {
-      setError(response.error || 'Unable to load the trade-in.')
+      setError(response.error || 'No se pudo cargar el usado.')
     }
     setLoading(false)
   }
@@ -182,7 +182,7 @@ export function TradeInDetailPageClient({
       if (response.success) setPencilDeals(response.data.deals || [])
       else {
         setPencilDeals([])
-        setDialogError(response.error || 'Unable to load pencil deals.')
+        setDialogError(response.error || 'No se pudieron cargar las operaciones borrador.')
       }
     }
   }
@@ -205,7 +205,7 @@ export function TradeInDetailPageClient({
     setDialogError(null)
     const response = await updateTradeInDetails(tradeIn.id, tradeInDetailsPayload(values))
     setBusy(false)
-    if (!response.success) return setDialogError(response.error || 'Unable to save the trade-in.')
+    if (!response.success) return setDialogError(response.error || 'No se pudo guardar el usado.')
     await finish('Trade-in updated')
   }
 
@@ -256,13 +256,13 @@ export function TradeInDetailPageClient({
   }
 
   const acquireErrors = {
-    vin: VIN_PATTERN.test(acquire.vin.trim().toUpperCase()) ? null : 'Enter the 17-character VIN',
-    year: /^\d{4}$/.test(acquire.year.trim()) ? null : 'Enter a 4-digit year',
-    make: acquire.make.trim() ? null : 'Make is required',
-    model: acquire.model.trim() ? null : 'Model is required',
-    odometer: !acquire.odometer.trim() || /^\d+$/.test(acquire.odometer.trim().replace(/,/g, '')) ? null : 'Enter whole miles',
-    appraisalCents: acquire.appraisalCents > 0 ? null : 'Enter the appraisal',
-    reason: acquire.reason.trim() ? null : 'Reason is required',
+    vin: VIN_PATTERN.test(acquire.vin.trim().toUpperCase()) ? null : 'Ingresá el número de chasis de 17 caracteres',
+    year: /^\d{4}$/.test(acquire.year.trim()) ? null : 'Ingresá un año de 4 dígitos',
+    make: acquire.make.trim() ? null : 'La marca es obligatoria',
+    model: acquire.model.trim() ? null : 'El modelo es obligatorio',
+    odometer: !acquire.odometer.trim() || /^\d+$/.test(acquire.odometer.trim().replace(/,/g, '')) ? null : 'Ingresá kilómetros enteros',
+    appraisalCents: acquire.appraisalCents > 0 ? null : 'Ingresá la tasación',
+    reason: acquire.reason.trim() ? null : 'El motivo es obligatorio',
   }
 
   const submitAcquire = async (event: FormEvent<HTMLFormElement>) => {
@@ -300,13 +300,13 @@ export function TradeInDetailPageClient({
   if (!tradeIn) {
     return (
       <PageContainer
-        title="Trade-in"
-        breadcrumbs={breadcrumbs('Trade-in')}
-        header={<DeskHeader title="Trade-in unavailable" tone="bad" status="Unavailable" actions={<Pill asChild className="max-md:h-10"><Link href={`${basePath}/platform/trade-ins`}>Back to trade-ins</Link></Pill>} />}
+        title="Usado"
+        breadcrumbs={breadcrumbs('Usado')}
+        header={<DeskHeader title="Usado no disponible" tone="bad" status="No disponible" actions={<Pill asChild className="max-md:h-10"><Link href={`${basePath}/platform/trade-ins`}>Volver a usados</Link></Pill>} />}
       >
         <div className="space-y-3 px-4 pb-24 md:px-6">
           <Notice tone="bad">{error || 'Trade-in not found'}</Notice>
-          <Track><Pill size="sm" onClick={load} disabled={loading}><RefreshCw className={loading ? 'animate-spin' : undefined} />Retry</Pill></Track>
+          <Track><Pill size="sm" onClick={load} disabled={loading}><RefreshCw className={loading ? 'animate-spin' : undefined} />Reintentar</Pill></Track>
         </div>
       </PageContainer>
     )
@@ -336,33 +336,33 @@ export function TradeInDetailPageClient({
   const primary = closed ? null : tradeIn.offerAmount == null ? 'appraise' : !deal ? 'attach' : !acquisition && data?.canSeeAcquisitions ? 'acquire' : null
 
   const actions = (
-    <div role="group" aria-label="Trade-in actions" className="flex flex-wrap items-center gap-2 max-md:[&>button]:h-10">
+    <div role="group" aria-label="Acciones del usado" className="flex flex-wrap items-center gap-2 max-md:[&>button]:h-10">
       {allowed.appraise && (
         <Pill variant={primary === 'appraise' ? 'primary' : 'raised'} onClick={() => openDialog('appraise')} disabled={Boolean(appraiseBlocked)} aria-describedby={appraiseBlocked ? 'trade-in-blockers' : undefined}>
-          {tradeIn.offerAmount == null ? 'Appraise' : 'Re-appraise'}
+          {tradeIn.offerAmount == null ? 'Tasar' : 'Volver a tasar'}
         </Pill>
       )}
       {closed ? null : deal ? (
         <Pill onClick={() => openDialog('detach')} disabled={Boolean(detachBlocked)} aria-describedby={detachBlocked ? 'trade-in-blockers' : undefined}>
           <Unlink />
-          Detach
+          Desvincular
         </Pill>
       ) : (
         <Pill variant={primary === 'attach' ? 'primary' : 'raised'} onClick={() => openDialog('attach')} disabled={Boolean(attachBlocked)} aria-describedby={attachBlocked ? 'trade-in-blockers' : undefined}>
           <Link2 />
-          Attach to deal
+          Vincular a operación
         </Pill>
       )}
       {data?.canSeeAcquisitions && allowed.acquire && (
         <Pill variant={primary === 'acquire' ? 'primary' : 'raised'} onClick={() => openDialog('acquire')}>
           <Truck />
-          Acquire into inventory
+          Ingresar al inventario
         </Pill>
       )}
       {!closed && (
         <Pill onClick={() => openDialog('edit')} disabled={Boolean(editBlocked)} aria-describedby={editBlocked ? 'trade-in-blockers' : undefined}>
           <Pencil />
-          Edit
+          Editar
         </Pill>
       )}
     </div>
@@ -420,51 +420,51 @@ export function TradeInDetailPageClient({
 
         <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-8">
-            <DeskSection title="Appraisal" id="trade-in-appraisal">
+            <DeskSection title="Tasación" id="trade-in-appraisal">
               <div className="flex min-w-0 flex-wrap items-end gap-x-6 gap-y-2 pb-3">
                 <div>
-                  <p className="text-[12px] font-medium text-muted-foreground">Offer</p>
+                  <p className="text-[12px] font-medium text-muted-foreground">Oferta</p>
                   <p className="mt-1">
-                    {tradeIn.offerAmount != null ? <Figure size="lg">{formatWholeUsd(tradeIn.offerAmount)}</Figure> : closed ? <span className="text-sm text-muted-foreground">No offer</span> : <Attention>Needs appraisal</Attention>}
+                    {tradeIn.offerAmount != null ? <Figure size="lg">{formatWholeUsd(tradeIn.offerAmount)}</Figure> : closed ? <span className="text-sm text-muted-foreground">Sin oferta</span> : <Attention>Requiere tasación</Attention>}
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground">{tradeIn.appraisedBy?.name ? `By ${tradeIn.appraisedBy.name}` : 'Not appraised'}</p>
+                <p className="text-xs text-muted-foreground">{tradeIn.appraisedBy?.name ? `By ${tradeIn.appraisedBy.name}` : 'Sin tasar'}</p>
               </div>
               <div className="grid min-w-0 grid-cols-1 gap-x-8 md:grid-cols-2">
                 <Facts items={[
-                  { label: 'Reference', value: tradeIn.referenceValue != null ? formatWholeUsd(tradeIn.referenceValue) : '-' },
-                  { label: 'Estimate', value: formatWholeUsd(estimate) },
+                  { label: 'Referencia', value: tradeIn.referenceValue != null ? formatWholeUsd(tradeIn.referenceValue) : '-' },
+                  { label: 'Estimación', value: formatWholeUsd(estimate) },
                 ]} />
                 <Facts items={[
-                  { label: 'Spread', value: spread != null ? <span className={spread < 0 ? 'text-red-700 dark:text-red-300' : undefined}>{formatWholeUsd(spread)}{spread < 0 ? ' · offer above reference' : ''}</span> : '-' },
-                  { label: 'Condition', value: tradeIn.condition ? <Status tone={conditionTone[tradeIn.condition] ?? 'idle'}>{conditionLabel(tradeIn.condition)}</Status> : 'Not graded' },
+                  { label: 'Diferencia', value: spread != null ? <span className={spread < 0 ? 'text-red-700 dark:text-red-300' : undefined}>{formatWholeUsd(spread)}{spread < 0 ? ' · offer above reference' : ''}</span> : '-' },
+                  { label: 'Estado', value: tradeIn.condition ? <Status tone={conditionTone[tradeIn.condition] ?? 'idle'}>{conditionLabel(tradeIn.condition)}</Status> : 'Sin calificar' },
                 ]} />
               </div>
             </DeskSection>
 
-            <DeskSection title="Vehicle">
+            <DeskSection title="Vehículo">
               <Facts items={[
-                { label: 'Vehicle', value: title },
-                { label: 'VIN', value: <Code className="break-all text-foreground">{tradeIn.vin || 'Not entered'}</Code> },
-                { label: 'Mileage', value: <span className="tabular-nums">{formatMileage(tradeIn.mileage)}</span> },
-                { label: 'Condition', value: conditionLabel(tradeIn.condition) },
-                { label: 'Created', value: formatDateTime(tradeIn.createdAt) },
+                { label: 'Vehículo', value: title },
+                { label: 'VIN / chasis', value: <Code className="break-all text-foreground">{tradeIn.vin || 'Not entered'}</Code> },
+                { label: 'Kilometraje', value: <span className="tabular-nums">{formatMileage(tradeIn.mileage)}</span> },
+                { label: 'Estado', value: conditionLabel(tradeIn.condition) },
+                { label: 'Creado', value: formatDateTime(tradeIn.createdAt) },
               ]} />
             </DeskSection>
 
-            <DeskSection title="Condition notes">
+            <DeskSection title="Notas del estado">
               {tradeIn.exteriorCondition || tradeIn.interiorCondition || tradeIn.mechanicalIssues ? (
                 <Facts items={[
                   tradeIn.exteriorCondition ? { label: 'Exterior', value: <span className="whitespace-pre-wrap text-left">{tradeIn.exteriorCondition}</span> } : null,
                   tradeIn.interiorCondition ? { label: 'Interior', value: <span className="whitespace-pre-wrap text-left">{conditionNotes(tradeIn.interiorCondition)}</span> } : null,
-                  tradeIn.mechanicalIssues ? { label: 'Mechanical', value: <span className="whitespace-pre-wrap text-left text-amber-700 dark:text-amber-300">{tradeIn.mechanicalIssues}</span> } : null,
+                  tradeIn.mechanicalIssues ? { label: 'Mecánica', value: <span className="whitespace-pre-wrap text-left text-amber-700 dark:text-amber-300">{tradeIn.mechanicalIssues}</span> } : null,
                 ]} />
               ) : (
-                <p className="py-2 text-sm text-muted-foreground">No notes</p>
+                <p className="py-2 text-sm text-muted-foreground">Sin notas</p>
               )}
             </DeskSection>
 
-            <DeskSection title="History" count={data?.timeline.length}>
+            <DeskSection title="Historial" count={data?.timeline.length}>
               {data?.timeline.length ? (
                 <Panel className="divide-y">
                   {data.timeline.map(entry => (
@@ -475,49 +475,49 @@ export function TradeInDetailPageClient({
                   ))}
                 </Panel>
               ) : (
-                <p className="py-2 text-sm text-muted-foreground">No history</p>
+                <p className="py-2 text-sm text-muted-foreground">Sin historial</p>
               )}
             </DeskSection>
           </div>
 
           <aside className="min-w-0 space-y-8 lg:sticky lg:top-6 lg:self-start">
-            <DeskSection title="Customer" actions={tradeIn.lead ? <Link href={`${basePath}/platform/crm/${tradeIn.lead.id}`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Open lead</Link> : undefined}>
+            <DeskSection title="Cliente" actions={tradeIn.lead ? <Link href={`${basePath}/platform/crm/${tradeIn.lead.id}`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Abrir consulta</Link> : undefined}>
               {tradeIn.lead ? (
                 <Facts items={[
-                  { label: 'Name', value: customer },
-                  { label: 'Phone', value: formatPhone(tradeIn.lead.phone) || '-' },
+                  { label: 'Nombre', value: customer },
+                  { label: 'Teléfono', value: formatPhone(tradeIn.lead.phone) || '-' },
                   { label: 'Email', value: <span className="break-all">{tradeIn.lead.email || '-'}</span> },
                 ]} />
               ) : (
-                <p className="py-2 text-sm text-muted-foreground">No customer lead</p>
+                <p className="py-2 text-sm text-muted-foreground">Sin consulta del cliente</p>
               )}
             </DeskSection>
 
-            <DeskSection title="Deal" actions={deal ? <Link href={`${basePath}/platform/deals/${deal.id}`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Open deal</Link> : undefined}>
+            <DeskSection title="Operación" actions={deal ? <Link href={`${basePath}/platform/deals/${deal.id}`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Abrir operación</Link> : undefined}>
               {deal ? (
                 <div className="space-y-2">
                   <TitleLine as="p" tone={toneForDeal(deal.status || '')} status={labelForDeal(deal.status || '')} className="text-sm font-medium">{dealLabel(deal)}</TitleLine>
                   <Facts items={[
-                    { label: 'Status', value: labelForDeal(deal.status || '') },
+                    { label: 'Estado', value: labelForDeal(deal.status || '') },
                     deal.vehicle?.stockNumber ? { label: 'Stock #', value: <Code className="text-foreground">{deal.vehicle.stockNumber}</Code> } : null,
-                    { label: 'Trade credit', value: formatWholeUsd((deal.tradeInValueCents || 0) / 100) },
+                    { label: 'Valor de toma', value: formatWholeUsd((deal.tradeInValueCents || 0) / 100) },
                   ]} />
                 </div>
               ) : (
-                <p className="py-2 text-sm text-muted-foreground">Not on a deal</p>
+                <p className="py-2 text-sm text-muted-foreground">Sin operación</p>
               )}
             </DeskSection>
 
             {data?.canSeeAcquisitions && (
-              <DeskSection title="Inventory acquisition" actions={acquisition ? <Link href={`${basePath}/platform/vehicles`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Open inventory</Link> : undefined}>
+              <DeskSection title="Ingreso al inventario" actions={acquisition ? <Link href={`${basePath}/platform/vehicles`} className="text-xs font-medium text-muted-foreground hover:text-foreground">Abrir inventario</Link> : undefined}>
                 {acquisition ? (
                   <Facts items={[
-                    { label: 'Reference', value: <Code className="text-foreground">{acquisition.reference}</Code> },
-                    { label: 'Status', value: <span className="capitalize">{acquisition.status.replace(/-/g, ' ')}</span> },
-                    { label: 'Stock #', value: acquisition.vehicle?.stockNumber ? <Code className="text-foreground">{acquisition.vehicle.stockNumber}</Code> : 'Not intaken' },
+                    { label: 'Referencia', value: <Code className="text-foreground">{acquisition.reference}</Code> },
+                    { label: 'Estado', value: <span className="capitalize">{acquisition.status.replace(/-/g, ' ')}</span> },
+                    { label: 'Stock #', value: acquisition.vehicle?.stockNumber ? <Code className="text-foreground">{acquisition.vehicle.stockNumber}</Code> : 'Sin ingresar' },
                   ]} />
                 ) : (
-                  <p className="py-2 text-sm text-muted-foreground">Not acquired</p>
+                  <p className="py-2 text-sm text-muted-foreground">Sin ingresar</p>
                 )}
               </DeskSection>
             )}
@@ -527,28 +527,28 @@ export function TradeInDetailPageClient({
 
       <TradeInFormDialog open={dialog === 'edit'} mode="edit" initialValues={editInitial} busy={busy} error={dialogError} onSubmit={submitEdit} onOpenChange={closeDialog} />
 
-      <ActionDialog open={dialog === 'appraise'} title="Record appraisal" description={title} busy={busy} error={dialogError} submitLabel="Save appraisal" onSubmit={submitAppraisal} onOpenChange={closeDialog}>
+      <ActionDialog open={dialog === 'appraise'} title="Registrar tasación" description={title} busy={busy} error={dialogError} submitLabel="Guardar tasación" onSubmit={submitAppraisal} onOpenChange={closeDialog}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FieldRow label="Reference value" htmlFor="appraisal-reference">
+          <FieldRow label="Valor de referencia" htmlFor="appraisal-reference">
             <MoneyInput id="appraisal-reference" cents={referenceCents} onCentsChange={setReferenceCents} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Offer" htmlFor="appraisal-offer" error={showErrors ? offerError : null}>
+          <FieldRow label="Oferta" htmlFor="appraisal-offer" error={showErrors ? offerError : null}>
             <MoneyInput id="appraisal-offer" cents={offerCents} onCentsChange={setOfferCents} disabled={busy} aria-invalid={showErrors && offerError ? true : undefined} aria-describedby={showErrors && offerError ? 'appraisal-offer-error' : undefined} />
           </FieldRow>
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span className="tabular-nums">Estimate {formatWholeUsd(preliminaryWholesaleEstimate(referenceCents / 100, tradeIn.condition, tradeIn.mileage))} · Spread {formatWholeUsd((referenceCents - offerCents) / 100)}</span>
           <Track>
-            <Pill size="sm" disabled={busy || referenceCents <= 0} onClick={() => setOfferCents(preliminaryWholesaleEstimate(referenceCents / 100, tradeIn.condition, tradeIn.mileage) * 100)}>Use estimate</Pill>
+            <Pill size="sm" disabled={busy || referenceCents <= 0} onClick={() => setOfferCents(preliminaryWholesaleEstimate(referenceCents / 100, tradeIn.condition, tradeIn.mileage) * 100)}>Usar estimación</Pill>
           </Track>
         </div>
       </ActionDialog>
 
-      <ActionDialog open={dialog === 'attach'} title="Attach to deal" description={`Offer ${formatWholeUsd(tradeIn.offerAmount)} becomes the trade credit`} busy={busy} error={dialogError} submitLabel="Attach" onSubmit={submitAttach} onOpenChange={closeDialog}>
-        <FieldRow label="Pencil deal" htmlFor="attach-deal" error={showErrors && !selectedDeal ? 'Select a deal' : null}>
+      <ActionDialog open={dialog === 'attach'} title="Vincular a operación" description={`La oferta de ${formatWholeUsd(tradeIn.offerAmount)} pasa a ser el valor de toma`} busy={busy} error={dialogError} submitLabel="Vincular" onSubmit={submitAttach} onOpenChange={closeDialog}>
+        <FieldRow label="Operación borrador" htmlFor="attach-deal" error={showErrors && !selectedDeal ? 'Select a deal' : null}>
           <Select value={dealId} onValueChange={setDealId} disabled={busy || pencilDeals === null || eligibleDeals.length === 0}>
             <SelectTrigger id="attach-deal" className="rounded-[4px]" aria-invalid={showErrors && !selectedDeal ? true : undefined}>
-              <SelectValue placeholder={pencilDeals === null ? 'Loading deals' : eligibleDeals.length === 0 ? 'No pencil deals without a trade-in' : 'Select deal'} />
+              <SelectValue placeholder={pencilDeals === null ? 'Loading deals' : eligibleDeals.length === 0 ? 'No hay operaciones borrador sin usado' : 'Elegí la operación'} />
             </SelectTrigger>
             <SelectContent>
               {eligibleDeals.map(option => (
@@ -561,54 +561,54 @@ export function TradeInDetailPageClient({
         </FieldRow>
         {selectedDeal && (
           <Facts items={[
-            { label: 'Current trade credit', value: formatWholeUsd((selectedDeal.tradeInValueCents || 0) / 100) },
-            { label: 'New trade credit', value: formatWholeUsd(tradeIn.offerAmount) },
+            { label: 'Valor de toma actual', value: formatWholeUsd((selectedDeal.tradeInValueCents || 0) / 100) },
+            { label: 'Nuevo valor de toma', value: formatWholeUsd(tradeIn.offerAmount) },
           ]} />
         )}
-        <FieldRow label="Note (optional)" htmlFor="attach-reason">
+        <FieldRow label="Nota (opcional)" htmlFor="attach-reason">
           <Textarea className="rounded-[4px]" id="attach-reason" rows={2} maxLength={500} value={reason} onChange={event => setReason(event.target.value)} disabled={busy} />
         </FieldRow>
         {pencilDeals !== null && (
           <Link href={`${basePath}/platform/deals/create${tradeIn.lead ? `?leadId=${tradeIn.lead.id}` : ''}`} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground">
-            New deal
+            Nueva operación
             <ArrowRight className="size-3.5" />
           </Link>
         )}
       </ActionDialog>
 
-      <ActionDialog open={dialog === 'detach'} title="Detach from deal" description={deal ? `${dealLabel(deal)} · trade credit returns to $0` : undefined} busy={busy} error={dialogError} submitLabel="Detach" onSubmit={submitDetach} onOpenChange={closeDialog}>
-        <FieldRow label="Reason" htmlFor="detach-reason" error={showErrors && !reason.trim() ? 'Reason is required' : null}>
+      <ActionDialog open={dialog === 'detach'} title="Desvincular de la operación" description={deal ? `${dealLabel(deal)} · trade credit returns to $0` : undefined} busy={busy} error={dialogError} submitLabel="Desvincular" onSubmit={submitDetach} onOpenChange={closeDialog}>
+        <FieldRow label="Motivo" htmlFor="detach-reason" error={showErrors && !reason.trim() ? 'El motivo es obligatorio' : null}>
           <Textarea className="rounded-[4px]" id="detach-reason" rows={2} maxLength={500} value={reason} onChange={event => setReason(event.target.value)} disabled={busy} aria-invalid={showErrors && !reason.trim() ? true : undefined} />
         </FieldRow>
       </ActionDialog>
 
-      <ActionDialog open={dialog === 'acquire'} title="Acquire into inventory" description="Source: trade-in" busy={busy} error={dialogError} submitLabel="Start acquisition" onSubmit={submitAcquire} onOpenChange={closeDialog}>
+      <ActionDialog open={dialog === 'acquire'} title="Ingresar al inventario" description="Origen: toma de usado" busy={busy} error={dialogError} submitLabel="Iniciar ingreso" onSubmit={submitAcquire} onOpenChange={closeDialog}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <FieldRow label="VIN" htmlFor="acquire-vin" error={showErrors ? acquireErrors.vin : null}>
+            <FieldRow label="VIN / chasis" htmlFor="acquire-vin" error={showErrors ? acquireErrors.vin : null}>
               <Input id="acquire-vin" maxLength={17} className="rounded-[4px] font-mono uppercase" value={acquire.vin} onChange={event => setAcquire(current => ({ ...current, vin: event.target.value }))} disabled={busy} aria-invalid={showErrors && acquireErrors.vin ? true : undefined} />
             </FieldRow>
           </div>
-          <FieldRow label="Year" htmlFor="acquire-year" error={showErrors ? acquireErrors.year : null}>
+          <FieldRow label="Año" htmlFor="acquire-year" error={showErrors ? acquireErrors.year : null}>
             <Input className="rounded-[4px]" id="acquire-year" inputMode="numeric" maxLength={4} value={acquire.year} onChange={event => setAcquire(current => ({ ...current, year: event.target.value }))} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Odometer" htmlFor="acquire-odometer" error={showErrors ? acquireErrors.odometer : null}>
+          <FieldRow label="Kilometraje" htmlFor="acquire-odometer" error={showErrors ? acquireErrors.odometer : null}>
             <Input className="rounded-[4px]" id="acquire-odometer" inputMode="numeric" value={acquire.odometer} onChange={event => setAcquire(current => ({ ...current, odometer: event.target.value }))} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Make" htmlFor="acquire-make" error={showErrors ? acquireErrors.make : null}>
+          <FieldRow label="Marca" htmlFor="acquire-make" error={showErrors ? acquireErrors.make : null}>
             <Input className="rounded-[4px]" id="acquire-make" value={acquire.make} onChange={event => setAcquire(current => ({ ...current, make: event.target.value }))} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Model" htmlFor="acquire-model" error={showErrors ? acquireErrors.model : null}>
+          <FieldRow label="Modelo" htmlFor="acquire-model" error={showErrors ? acquireErrors.model : null}>
             <Input className="rounded-[4px]" id="acquire-model" value={acquire.model} onChange={event => setAcquire(current => ({ ...current, model: event.target.value }))} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Appraisal" htmlFor="acquire-appraisal" error={showErrors ? acquireErrors.appraisalCents : null}>
+          <FieldRow label="Tasación" htmlFor="acquire-appraisal" error={showErrors ? acquireErrors.appraisalCents : null}>
             <MoneyInput id="acquire-appraisal" cents={acquire.appraisalCents} onCentsChange={cents => setAcquire(current => ({ ...current, appraisalCents: cents }))} disabled={busy} />
           </FieldRow>
-          <FieldRow label="Recon estimate" htmlFor="acquire-recon">
+          <FieldRow label="Presupuesto de preparación" htmlFor="acquire-recon">
             <MoneyInput id="acquire-recon" cents={acquire.reconEstimateCents} onCentsChange={cents => setAcquire(current => ({ ...current, reconEstimateCents: cents }))} disabled={busy} />
           </FieldRow>
           <div className="sm:col-span-2">
-            <FieldRow label="Reason" htmlFor="acquire-reason" error={showErrors ? acquireErrors.reason : null}>
+            <FieldRow label="Motivo" htmlFor="acquire-reason" error={showErrors ? acquireErrors.reason : null}>
               <Textarea className="rounded-[4px]" id="acquire-reason" rows={2} maxLength={500} value={acquire.reason} onChange={event => setAcquire(current => ({ ...current, reason: event.target.value }))} disabled={busy} />
             </FieldRow>
           </div>

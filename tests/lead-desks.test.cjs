@@ -33,11 +33,11 @@ const account = load('features/storefront/lib/accountRecords');
 const plain = value => JSON.parse(JSON.stringify(value));
 
 test('finance desk is not "Up to date" while a storefront application waits on a lender', () => {
-  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 1 })), { tone: 'warn', label: '1 application waiting' });
-  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 3 })), { tone: 'warn', label: '3 applications waiting' });
-  assert.equal(display.financeDeskStatus({ error: false, approvalsWaiting: 2, applicationsWaiting: 1 }).label, 'Approvals waiting');
-  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 0 })), { tone: 'ok', label: 'Up to date' });
-  assert.equal(display.financeDeskStatus({ error: true, approvalsWaiting: 0, applicationsWaiting: 4 }).label, 'Unavailable');
+  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 1 })), { tone: 'warn', label: '1 solicitud pendiente' });
+  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 3 })), { tone: 'warn', label: '3 solicitudes pendientes' });
+  assert.equal(display.financeDeskStatus({ error: false, approvalsWaiting: 2, applicationsWaiting: 1 }).label, 'Aprobaciones pendientes');
+  assert.deepEqual(plain(display.financeDeskStatus({ error: false, approvalsWaiting: 0, applicationsWaiting: 0 })), { tone: 'ok', label: 'Al día' });
+  assert.equal(display.financeDeskStatus({ error: true, approvalsWaiting: 0, applicationsWaiting: 4 }).label, 'No disponible');
 });
 
 test('countLabel pluralizes', () => {
@@ -47,9 +47,9 @@ test('countLabel pluralizes', () => {
 });
 
 test('financing form values read as the customer chose them', () => {
-  assert.equal(display.employmentLabel('self-employed'), 'Self-employed');
-  assert.equal(display.creditTierLabel('good-680-719'), 'Good (680–719)');
-  assert.equal(display.creditTierLabel('rebuilding-under-620'), 'Rebuilding (<620)');
+  assert.equal(display.employmentLabel('self-employed'), 'Monotributista / autónomo');
+  assert.equal(display.creditTierLabel('good-680-719'), 'Bueno');
+  assert.equal(display.creditTierLabel('rebuilding-under-620'), 'Con deudas / en recuperación');
   assert.equal(display.creditTierLabel('legacy-value'), 'legacy-value');
   assert.equal(display.employmentLabel(null), '-');
 });
@@ -74,7 +74,7 @@ test('a trade-in whose lead was closed lost leaves the appraisal queue', () => {
   const closed = tradeIn({ lead: { ...open.lead, status: 'closed-lost' } });
   assert.equal(tradeIns.tradeInQueue(open, null), 'appraise');
   assert.equal(tradeIns.tradeInQueue(closed, null), 'closed');
-  assert.deepEqual(plain(tradeIns.tradeInState(closed, null)), { tone: 'idle', label: 'Closed' });
+  assert.deepEqual(plain(tradeIns.tradeInState(closed, null)), { tone: 'idle', label: 'Cerrado' });
   // A trade-in already on a deal or acquired keeps that state; the deal owns it now.
   assert.equal(tradeIns.tradeInQueue({ ...closed, deal: { id: 'd1', status: 'pencil' } }, null), 'on-deal');
   assert.equal(tradeIns.tradeInQueue(closed, { id: 'a1' }), 'acquired');
@@ -93,10 +93,10 @@ test('a closed trade-in offers no actions', () => {
 
 test('a closed trade-in states why, from its lost lead', () => {
   const lead = tradeIn().lead;
-  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost', lostReasonCode: 'other', lostReason: 'QA test submission' } }), 'Other: QA test submission');
-  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost', lostReasonCode: 'purchased-elsewhere', lostReason: '' } }), 'Purchased elsewhere');
+  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost', lostReasonCode: 'other', lostReason: 'QA test submission' } }), 'Otro: QA test submission');
+  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost', lostReasonCode: 'purchased-elsewhere', lostReason: '' } }), 'Compró en otro lado');
   assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost', lostReasonCode: null, lostReason: 'Sold it privately' } }), 'Sold it privately');
-  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost' } }), 'No reason recorded');
+  assert.equal(tradeIns.tradeInClosedReason({ lead: { ...lead, status: 'closed-lost' } }), 'Sin motivo registrado');
 });
 
 test('admin and customer read trade-in state from one mapper', () => {

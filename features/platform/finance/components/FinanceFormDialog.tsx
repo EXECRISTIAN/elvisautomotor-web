@@ -31,7 +31,7 @@ export function FinanceFormDialog({
   errors,
   error,
   busy,
-  submitLabel = 'Save',
+  submitLabel = 'Guardar',
   children,
   onValuesChange,
   onSubmit,
@@ -119,8 +119,8 @@ export function FinanceFormDialog({
           {error && <Notice tone="bad">{error}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Saving…' : submitLabel}</Pill>
+              <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Guardando…' : submitLabel}</Pill>
             </Track>
           </DialogFooter>
         </form>

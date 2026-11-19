@@ -79,7 +79,7 @@ export function DealMenuPanel({
   })
   const currentMenu = data?.menus[0] ?? null
   const dealActive = ACTIVE_DEAL.includes(deal.status || '')
-  const inactiveReason = dealActive ? null : 'Deal must be submitted, approved or financed'
+  const inactiveReason = dealActive ? null : 'La operación debe estar enviada, aprobada o financiada'
 
   const openQuote = useCallback((product: MenuProduct) => {
     const prior = latestQuote.get(product.id)
@@ -128,7 +128,7 @@ export function DealMenuPanel({
     if (!dialog) return
     const errors: FieldErrors = {}
     let run: (() => Promise<{ success: boolean; error?: string }>) | null = null
-    let message = 'Saved.'
+    let message = 'Guardado.'
     if (dialog.kind === 'quote') {
       const v = dialog.values
       const status = v.status as 'requested' | 'quoted' | 'failed'
@@ -137,15 +137,15 @@ export function DealMenuPanel({
       const cost = (v.cost || '').trim() ? parseDollarsToCents(v.cost) : null
       const term = (v.term || '').trim() ? Number(v.term) : null
       if (status === 'quoted') {
-        if (retail == null) errors.retail = 'Enter the quoted retail price.'
+        if (retail == null) errors.retail = 'Ingresá el precio cotizado.'
         if (cost == null) errors.cost = 'Enter the quoted dealer cost.'
         if (!(v.reference || '').trim()) errors.reference = 'Enter the provider rate or quote reference.'
       } else {
-        if ((v.retail || '').trim() && retail == null) errors.retail = 'Enter a dollar amount.'
-        if ((v.cost || '').trim() && cost == null) errors.cost = 'Enter a dollar amount.'
+        if ((v.retail || '').trim() && retail == null) errors.retail = 'Ingresá un importe.'
+        if ((v.cost || '').trim() && cost == null) errors.cost = 'Ingresá un importe.'
       }
       if (term != null && (!Number.isInteger(term) || term < 1 || term > 240)) errors.term = 'Enter 1 to 240 months.'
-      if ((v.reference || '').length > 200) errors.reference = 'Use 200 characters or fewer.'
+      if ((v.reference || '').length > 200) errors.reference = 'Usá 200 caracteres o menos.'
       run = () => quoteFinanceProduct({
         dealId: deal.id, productId: dialog.product.id, status,
         retailPriceCents: retail, costCents: cost, termMonths: term,
@@ -154,7 +154,7 @@ export function DealMenuPanel({
       message = `${dialog.product.code} quote recorded.`
     } else if (dialog.kind === 'present') {
       run = () => presentDealFinanceMenu({ dealId: deal.id, expectedUpdatedAt: deal.updatedAt, productCodes: dialog.picked, idempotencyKey: dialog.idempotencyKey })
-      message = dialog.picked.length ? `Menu presented with ${countLabel(dialog.picked.length, 'product')}.` : 'Menu presented with no products.'
+      message = dialog.picked.length ? `Menú presentado con ${countLabel(dialog.picked.length, 'producto')}.` : 'Menú presentado sin productos.'
     } else {
       const codes = Object.keys(dialog.choices)
       for (const code of codes) if (!dialog.choices[code]) errors[`choice:${code}`] = 'Choose or decline.'
@@ -166,33 +166,33 @@ export function DealMenuPanel({
         selectedProductCodes: selected, declinedProductCodes: codes.filter(code => dialog.choices[code] === 'declined'),
         disclosureAcknowledgment: acknowledgment, idempotencyKey: dialog.idempotencyKey,
       })
-      message = selected.length ? `Menu accepted: ${selected.join(', ')}.` : 'Menu declined.'
+      message = selected.length ? `Menu accepted: ${selected.join(', ')}.` : 'Menú rechazado.'
     }
     setFieldErrors(errors)
     if (Object.keys(errors).length || !run) return
     setBusy(true); setFormError(null)
     const response = await run()
     setBusy(false)
-    if (!response.success) { setFormError(response.error || 'Unable to save.'); return }
+    if (!response.success) { setFormError(response.error || 'No se pudo guardar.'); return }
     setDialog(null)
     await load()
     await onChanged(message)
   }
 
   const quoteFields: FinanceFormField[] = dialog?.kind === 'quote' ? [
-    { name: 'status', label: 'Result', type: 'select', options: [{ value: 'quoted', label: 'Quoted' }, { value: 'requested', label: 'Requested' }, { value: 'failed', label: 'Cannot quote' }] },
-    { name: 'term', label: 'Term (months)', type: 'number', placeholder: '60' },
-    { name: 'retail', label: 'Retail price', type: 'money' },
-    { name: 'cost', label: 'Dealer cost', type: 'money' },
-    { name: 'reference', label: dialog.values.status === 'quoted' ? 'Rate reference' : 'Reference (optional)', maxLength: 200, wide: true },
+    { name: 'status', label: 'Resultado', type: 'select', options: [{ value: 'quoted', label: 'Cotizado' }, { value: 'requested', label: 'Solicitado' }, { value: 'failed', label: 'No se puede cotizar' }] },
+    { name: 'term', label: 'Plazo (meses)', type: 'number', placeholder: '60' },
+    { name: 'retail', label: 'Precio de venta', type: 'money' },
+    { name: 'cost', label: 'Costo', type: 'money' },
+    { name: 'reference', label: dialog.values.status === 'quoted' ? 'Referencia de tasa' : 'Referencia (opcional)', maxLength: 200, wide: true },
   ] : dialog?.kind === 'decide' ? [
-    { name: 'acknowledgment', label: 'Disclosure acknowledgment', type: 'textarea', maxLength: 1000 },
+    { name: 'acknowledgment', label: 'Aceptación de condiciones', type: 'textarea', maxLength: 1000 },
   ] : []
 
   const optionRow = (option: MenuOption, menu: MenuVersion) => {
     const chosen = (menu.selectedProductCodes || []).includes(option.code)
     const declined = (menu.declinedProductCodes || []).includes(option.code)
-    const state = chosen ? 'Chosen' : declined ? 'Declined' : menu.status === 'presented' ? 'Awaiting' : '-'
+    const state = chosen ? 'Chosen' : declined ? 'Rechazada' : menu.status === 'presented' ? 'Awaiting' : '-'
     return (
       <li key={option.code} className="flex min-w-0 items-start justify-between gap-4 py-2">
         <div className="min-w-0">
@@ -210,15 +210,15 @@ export function DealMenuPanel({
 
   return (
     <DeskSection
-      title="F&I menu"
+      title="Menú de productos"
       count={activeProducts.length}
       actions={
         <Track>
           <Pill size="sm" variant={presentStep?.available ? 'primary' : 'raised'} disabled={busy || Boolean(presentDisabledReason) || !data} title={presentDisabledReason || undefined} onClick={openPresent}>
-            {currentMenu && currentMenu.status !== 'superseded' ? 'Present new menu' : 'Present menu'}
+            {currentMenu && currentMenu.status !== 'superseded' ? 'Presentar nuevo menú' : 'Presentar menú'}
           </Pill>
           <Pill size="sm" variant={decideStep?.available ? 'primary' : 'raised'} disabled={busy || Boolean(decideDisabledReason)} title={decideDisabledReason || undefined} onClick={openDecide}>
-            Record decision
+            Registrar decisión
           </Pill>
         </Track>
       }
@@ -228,11 +228,11 @@ export function DealMenuPanel({
           <Notice tone="bad">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span>{loadError}</span>
-              <Track><Pill size="sm" onClick={() => void load()}>Retry</Pill></Track>
+              <Track><Pill size="sm" onClick={() => void load()}>Reintentar</Pill></Track>
             </div>
           </Notice>
         )}
-        {!data && !loadError && <p className="py-3 text-sm text-muted-foreground" role="status">Loading products…</p>}
+        {!data && !loadError && <p className="py-3 text-sm text-muted-foreground" role="status">Cargando productos…</p>}
         {(presentDisabledReason || decideDisabledReason) && data && (
           <p className="text-xs text-muted-foreground">
             {[presentDisabledReason ? `Present: ${presentDisabledReason}` : null, decideDisabledReason && currentMenu?.status === 'presented' ? `Decision: ${decideDisabledReason}` : null].filter(Boolean).join(' · ')}
@@ -242,11 +242,11 @@ export function DealMenuPanel({
         {data && (
           activeProducts.length === 0 ? (
             <div className="flex flex-wrap items-center justify-between gap-3 py-2 text-sm text-muted-foreground">
-              <span>No active products at this rooftop</span>
-              <Track><Pill size="sm" asChild><Link href={`${basePath}/platform/finance/products`}>F&I products</Link></Pill></Track>
+              <span>No hay productos activos en esta sucursal</span>
+              <Track><Pill size="sm" asChild><Link href={`${basePath}/platform/finance/products`}>Productos adicionales</Link></Pill></Track>
             </div>
           ) : (
-            <ul className="divide-y text-sm" aria-label="Product quotes">
+            <ul className="divide-y text-sm" aria-label="Cotizaciones de productos">
               {activeProducts.map(product => {
                 const quote = latestQuote.get(product.id)
                 const term = termOf(quote)
@@ -263,12 +263,12 @@ export function DealMenuPanel({
                         {quote ? ` · ${formatDay(quote.completedAt || quote.requestedAt, timeZone)}` : ''}
                       </p>
                       <p className="pl-4 text-xs tabular-nums text-muted-foreground">
-                        Price {formatCents(quote?.retailPriceCents ?? product.retailPriceCents)} · Cost {formatCents(quote ? quote.costCents : product.costCents, 'hidden')} · {term ? `${term} mo` : 'No term'}
+                        Price {formatCents(quote?.retailPriceCents ?? product.retailPriceCents)} · Cost {formatCents(quote ? quote.costCents : product.costCents, 'hidden')} · {term ? `${term} mo` : 'Sin plazo'}
                       </p>
                     </div>
                     <Track className="shrink-0 self-start pl-4 sm:self-auto sm:pl-0">
                       <Pill size="sm" disabled={busy || Boolean(inactiveReason)} title={inactiveReason || undefined} onClick={() => openQuote(product)}>
-                        {quote ? 'Requote' : 'Quote'}
+                        {quote ? 'Volver a cotizar' : 'Cotizar'}
                       </Pill>
                     </Track>
                   </li>
@@ -289,13 +289,13 @@ export function DealMenuPanel({
               </p>
             </div>
             {(currentMenu.optionsSnapshot || []).length === 0
-              ? <p className="pl-4 text-xs text-muted-foreground">No products on this menu</p>
+              ? <p className="pl-4 text-xs text-muted-foreground">No hay productos en este menú</p>
               : <ul className="divide-y text-sm">{(currentMenu.optionsSnapshot || []).map(option => optionRow(option, currentMenu))}</ul>}
             {currentMenu.disclosureAcknowledgment && <p className="pl-4 text-xs text-muted-foreground">Acknowledgment: {currentMenu.disclosureAcknowledgment}</p>}
             {data.menus.length > 1 && <p className="pl-4 text-xs text-muted-foreground">{data.menus.length - 1} earlier versions superseded</p>}
           </div>
         )}
-        {loading && data && <span className="sr-only" role="status">Refreshing menu</span>}
+        {loading && data && <span className="sr-only" role="status">Actualizando menú</span>}
       </div>
 
       <FinanceFormDialog
@@ -306,15 +306,15 @@ export function DealMenuPanel({
         errors={fieldErrors}
         error={formError}
         busy={busy}
-        submitLabel={dialog?.kind === 'present' ? 'Present' : 'Save'}
+        submitLabel={dialog?.kind === 'present' ? 'Presentar' : 'Guardar'}
         onValuesChange={values => setDialog(current => current && (current.kind === 'quote' || current.kind === 'decide') ? { ...current, values } : current)}
         onSubmit={submit}
         onOpenChange={open => { if (!open) close() }}
       >
         {dialog?.kind === 'present' && (
           <fieldset className="space-y-2">
-            <legend className="text-[12px] font-medium text-muted-foreground">Quoted products</legend>
-            {quotedProducts.length === 0 && <p className="text-sm text-muted-foreground">No quoted products; the menu is presented empty</p>}
+            <legend className="text-[12px] font-medium text-muted-foreground">Productos cotizados</legend>
+            {quotedProducts.length === 0 && <p className="text-sm text-muted-foreground">Sin productos cotizados; el menú se presenta vacío</p>}
             {quotedProducts.map(product => {
               const quote = latestQuote.get(product.id)
               const checked = dialog.picked.includes(product.code)
@@ -333,8 +333,8 @@ export function DealMenuPanel({
         )}
         {dialog?.kind === 'decide' && (
           <fieldset className="space-y-2">
-            <legend className="text-[12px] font-medium text-muted-foreground">Customer choice</legend>
-            {(dialog.menu.optionsSnapshot || []).length === 0 && <p className="text-sm text-muted-foreground">No products on this menu; the decision records a decline</p>}
+            <legend className="text-[12px] font-medium text-muted-foreground">Elección del cliente</legend>
+            {(dialog.menu.optionsSnapshot || []).length === 0 && <p className="text-sm text-muted-foreground">No hay productos en este menú; se registra como rechazado</p>}
             {(dialog.menu.optionsSnapshot || []).map(option => (
               <div key={option.code} className="flex min-w-0 flex-col gap-2 rounded-md bg-muted/50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 text-sm">
@@ -346,7 +346,7 @@ export function DealMenuPanel({
                   label={`${option.code} choice`}
                   value={dialog.choices[option.code] || ''}
                   onChange={value => setDialog(current => current?.kind === 'decide' ? { ...current, choices: { ...current.choices, [option.code]: value as 'chosen' | 'declined' } } : current)}
-                  options={[{ value: 'chosen', label: 'Choose', tone: 'ok' }, { value: 'declined', label: 'Decline', tone: 'idle' }]}
+                  options={[{ value: 'chosen', label: 'Elegir', tone: 'ok' }, { value: 'declined', label: 'Rechazar', tone: 'idle' }]}
                 />
               </div>
             ))}

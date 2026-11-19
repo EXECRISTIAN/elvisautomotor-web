@@ -67,8 +67,8 @@ export function HouseholdLinkDialog({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const found = {
-      member: !member ? 'Select a customer' : conflict ? 'Already in a different household' : undefined,
-      displayName: !displayName.trim() ? 'Required' : displayName.length > 200 ? 'At most 200 characters' : undefined,
+      member: !member ? 'Elegí un cliente' : conflict ? 'Ya está en otro grupo familiar' : undefined,
+      displayName: !displayName.trim() ? 'Obligatorio' : displayName.length > 200 ? 'Máximo 200 caracteres' : undefined,
     }
     setErrors(found)
     if (found.member || found.displayName || !member) return
@@ -82,12 +82,12 @@ export function HouseholdLinkDialog({
   return (
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader><DialogTitle>{currentHousehold ? 'Add household member' : 'Link household'}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{currentHousehold ? 'Agregar integrante' : 'Vincular grupo familiar'}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
-          <FormField id="household-search" label="Customer" error={errors.member}>
+          <FormField id="household-search" label="Cliente" error={errors.member}>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="household-search" className="rounded-[4px] h-11 pl-9 sm:h-9" placeholder="Search name, email, phone" value={search} onChange={event => setSearch(event.target.value)} autoComplete="off" />
+              <Input id="household-search" className="rounded-[4px] h-11 pl-9 sm:h-9" placeholder="Buscar por nombre, email o teléfono" value={search} onChange={event => setSearch(event.target.value)} autoComplete="off" />
             </div>
           </FormField>
           {member ? (
@@ -98,14 +98,14 @@ export function HouseholdLinkDialog({
                   {[member.primaryEmail, formatPhone(member.primaryPhone), member.household?.displayName ? `Household ${member.household.displayName}` : null].filter(Boolean).join(' · ')}
                 </p>
               </div>
-              <Track className="shrink-0"><Pill size="sm" className="h-11 sm:h-7" onClick={() => setMember(null)}>Change</Pill></Track>
+              <Track className="shrink-0"><Pill size="sm" className="h-11 sm:h-7" onClick={() => setMember(null)}>Cambiar</Pill></Track>
             </Panel>
           ) : search.trim().length >= 2 && (
             <Panel className="max-h-60 divide-y overflow-y-auto">
               {searching && results.length === 0 ? (
-                <p className="px-3 py-3 text-sm text-muted-foreground">Searching…</p>
+                <p className="px-3 py-3 text-sm text-muted-foreground">Buscando…</p>
               ) : results.length === 0 ? (
-                <p className="px-3 py-3 text-sm text-muted-foreground">No matching customers</p>
+                <p className="px-3 py-3 text-sm text-muted-foreground">No hay clientes que coincidan</p>
               ) : results.map(result => (
                 <button
                   key={result.id}
@@ -121,15 +121,15 @@ export function HouseholdLinkDialog({
               ))}
             </Panel>
           )}
-          {conflict && <Notice tone="warn">Selected customer is already in another household</Notice>}
-          <FormField id="household-name" label="Household name" error={errors.displayName}>
+          {conflict && <Notice tone="warn">El cliente elegido ya está en otro grupo familiar</Notice>}
+          <FormField id="household-name" label="Nombre del grupo familiar" error={errors.displayName}>
             <Input id="household-name" className="rounded-[4px] h-11 sm:h-9" maxLength={200} value={displayName} aria-invalid={Boolean(errors.displayName)} onChange={event => { setDisplayName(event.target.value); setErrors(prev => ({ ...prev, displayName: undefined })) }} />
           </FormField>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy || Boolean(conflict)}>{busy ? 'Saving…' : 'Link'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy || Boolean(conflict)}>{busy ? 'Guardando…' : 'Vincular'}</Pill>
             </Track>
           </DialogFooter>
         </form>

@@ -22,21 +22,21 @@ export type VisitDialogValues = {
 }
 
 const TITLES: Record<VisitDialogAction, string> = {
-  schedule: 'Schedule visit',
-  arrive: 'Check in',
-  'manager-turn': 'Manager turn',
-  complete: 'Complete visit',
-  cancel: 'Cancel visit',
-  'no-show': 'Mark no-show',
+  schedule: 'Agendar visita',
+  arrive: 'Registrar llegada',
+  'manager-turn': 'Pase al gerente',
+  complete: 'Cerrar visita',
+  cancel: 'Cancelar visita',
+  'no-show': 'Marcar ausente',
 }
 
 const SUBMIT: Record<VisitDialogAction, string> = {
-  schedule: 'Schedule',
-  arrive: 'Check in',
-  'manager-turn': 'Hand to manager',
-  complete: 'Complete',
-  cancel: 'Cancel visit',
-  'no-show': 'Mark no-show',
+  schedule: 'Agendar',
+  arrive: 'Registrar llegada',
+  'manager-turn': 'Pasar al gerente',
+  complete: 'Completar',
+  cancel: 'Cancelar visita',
+  'no-show': 'Marcar ausente',
 }
 
 function vehicleLabel(vehicle: CrmVehicleOption) {
@@ -98,11 +98,11 @@ export function SalesVisitDialog({
     let scheduledAtIso: string | null = null
     if (action === 'schedule' && values.kind === 'appointment') {
       scheduledAtIso = values.scheduledAt ? fromZonedInputValue(values.scheduledAt, timeZone) : null
-      if (!scheduledAtIso) found.scheduledAt = 'Required'
+      if (!scheduledAtIso) found.scheduledAt = 'Obligatorio'
     }
-    if (action === 'manager-turn' && !values.managerId) found.managerId = 'Required'
-    if (action === 'complete' && !values.outcome) found.outcome = 'Required'
-    if (values.notes.length > 4000) found.notes = 'At most 4000 characters'
+    if (action === 'manager-turn' && !values.managerId) found.managerId = 'Obligatorio'
+    if (action === 'complete' && !values.outcome) found.outcome = 'Obligatorio'
+    if (values.notes.length > 4000) found.notes = 'Máximo 4000 caracteres'
     setErrors(found)
     if (Object.values(found).some(Boolean)) return
     setBusy(true)
@@ -123,25 +123,25 @@ export function SalesVisitDialog({
         <form onSubmit={submit} className="space-y-4" noValidate>
           {action === 'schedule' && (
             <>
-              <FormField id="visit-kind" label="Type">
+              <FormField id="visit-kind" label="Tipo">
                 <Select value={values.kind} onValueChange={value => set('kind', value)}>
                   <SelectTrigger id="visit-kind" className={fieldClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="appointment">Sales appointment</SelectItem>
-                    <SelectItem value="showroom">Showroom up (arrived now)</SelectItem>
+                    <SelectItem value="appointment">Cita de venta</SelectItem>
+                    <SelectItem value="showroom">Llegó al salón (ahora)</SelectItem>
                   </SelectContent>
                 </Select>
               </FormField>
               {values.kind === 'appointment' && (
-                <FormField id="visit-time" label="Time" error={errors.scheduledAt}>
+                <FormField id="visit-time" label="Hora" error={errors.scheduledAt}>
                   <Input id="visit-time" type="datetime-local" className={fieldClass} value={values.scheduledAt} aria-invalid={Boolean(errors.scheduledAt)} onChange={event => set('scheduledAt', event.target.value)} />
                 </FormField>
               )}
-              <FormField id="visit-vehicle" label="Vehicle">
+              <FormField id="visit-vehicle" label="Vehículo">
                 <Select value={values.vehicleId || NONE} onValueChange={value => set('vehicleId', value === NONE ? '' : value)}>
                   <SelectTrigger id="visit-vehicle" className={fieldClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NONE}>No vehicle</SelectItem>
+                    <SelectItem value={NONE}>Sin vehículo</SelectItem>
                     {vehicles.map(vehicle => <SelectItem key={vehicle.id} value={vehicle.id}>{vehicleLabel(vehicle)}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -149,30 +149,30 @@ export function SalesVisitDialog({
             </>
           )}
           {action === 'manager-turn' && (
-            <FormField id="visit-manager" label="Manager" error={errors.managerId}>
+            <FormField id="visit-manager" label="Gerente" error={errors.managerId}>
               <Select value={values.managerId || undefined} onValueChange={value => set('managerId', value)}>
-                <SelectTrigger id="visit-manager" className={fieldClass} aria-invalid={Boolean(errors.managerId)}><SelectValue placeholder="Select manager" /></SelectTrigger>
+                <SelectTrigger id="visit-manager" className={fieldClass} aria-invalid={Boolean(errors.managerId)}><SelectValue placeholder="Elegí el gerente" /></SelectTrigger>
                 <SelectContent>{staff.map(person => <SelectItem key={person.id} value={person.id}>{person.name || 'Unnamed'}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>
           )}
           {action === 'complete' && (
-            <FormField id="visit-outcome" label="Outcome" error={errors.outcome}>
+            <FormField id="visit-outcome" label="Resultado" error={errors.outcome}>
               <Select value={values.outcome || undefined} onValueChange={value => set('outcome', value)}>
-                <SelectTrigger id="visit-outcome" className={fieldClass} aria-invalid={Boolean(errors.outcome)}><SelectValue placeholder="Select outcome" /></SelectTrigger>
+                <SelectTrigger id="visit-outcome" className={fieldClass} aria-invalid={Boolean(errors.outcome)}><SelectValue placeholder="Elegí el resultado" /></SelectTrigger>
                 <SelectContent>{VISIT_OUTCOMES.map(outcome => <SelectItem key={outcome.value} value={outcome.value}>{outcome.label}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>
           )}
-          <FormField id="visit-notes" label="Notes" error={errors.notes}>
+          <FormField id="visit-notes" label="Notas" error={errors.notes}>
             <Textarea className="rounded-[4px]" id="visit-notes" rows={3} maxLength={4000} value={values.notes} onChange={event => set('notes', event.target.value)} />
           </FormField>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Back</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Volver</Pill>
               <Pill type="submit" variant={action === 'cancel' || action === 'no-show' ? 'danger' : 'primary'} className="h-11 sm:h-8" disabled={busy}>
-                {busy ? 'Saving…' : SUBMIT[action]}
+                {busy ? 'Guardando…' : SUBMIT[action]}
               </Pill>
             </Track>
           </DialogFooter>

@@ -3,12 +3,12 @@ import type { DeskTone } from '@/features/platform/components/desk'
 export const PRODUCT_CATEGORIES = ['service-contract', 'gap', 'maintenance', 'appearance', 'tire-wheel', 'other'] as const
 
 export const categoryLabels: Record<string, string> = {
-  'service-contract': 'Service contract',
+  'service-contract': 'Garantía extendida',
   gap: 'GAP',
-  maintenance: 'Maintenance',
-  appearance: 'Appearance',
-  'tire-wheel': 'Tire and wheel',
-  other: 'Other',
+  maintenance: 'Mantenimiento',
+  appearance: 'Estética',
+  'tire-wheel': 'Cubiertas y llantas',
+  other: 'Otro',
 }
 
 export function formatCents(cents: number | null | undefined, empty = '-') {
@@ -44,7 +44,7 @@ export function personName(person: { firstName?: string | null; lastName?: strin
   return [person.firstName, person.lastName].filter(Boolean).join(' ') || fallback
 }
 
-export function vehicleName(vehicle: { year?: number | null; make?: string | null; model?: string | null } | null | undefined, fallback = 'No vehicle') {
+export function vehicleName(vehicle: { year?: number | null; make?: string | null; model?: string | null } | null | undefined, fallback = 'Sin vehículo') {
   if (!vehicle) return fallback
   return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || fallback
 }
@@ -63,7 +63,7 @@ export function daysSince(value: string | null | undefined, now = Date.now()) {
 
 export function formatAge(days: number | null) {
   if (days == null) return '-'
-  return days === 0 ? 'Today' : `${days}d`
+  return days === 0 ? 'Hoy' : `${days} d`
 }
 
 export function countLabel(count: number, one: string, many = `${one}s`) {
@@ -72,19 +72,19 @@ export function countLabel(count: number, one: string, many = `${one}s`) {
 
 /** Desk headline: manager approvals first, then storefront applications still waiting on a lender. */
 export function financeDeskStatus({ error, approvalsWaiting, applicationsWaiting }: { error: boolean; approvalsWaiting: number; applicationsWaiting: number }): { tone: DeskTone; label: string } {
-  if (error) return { tone: 'bad', label: 'Unavailable' }
-  if (approvalsWaiting > 0) return { tone: 'warn', label: 'Approvals waiting' }
-  if (applicationsWaiting > 0) return { tone: 'warn', label: `${countLabel(applicationsWaiting, 'application')} waiting` }
-  return { tone: 'ok', label: 'Up to date' }
+  if (error) return { tone: 'bad', label: 'No disponible' }
+  if (approvalsWaiting > 0) return { tone: 'warn', label: 'Aprobaciones pendientes' }
+  if (applicationsWaiting > 0) return { tone: 'warn', label: `${countLabel(applicationsWaiting, 'solicitud', 'solicitudes')} ${applicationsWaiting === 1 ? 'pendiente' : 'pendientes'}` }
+  return { tone: 'ok', label: 'Al día' }
 }
 
 // Storefront financing form values (FinancingPage) shown as the customer chose them.
 const employmentLabels: Record<string, string> = {
-  employed: 'Employed', 'self-employed': 'Self-employed', retired: 'Retired', student: 'Student', other: 'Other',
+  employed: 'Empleado en relación de dependencia', 'self-employed': 'Monotributista / autónomo', retired: 'Jubilado', student: 'Estudiante', other: 'Otro',
 }
 const creditTierLabels: Record<string, string> = {
-  'excellent-720-plus': 'Excellent (720+)', 'good-680-719': 'Good (680–719)', 'fair-620-679': 'Fair (620–679)',
-  'rebuilding-under-620': 'Rebuilding (<620)', unknown: 'Not sure',
+  'excellent-720-plus': 'Muy bueno', 'good-680-719': 'Bueno', 'fair-620-679': 'Regular',
+  'rebuilding-under-620': 'Con deudas / en recuperación', unknown: 'No sé',
 }
 export function employmentLabel(value: string | null | undefined) {
   return value ? employmentLabels[value] || value : '-'

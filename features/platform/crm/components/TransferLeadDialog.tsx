@@ -43,8 +43,8 @@ export function TransferLeadDialog({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const found = {
-      assignedToId: assignedToId ? undefined : 'Required',
-      reason: !reason.trim() ? 'Required' : reason.length > 500 ? 'At most 500 characters' : undefined,
+      assignedToId: assignedToId ? undefined : 'Obligatorio',
+      reason: !reason.trim() ? 'Obligatorio' : reason.length > 500 ? 'Máximo 500 caracteres' : undefined,
     }
     setErrors(found)
     if (found.assignedToId || found.reason) return
@@ -59,25 +59,25 @@ export function TransferLeadDialog({
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Transfer lead</DialogTitle>
+          <DialogTitle>Transferir consulta</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
-          <FormField id="transfer-owner" label="New salesperson" error={errors.assignedToId}>
+          <FormField id="transfer-owner" label="Nuevo vendedor" error={errors.assignedToId}>
             <Select value={assignedToId || undefined} onValueChange={value => { setAssignedToId(value); setErrors(prev => ({ ...prev, assignedToId: undefined })) }}>
               <SelectTrigger id="transfer-owner" className="h-11 rounded-[4px] sm:h-9" aria-invalid={Boolean(errors.assignedToId)}>
-                <SelectValue placeholder={candidates.length ? 'Select salesperson' : 'No eligible staff'} />
+                <SelectValue placeholder={candidates.length ? 'Elegí el vendedor' : 'No hay personal disponible'} />
               </SelectTrigger>
               <SelectContent>{candidates.map(person => <SelectItem key={person.id} value={person.id}>{person.name || 'Unnamed'}</SelectItem>)}</SelectContent>
             </Select>
           </FormField>
-          <FormField id="transfer-reason" label="Reason" error={errors.reason}>
+          <FormField id="transfer-reason" label="Motivo" error={errors.reason}>
             <Textarea className="rounded-[4px]" id="transfer-reason" rows={3} maxLength={500} value={reason} aria-invalid={Boolean(errors.reason)} onChange={event => { setReason(event.target.value); setErrors(prev => ({ ...prev, reason: undefined })) }} />
           </FormField>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy || candidates.length === 0}>{busy ? 'Saving…' : 'Transfer'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy || candidates.length === 0}>{busy ? 'Guardando…' : 'Transferir'}</Pill>
             </Track>
           </DialogFooter>
         </form>

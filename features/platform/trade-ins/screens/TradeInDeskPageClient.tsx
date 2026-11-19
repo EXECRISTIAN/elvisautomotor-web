@@ -64,7 +64,7 @@ export function TradeInDeskPageClient({
     setError(null)
     const response = await getTradeIns()
     if (response.success) setData(response.data)
-    else setError(response.error || 'Unable to load trade-ins.')
+    else setError(response.error || 'No se pudieron cargar los usados.')
     setLoading(false)
   }
 
@@ -99,7 +99,7 @@ export function TradeInDeskPageClient({
       const response = await getTradeInCreateOptions()
       setCreateBusy(false)
       if (response.success) setCreateOptions(response.data)
-      else setCreateError(response.error || 'Unable to load rooftops.')
+      else setCreateError(response.error || 'No se pudieron cargar las sucursales.')
     }
     setCreateOpen(true)
   }
@@ -143,19 +143,19 @@ export function TradeInDeskPageClient({
 
   const header = (
     <DeskHeader
-      title="Trade-ins"
+      title="Usados ofrecidos"
       tone={error ? 'bad' : counts.appraise > 0 ? 'warn' : 'ok'}
-      status={error ? 'Unavailable' : `${counts.appraise} need appraisal`}
-      meta={error ? 'Unavailable' : `${counts.appraise} need appraisal · ${counts.offered} offered · ${counts['on-deal']} on deals`}
+      status={error ? 'No disponible' : `${counts.appraise} need appraisal`}
+      meta={error ? 'No disponible' : `${counts.appraise} por tasar · ${counts.offered} ofertados · ${counts['on-deal']} en operación`}
       actions={
         <>
-          <Pill variant="plain" className="max-md:h-10" onClick={load} disabled={loading} aria-label="Refresh trade-ins">
+          <Pill variant="plain" className="max-md:h-10" onClick={load} disabled={loading} aria-label="Actualizar usados">
             <RefreshCw className={loading ? 'animate-spin' : undefined} />
-            Refresh
+            Actualizar
           </Pill>
           <Pill variant="primary" className="max-md:h-10" onClick={openCreate} disabled={createBusy}>
             <Plus />
-            New trade-in
+            Nuevo usado ofrecido
           </Pill>
         </>
       }
@@ -163,12 +163,12 @@ export function TradeInDeskPageClient({
   )
 
   const filterOptions: Array<{ value: TradeInQueue; label: string; count: number; tone?: 'warn' | 'info' | 'ok' }> = [
-    { value: 'appraise', label: 'Needs appraisal', count: counts.appraise, tone: 'warn' },
-    { value: 'offered', label: 'Offered', count: counts.offered, tone: 'info' },
-    { value: 'on-deal', label: 'On deal', count: counts['on-deal'], tone: 'ok' },
-    ...(data.canSeeAcquisitions ? [{ value: 'acquired' as const, label: 'Acquired', count: counts.acquired }] : []),
-    ...(counts.closed > 0 ? [{ value: 'closed' as const, label: 'Closed', count: counts.closed }] : []),
-    { value: 'all', label: 'All', count: counts.all },
+    { value: 'appraise', label: 'Requiere tasación', count: counts.appraise, tone: 'warn' },
+    { value: 'offered', label: 'Ofertado', count: counts.offered, tone: 'info' },
+    { value: 'on-deal', label: 'En operación', count: counts['on-deal'], tone: 'ok' },
+    ...(data.canSeeAcquisitions ? [{ value: 'acquired' as const, label: 'Ingresado', count: counts.acquired }] : []),
+    ...(counts.closed > 0 ? [{ value: 'closed' as const, label: 'Cerrado', count: counts.closed }] : []),
+    { value: 'all', label: 'Todas', count: counts.all },
   ]
 
   // Appraisals waiting on a value, longest waiting first.
@@ -186,7 +186,7 @@ export function TradeInDeskPageClient({
       <Link href={detailHref(tradeIn)} onClick={event => event.stopPropagation()} className="font-medium text-foreground hover:underline">
         {tradeInVehicleLabel(tradeIn)}
       </Link>
-      <p className="text-xs text-muted-foreground">VIN <Code>{tradeIn.vin || 'not entered'}</Code></p>
+      <p className="text-xs text-muted-foreground">VIN / chasis <Code>{tradeIn.vin || 'not entered'}</Code></p>
     </>
   )
 
@@ -197,30 +197,30 @@ export function TradeInDeskPageClient({
 
   const conditionCell = (tradeIn: TradeIn) => tradeIn.condition
     ? <Status tone={conditionTone[tradeIn.condition] ?? 'idle'}>{conditionLabel(tradeIn.condition)}</Status>
-    : <span className="text-muted-foreground">Not graded</span>
+    : <span className="text-muted-foreground">Sin calificar</span>
 
   return (
-    <PageContainer title="Trade-Ins" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Usados ofrecidos" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-8 px-4 pb-24 md:px-6">
-        <DeskSection id="trade-ins-awaiting" title="Awaiting a value" count={error ? undefined : awaiting.length}>
+        <DeskSection id="trade-ins-awaiting" title="Esperando valor" count={error ? undefined : awaiting.length}>
           {error ? (
             <Notice tone="bad">
-              <p className="font-medium">Trade-ins unavailable</p>
+              <p className="font-medium">Usados no disponibles</p>
               <p className="mt-0.5 text-muted-foreground">{error}</p>
-              <Track className="mt-2"><Pill size="sm" onClick={load}>Retry</Pill></Track>
+              <Track className="mt-2"><Pill size="sm" onClick={load}>Reintentar</Pill></Track>
             </Notice>
           ) : awaiting.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground">No appraisals waiting</p>
+            <p className="text-[13px] text-muted-foreground">No hay tasaciones pendientes</p>
           ) : (
-            <DeskTable aria-label="Trade-ins awaiting a value">
+            <DeskTable aria-label="Usados esperando tasación">
               <thead>
                 <tr>
-                  <Th align="right" className="w-20">Waiting</Th>
-                  <Th>Vehicle</Th>
-                  <Th priority={2}>Customer</Th>
-                  <Th priority={3} align="right">Mileage</Th>
-                  <Th priority={3}>Condition</Th>
-                  <Th className="w-0"><span className="sr-only">Actions</span></Th>
+                  <Th align="right" className="w-20">Esperando</Th>
+                  <Th>Vehículo</Th>
+                  <Th priority={2}>Cliente</Th>
+                  <Th priority={3} align="right">Kilometraje</Th>
+                  <Th priority={3}>Estado</Th>
+                  <Th className="w-0"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -241,7 +241,7 @@ export function TradeInDeskPageClient({
                       <Td priority={3}>{conditionCell(tradeIn)}</Td>
                       <Td className="text-right">
                         <Pill asChild size="sm" variant="primary" className="h-10 md:h-7" onClick={event => event.stopPropagation()}>
-                          <Link href={detailHref(tradeIn)} aria-label={`Appraise ${tradeInVehicleLabel(tradeIn)}`}>Appraise</Link>
+                          <Link href={detailHref(tradeIn)} aria-label={`Appraise ${tradeInVehicleLabel(tradeIn)}`}>Tasar</Link>
                         </Pill>
                       </Td>
                     </Tr>
@@ -253,43 +253,43 @@ export function TradeInDeskPageClient({
         </DeskSection>
 
         <section aria-labelledby="trade-ins-all" className="min-w-0 space-y-3">
-          <h2 id="trade-ins-all" className="text-[15px] font-semibold text-foreground">All trade-ins</h2>
-          <Segmented<TradeInQueue> label="Filter trade-ins" value={filter} onChange={setFilter} options={filterOptions} className="max-md:[&_button]:h-10" />
+          <h2 id="trade-ins-all" className="text-[15px] font-semibold text-foreground">Todos los usados</h2>
+          <Segmented<TradeInQueue> label="Filtrar usados" value={filter} onChange={setFilter} options={filterOptions} className="max-md:[&_button]:h-10" />
           <div className="flex min-w-0 items-center gap-2">
             <div className="relative min-w-0 flex-1 sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="h-10 rounded-[4px] pl-9 text-[13px] sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Vehicle, customer, VIN or reference" aria-label="Search trade-ins" />
+              <Input className="h-10 rounded-[4px] pl-9 text-[13px] sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Vehículo, cliente, chasis o referencia" aria-label="Buscar usados" />
             </div>
             <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="h-10 w-[9.5rem] shrink-0 rounded-[4px] px-2.5 text-[13px] sm:h-9" aria-label="Sort trade-ins"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 w-[9.5rem] shrink-0 rounded-[4px] px-2.5 text-[13px] sm:h-9" aria-label="Ordenar usados"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="recent">Newest first</SelectItem>
-                <SelectItem value="vehicle">Vehicle</SelectItem>
-                <SelectItem value="offer-desc">Highest offer</SelectItem>
-                <SelectItem value="mileage">Lowest mileage</SelectItem>
+                <SelectItem value="recent">Más nuevas primero</SelectItem>
+                <SelectItem value="vehicle">Vehículo</SelectItem>
+                <SelectItem value="offer-desc">Mayor oferta</SelectItem>
+                <SelectItem value="mileage">Menor kilometraje</SelectItem>
               </SelectContent>
             </Select>
-            {loading && <span className="text-xs text-muted-foreground" role="status">Refreshing…</span>}
+            {loading && <span className="text-xs text-muted-foreground" role="status">Actualizando…</span>}
           </div>
 
           {error ? null : visible.length === 0 ? (
             <Panel className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-              <p className="text-sm text-muted-foreground">{tradeIns.length > 0 && isFiltered ? 'No matching trade-ins' : 'No trade-ins'}</p>
+              <p className="text-sm text-muted-foreground">{tradeIns.length > 0 && isFiltered ? 'No hay usados que coincidan' : 'No hay usados ofrecidos'}</p>
               <Track>
-                {tradeIns.length > 0 && isFiltered ? <Pill size="sm" className="max-md:h-10" onClick={resetFilters}>Reset filters</Pill> : <Pill size="sm" variant="primary" className="max-md:h-10" onClick={openCreate} disabled={createBusy}><Plus />New trade-in</Pill>}
+                {tradeIns.length > 0 && isFiltered ? <Pill size="sm" className="max-md:h-10" onClick={resetFilters}>Limpiar filtros</Pill> : <Pill size="sm" variant="primary" className="max-md:h-10" onClick={openCreate} disabled={createBusy}><Plus />Nuevo usado ofrecido</Pill>}
               </Track>
             </Panel>
           ) : (
-            <DeskTable aria-label="Trade-ins">
+            <DeskTable aria-label="Usados ofrecidos">
               <thead>
                 <tr>
-                  <Th>Vehicle</Th>
-                  <Th priority={2}>Status</Th>
-                  <Th priority={2}>Customer</Th>
-                  <Th priority={3} align="right">Mileage</Th>
-                  <Th priority={3}>Condition</Th>
-                  <Th align="right">Offer</Th>
-                  <Th priority={3} align="right">Reference</Th>
+                  <Th>Vehículo</Th>
+                  <Th priority={2}>Estado</Th>
+                  <Th priority={2}>Cliente</Th>
+                  <Th priority={3} align="right">Kilometraje</Th>
+                  <Th priority={3}>Estado</Th>
+                  <Th align="right">Oferta</Th>
+                  <Th priority={3} align="right">Referencia</Th>
                 </tr>
               </thead>
               <tbody>

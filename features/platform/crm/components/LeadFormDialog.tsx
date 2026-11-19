@@ -21,17 +21,17 @@ type FieldErrors = Partial<Record<keyof LeadFormValues, string>>
 
 export function validateLeadForm(values: LeadFormValues, requireRooftop: boolean): FieldErrors {
   const errors: FieldErrors = {}
-  if (!values.firstName.trim()) errors.firstName = 'Required'
-  if (!values.lastName.trim()) errors.lastName = 'Required'
+  if (!values.firstName.trim()) errors.firstName = 'Obligatorio'
+  if (!values.lastName.trim()) errors.lastName = 'Obligatorio'
   const email = values.email.trim()
   const phoneDigits = values.phone.replace(/\D/g, '')
-  if (!email && !values.phone.trim()) errors.phone = 'Email or phone required'
+  if (!email && !values.phone.trim()) errors.phone = 'Ingresá email o teléfono'
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Invalid email'
   if (values.phone.trim() && (phoneDigits.length < 7 || phoneDigits.length > 15)) errors.phone = 'Invalid phone'
-  if (!values.source) errors.source = 'Required'
-  if (requireRooftop && !values.rooftopId) errors.rooftopId = 'Required'
-  if (values.notes.length > 4000) errors.notes = 'At most 4000 characters'
-  if (values.tradeInVehicle.length > 300) errors.tradeInVehicle = 'At most 300 characters'
+  if (!values.source) errors.source = 'Obligatorio'
+  if (requireRooftop && !values.rooftopId) errors.rooftopId = 'Obligatorio'
+  if (values.notes.length > 4000) errors.notes = 'Máximo 4000 caracteres'
+  if (values.tradeInVehicle.length > 300) errors.tradeInVehicle = 'Máximo 300 caracteres'
   return errors
 }
 
@@ -109,87 +109,87 @@ export function LeadFormDialog({
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? 'New lead' : 'Edit lead details'}</DialogTitle>
-          {mode === 'edit' && <DialogDescription>Lead contact and qualification</DialogDescription>}
+          <DialogTitle>{mode === 'create' ? 'Nueva consulta' : 'Editar consulta'}</DialogTitle>
+          {mode === 'edit' && <DialogDescription>Contacto y calificación de la consulta</DialogDescription>}
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
             {mode === 'create' && rooftops.length > 1 && (
-              <FormField id="lead-rooftop" label="Rooftop" error={errors.rooftopId} className="sm:col-span-2">
+              <FormField id="lead-rooftop" label="Sucursal" error={errors.rooftopId} className="sm:col-span-2">
                 <Select value={values.rooftopId || undefined} onValueChange={value => set('rooftopId', value)}>
-                  <SelectTrigger id="lead-rooftop" className={fieldClass} aria-invalid={Boolean(errors.rooftopId)}><SelectValue placeholder="Select rooftop" /></SelectTrigger>
+                  <SelectTrigger id="lead-rooftop" className={fieldClass} aria-invalid={Boolean(errors.rooftopId)}><SelectValue placeholder="Elegí la sucursal" /></SelectTrigger>
                   <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
                 </Select>
               </FormField>
             )}
-            <FormField id="lead-first-name" label="First name" error={errors.firstName}>
+            <FormField id="lead-first-name" label="Nombre" error={errors.firstName}>
               <Input id="lead-first-name" className={fieldClass} value={values.firstName} maxLength={100} autoComplete="off" aria-invalid={Boolean(errors.firstName)} onChange={event => set('firstName', event.target.value)} />
             </FormField>
-            <FormField id="lead-last-name" label="Last name" error={errors.lastName}>
+            <FormField id="lead-last-name" label="Apellido" error={errors.lastName}>
               <Input id="lead-last-name" className={fieldClass} value={values.lastName} maxLength={100} autoComplete="off" aria-invalid={Boolean(errors.lastName)} onChange={event => set('lastName', event.target.value)} />
             </FormField>
-            <FormField id="lead-phone" label="Phone" error={errors.phone}>
+            <FormField id="lead-phone" label="Teléfono" error={errors.phone}>
               <Input id="lead-phone" type="tel" inputMode="tel" className={fieldClass} value={values.phone} maxLength={50} aria-invalid={Boolean(errors.phone)} onChange={event => set('phone', event.target.value)} />
             </FormField>
             <FormField id="lead-email" label="Email" error={errors.email}>
               <Input id="lead-email" type="email" inputMode="email" className={fieldClass} value={values.email} maxLength={320} aria-invalid={Boolean(errors.email)} onChange={event => set('email', event.target.value)} />
             </FormField>
-            <FormField id="lead-source" label="Source" error={errors.source}>
+            <FormField id="lead-source" label="Origen" error={errors.source}>
               <Select value={values.source || undefined} onValueChange={value => set('source', value)}>
-                <SelectTrigger id="lead-source" className={fieldClass}><SelectValue placeholder="Select source" /></SelectTrigger>
+                <SelectTrigger id="lead-source" className={fieldClass}><SelectValue placeholder="Elegí el origen" /></SelectTrigger>
                 <SelectContent>{sources.map(source => <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>
             {mode === 'create' && (
-              <FormField id="lead-owner" label="Salesperson">
+              <FormField id="lead-owner" label="Vendedor">
                 <Select value={values.assignedToId || NONE} onValueChange={value => set('assignedToId', value === NONE ? '' : value)} disabled={requireRooftop && !values.rooftopId}>
                   <SelectTrigger id="lead-owner" className={fieldClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NONE}>Routing rule</SelectItem>
+                    <SelectItem value={NONE}>Regla de asignación</SelectItem>
                     {staff.map(person => <SelectItem key={person.id} value={person.id}>{person.name || 'Unnamed'}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </FormField>
             )}
-            <FormField id="lead-vehicle" label="Vehicle of interest" className={mode === 'create' ? 'sm:col-span-2' : undefined}>
+            <FormField id="lead-vehicle" label="Vehículo de interés" className={mode === 'create' ? 'sm:col-span-2' : undefined}>
               <Select value={values.interestedVehicleId || NONE} onValueChange={value => set('interestedVehicleId', value === NONE ? '' : value)}>
                 <SelectTrigger id="lead-vehicle" className={fieldClass}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>No vehicle</SelectItem>
+                  <SelectItem value={NONE}>Sin vehículo</SelectItem>
                   {rooftopVehicles.map(vehicle => <SelectItem key={vehicle.id} value={vehicle.id}>{vehicleLabel(vehicle)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField id="lead-timeframe" label="Timeframe">
+            <FormField id="lead-timeframe" label="Plazo de compra">
               <Select value={values.timeframe || NONE} onValueChange={value => set('timeframe', value === NONE ? '' : value)}>
                 <SelectTrigger id="lead-timeframe" className={fieldClass}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>Not set</SelectItem>
+                  <SelectItem value={NONE}>Sin definir</SelectItem>
                   {TIMEFRAMES.map(item => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField id="lead-budget" label="Budget">
+            <FormField id="lead-budget" label="Presupuesto">
               <Select value={values.budgetRange || NONE} onValueChange={value => set('budgetRange', value === NONE ? '' : value)}>
                 <SelectTrigger id="lead-budget" className={fieldClass}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>Not set</SelectItem>
+                  <SelectItem value={NONE}>Sin definir</SelectItem>
                   {BUDGET_RANGES.map(item => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField id="lead-trade" label="Trade-in vehicle" error={errors.tradeInVehicle} className="sm:col-span-2">
-              <Input id="lead-trade" className={fieldClass} value={values.tradeInVehicle} maxLength={300} placeholder="Year, make, model, miles" onChange={event => set('tradeInVehicle', event.target.value)} />
+            <FormField id="lead-trade" label="Usado que entrega" error={errors.tradeInVehicle} className="sm:col-span-2">
+              <Input id="lead-trade" className={fieldClass} value={values.tradeInVehicle} maxLength={300} placeholder="Año, marca, modelo, km" onChange={event => set('tradeInVehicle', event.target.value)} />
             </FormField>
-            <FormField id="lead-notes" label="Notes" error={errors.notes} className="sm:col-span-2">
+            <FormField id="lead-notes" label="Notas" error={errors.notes} className="sm:col-span-2">
               <Textarea className="rounded-[4px]" id="lead-notes" rows={3} value={values.notes} maxLength={4000} onChange={event => set('notes', event.target.value)} />
             </FormField>
           </div>
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Saving…' : mode === 'create' ? 'Create lead' : 'Save'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="primary" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Guardando…' : mode === 'create' ? 'Crear consulta' : 'Guardar'}</Pill>
             </Track>
           </DialogFooter>
         </form>

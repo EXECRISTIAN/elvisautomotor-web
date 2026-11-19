@@ -19,9 +19,9 @@ export type MergeParty = {
   updatedAt: string
 }
 
-function PartyCard({ party, role }: { party: MergeParty; role: 'Keep' | 'Merge away' }) {
+function PartyCard({ party, role }: { party: MergeParty; role: 'Conservar' | 'Merge away' }) {
   return (
-    <Panel className={`min-w-0 px-3 py-2.5 ${role === 'Keep' ? 'border-emerald-500/40' : 'border-red-500/30'}`}>
+    <Panel className={`min-w-0 px-3 py-2.5 ${role === 'Conservar' ? 'border-emerald-500/40' : 'border-red-500/30'}`}>
       <p className="text-[12px] font-medium text-muted-foreground">{role}</p>
       <p className="text-sm font-medium">{personName(party.firstName, party.lastName)}</p>
       <p className="truncate text-xs text-muted-foreground">{[party.primaryEmail, formatPhone(party.primaryPhone)].filter(Boolean).join(' · ') || 'No contact'}</p>
@@ -69,8 +69,8 @@ export function MergeCustomerDialog({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const found = {
-      reason: !reason.trim() ? 'Required' : reason.length > 1000 ? 'At most 1000 characters' : undefined,
-      confirmed: confirmed ? undefined : 'Confirm the merge',
+      reason: !reason.trim() ? 'Obligatorio' : reason.length > 1000 ? 'Máximo 1000 caracteres' : undefined,
+      confirmed: confirmed ? undefined : 'Confirmá la unificación',
     }
     setErrors(found)
     if (found.reason || found.confirmed) return
@@ -85,30 +85,30 @@ export function MergeCustomerDialog({
     <Dialog open={open} onOpenChange={next => { if (!busy) onOpenChange(next) }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Merge customers</DialogTitle>
-          <DialogDescription>Cannot be undone</DialogDescription>
+          <DialogTitle>Unificar clientes</DialogTitle>
+          <DialogDescription>No se puede deshacer</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <Segmented
-            label="Record to keep"
+            label="Ficha a conservar"
             value={survivorSide}
             onChange={setSurvivorSide}
             block
             options={[
-              { value: 'current', label: 'Keep this record' },
-              { value: 'candidate', label: 'Keep duplicate' },
+              { value: 'current', label: 'Conservar esta ficha' },
+              { value: 'candidate', label: 'Conservar el duplicado' },
             ]}
           />
           <div className="grid gap-3 sm:grid-cols-2">
-            <PartyCard party={survivor} role="Keep" />
+            <PartyCard party={survivor} role="Conservar" />
             <PartyCard party={duplicate} role="Merge away" />
           </div>
           <ul className="space-y-1 text-sm">
             <li>{duplicate.leadsCount} lead{duplicate.leadsCount === 1 ? '' : 's'} and all sales visits move to {personName(survivor.firstName, survivor.lastName)}</li>
-            <li>Suppressions from either record are kept; consent stays only where both consented</li>
+            <li>Se conservan los bloqueos de ambas fichas; el consentimiento queda solo si ambas lo tenían</li>
             <li>{personName(duplicate.firstName, duplicate.lastName)} becomes read only and marked merged</li>
           </ul>
-          <FormField id="merge-reason" label="Reason" error={errors.reason}>
+          <FormField id="merge-reason" label="Motivo" error={errors.reason}>
             <Textarea className="rounded-[4px]" id="merge-reason" rows={3} maxLength={1000} value={reason} aria-invalid={Boolean(errors.reason)} onChange={event => { setReason(event.target.value); setErrors(prev => ({ ...prev, reason: undefined })) }} />
           </FormField>
           <div>
@@ -121,8 +121,8 @@ export function MergeCustomerDialog({
           {formError && <Notice tone="bad">{formError}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
-              <Pill type="submit" variant="danger" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Merging…' : 'Merge'}</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
+              <Pill type="submit" variant="danger" className="h-11 sm:h-8" disabled={busy}>{busy ? 'Unificando…' : 'Unificar'}</Pill>
             </Track>
           </DialogFooter>
         </form>
