@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AccountRequestDetailPage } from '@/features/storefront/screens/AccountRequestDetailPage'
 
-export const metadata: Metadata = { title: 'Request' }
+export const metadata: Metadata = { title: 'Solicitud' }
 
 type Props = { params: Promise<{ ref: string }> }
 

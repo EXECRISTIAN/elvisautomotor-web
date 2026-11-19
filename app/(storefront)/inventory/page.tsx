@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await loadStorefrontBusiness()
-  return settings.status === 'ready' ? pageMetadata(settings.business, 'inventory', 'Inventory') : { title: 'Inventory' }
+  return settings.status === 'ready' ? pageMetadata(settings.business, 'inventory', 'Inventario') : { title: 'Inventario' }
 }
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }

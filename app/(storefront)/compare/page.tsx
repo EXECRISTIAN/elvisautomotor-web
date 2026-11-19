@@ -4,4 +4,4 @@ export const dynamic = 'force-dynamic'
 
 export { ComparePage as default } from '@/features/storefront/screens/ComparePage'
 
-export const metadata: Metadata = { title: 'Compare' }
+export const metadata: Metadata = { title: 'Comparar' }

@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await loadStorefrontBusiness()
 
   if (settings.status === 'error') {
-    return { title: "We couldn't load this page", robots: { index: false, follow: false } }
+    return { title: 'No pudimos cargar esta página', robots: { index: false, follow: false } }
   }
 
   return storefrontMetadata(settings.business, (await getBaseUrl()) || null)

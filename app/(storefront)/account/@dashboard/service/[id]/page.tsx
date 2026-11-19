@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AccountServiceOrderPage } from '@/features/storefront/screens/AccountServiceOrderPage'
 
-export const metadata: Metadata = { title: 'Repair order' }
+export const metadata: Metadata = { title: 'Orden de trabajo' }
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ payError?: string | string[] }> }
 

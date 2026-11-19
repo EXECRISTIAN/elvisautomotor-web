@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { AccountVerifyEmailPage } from '@/features/storefront/screens/AccountVerifyEmailPage'
 
-export const metadata: Metadata = { title: 'Verify email' }
+export const metadata: Metadata = { title: 'Verificar email' }
 
 type Props = { searchParams: Promise<{ token?: string | string[] }> }
 

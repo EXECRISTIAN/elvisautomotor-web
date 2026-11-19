@@ -11,9 +11,9 @@ type Props = { params: Promise<{ id: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const result = await loadVehicleDetail(id)
-  if (result.status === 'not-found') return { title: 'Vehicle not found', robots: { index: false, follow: true } }
+  if (result.status === 'not-found') return { title: 'Vehículo no encontrado', robots: { index: false, follow: true } }
   if (result.status === 'unlisted') return { title: vehicleTitle(result.vehicle), robots: { index: false, follow: true } }
-  if (result.status !== 'available') return { title: 'Vehicle' }
+  if (result.status !== 'available') return { title: 'Vehículo' }
   const settings = await loadStorefrontBusiness()
   return settings.status === 'ready' ? vehicleMetadata(settings.business, result.vehicle) : { title: vehicleTitle(result.vehicle) }
 }
