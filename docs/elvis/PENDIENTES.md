@@ -5,6 +5,7 @@
   - `elvis-logo-completo.svg` / `elvis-logo-completo-fondo-negro.png` (monograma + "ELVIS AUTOMOTORES")
   - `elvis-ae-monograma.svg` / `elvis-ae-monograma.png` (solo AE, fondo transparente)
   - `elvis-texto.svg` / `elvis-texto-fondo-negro.png` / `elvis-texto-transparente.png` (solo "ELVIS AUTOMOTORES" con la línea divisoria)
+  - `elementos/`: cada pieza por separado (monograma AE, línea divisoria, "ELVIS", "AUTOMOTORES") en SVG y PNG (fondo negro y transparente)
 - Capturas de cada etapa: `docs/elvis/etapa*.png`, `docs/elvis/demo-nosotros.png`
 - Demo con contraseña: ver `docs/elvis/DEMO.md`
 
