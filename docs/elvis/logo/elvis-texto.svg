@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="95 10 300 100" fill="none">
+  <defs>
+    <linearGradient id="t" x1="130" y1="0" x2="390" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F3D58A"/><stop offset="0.5" stop-color="#C9A04A"/><stop offset="1" stop-color="#E8C46F"/>
+    </linearGradient>
+  </defs>
+  <path d="M105 18v84" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5"/>
+  <text x="130" y="66" font-family="Montserrat, 'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="46" letter-spacing="11" fill="#F7F5F0">ELVIS</text>
+  <text x="132" y="98" font-family="Montserrat, 'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="17" letter-spacing="8.5" fill="url(#t)">AUTOMOTORES</text>
+</svg>

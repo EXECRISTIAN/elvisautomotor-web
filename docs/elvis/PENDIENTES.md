@@ -4,6 +4,7 @@
 - **Logo AE recreado** (aprobado por el autor del proyecto): `docs/elvis/logo/`
   - `elvis-logo-completo.svg` / `elvis-logo-completo-fondo-negro.png` (monograma + "ELVIS AUTOMOTORES")
   - `elvis-ae-monograma.svg` / `elvis-ae-monograma.png` (solo AE, fondo transparente)
+  - `elvis-texto.svg` / `elvis-texto-fondo-negro.png` / `elvis-texto-transparente.png` (solo "ELVIS AUTOMOTORES" con la línea divisoria)
 - Capturas de cada etapa: `docs/elvis/etapa*.png`, `docs/elvis/demo-nosotros.png`
 - Demo con contraseña: ver `docs/elvis/DEMO.md`
 
