@@ -16,8 +16,13 @@
 - Publicar la URL temporal (Railway) — ver `docs/elvis/DEMO.md`.
 - Confirmar con el cliente el uso de su marca, logo y textos antes de producción.
 
+## Hecho recientemente (sitio público)
+- Precios en pesos sin límite práctico (antes el máximo era $21.474.836).
+- Vendelo en Elvis con hasta 8 fotos y sin tasación automática inventada.
+- Financiación: bancos y planes cargables, simulador estimativo y solicitud. **Faltan cargar los planes reales de los bancos** (hoy se cargan desde Panel → Tablas → Bancos / Planes de financiación).
+
 ## Etapas restantes
 3. Panel administrativo en español y simplificado — EN CURSO. Hecho: menú, marca, formato es-AR/ARS/km, Configuración, Inventario, Consultas, Clientes, Usados ofrecidos, Pruebas de manejo, Solicitudes de crédito. Falta (parte 3): Operaciones, Personal/roles, Resumen, Estadísticas, Organización, Catálogo, Reportes, pantallas de ingreso.
-4. Financiación bancaria (bancos, TNA/TEA/CFT, simulador estimativo).
-5. Tomamos tu usado / "Vendelo en Elvis" con varias fotos.
+4. Financiación bancaria — HECHO en la web; falta pantalla propia en el panel (hoy se usa Tablas).
+5. Vendelo en Elvis — HECHO en la web; falta ver las fotos dentro de la ficha del usado en el panel (hoy en Tablas → Fotos de usados).
 6. Calidad, seguridad y SEO final.
