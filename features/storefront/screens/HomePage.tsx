@@ -10,7 +10,7 @@ import { WhatsAppButton } from '../components/WhatsAppButton'
 import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
 import { createStorefrontBusiness } from '../lib/business'
-import { ELVIS_ABOUT } from '../lib/elvisContent'
+import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
 
 const HERO_PHOTO = '/images/showroom-dusk.jpg'
 
@@ -144,6 +144,21 @@ export async function HomePage() {
         </Container>
       </section>
 
+      {/* ---------- Marcas 0 km ---------- */}
+      <section className="elv-band py-10" aria-labelledby="brands-title">
+        <Container className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="elv-eyebrow">0 km</p>
+            <h2 id="brands-title" className="sf-display mt-2 text-[clamp(1.2rem,2.2vw,1.6rem)]">Marcas que comercializamos</h2>
+          </div>
+          <ul className="flex flex-wrap gap-2 md:max-w-[60%] md:justify-end">
+            {ELVIS_ZERO_KM_BRANDS.map((brand) => (
+              <li key={brand} className="rounded-full border px-4 py-1.5 text-[0.85rem] font-semibold uppercase tracking-[0.06em]" style={{ borderColor: 'oklch(0.8 0.115 85 / 0.35)' }}>{brand}</li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
       {/* ---------- Financiación + Tomamos tu usado ---------- */}
       <section className="py-16 md:py-20" aria-label="Financiación y toma de usados">
         <Container className="grid gap-6 lg:grid-cols-2">
@@ -152,7 +167,7 @@ export async function HomePage() {
             <p className="elv-eyebrow mt-5">Venta a crédito</p>
             <h2 id="fin-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Hasta 100% financiado</h2>
             <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-              {ELVIS_ABOUT.credit} {ELVIS_ABOUT.creditVisit}
+              {ELVIS_ABOUT.credit} Trabajamos con {ELVIS_BANKS.join(' y ')}. {ELVIS_ABOUT.creditVisit}
             </p>
             <p className="mt-3 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>
               {ELVIS_ABOUT.creditDisclaimer} Las simulaciones son estimativas.
@@ -174,7 +189,7 @@ export async function HomePage() {
               <p className="elv-eyebrow mt-5">Vendelo en Elvis</p>
               <h2 id="usado-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Compramos tu usado</h2>
               <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-                {ELVIS_ABOUT.buying}
+                {ELVIS_ABOUT.buying} {ELVIS_INFO.planCanje}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/trade-in" className="sf-btn sf-btn-primary rounded-[8px]">
@@ -210,7 +225,7 @@ export async function HomePage() {
           <div>
             <SectionTitle eyebrow="Contacto" title="Visitanos o escribinos" id="contact-title" />
             <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
-              {ELVIS_ABOUT.attention} {ELVIS_ABOUT.hoursNote}
+              {ELVIS_ABOUT.attention} {ELVIS_INFO.afternoon} {ELVIS_ABOUT.hoursNote} {ELVIS_INFO.contactPreference}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <WhatsAppButton className="sf-btn sf-btn-primary rounded-[8px]" />

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
 import { WhatsAppButton } from './WhatsAppButton'
-import { ELVIS_ABOUT, ELVIS_LINKS } from '../lib/elvisContent'
+import { ELVIS_ABOUT, ELVIS_INFO, ELVIS_LINKS } from '../lib/elvisContent'
 import { BrandMark } from './BrandMark'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
@@ -104,7 +104,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
             ) : (
               <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Consultá nuestros horarios</p>
             )}
-            <p className="mt-3 text-[length:var(--sf-text-xs)]" style={{ color: 'var(--sf-on-dark-2)' }}>{ELVIS_ABOUT.hoursNote}</p>
+            <p className="mt-3 text-[length:var(--sf-text-xs)]" style={{ color: 'var(--sf-on-dark-2)' }}>{ELVIS_ABOUT.hoursNote} {ELVIS_INFO.noTransfers}</p>
             {business.salesEmail && (
               <a href={`mailto:${business.salesEmail}`} className="mt-4 flex min-h-11 items-center break-all text-[length:var(--sf-text-sm)] underline-offset-4 hover:underline">
                 {business.salesEmail}

@@ -9,6 +9,7 @@ import { GET_VEHICLE_BY_ID } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
 import { submitStorefrontTradeIn, uploadStorefrontTradeInPhoto } from '../actions/submissions'
 import { WhatsAppButton } from '../components/WhatsAppButton'
+import { ELVIS_INFO } from '../lib/elvisContent'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatMileage, formatPrice } from '../lib/format'
@@ -229,7 +230,7 @@ export function TradeInPage() {
       <RequestReceived
         context="Vendelo en Elvis"
         reference={submissionReference}
-        note={`Un asesor revisa los datos${photos.length ? ' y las fotos' : ''} y te contacta con la tasación. No es una oferta automática: el valor final surge de la revisión del vehículo.${photos.length && uploadedPhotos < photos.length ? ` Se subieron ${uploadedPhotos} de ${photos.length} fotos; podés mandar las que faltan por WhatsApp.` : ''}`}
+        note={`Un asesor revisa los datos${photos.length ? ' y las fotos' : ''} y te contacta para coordinar la tasación presencial. No es una oferta automática: el valor final surge de la revisión del vehículo en el salón.${photos.length && uploadedPhotos < photos.length ? ` Se subieron ${uploadedPhotos} de ${photos.length} fotos; podés mandar las que faltan por WhatsApp.` : ''}`}
         summary={sticker([
           ...vehicleRows,
           { label: 'Nombre', value: contactName },
@@ -275,6 +276,7 @@ export function TradeInPage() {
           })}
         </ol>
 
+        <p className="sf-muted mb-[var(--sf-space-md)] text-[length:var(--sf-text-sm)]">{ELVIS_INFO.planCanje} Las fotos sirven para una primera revisión.</p>
         <form onSubmit={handleFormSubmit} className="space-y-[var(--sf-space-lg)]">
           <input
             type="text"

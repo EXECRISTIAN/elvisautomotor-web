@@ -14,8 +14,25 @@ export const ELVIS_ABOUT = {
   buying:
     'También nos especializamos en la compra de vehículos usados, resolviendo todo para que cobres el dinero y lo uses en lo que quieras o necesites, de manera ágil, segura e inmediata.',
   attention:
-    'Atendemos de lunes a viernes de 9 a 13 h al público, por orden de llegada. Por la tarde, solo con turno previo (sin excepción).',
+    'Atendemos de lunes a viernes de 9 a 13 h al público, sin turno y por orden de llegada.',
   hoursNote: 'Días y horarios de referencia; pueden variar los feriados.',
+}
+
+/** Marcas 0 km que comercializa Elvis (según su atención por WhatsApp). */
+export const ELVIS_ZERO_KM_BRANDS = ['Peugeot', 'Citroën', 'Volkswagen', 'Renault', 'Fiat', 'Toyota', 'Chevrolet', 'Jetour', 'Baic', 'Chery']
+
+/** Entidades con las que trabaja Elvis. Las tasas y condiciones se cargan en el panel (Bancos / Planes). */
+export const ELVIS_BANKS = ['Banco Nación', 'Banco Provincia']
+
+export const ELVIS_INFO = {
+  planCanje:
+    'Plan Canje: entregás tu usado como parte de pago de tu próximo vehículo. La tasación definitiva es presencial, en nuestro salón.',
+  credit: 'Trabajamos con Banco Nación y Banco Provincia; la evaluación es presencial.',
+  afternoon: 'Por la tarde, solo con turno (sin excepción), asignado por un vendedor después de precalificar la consulta.',
+  noTransfers: 'No tomamos reservas por transferencia.',
+  demand:
+    'Recibimos muchas consultas por día: la respuesta online puede demorar. Para atención inmediata, acercate de lunes a viernes de 9 a 13 h.',
+  contactPreference: 'La forma más rápida de consultar es por WhatsApp o visitándonos en el salón.',
 }
 
 export const ELVIS_LINKS = {

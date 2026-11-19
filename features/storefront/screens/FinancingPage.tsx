@@ -16,7 +16,7 @@ import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { formatPrice, vehicleTitle } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
-import { ELVIS_ABOUT } from '../lib/elvisContent'
+import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO } from '../lib/elvisContent'
 import { fillBlankFields, useCustomerPrefill } from '../lib/useCustomerPrefill'
 import { Field, FormSection, MobileSummary, Notice, RequestLayout, RequestReceived, Sticker, type StickerRowData } from '../components/forms/RequestForm'
 
@@ -184,7 +184,9 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
             <Landmark className="mt-0.5 size-8 shrink-0" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
             <div className="space-y-2 text-[length:var(--sf-text-sm)]">
               <p>{ELVIS_ABOUT.credit}</p>
+              <p>Trabajamos con {ELVIS_BANKS.join(' y ')}.</p>
               <p className="sf-muted">{ELVIS_ABOUT.creditVisit} {ELVIS_ABOUT.creditDisclaimer}</p>
+              <p className="sf-faint">{ELVIS_INFO.demand}</p>
             </div>
           </div>
 

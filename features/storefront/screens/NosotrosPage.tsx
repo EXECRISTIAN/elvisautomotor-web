@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, BadgeCheck, CarFront, Clock, Landmark, MapPin } from 'lucide-react'
 import { Container } from '../components/Container'
 import { WhatsAppButton } from '../components/WhatsAppButton'
-import { ELVIS_ABOUT, ELVIS_LINKS } from '../lib/elvisContent'
+import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_LINKS, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
 
 export function NosotrosPage() {
   const years = new Date().getFullYear() - ELVIS_ABOUT.since
@@ -24,7 +24,8 @@ export function NosotrosPage() {
             <Landmark className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
             <h2 className="sf-display mt-5 text-[1.5rem]">Venta a crédito</h2>
             <p className="mt-4" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.credit}</p>
-            <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.creditVisit}</p>
+            <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_INFO.credit} {ELVIS_ABOUT.creditVisit}</p>
+            <ul className="mt-4 flex flex-wrap gap-2" aria-label="Bancos">{ELVIS_BANKS.map((bank) => <li key={bank} className="sf-chip">{bank}</li>)}</ul>
             <p className="mt-3 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>{ELVIS_ABOUT.creditDisclaimer}</p>
             <Link href="/financing" className="sf-btn sf-btn-primary mt-6 rounded-[8px]">Consultar financiación <ArrowRight className="size-4" aria-hidden="true" /></Link>
           </article>
@@ -32,8 +33,20 @@ export function NosotrosPage() {
             <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
             <h2 className="sf-display mt-5 text-[1.5rem]">Vendelo en Elvis</h2>
             <p className="mt-4" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.buying}</p>
+            <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_INFO.planCanje}</p>
             <Link href="/trade-in" className="sf-btn sf-btn-primary mt-6 rounded-[8px]">Cotizar mi auto <ArrowRight className="size-4" aria-hidden="true" /></Link>
           </article>
+        </Container>
+      </section>
+
+      <section className="py-12" aria-labelledby="nos-brands">
+        <Container>
+          <h2 id="nos-brands" className="sf-display text-[1.4rem]">0 km de las marcas</h2>
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {ELVIS_ZERO_KM_BRANDS.map((brand) => (
+              <li key={brand} className="rounded-full border px-4 py-1.5 text-[0.85rem] font-semibold uppercase tracking-[0.06em]" style={{ borderColor: 'oklch(0.8 0.115 85 / 0.35)' }}>{brand}</li>
+            ))}
+          </ul>
         </Container>
       </section>
 
@@ -48,7 +61,8 @@ export function NosotrosPage() {
             <Clock className="size-8" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
             <h3 className="mt-3 font-bold uppercase tracking-[0.04em]">Atención</h3>
             <p className="mt-2 text-[0.9rem]" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.attention}</p>
-            <p className="mt-1 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>{ELVIS_ABOUT.hoursNote}</p>
+            <p className="mt-2 text-[0.9rem]" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_INFO.afternoon}</p>
+            <p className="mt-1 text-[0.8rem]" style={{ color: 'var(--sf-ink-3)' }}>{ELVIS_ABOUT.hoursNote} {ELVIS_INFO.noTransfers}</p>
           </div>
           <div className="elv-benefit">
             <MapPin className="size-8" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />

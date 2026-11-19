@@ -11,7 +11,12 @@
 - Demo con contraseña: ver `docs/elvis/DEMO.md`
 
 ## Falta definir / conseguir
-- Número de WhatsApp para consultas (solo tenemos el canal).
+- ~~Número de WhatsApp~~ cargado: 11 2723-5886 (responde un asistente automático de Meta). Fijo: (011) 4259-1365.
+- **A confirmar con Elvis** (dicho por su asistente de WhatsApp, puede estar desactualizado):
+  - "Solo vendemos 0 km; venta de usados suspendida; el usado solo como parte de pago (Plan Canje)". La web sigue mostrando usados y "Vendelo en Elvis" porque se vio que siguen vendiendo usados.
+  - "No atendemos llamadas" (la web muestra el teléfono fijo).
+  - Su formulario de precalificación: https://formularioatenciononline.netlify.app/ (no se pudo leer: dominio bloqueado en esta sesión).
+- Tasas y condiciones reales de Banco Nación y Banco Provincia (los bancos ya están creados, sin planes).
 - Fotos reales de autos y del salón (la foto del hero es de demostración).
 - Publicar la URL temporal (Railway) — ver `docs/elvis/DEMO.md`.
 - Confirmar con el cliente el uso de su marca, logo y textos antes de producción.
