@@ -32,10 +32,10 @@ export function simulate(plan: PlanTerms, input: SimulationInput): SimulationRes
   const price = Math.round(input.priceCents)
   const down = Math.round(input.downPaymentCents)
   const n = input.termMonths
-  if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: 'Indicá el precio del vehículo.' }
+  if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: 'Indica el precio del vehículo.' }
   if (!Number.isFinite(down) || down < 0) return { ok: false, reason: 'El anticipo no es válido.' }
   if (down >= price) return { ok: false, reason: 'El anticipo cubre el precio total: no hace falta financiar.' }
-  if (!plan.termsMonths.includes(n)) return { ok: false, reason: 'Elegí un plazo disponible para este plan.' }
+  if (!plan.termsMonths.includes(n)) return { ok: false, reason: 'Elige un plazo disponible para este plan.' }
   const financed = price - down
   if (plan.maxFinancedBps != null && financed > Math.floor((price * plan.maxFinancedBps) / 10_000)) {
     const minDown = price - Math.floor((price * plan.maxFinancedBps) / 10_000)

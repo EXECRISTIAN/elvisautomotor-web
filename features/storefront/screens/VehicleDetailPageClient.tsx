@@ -167,7 +167,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
           idempotencyKey,
         })
         if (!result.success) throw new Error(result.error)
-        if (!result.data.checkoutUrl || !/^https:\/\//.test(result.data.checkoutUrl)) throw new Error('No pudimos iniciar el pago. Intentá de nuevo.')
+        if (!result.data.checkoutUrl || !/^https:\/\//.test(result.data.checkoutUrl)) throw new Error('No pudimos iniciar el pago. Intenta de nuevo.')
         window.location.assign(result.data.checkoutUrl)
         return
       } else {
@@ -197,7 +197,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
     } catch (error) {
       setFeedback({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Algo salió mal. Intentá de nuevo.',
+        message: error instanceof Error ? error.message : 'Algo salió mal. Intenta de nuevo.',
       })
     } finally {
       setIsSubmitting(false)
@@ -382,7 +382,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                   {comparing ? <Check className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
                   Comparar
                 </button>
-                {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
+                {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Puedes comparar hasta 4 vehículos.</p>}
                 <div className="hidden flex-wrap gap-x-5 gap-y-1 pt-1 text-[length:var(--sf-text-sm)] lg:flex">
                   <button
                     ref={contactOpenerRef}

@@ -38,8 +38,8 @@ export type PublicFinancingPlan = {
 }
 
 const EMPLOYMENT = [
-  { value: 'employed', label: 'Relación de dependencia' },
-  { value: 'self-employed', label: 'Monotributista / autónomo' },
+  { value: 'employed', label: 'Empleado' },
+  { value: 'self-employed', label: 'Independiente / autónomo' },
   { value: 'retired', label: 'Jubilado / pensionado' },
   { value: 'other', label: 'Otra' },
 ]
@@ -111,7 +111,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
     setError(null)
     try {
       const income = parsePesos(form.monthlyIncome)
-      if (!income) throw new Error('Ingresá tus ingresos mensuales aproximados.')
+      if (!income) throw new Error('Ingresa tus ingresos mensuales aproximados.')
       const response = await submitStorefrontFinancing({
         fullName: form.fullName,
         email: form.email,
@@ -134,7 +134,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
       setReference(response.data.applicationReference || customerRequestReference('financing', response.data.applicationId))
       setIdempotencyKey(crypto.randomUUID())
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'No pudimos enviar la solicitud. Intentá de nuevo.')
+      setError(caught instanceof Error ? caught.message : 'No pudimos enviar la solicitud. Intenta de nuevo.')
     } finally {
       setSending(false)
     }
@@ -190,7 +190,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
             </div>
           </div>
 
-          <FormSection title="1. Simulá tu cuota" first>
+          <FormSection title="1. Simula tu cuota" first>
             <div className="grid gap-4">
               <Field label="Vehículo" htmlFor="fin-vehicle">
                 <PlatformSelect
@@ -198,9 +198,9 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
                   value={vehicleId}
                   onValueChange={setVehicleId}
                   className="sf-input sf-trigger"
-                  placeholder={vehicles === null ? 'Cargando inventario…' : 'Elegí un vehículo'}
+                  placeholder={vehicles === null ? 'Cargando inventario…' : 'Elige un vehículo'}
                   searchable
-                  options={[{ value: '', label: 'Otro / todavía no elegí' }, ...(vehicles ?? []).map((item) => ({ value: item.id, label: `${vehicleTitle(item)} — ${item.price > 0 ? money(item.price) : 'consultar'}` }))]}
+                  options={[{ value: '', label: 'Otro / todavía no elige' }, ...(vehicles ?? []).map((item) => ({ value: item.id, label: `${vehicleTitle(item)} — ${item.price > 0 ? money(item.price) : 'consultar'}` }))]}
                 />
               </Field>
               {!vehicle && (
@@ -208,13 +208,13 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
                   <input id="fin-price" inputMode="decimal" value={manualPrice} onChange={(e) => setManualPrice(e.target.value)} className="sf-input sf-figure" placeholder="Ej.: 25.000.000" />
                 </Field>
               )}
-              <Field label="¿Cuánto podés entregar?" htmlFor="fin-down">
-                <input id="fin-down" inputMode="decimal" value={downPayment} onChange={(e) => setDownPayment(e.target.value)} className="sf-input sf-figure" placeholder="Ej.: 8.000.000 (podés incluir tu usado)" />
+              <Field label="¿Cuánto puedes entregar?" htmlFor="fin-down">
+                <input id="fin-down" inputMode="decimal" value={downPayment} onChange={(e) => setDownPayment(e.target.value)} className="sf-input sf-figure" placeholder="Ej.: 8.000.000 (puedes incluir tu usado)" />
               </Field>
 
               {plans.length === 0 ? (
                 <Notice tone="warn">
-                  Todavía no hay planes bancarios publicados. Consultá tu crédito de forma presencial y gratuita en nuestro salón, o escribinos y te asesoramos.
+                  Todavía no hay planes bancarios publicados. Consulta tu crédito de forma presencial y gratuita en nuestro salón, o escríbenos y te asesoramos.
                 </Notice>
               ) : (
                 <>
@@ -267,7 +267,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
 
           <form onSubmit={send} className="space-y-[var(--sf-space-lg)]">
             <input type="text" name="website" value={form.website} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
-            <FormSection title="2. Enviá tu solicitud">
+            <FormSection title="2. Envía tu solicitud">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Nombre y apellido" htmlFor="fin-name" className="sm:col-span-2">
                   <input id="fin-name" required autoComplete="name" value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} className="sf-input" />
@@ -279,13 +279,13 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
                   <input id="fin-phone" type="tel" required autoComplete="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} className="sf-input" />
                 </Field>
                 <Field label="Situación laboral" htmlFor="fin-employment">
-                  <PlatformSelect id="fin-employment" required value={form.employmentStatus} onValueChange={(v) => setForm((p) => ({ ...p, employmentStatus: v }))} className="sf-input sf-trigger" placeholder="Elegí una opción" options={EMPLOYMENT} />
+                  <PlatformSelect id="fin-employment" required value={form.employmentStatus} onValueChange={(v) => setForm((p) => ({ ...p, employmentStatus: v }))} className="sf-input sf-trigger" placeholder="Elige una opción" options={EMPLOYMENT} />
                 </Field>
                 <Field label="Ingresos mensuales aproximados" htmlFor="fin-income">
                   <input id="fin-income" required inputMode="decimal" value={form.monthlyIncome} onChange={(e) => setForm((p) => ({ ...p, monthlyIncome: e.target.value }))} className="sf-input sf-figure" placeholder="Ej.: 1.500.000" />
                 </Field>
                 <Field label="Situación crediticia" htmlFor="fin-credit" className="sm:col-span-2">
-                  <PlatformSelect id="fin-credit" required value={form.creditTier} onValueChange={(v) => setForm((p) => ({ ...p, creditTier: v }))} className="sf-input sf-trigger" placeholder="Elegí una opción" options={CREDIT} />
+                  <PlatformSelect id="fin-credit" required value={form.creditTier} onValueChange={(v) => setForm((p) => ({ ...p, creditTier: v }))} className="sf-input sf-trigger" placeholder="Elige una opción" options={CREDIT} />
                 </Field>
               </div>
               <div className="mt-4 space-y-3 text-[length:var(--sf-text-sm)]">

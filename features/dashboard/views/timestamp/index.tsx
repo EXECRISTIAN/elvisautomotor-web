@@ -167,7 +167,7 @@ export function Field({
             onBlur={() => setDirty(true)}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateValue ? formatTimestamp(dateValue, timeZone, mounted) : <span>Pick a date and time</span>}
+            {dateValue ? formatTimestamp(dateValue, timeZone, mounted) : <span>Elige fecha y hora</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -295,7 +295,7 @@ export function controller(config: FieldControllerConfig<TimestampFieldMeta>): F
                 onBlur={() => setDirty(true)}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateValue ? formatTimestamp(dateValue, timeZone, mounted) : <span>Pick a date and time</span>}
+                {dateValue ? formatTimestamp(dateValue, timeZone, mounted) : <span>Elige fecha y hora</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

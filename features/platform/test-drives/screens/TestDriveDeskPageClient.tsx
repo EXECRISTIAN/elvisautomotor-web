@@ -31,7 +31,7 @@ function scheduleFields(vehicles: Array<{ value: string; label: string }>): Oper
     { name: 'customerPhone', label: 'Teléfono', maxLength: 50, placeholder: '(202) 555-0147' },
     { name: 'customerEmail', label: 'Email', type: 'email', maxLength: 320 },
     { name: 'scheduledAt', label: 'Fecha y hora', type: 'datetime-local', description: 'Hora del negocio' },
-    { name: 'vehicleId', label: 'Vehículo', type: 'select', options: vehicles, placeholder: vehicles.length ? 'Elegí el vehículo' : 'No hay vehículos disponibles' },
+    { name: 'vehicleId', label: 'Vehículo', type: 'select', options: vehicles, placeholder: vehicles.length ? 'Elige el vehículo' : 'No hay vehículos disponibles' },
   ]
 }
 
@@ -410,7 +410,7 @@ export function TestDriveDeskPageClient({
           aria-controls={`complete-${key}`}
           onClick={() => setExpandedKey(current => (current === key ? null : key))}
           disabled={busy || !testDrive.driverLicenseVerified}
-          title={testDrive.driverLicenseVerified ? undefined : 'Primero verificá el registro'}
+          title={testDrive.driverLicenseVerified ? undefined : 'Primero verifica el registro'}
         >
           Completar
         </Pill>

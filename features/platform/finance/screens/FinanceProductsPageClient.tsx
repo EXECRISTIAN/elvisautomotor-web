@@ -88,7 +88,7 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
       else if ((catalog?.products || []).some(product => product.rooftop?.id === v.rooftopId && product.code === code)) errors.code = 'This code already exists at this rooftop.'
     }
     if (!(v.name || '').trim()) errors.name = 'Enter a product name.'
-    else if (v.name.trim().length > 200) errors.name = 'Usá 200 caracteres o menos.'
+    else if (v.name.trim().length > 200) errors.name = 'Usa 200 caracteres o menos.'
     if (!PRODUCT_CATEGORIES.includes(v.category as typeof PRODUCT_CATEGORIES[number])) errors.category = 'Select a category.'
     const retail = (v.retail || '').trim() ? parseDollarsToCents(v.retail) : null
     if (retail == null) errors.retail = 'Enter a dollar amount, for example 1,299.50.'

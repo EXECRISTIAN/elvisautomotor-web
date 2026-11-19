@@ -7,7 +7,7 @@ export const categoryLabels: Record<string, string> = {
   gap: 'GAP',
   maintenance: 'Mantenimiento',
   appearance: 'Estética',
-  'tire-wheel': 'Cubiertas y llantas',
+  'tire-wheel': 'Neumáticos y rines',
   other: 'Otro',
 }
 
@@ -80,7 +80,7 @@ export function financeDeskStatus({ error, approvalsWaiting, applicationsWaiting
 
 // Storefront financing form values (FinancingPage) shown as the customer chose them.
 const employmentLabels: Record<string, string> = {
-  employed: 'Empleado en relación de dependencia', 'self-employed': 'Monotributista / autónomo', retired: 'Jubilado', student: 'Estudiante', other: 'Otro',
+  employed: 'Empleado', 'self-employed': 'Independiente / autónomo', retired: 'Jubilado', student: 'Estudiante', other: 'Otro',
 }
 const creditTierLabels: Record<string, string> = {
   'excellent-720-plus': 'Muy bueno', 'good-680-719': 'Bueno', 'fair-620-679': 'Regular',

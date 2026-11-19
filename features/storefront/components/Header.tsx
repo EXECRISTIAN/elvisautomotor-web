@@ -16,7 +16,7 @@ const NAV = [
   { href: '/inventory', label: 'Inventario' },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/financing', label: 'Financiación' },
-  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/nosotros', label: 'Nosotros' },
   { href: '/contact', label: 'Contacto' },
 ]
@@ -26,7 +26,7 @@ const MENU = [
   { href: '/inventory', label: 'Inventario' },
   { href: '/ofertas', label: 'Ofertas progresivas' },
   { href: '/financing', label: 'Financiación' },
-  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/test-drive', label: 'Prueba de manejo' },
   { href: '/compare', label: 'Comparar' },
   { href: '/nosotros', label: 'Nosotros' },
@@ -137,7 +137,7 @@ export function Header() {
             </Link>
 
             <WhatsAppButton label="WhatsApp" className="sf-btn sf-btn-outline ml-1 hidden min-h-[2.75rem] rounded-[6px] px-4 text-[0.75rem] md:inline-flex" />
-            <WhatsAppButton iconOnly label="Consultá por WhatsApp" className="grid size-11 place-items-center text-[var(--sf-accent)] md:hidden" />
+            <WhatsAppButton iconOnly label="Consulta por WhatsApp" className="grid size-11 place-items-center text-[var(--sf-accent)] md:hidden" />
 
             <button
               ref={menuButtonRef}

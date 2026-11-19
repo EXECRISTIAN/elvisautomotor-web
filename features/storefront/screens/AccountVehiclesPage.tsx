@@ -90,7 +90,7 @@ export async function AccountVehiclesPage() {
                         </p>
                         {delivery.appointmentAt && (
                           <p className="pl-4 text-[length:var(--sf-text-sm)]">
-                            <span className="sf-muted">Turno </span>
+                            <span className="sf-muted">Cita </span>
                             <span className="sf-figure">{formatDateTime(delivery.appointmentAt, deal.timezone)}</span>
                           </p>
                         )}

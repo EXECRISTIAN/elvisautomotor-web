@@ -256,12 +256,12 @@ export function TradeInDetailPageClient({
   }
 
   const acquireErrors = {
-    vin: VIN_PATTERN.test(acquire.vin.trim().toUpperCase()) ? null : 'Ingresá el número de chasis de 17 caracteres',
-    year: /^\d{4}$/.test(acquire.year.trim()) ? null : 'Ingresá un año de 4 dígitos',
+    vin: VIN_PATTERN.test(acquire.vin.trim().toUpperCase()) ? null : 'Ingresa el número de chasis de 17 caracteres',
+    year: /^\d{4}$/.test(acquire.year.trim()) ? null : 'Ingresa un año de 4 dígitos',
     make: acquire.make.trim() ? null : 'La marca es obligatoria',
     model: acquire.model.trim() ? null : 'El modelo es obligatorio',
-    odometer: !acquire.odometer.trim() || /^\d+$/.test(acquire.odometer.trim().replace(/,/g, '')) ? null : 'Ingresá kilómetros enteros',
-    appraisalCents: acquire.appraisalCents > 0 ? null : 'Ingresá la tasación',
+    odometer: !acquire.odometer.trim() || /^\d+$/.test(acquire.odometer.trim().replace(/,/g, '')) ? null : 'Ingresa kilómetros enteros',
+    appraisalCents: acquire.appraisalCents > 0 ? null : 'Ingresa la tasación',
     reason: acquire.reason.trim() ? null : 'El motivo es obligatorio',
   }
 
@@ -548,7 +548,7 @@ export function TradeInDetailPageClient({
         <FieldRow label="Operación borrador" htmlFor="attach-deal" error={showErrors && !selectedDeal ? 'Select a deal' : null}>
           <Select value={dealId} onValueChange={setDealId} disabled={busy || pencilDeals === null || eligibleDeals.length === 0}>
             <SelectTrigger id="attach-deal" className="rounded-[4px]" aria-invalid={showErrors && !selectedDeal ? true : undefined}>
-              <SelectValue placeholder={pencilDeals === null ? 'Loading deals' : eligibleDeals.length === 0 ? 'No hay operaciones borrador sin usado' : 'Elegí la operación'} />
+              <SelectValue placeholder={pencilDeals === null ? 'Loading deals' : eligibleDeals.length === 0 ? 'No hay operaciones borrador sin usado' : 'Elige la operación'} />
             </SelectTrigger>
             <SelectContent>
               {eligibleDeals.map(option => (

@@ -41,18 +41,18 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
   let apr = finiteNumber(data.apr || 0, 'Tasa', { min: 0, max: 1000 })
   const loanTerm = finiteNumber(data.loanTerm || 0, 'Plazo', { min: 0, max: 120, integer: true })
   if (data.consent !== true) {
-    throw new SubmissionError('Tenés que aceptar que te contactemos.')
+    throw new SubmissionError('Tienes que aceptar que te contactemos.')
   }
   if (data.privacyAcknowledged !== true) {
-    throw new SubmissionError('Tenés que aceptar el aviso de privacidad.')
+    throw new SubmissionError('Tienes que aceptar el aviso de privacidad.')
   }
   // Plan elegido en el simulador: se valida contra los planes vigentes y se recalcula en el servidor.
   const financingPlanId = data.financingPlanId ? String(data.financingPlanId) : ''
   let plan: Awaited<ReturnType<typeof loadActiveFinancingPlans>>[number] | null = null
   if (financingPlanId) {
     plan = (await loadActiveFinancingPlans(context)).find((item: any) => item.id === financingPlanId) || null
-    if (!plan) throw new SubmissionError('El plan elegido ya no está vigente. Volvé a simular.')
-    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError('Elegí un plazo disponible para el plan.')
+    if (!plan) throw new SubmissionError('El plan elegido ya no está vigente. Vuelve a simular.')
+    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError('Elige un plazo disponible para el plan.')
     const price = finiteNumber(data.vehiclePrice, 'Precio del vehículo', { min: 1, max: MAX_AMOUNT })
     const result = simulate(plan as any, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm })
     if (!result.ok) throw new SubmissionError(result.reason)
@@ -114,7 +114,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
       })
       if (existing.length) {
         const application = existing[0]
-        if (application.rooftop?.id !== rooftopId) throw new SubmissionError('The idempotency key conflicts with another location.', 409, 'IDEMPOTENCY_CONFLICT')
+        if (application.rooftop?.id !== rooftopId) throw new SubmissionError('La solicitud no es válida. Recarga la página e intenta de nuevo.', 409, 'IDEMPOTENCY_CONFLICT')
         const task = application.lead?.tasks?.[0]
         return {
           applicationId: application.id,

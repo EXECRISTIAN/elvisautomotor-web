@@ -47,13 +47,13 @@ async function authenticate(email: string, password: string) {
 export async function signInCustomer(_state: AccountState, data: FormData): Promise<AccountState> {
   const email = String(data.get('email') || '').trim().toLowerCase()
   const password = String(data.get('password') || '')
-  if (!email || !password) return { error: 'Ingresá tu email y contraseña.' }
+  if (!email || !password) return { error: 'Ingresa tu email y contraseña.' }
   try {
     const token = await authenticate(email, password)
     if (!token) return { error: 'Email o contraseña incorrectos.' }
     await setAuthToken(token)
   } catch {
-    return { error: 'No pudimos iniciar sesión. Intentá de nuevo.' }
+    return { error: 'No pudimos iniciar sesión. Intenta de nuevo.' }
   }
   revalidatePath('/account')
   redirect('/account')
@@ -64,7 +64,7 @@ export async function signUpCustomer(_state: AccountState, data: FormData): Prom
   const email = String(data.get('email') || '').trim().toLowerCase()
   const password = String(data.get('password') || '')
   if (process.env.DEMO_MODE === 'true') return { error: 'Sitio de demostración: el registro de clientes está desactivado.' }
-  if (!name || !email || !password) return { error: 'Ingresá tu nombre, email y contraseña.' }
+  if (!name || !email || !password) return { error: 'Ingresa tu nombre, email y contraseña.' }
   try {
     await openfrontClient.request(
       `mutation RegisterCustomer($name: String!, $email: String!, $password: String!) {
@@ -73,14 +73,14 @@ export async function signUpCustomer(_state: AccountState, data: FormData): Prom
       { name, email, password }
     )
   } catch {
-    return { error: 'No pudimos crear la cuenta. Si ya tenés una, iniciá sesión.' }
+    return { error: 'No pudimos crear la cuenta. Si ya tienes una, inicia sesión.' }
   }
   try {
     const token = await authenticate(email, password)
-    if (!token) return { error: 'Cuenta creada. Iniciá sesión para continuar.' }
+    if (!token) return { error: 'Cuenta creada. Inicia sesión para continuar.' }
     await setAuthToken(token)
   } catch {
-    return { error: 'Cuenta creada. Iniciá sesión para continuar.' }
+    return { error: 'Cuenta creada. Inicia sesión para continuar.' }
   }
   revalidatePath('/account')
   redirect('/account')
@@ -99,7 +99,7 @@ export async function resetCustomerPassword(_state: AccountState, data: FormData
 
 async function updateCustomer(data: Record<string, string>, failure: string): Promise<AccountState> {
   const customer = await getCustomer()
-  if (!customer) return { error: 'Iniciá sesión para actualizar tu perfil.' }
+  if (!customer) return { error: 'Inicia sesión para actualizar tu perfil.' }
   try {
     await openfrontClient.request(
       `mutation UpdateCustomer($id: ID!, $data: UserUpdateInput!) {
@@ -117,13 +117,13 @@ async function updateCustomer(data: Record<string, string>, failure: string): Pr
 
 export async function updateCustomerName(_state: AccountState, data: FormData): Promise<AccountState> {
   const name = String(data.get('name') || '').trim()
-  if (!name) return { error: 'Ingresá tu nombre.' }
+  if (!name) return { error: 'Ingresa tu nombre.' }
   return updateCustomer({ name }, 'No pudimos actualizar tu nombre.')
 }
 
 export async function updateCustomerEmail(_state: AccountState, data: FormData): Promise<AccountState> {
   const email = String(data.get('email') || '').trim().toLowerCase()
-  if (!email) return { error: 'Ingresá tu email.' }
+  if (!email) return { error: 'Ingresa tu email.' }
   return updateCustomer({ email }, 'Unable to update your email. It may already be in use.')
 }
 
@@ -135,7 +135,7 @@ export async function updateCustomerPhone(_state: AccountState, data: FormData):
 export async function updateCustomerPassword(_state: AccountState, data: FormData): Promise<AccountState> {
   const password = String(data.get('password') || '')
   const confirmPassword = String(data.get('confirmPassword') || '')
-  if (!password) return { error: 'Ingresá una nueva contraseña.' }
+  if (!password) return { error: 'Ingresa una nueva contraseña.' }
   if (password !== confirmPassword) return { error: 'Las contraseñas no coinciden.' }
   return updateCustomer({ password }, 'No pudimos actualizar tu contraseña.')
 }

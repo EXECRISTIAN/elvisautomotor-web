@@ -67,7 +67,7 @@ export function HouseholdLinkDialog({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const found = {
-      member: !member ? 'Elegí un cliente' : conflict ? 'Ya está en otro grupo familiar' : undefined,
+      member: !member ? 'Elige un cliente' : conflict ? 'Ya está en otro grupo familiar' : undefined,
       displayName: !displayName.trim() ? 'Obligatorio' : displayName.length > 200 ? 'Máximo 200 caracteres' : undefined,
     }
     setErrors(found)

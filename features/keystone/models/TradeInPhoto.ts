@@ -5,7 +5,7 @@ import { permissions, rules } from '../access'
 import { rooftopField, validateRooftopRecord } from '../tenantRecords'
 import { trackingFields } from './trackingFields'
 
-// Fotos que el cliente adjunta al ofrecer su usado ("Vendelo en Elvis").
+// Fotos que el cliente adjunta al ofrecer su usado ("Véndelo en Elvis").
 // Solo se crean desde la mutación pública `attachTradeInPhoto` (con código temporal); el personal
 // las ve con los mismos permisos que el usado al que pertenecen.
 const readFilter = ({ session }: any) => {

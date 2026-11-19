@@ -36,7 +36,7 @@ export function BookingActions({
   if (!canCancel && !canReschedule) {
     return (
       <p className="sf-muted text-[length:var(--sf-text-sm)]">
-        {kind === 'service' ? 'Los cambios online están cerrados. Comunicate con nosotros.' : 'Los cambios online están cerrados. Comunicate con nosotros.'}
+        {kind === 'service' ? 'Los cambios online están cerrados. Comunícate con nosotros.' : 'Los cambios online están cerrados. Comunícate con nosotros.'}
       </p>
     )
   }
@@ -54,7 +54,7 @@ export function BookingActions({
   const submitReschedule = (event: React.FormEvent) => {
     event.preventDefault()
     if (!date || !time) {
-      setError('Elegí fecha y hora.')
+      setError('Elige fecha y hora.')
       return
     }
     setError(null)
@@ -102,7 +102,7 @@ export function BookingActions({
           {canCancel && (
             <button type="button" onClick={() => reset('cancel')} className="sf-btn sf-btn-ghost">
               <X className="size-4" aria-hidden="true" />
-              Cancel booking
+              Cancelar cita
             </button>
           )}
         </div>
@@ -120,7 +120,7 @@ export function BookingActions({
               {pending ? 'Cancelando' : 'Confirmar cancelación'}
             </button>
             <button type="button" disabled={pending} onClick={() => reset('idle')} className="sf-btn sf-btn-ghost">
-              Keep booking
+              Mantener cita
             </button>
           </div>
         </div>
@@ -164,7 +164,7 @@ export function BookingActions({
               {pending ? 'Guardando' : 'Guardar nuevo horario'}
             </button>
             <button type="button" disabled={pending} onClick={() => reset('idle')} className="sf-btn sf-btn-ghost">
-              Keep current time
+              Mantener horario actual
             </button>
           </div>
         </form>

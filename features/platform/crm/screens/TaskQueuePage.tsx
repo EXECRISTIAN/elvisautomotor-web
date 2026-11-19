@@ -8,7 +8,7 @@ export async function TaskQueuePage() {
   const { start, end } = zonedDayBounds(timeZone)
   // "Vence hoy" (mine, overdue then today) leads the page; the full list below opens on upcoming work.
   const initialFilters: TaskQueueFilters = { bucket: 'upcoming', scope: 'mine', assigneeId: 'all', todayStart: start, todayEnd: end }
-  const signedOut = { success: false as const, error: 'Ingresá para ver las tareas' }
+  const signedOut = { success: false as const, error: 'Ingresa para ver las tareas' }
   const [response, overdueResponse, todayResponse, staff] = await Promise.all([
     viewer ? getTaskQueue(initialFilters, viewer.id) : Promise.resolve(signedOut),
     viewer ? getTaskQueue({ ...initialFilters, bucket: 'overdue' }, viewer.id) : Promise.resolve(signedOut),

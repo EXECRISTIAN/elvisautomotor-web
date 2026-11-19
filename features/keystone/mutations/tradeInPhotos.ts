@@ -40,14 +40,14 @@ export async function attachTradeInPhoto(_root: unknown, { tradeInId, photoToken
   const actual = Buffer.from(hashToken(token), 'hex')
   const valid = Boolean(tradeIn) && expected.length === actual.length && timingSafeEqual(expected, actual)
   if (!valid || !tradeIn?.photoTokenExpiresAt || tradeIn.photoTokenExpiresAt.getTime() < Date.now()) {
-    throw new SubmissionError('El plazo para adjuntar fotos venció. Envialas por WhatsApp.', 403, 'PHOTO_TOKEN_INVALID')
+    throw new SubmissionError('El plazo para adjuntar fotos venció. Envíalas por WhatsApp.', 403, 'PHOTO_TOKEN_INVALID')
   }
   if (tradeIn._count.photos >= MAX_TRADE_IN_PHOTOS) {
-    throw new SubmissionError(`Podés adjuntar hasta ${MAX_TRADE_IN_PHOTOS} fotos.`, 400, 'PHOTO_LIMIT')
+    throw new SubmissionError(`Puedes adjuntar hasta ${MAX_TRADE_IN_PHOTOS} fotos.`, 400, 'PHOTO_LIMIT')
   }
 
   const upload = await photo?.upload
-  if (!upload?.createReadStream) throw new SubmissionError('Elegí una foto.', 400, 'PHOTO_MISSING')
+  if (!upload?.createReadStream) throw new SubmissionError('Elige una foto.', 400, 'PHOTO_MISSING')
   const extension = String(upload.filename || '').split('.').pop()?.toLowerCase() || ''
   if (!ALLOWED_EXTENSIONS.has(extension) || !/^image\/(jpeg|png|webp)$/.test(String(upload.mimetype || ''))) {
     throw new SubmissionError('Las fotos deben ser JPG, PNG o WebP.', 400, 'PHOTO_TYPE')
@@ -57,7 +57,7 @@ export async function attachTradeInPhoto(_root: unknown, { tradeInId, photoToken
   try {
     stored = await context.images(PHOTO_STORAGE).getDataFromStream(upload.createReadStream(), String(upload.filename || 'foto'))
   } catch {
-    throw new SubmissionError('No pudimos procesar la foto. Probá con otra imagen.', 400, 'PHOTO_UNREADABLE')
+    throw new SubmissionError('No pudimos procesar la foto. Prueba con otra imagen.', 400, 'PHOTO_UNREADABLE')
   }
   if (!stored || stored.filesize > MAX_PHOTO_BYTES) {
     if (stored) await context.images(PHOTO_STORAGE).deleteAtSource(stored.id, stored.extension).catch(() => {})

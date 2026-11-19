@@ -52,7 +52,7 @@ export function inventoryQueryFromSearch(search: string) {
 function parseNonNegativeInteger(value: string | undefined, label: string) {
   const normalized = value?.trim() || ''
   if (!normalized) return undefined
-  if (!/^\d+$/.test(normalized)) throw new Error(`${label}: ingresá un número entero positivo.`)
+  if (!/^\d+$/.test(normalized)) throw new Error(`${label}: ingresa un número entero positivo.`)
   const number = Number(normalized)
   if (!Number.isSafeInteger(number)) throw new Error(`${label}: valor fuera de rango.`)
   return number
@@ -62,7 +62,7 @@ function parsePriceCents(value: string | undefined, label: string) {
   const normalized = value?.trim() || ''
   if (!normalized) return undefined
   if (!/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(normalized)) {
-    throw new Error(`${label}: ingresá un importe válido.`)
+    throw new Error(`${label}: ingresa un importe válido.`)
   }
   const amount = Number(normalized)
   const cents = Math.round(amount * 100)

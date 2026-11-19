@@ -160,7 +160,7 @@ const fundingLabels: Record<string, string> = { pending: 'Pendiente', exception:
 const contractStatusLabels: Record<string, string> = { preparing: 'Preparando', ready: 'Lista', sent: 'Enviado', viewed: 'Visto', signed: 'Firmado', declined: 'Rechazada', void: 'Anulado' }
 const documentLabels: Record<string, string> = {
   'buyers-order': 'Buyer\'s order',
-  'retail-installment-contract': 'Contrato de prenda',
+  'retail-installment-contract': 'Contrato de crédito prendario',
   'privacy-disclosure': 'Aviso de privacidad',
   'product-menu': 'F&I product menu',
 }
@@ -346,7 +346,7 @@ export function FinanceDeskPageClient({
     setUpdatingId(lead.id)
     const response = await openFinanceFollowUp({
       leadId: lead.id,
-      reason: 'Revisá la solicitud de financiación y decidí el próximo paso.',
+      reason: 'Revisa la solicitud de financiación y decidí el próximo paso.',
       idempotencyKey: `finance-follow-up:${lead.id}`,
     })
 
@@ -478,7 +478,7 @@ export function FinanceDeskPageClient({
     'lender-decision': 'Registrar decisión de la entidad',
     'buyers-order': 'Record signed buyer\'s order',
     payment: 'Registrar pago',
-    deposit: 'Registrar seña',
+    deposit: 'Registrar depósito',
     compliance: 'Registrar control',
     'contract-ready': 'Marcar documentación lista',
     'contract-provider': 'Registrar estado del contrato',
@@ -499,11 +499,11 @@ export function FinanceDeskPageClient({
     try {
       let response: { success: boolean; error?: string } | undefined
       if (task.kind === 'deal-approval' && deal) {
-        if (!task.nextStatus) throw new Error('Elegí el próximo estado de la operación.')
+        if (!task.nextStatus) throw new Error('Elige el próximo estado de la operación.')
         response = await transitionDeal({ id: deal.id, toStatus: task.nextStatus, notes: value('notes'), idempotencyKey: task.idempotencyKey })
       } else if (task.kind === 'lender-decision' && application && submission) {
         const decision = value('decision')
-        if (!['approved', 'conditional', 'declined', 'expired', 'cancelled'].includes(decision)) throw new Error('Elegí la decisión de la entidad.')
+        if (!['approved', 'conditional', 'declined', 'expired', 'cancelled'].includes(decision)) throw new Error('Elige la decisión de la entidad.')
         const reasonCodes = value('reasonCodes').split(',').map(code => code.trim()).filter(Boolean)
         if (decision === 'declined' && !reasonCodes.length) throw new Error('Un rechazo requiere al menos un motivo.')
         const hasTerms = ['approved', 'conditional'].includes(decision)
@@ -511,7 +511,7 @@ export function FinanceDeskPageClient({
         const apr = hasTerms ? Number(value('apr')) : null
         const termMonths = hasTerms ? Number(value('termMonths')) : null
         const monthlyPaymentCents = hasTerms ? centsFromDollars('monthlyPayment', 'Monthly payment') : null
-        if (hasTerms && (approvedAmountCents! <= 0 || apr == null || !Number.isFinite(apr) || apr < 0 || apr > 100 || !Number.isInteger(termMonths) || termMonths! < 1 || termMonths! > 120)) throw new Error('Ingresá monto aprobado, tasa, plazo en meses y cuota válidos.')
+        if (hasTerms && (approvedAmountCents! <= 0 || apr == null || !Number.isFinite(apr) || apr < 0 || apr > 100 || !Number.isInteger(termMonths) || termMonths! < 1 || termMonths! > 120)) throw new Error('Ingresa monto aprobado, tasa, plazo en meses y cuota válidos.')
         response = await recordLenderDecision({
           applicationId: application.id,
           submissionId: submission.id,
@@ -539,7 +539,7 @@ export function FinanceDeskPageClient({
           idempotencyKey: task.idempotencyKey,
         })
       } else if (task.kind === 'contract-ready' && deal) {
-        if (value('confirmed') !== 'yes') throw new Error('Confirmá que se recibieron y revisaron los documentos requeridos.')
+        if (value('confirmed') !== 'yes') throw new Error('Confirma que se recibieron y revisaron los documentos requeridos.')
         const requiredDocuments = ['buyers-order', 'retail-installment-contract', 'privacy-disclosure', 'product-menu']
         response = await manageFinanceContractPackage({
           dealId: deal.id,
@@ -582,10 +582,10 @@ export function FinanceDeskPageClient({
       } else if (task.kind === 'deposit' && deal) {
         const amount = centsFromDollars('amount', 'Amount received')
         const remaining = deal.financeEvidence?.payment?.remainingCents
-        if (amount <= 0) throw new Error('Ingresá un importe mayor a $0.')
+        if (amount <= 0) throw new Error('Ingresa un importe mayor a $0.')
         if (remaining != null && amount > remaining) throw new Error(`The deposit can't be more than the ${formatCurrencyCents(remaining)} still due.`)
-        if (!value('paymentMethod')) throw new Error('Elegí la forma de pago.')
-        if (!value('receiptReference')) throw new Error('Ingresá el número de recibo.')
+        if (!value('paymentMethod')) throw new Error('Elige la forma de pago.')
+        if (!value('receiptReference')) throw new Error('Ingresa el número de recibo.')
         response = await recordCashDealDeposit({
           dealId: deal.id,
           amountCents: amount,
@@ -595,9 +595,9 @@ export function FinanceDeskPageClient({
         })
       } else if (task.kind === 'payment' && deal) {
         const amount = centsFromDollars('amount', 'Amount received')
-        if (amount > 0 && !value('paymentMethod')) throw new Error('Elegí la forma de pago.')
-        if (!value('receiptReference')) throw new Error('Ingresá el número de recibo.')
-        if (value('attestPayment') !== 'yes') throw new Error('Confirmá que la operación está totalmente paga.')
+        if (amount > 0 && !value('paymentMethod')) throw new Error('Elige la forma de pago.')
+        if (!value('receiptReference')) throw new Error('Ingresa el número de recibo.')
+        if (value('attestPayment') !== 'yes') throw new Error('Confirma que la operación está totalmente paga.')
         response = await manageFinanceFundingCase({
           dealId: deal.id,
           worksheetVersion: deal.worksheetVersion,
@@ -629,10 +629,10 @@ export function FinanceDeskPageClient({
       } else if (task.kind === 'funding' && deal) {
         const status = value('status')
         if (status === 'funded' && !value('fundingReference')) throw new Error('Para marcar la operación como acreditada se necesita una referencia.')
-        if (status === 'exception' && !value('exceptionNotes')) throw new Error('Describí la observación.')
+        if (status === 'exception' && !value('exceptionNotes')) throw new Error('Describe la observación.')
         const complete = ['clear-to-fund', 'funded'].includes(status)
-        if (complete && !deal.financeEvidence?.prerequisites?.current) throw new Error('Revisá primero los requisitos.')
-        if (complete && value('attestChecklist') !== 'yes') throw new Error('Confirmá el contrato firmado, las condiciones, la aprobación de la entidad y el seguro antes de liberar la acreditación.')
+        if (complete && !deal.financeEvidence?.prerequisites?.current) throw new Error('Revisa primero los requisitos.')
+        if (complete && value('attestChecklist') !== 'yes') throw new Error('Confirma el contrato firmado, las condiciones, la aprobación de la entidad y el seguro antes de liberar la acreditación.')
         response = await manageFinanceFundingCase({
           dealId: deal.id,
           worksheetVersion: deal.worksheetVersion,
@@ -646,7 +646,7 @@ export function FinanceDeskPageClient({
         })
       }
       if (response && !response.success) { setTaskError(response.error || 'No se pudo guardar. Tus datos se conservan.'); return }
-      if (!response) throw new Error('Algo salió mal. Cerrá y volvé a abrir esta tarea.')
+      if (!response) throw new Error('Algo salió mal. Cierra y vuelve a abrir esta tarea.')
       setTask(null)
       setNotice(task.kind === 'lender-decision' ? 'Lender decision recorded.' : task.kind === 'payment' ? 'Payment recorded.' : task.kind === 'deposit' ? 'Deposit recorded.' : task.kind.startsWith('contract') || task.kind === 'buyers-order' ? 'Contrato actualizado.' : 'Guardado.')
       await loadDeals()
@@ -894,7 +894,7 @@ export function FinanceDeskPageClient({
             )}
             {canRecordDeposit && (
               <Pill size="sm" className="max-md:h-10" variant={primaryNext ? 'raised' : 'primary'} onClick={() => recordDeposit(deal)} disabled={busy}>
-                Registrar seña
+                Registrar depósito
               </Pill>
             )}
             {deal.status === 'submitted' && (
@@ -1259,7 +1259,7 @@ export function FinanceDeskPageClient({
             {renderDealDetail(selectedDeal)}
           </div>
         ) : deals.length > 0 ? (
-          <p className="text-[13px] text-muted-foreground">Elegí una operación para gestionar su financiación.</p>
+          <p className="text-[13px] text-muted-foreground">Elige una operación para gestionar su financiación.</p>
         ) : null}
 
         <DeskSection title="Operaciones" count={filteredDeals.length}>

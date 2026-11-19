@@ -128,7 +128,7 @@ export function SalesVisitDialog({
                   <SelectTrigger id="visit-kind" className={fieldClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="appointment">Cita de venta</SelectItem>
-                    <SelectItem value="showroom">Llegó al salón (ahora)</SelectItem>
+                    <SelectItem value="showroom">Llegó a la agencia (ahora)</SelectItem>
                   </SelectContent>
                 </Select>
               </FormField>
@@ -151,7 +151,7 @@ export function SalesVisitDialog({
           {action === 'manager-turn' && (
             <FormField id="visit-manager" label="Gerente" error={errors.managerId}>
               <Select value={values.managerId || undefined} onValueChange={value => set('managerId', value)}>
-                <SelectTrigger id="visit-manager" className={fieldClass} aria-invalid={Boolean(errors.managerId)}><SelectValue placeholder="Elegí el gerente" /></SelectTrigger>
+                <SelectTrigger id="visit-manager" className={fieldClass} aria-invalid={Boolean(errors.managerId)}><SelectValue placeholder="Elige el gerente" /></SelectTrigger>
                 <SelectContent>{staff.map(person => <SelectItem key={person.id} value={person.id}>{person.name || 'Unnamed'}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>
@@ -159,7 +159,7 @@ export function SalesVisitDialog({
           {action === 'complete' && (
             <FormField id="visit-outcome" label="Resultado" error={errors.outcome}>
               <Select value={values.outcome || undefined} onValueChange={value => set('outcome', value)}>
-                <SelectTrigger id="visit-outcome" className={fieldClass} aria-invalid={Boolean(errors.outcome)}><SelectValue placeholder="Elegí el resultado" /></SelectTrigger>
+                <SelectTrigger id="visit-outcome" className={fieldClass} aria-invalid={Boolean(errors.outcome)}><SelectValue placeholder="Elige el resultado" /></SelectTrigger>
                 <SelectContent>{VISIT_OUTCOMES.map(outcome => <SelectItem key={outcome.value} value={outcome.value}>{outcome.label}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>

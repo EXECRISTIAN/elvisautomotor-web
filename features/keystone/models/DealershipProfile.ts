@@ -33,7 +33,7 @@ export const DealershipProfile = list({
       defaultValue: '',
       label: 'WhatsApp',
       ui: { description: 'Número con código de país, sin espacios ni signos. Ej.: 5491122334455' },
-      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: 'Usá solo dígitos, con código de país (8 a 15 dígitos).' } },
+      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: 'Usa solo dígitos, con código de país (8 a 15 dígitos).' } },
     }),
     addressLine1: text({ defaultValue: '' }),
     addressLine2: text({ defaultValue: '' }),

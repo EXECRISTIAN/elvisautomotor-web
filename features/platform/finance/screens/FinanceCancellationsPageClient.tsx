@@ -143,14 +143,14 @@ export function FinanceCancellationsPageClient({
     if (!dialog) return
     const v = dialog.values
     const errors: FieldErrors = {}
-    if (!(v.reason || '').trim()) errors.reason = dialog.kind === 'deny' ? 'Indicá por qué se denegó la cancelación.' : 'Indicá el motivo de la cancelación.'
+    if (!(v.reason || '').trim()) errors.reason = dialog.kind === 'deny' ? 'Indica por qué se denegó la cancelación.' : 'Indica el motivo de la cancelación.'
     let payload: Parameters<typeof recordProductCancellation>[0] | null = null
     if (dialog.kind === 'new') {
       const [menuId, code] = (v.product || '').split('|')
       const target = cancellable.find(item => item.menu.id === menuId && item.code === code)
       if (!target?.menu.deal) errors.product = 'Select a sold product.'
       const estimate = (v.estimate || '').trim() ? parseDollarsToCents(v.estimate) : 0
-      if (estimate == null) errors.estimate = 'Ingresá un importe.'
+      if (estimate == null) errors.estimate = 'Ingresa un importe.'
       if (target?.menu.deal && estimate != null) payload = {
         dealId: target.menu.deal.id, menuId: target.menu.id, productCode: target.code, status: 'requested',
         reason: v.reason.trim(), refundCents: estimate, refundBasis: null, idempotencyKey: dialog.idempotencyKey,
@@ -191,7 +191,7 @@ export function FinanceCancellationsPageClient({
         value: `${item.menu.id}|${item.code}`,
         label: `${personName(item.menu.deal?.lead)} · ${item.option?.name || item.code} (${item.code}) · ${formatCents(item.option?.retailPriceCents ?? null)}`,
       })),
-      placeholder: cancellableForFilter.length ? 'Elegí un producto' : 'No hay productos vendidos para cancelar',
+      placeholder: cancellableForFilter.length ? 'Elige un producto' : 'No hay productos vendidos para cancelar',
     },
     { name: 'reason', label: 'Motivo', type: 'textarea', maxLength: 1000 },
     { name: 'estimate', label: 'Devolución estimada (opcional)', type: 'money' },
@@ -285,12 +285,12 @@ export function FinanceCancellationsPageClient({
                 <label className="grid gap-1.5 text-sm">
                   <span className="text-[12px] font-medium text-muted-foreground">Meses usados</span>
                   <Input className="h-10 rounded-[4px]" inputMode="numeric" value={calcState.monthsUsed} aria-invalid={monthsInvalid} onChange={event => setCalc({ ...calcState, monthsUsed: event.target.value })} />
-                  {monthsInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresá meses enteros.</span>}
+                  {monthsInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresa meses enteros.</span>}
                 </label>
                 <label className="grid gap-1.5 text-sm">
                   <span className="text-[12px] font-medium text-muted-foreground">Cargo por cancelación</span>
                   <Input className="h-10 rounded-[4px]" inputMode="decimal" value={calcState.fee} aria-invalid={feeInvalid} onChange={event => setCalc({ ...calcState, fee: event.target.value })} />
-                  {feeInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresá un importe.</span>}
+                  {feeInvalid && <span className="text-xs text-red-600 dark:text-red-400">Ingresa un importe.</span>}
                 </label>
               </div>
             ) : null}

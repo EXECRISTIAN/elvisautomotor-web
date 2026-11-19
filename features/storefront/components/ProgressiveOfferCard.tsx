@@ -129,7 +129,7 @@ export function ProgressiveOfferCard({ offer, compact = false }: { offer: Public
           {!compact && (offer.financing || offer.conditions || offer.includesTransfer || offer.walkIn) && (
             <ul className="space-y-1.5 text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-ink-2)' }}>
               {offer.includesTransfer && <li>✔ El precio incluye la transferencia: se entrega transferido.</li>}
-              {offer.walkIn && <li>✔ Para esta promo podés venir sin turno.</li>}
+              {offer.walkIn && <li>✔ Para esta promo puedes venir sin cita.</li>}
               <li>✔ Hasta agotar stock (1 unidad): si se vende, termina la promo.</li>
               <li>✔ El precio baja {offer.stepMinutes % 1440 === 0 ? (offer.stepMinutes === 1440 ? 'cada día' : `cada ${offer.stepMinutes / 1440} días`) : offer.stepMinutes % 60 === 0 ? (offer.stepMinutes === 60 ? 'cada hora' : `cada ${offer.stepMinutes / 60} horas`) : `cada ${offer.stepMinutes} minutos`} que no se vende.</li>
               {offer.financing && <li className="whitespace-pre-line">💳 {offer.financing}</li>}

@@ -32,7 +32,7 @@ type PublicSubmissionOptions<T extends Record<string, unknown>> = {
 export function publicSubmissionIdempotencyKey(value: unknown) {
   const key = String(value || '').trim()
   if (key.length < 8 || key.length > 180 || !/^[a-zA-Z0-9:_-]+$/.test(key)) {
-    throw new SubmissionError('A valid idempotency key is required.', 400, 'INVALID_IDEMPOTENCY_KEY')
+    throw new SubmissionError('La solicitud no es válida. Recarga la página e intenta de nuevo.', 400, 'INVALID_IDEMPOTENCY_KEY')
   }
   return key
 }
@@ -40,12 +40,12 @@ export function publicSubmissionIdempotencyKey(value: unknown) {
 export async function publicSubmissionRooftopSlug(context: any, value?: unknown) {
   const slug = String(value ?? '').trim().toLowerCase()
   if (slug && (slug.length < 2 || slug.length > 120 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))) {
-    throw new SubmissionError('A valid dealership location is required.', 400, 'INVALID_ROOFTOP')
+    throw new SubmissionError('No pudimos identificar la agencia.', 400, 'INVALID_ROOFTOP')
   }
   try {
     return await assertStorefrontRooftopSlug(context, slug)
   } catch {
-    throw new SubmissionError('This dealership location is unavailable.', 404, 'INVALID_ROOFTOP')
+    throw new SubmissionError('La agencia no está disponible en este momento.', 404, 'INVALID_ROOFTOP')
   }
 }
 
@@ -60,7 +60,7 @@ async function lockCurrentPublicRooftop(context: any, publicSlug: string, expect
     take: 2,
   })
   if (candidates.length !== 1 || candidates[0].id !== expectedRooftopId || !candidates[0].dealerGroupId) {
-    throw new SubmissionError('This dealership location is unavailable.', 404, 'INVALID_ROOFTOP')
+    throw new SubmissionError('La agencia no está disponible en este momento.', 404, 'INVALID_ROOFTOP')
   }
 
   const candidate = candidates[0]
@@ -76,7 +76,7 @@ async function lockCurrentPublicRooftop(context: any, publicSlug: string, expect
     current.dealerGroupId !== candidate.dealerGroupId || current.dealerGroup?.id !== candidate.dealerGroupId ||
     current.dealerGroup?.status !== 'active'
   ) {
-    throw new SubmissionError('This dealership location is unavailable.', 404, 'INVALID_ROOFTOP')
+    throw new SubmissionError('La agencia no está disponible en este momento.', 404, 'INVALID_ROOFTOP')
   }
 }
 
@@ -86,7 +86,7 @@ export async function runPublicSubmission<T extends Record<string, unknown>>(
   const rooftopSlug = await publicSubmissionRooftopSlug(options.context, options.rooftopSlug)
   const idempotencyKey = publicSubmissionIdempotencyKey(options.idempotencyKey)
   if (String(options.honeypot || '').trim()) {
-    throw new SubmissionError('Unable to process this request.', 400, 'INVALID_SUBMISSION')
+    throw new SubmissionError('No pudimos procesar la solicitud.', 400, 'INVALID_SUBMISSION')
   }
 
   const rooftopId = await resolvePublicRooftopId(options.context, rooftopSlug)
@@ -110,7 +110,7 @@ export async function runPublicSubmission<T extends Record<string, unknown>>(
       const metadata = existing.metadata as Record<string, unknown> | null
       if (metadata?.submissionRequestHash !== submissionRequestHash) {
         throw new SubmissionError(
-          'The idempotency key was already used for a different request.',
+          'La solicitud no es válida. Recarga la página e intenta de nuevo.',
           409,
           'IDEMPOTENCY_CONFLICT'
         )

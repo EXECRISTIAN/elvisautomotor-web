@@ -14,8 +14,8 @@ const INTENTS: Record<string, string> = {
 const CONTACTS = new Set(['email', 'phone', 'text'])
 
 export async function submitInquiry(_root: unknown, { data }: { data: any }, context: any) {
-  const firstName = requiredText(data.firstName, 'First name', 100)
-  const lastName = requiredText(data.lastName, 'Last name', 100)
+  const firstName = requiredText(data.firstName, 'Nombre', 100)
+  const lastName = requiredText(data.lastName, 'Apellido', 100)
   const email = validEmail(data.email)
   const phone = validPhone(data.phone, false)
   const message = optionalText(data.message, 4000, 'Message')
@@ -23,16 +23,16 @@ export async function submitInquiry(_root: unknown, { data }: { data: any }, con
   const preferredContact = optionalText(data.preferredContact || 'email', 20, 'Preferred contact')
   const intentLabel = INTENTS[intent]
   if (!intentLabel || !CONTACTS.has(preferredContact)) {
-    throw new SubmissionError('Inquiry type or preferred contact method is invalid.')
+    throw new SubmissionError('El tipo de consulta o el medio de contacto no es válido.')
   }
   if ((preferredContact !== 'email' || intent !== 'general-contact') && !phone) {
-    throw new SubmissionError('A phone number is required for this request.')
+    throw new SubmissionError('Ingresa un teléfono para esta consulta.')
   }
   if ((intent === 'general-contact' || intent === 'vehicle-question') && !message) {
-    throw new SubmissionError('A message is required for this request.')
+    throw new SubmissionError('Escribe tu consulta.')
   }
   if (intent !== 'general-contact' && !data.vehicleId) {
-    throw new SubmissionError('A selected vehicle is required for this request.')
+    throw new SubmissionError('Elige un vehículo para esta consulta.')
   }
 
   return runPublicSubmission({

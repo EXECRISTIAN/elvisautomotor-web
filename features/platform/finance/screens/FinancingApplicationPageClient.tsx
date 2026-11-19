@@ -122,18 +122,18 @@ export function FinancingApplicationPageClient({
     } else if (dialog.kind === 'sent') {
       const reference = (v.reference || '').trim()
       if (!reference) errors.reference = 'Enter the lender or portal reference.'
-      else if (reference.length > 200) errors.reference = 'Usá 200 caracteres o menos.'
+      else if (reference.length > 200) errors.reference = 'Usa 200 caracteres o menos.'
       run = () => recordSubmissionStatus(app.id, { submissionId: dialog.submission.id, status: 'submitted', externalReference: reference, idempotencyKey: dialog.idempotencyKey })
       message = 'Envío registrado.'
     } else if (dialog.kind === 'failed') {
       const reason = (v.reason || '').trim()
-      if (!reason) errors.reason = 'Indicá por qué no se pudo enviar.'
-      else if (reason.length > 200) errors.reason = 'Usá 200 caracteres o menos.'
+      if (!reason) errors.reason = 'Indica por qué no se pudo enviar.'
+      else if (reason.length > 200) errors.reason = 'Usa 200 caracteres o menos.'
       run = () => recordSubmissionStatus(app.id, { submissionId: dialog.submission.id, status: 'failed', errorCode: reason, idempotencyKey: dialog.idempotencyKey })
       message = 'Envío registrado como fallido.'
     } else if (dialog.kind === 'follow-up') {
       const reason = (v.reason || '').trim()
-      if (!reason) errors.reason = 'Indicá qué hay que seguir.'
+      if (!reason) errors.reason = 'Indica qué hay que seguir.'
       if (app.lead) run = () => openApplicationFollowUp(app.id, { leadId: app.lead!.id, reason, idempotencyKey: dialog.idempotencyKey })
       message = 'Tarea de seguimiento creada.'
     } else {
@@ -157,7 +157,7 @@ export function FinancingApplicationPageClient({
         termMonths = Number(v.term)
         if (!Number.isInteger(termMonths) || termMonths < 1 || termMonths > 120) errors.term = 'Enter 1 to 120 months.'
         monthlyPaymentCents = (v.payment || '').trim() ? parseDollarsToCents(v.payment) : null
-        if ((v.payment || '').trim() && monthlyPaymentCents == null) errors.payment = 'Ingresá un importe.'
+        if ((v.payment || '').trim() && monthlyPaymentCents == null) errors.payment = 'Ingresa un importe.'
       }
       if (app.submissions.length && !submission && decision !== 'cancelled') errors.submissionId = 'Select the submission this decision answers.'
       run = () => recordApplicationDecision({
@@ -261,7 +261,7 @@ export function FinancingApplicationPageClient({
             <Pill variant={decisionPrimary ? 'primary' : 'raised'} disabled={!allowedDecisions.length || busy} onClick={() => start({ kind: 'decision', values: { submissionId: app.submissions[0]?.id || '', decision: '', reference: '', reasonCodes: '', amount: '', apr: '', term: '', payment: '' }, idempotencyKey: newIdempotencyKey(`lender-decision:${app.id}`) })}>
               Registrar decisión
             </Pill>
-            <Pill disabled={Boolean(followUpReason) || busy} onClick={() => start({ kind: 'follow-up', values: { reason: 'Revisá la solicitud de financiación y decidí el próximo paso.' }, idempotencyKey: newIdempotencyKey(`finance-follow-up:${app.lead?.id}`) })}>
+            <Pill disabled={Boolean(followUpReason) || busy} onClick={() => start({ kind: 'follow-up', values: { reason: 'Revisa la solicitud de financiación y decidí el próximo paso.' }, idempotencyKey: newIdempotencyKey(`finance-follow-up:${app.lead?.id}`) })}>
               Create follow-up
             </Pill>
           </Track>

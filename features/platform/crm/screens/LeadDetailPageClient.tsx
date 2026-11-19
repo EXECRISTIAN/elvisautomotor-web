@@ -213,7 +213,7 @@ export function LeadDetailPageClient({
 
   const submitLostLeadTransition = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!lostReasonValues.lostReasonCode) { setLostReasonError('Elegí el motivo de pérdida'); return }
+    if (!lostReasonValues.lostReasonCode) { setLostReasonError('Elige el motivo de pérdida'); return }
     if (!lostReasonIdempotencyKeyRef.current) return
     setSaving(true)
     setLostReasonError(null)
@@ -290,7 +290,7 @@ export function LeadDetailPageClient({
   const saveContactPreference = async (suppressSelected = false) => {
     if (!lead?.customer) return
     const selected = contactChannel
-    if (suppressSelected && selected === 'none') { setNotice({ tone: 'bad', text: 'Elegí el canal a bloquear' }); return }
+    if (suppressSelected && selected === 'none') { setNotice({ tone: 'bad', text: 'Elige el canal a bloquear' }); return }
     const customer = lead.customer
     await runCommand(() => updateCustomerCommunicationPreferences(lead.id, {
       customerId: customer.id,
@@ -939,7 +939,7 @@ export function LeadDetailPageClient({
           open={lostReasonDialogOpen}
           title="Cerrar consulta como perdida"
           fields={[
-            { name: 'lostReasonCode', label: 'Motivo de pérdida', type: 'select', placeholder: 'Elegí un motivo', options: lostReasonOptions },
+            { name: 'lostReasonCode', label: 'Motivo de pérdida', type: 'select', placeholder: 'Elige un motivo', options: lostReasonOptions },
             { name: 'lostReasonDetails', label: 'Más detalles', type: 'textarea', required: false, maxLength: 2000, placeholder: 'Opcional' },
           ]}
           values={lostReasonValues}

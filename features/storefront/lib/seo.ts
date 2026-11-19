@@ -25,8 +25,8 @@ export function businessDescription(business: StorefrontBusiness) {
 }
 
 const PAGE_DESCRIPTIONS = {
-  inventory: (b: StorefrontBusiness) => `Todos los vehículos disponibles en ${b.fullName}, con precio, kilometraje y fotos. Filtrá por marca, modelo, año y presupuesto.`,
-  financing: (b: StorefrontBusiness) => `Consultá opciones de financiación para tu próximo vehículo en ${b.fullName}. Sujeto a calificación y aprobación crediticia.`,
+  inventory: (b: StorefrontBusiness) => `Todos los vehículos disponibles en ${b.fullName}, con precio, kilometraje y fotos. Filtra por marca, modelo, año y presupuesto.`,
+  financing: (b: StorefrontBusiness) => `Consulta opciones de financiación para tu próximo vehículo en ${b.fullName}. Sujeto a calificación y aprobación crediticia.`,
 } as const
 
 export function pageMetadata(business: StorefrontBusiness, page: keyof typeof PAGE_DESCRIPTIONS, title: string): Metadata {
@@ -42,7 +42,7 @@ export function vehicleMetadata(business: StorefrontBusiness, vehicle: Vehicle):
     vehicle.color || '',
     vehicle.stockNumber ? `stock #${vehicle.stockNumber}` : '',
   ].filter(Boolean).join(', ')
-  const description = oneLine(`${title}${facts ? `: ${facts}` : ''}. Disponible en ${business.fullName}. Consultá por financiación.`)
+  const description = oneLine(`${title}${facts ? `: ${facts}` : ''}. Disponible en ${business.fullName}. Consulta por financiación.`)
   const photo = vehicleImageUrl(primaryVehicleImage(vehicle.images))
   return {
     title,

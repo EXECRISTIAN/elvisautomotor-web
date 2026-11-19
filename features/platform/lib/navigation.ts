@@ -53,8 +53,8 @@ const allPlatformNavItems: PlatformNavItem[] = [
 
   // Ventas
   { title: 'Consultas',      href: '/platform/crm',            color: 'purple',  description: 'Consultas, seguimiento y oportunidades de venta.',             icon: Users,         group: 'sales' },
-  { title: 'Pruebas de manejo', href: '/platform/test-drives', color: 'cyan',    description: 'Turnos de prueba de manejo.',                                   icon: CalendarClock, group: 'sales' },
-  { title: 'Usados ofrecidos', href: '/platform/trade-ins',    color: 'amber',   description: 'Autos que ofrecen los clientes (Vendelo en Elvis).',            icon: CarFront,      group: 'sales' },
+  { title: 'Pruebas de manejo', href: '/platform/test-drives', color: 'cyan',    description: 'Citas de prueba de manejo.',                                   icon: CalendarClock, group: 'sales' },
+  { title: 'Usados ofrecidos', href: '/platform/trade-ins',    color: 'amber',   description: 'Autos que ofrecen los clientes (Véndelo en Elvis).',            icon: CarFront,      group: 'sales' },
   { title: 'Clientes',       href: '/platform/customers',      color: 'pink',    description: 'Fichas de clientes e historial.',                                icon: Contact,       group: 'sales' },
 
   // Financiación
@@ -64,7 +64,7 @@ const allPlatformNavItems: PlatformNavItem[] = [
   { title: 'Contabilidad',   href: '/platform/accounting',     color: 'sky',     description: 'Asientos y cuentas contables.',                                  icon: Landmark,      group: 'finance' },
 
   // Taller
-  { title: 'Taller',         href: '/platform/service',        color: 'orange',  description: 'Turnos y órdenes de taller.',                                    icon: Wrench,        group: 'service' },
+  { title: 'Taller',         href: '/platform/service',        color: 'orange',  description: 'Citas y órdenes de taller.',                                    icon: Wrench,        group: 'service' },
   { title: 'Repuestos',      href: '/platform/parts',          color: 'stone',   description: 'Repuestos y órdenes de compra.',                                 icon: Boxes,         group: 'service' },
 
   // Administración

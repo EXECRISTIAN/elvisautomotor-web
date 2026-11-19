@@ -15,7 +15,7 @@ import { customerRequestReference } from '../lib/customerRequests'
 import { fillBlankFields, useCustomerPrefill } from '../lib/useCustomerPrefill'
 import { fetchListedInventoryOptions, type InventoryOption } from '../lib/data/inventory-facets'
 import { formatPrice } from '../lib/format'
-import { DEFAULT_TEST_DRIVE_SLOTS, closedDayLabel, dayAvailability, localDateString } from '../lib/bookingSlots'
+import { DEFAULT_TEST_DRIVE_SLOTS, closedDayLabel, dayAvailability, localDateString, displaySlot } from '../lib/bookingSlots'
 import {
   Field,
   FormSection,
@@ -196,7 +196,7 @@ export function TestDrivePage() {
       ) : (
         <div className="flex items-center justify-between gap-3 border-b border-dashed px-4 py-3" style={{ borderColor: 'var(--sf-rule)' }}>
           <span className="sf-eyebrow">Vehículo</span>
-          <Link href="/inventory" className="sf-link text-[length:var(--sf-text-sm)]">Elegí del inventario</Link>
+          <Link href="/inventory" className="sf-link text-[length:var(--sf-text-sm)]">Elige del inventario</Link>
         </div>
       )}
     </Sticker>
@@ -204,7 +204,7 @@ export function TestDrivePage() {
 
   return (
     <>
-      <PageHeader title="Coordiná una prueba de manejo" />
+      <PageHeader title="Coordina una prueba de manejo" />
 
       <RequestLayout summary={summary}>
         <form onSubmit={handleSubmit} className="space-y-[var(--sf-space-xl)]">
@@ -240,7 +240,7 @@ export function TestDrivePage() {
                   onChange={handleChange}
                   options={availability.slots.map((slot) => ({
                     value: slot,
-                    label: <span className="sf-figure">{slot}</span>,
+                    label: <span className="sf-figure">{displaySlot(slot)}</span>,
                   }))}
                 />
               )}
@@ -344,9 +344,9 @@ export function TestDrivePage() {
                     Llamar <a href={business.phoneHref} className="sf-link sf-figure">{business.phoneDisplay}</a> to schedule directly.
                   </>
                 ) : business.salesEmail ? (
-                  <>Intentá de nuevo o escribinos a <a href={`mailto:${business.salesEmail}`} className="sf-link break-all">{business.salesEmail}</a>.</>
+                  <>Intenta de nuevo o escríbenos a <a href={`mailto:${business.salesEmail}`} className="sf-link break-all">{business.salesEmail}</a>.</>
                 ) : (
-                  <>Intentá de nuevo más tarde.</>
+                  <>Intenta de nuevo más tarde.</>
                 )}
               </Notice>
             )}

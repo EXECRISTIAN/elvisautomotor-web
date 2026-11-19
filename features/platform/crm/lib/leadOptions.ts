@@ -16,7 +16,7 @@ export function leadStatus(value: string | null | undefined) {
 }
 
 export const LEAD_SOURCES: ReadonlyArray<{ value: string; label: string }> = [
-  { value: 'walk-in', label: 'Se acercó al salón' },
+  { value: 'walk-in', label: 'Visitó la agencia' },
   { value: 'phone', label: 'Teléfono' },
   { value: 'website', label: 'Sitio web' },
   { value: 'referral', label: 'Recomendación' },

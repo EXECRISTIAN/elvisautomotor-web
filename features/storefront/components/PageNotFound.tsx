@@ -7,7 +7,7 @@ export function PageNotFound() {
       <div className="sf-well flex flex-col items-start gap-5 p-6 md:p-8">
         <h1 className="sf-title-line sf-heading text-[length:var(--sf-text-xl)]">
           <span className="sf-dot" aria-hidden="true" />
-          Page not found
+          Página no encontrada
         </h1>
         <div className="flex flex-wrap gap-2">
           <Link href="/" className="sf-btn sf-btn-primary">Inicio</Link>

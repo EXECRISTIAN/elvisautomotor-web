@@ -21,7 +21,7 @@ export function AccountLayout({ signedIn, children }: { signedIn: boolean; child
           <form action={signOutCustomer} className="self-start sm:self-auto">
             <button type="submit" className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">
               <LogOut className="size-4" aria-hidden="true" />
-              Sign out
+              Cerrar sesión
             </button>
           </form>
         </AccountNav>

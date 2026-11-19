@@ -13,7 +13,7 @@ const SHOP = [
   { href: '/ofertas', label: 'Ofertas progresivas' },
   { href: '/compare', label: 'Comparar' },
   { href: '/financing', label: 'Financiación' },
-  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/trade-in', label: 'Vende tu auto' },
 ]
 
 const VISIT = [
@@ -80,8 +80,8 @@ export function Footer({ branding = true }: { branding?: boolean }) {
             </ul>
           </nav>
 
-          <nav aria-label="Visitanos" className="min-w-0">
-            <p className="sf-eyebrow mb-4">Visitanos</p>
+          <nav aria-label="Visítanos" className="min-w-0">
+            <p className="sf-eyebrow mb-4">Visítanos</p>
             <ul className="text-[length:var(--sf-text-sm)] md:space-y-2.5">
               {VISIT.map((link) => (
                 <li key={link.href}>
@@ -103,7 +103,7 @@ export function Footer({ branding = true }: { branding?: boolean }) {
                 ))}
               </dl>
             ) : (
-              <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Consultá nuestros horarios</p>
+              <p className="text-[length:var(--sf-text-sm)]" style={{ color: 'var(--sf-on-dark-2)' }}>Consulta nuestros horarios</p>
             )}
             <p className="mt-3 text-[length:var(--sf-text-xs)]" style={{ color: 'var(--sf-on-dark-2)' }}>{ELVIS_ABOUT.hoursNote} {ELVIS_INFO.noTransfers}</p>
             {business.salesEmail && (

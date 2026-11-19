@@ -193,7 +193,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
         setVehicles([])
         setTotalCount(0)
         setPageNotice(null)
-        setLoadError('No pudimos cargar el inventario. Intentá de nuevo.')
+        setLoadError('No pudimos cargar el inventario. Intenta de nuevo.')
       }
     } finally {
       if (sequence === requestSequence.current && !pageTransitionPending) setLoading(false)

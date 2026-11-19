@@ -13,7 +13,7 @@ import {
   trapDialogFocus,
 } from '../lib/dialogAccessibility'
 import { vehicleTitle } from '../lib/format'
-import { DEFAULT_TEST_DRIVE_SLOTS, closedDayLabel, dayAvailability, localDateString } from '../lib/bookingSlots'
+import { DEFAULT_TEST_DRIVE_SLOTS, closedDayLabel, dayAvailability, displaySlot, localDateString } from '../lib/bookingSlots'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 // Mirrors RESERVATION_DEPOSIT_CENTS in features/keystone/mutations/reserveVehicle.ts: $500, or the price if lower.
@@ -119,10 +119,10 @@ export function LeadCaptureModal({
   }
 
   const titles: Record<LeadIntent, string> = {
-    contact: 'Consultá por este vehículo',
-    'test-drive': 'Coordiná una prueba de manejo',
-    'get-quote': 'Pedí una cotización',
-    reserve: 'Reservá este vehículo',
+    contact: 'Consulta por este vehículo',
+    'test-drive': 'Coordina una prueba de manejo',
+    'get-quote': 'Pide una cotización',
+    reserve: 'Reserva este vehículo',
   }
 
   const fieldId = (name: string) => `lead-${name}`
@@ -261,9 +261,9 @@ export function LeadCaptureModal({
                   onValueChange={(value) => setFormData((p) => ({ ...p, preferredTime: value }))}
                   className="sf-input sf-trigger sf-figure"
                   required
-                  placeholder="Elegí"
+                  placeholder="Elige"
                   aria-invalid={availability.status === 'closed' && formData.preferredDate ? true : undefined}
-                  options={availability.status === 'open' ? availability.slots.map((slot) => ({ value: slot, label: slot })) : []}
+                  options={availability.status === 'open' ? availability.slots.map((slot) => ({ value: slot, label: displaySlot(slot) })) : []}
                 />
               </div>
               {availability.status === 'closed' && formData.preferredDate && (
@@ -300,19 +300,19 @@ export function LeadCaptureModal({
 
           {intent === 'reserve' && (
             <p className="sf-muted text-[length:var(--sf-text-sm)]">
-              Una seña reembolsable de {formatDeposit(vehicle.price)} reserva este vehículo. Pagás con tarjeta en la pantalla siguiente; la seña se descuenta del precio o se devuelve completa si cambiás de opinión.
+              Una depósito reembolsable de {formatDeposit(vehicle.price)} reserva este vehículo. Pagas con tarjeta en la pantalla siguiente; el depósito se descuenta del precio o se devuelve completa si cambias de opinión.
             </p>
           )}
 
           {feedback.status === 'error' && (
             <p role="alert" className="sf-notice" data-tone="bad">
-              {feedback.message || 'Algo salió mal. Intentá de nuevo.'}
+              {feedback.message || 'Algo salió mal. Intenta de nuevo.'}
             </p>
           )}
 
           <button type="submit" disabled={isSubmitting} className="sf-btn sf-btn-primary w-full" aria-busy={isSubmitting || undefined}>
             {isSubmitting && <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
-            {isSubmitting ? (intent === 'reserve' ? 'Abriendo el pago seguro' : 'Enviando') : intent === 'reserve' ? `Pagar seña de ${formatDeposit(vehicle.price)}` : 'Enviar solicitud'}
+            {isSubmitting ? (intent === 'reserve' ? 'Abriendo el pago seguro' : 'Enviando') : intent === 'reserve' ? `Pagar depósito de ${formatDeposit(vehicle.price)}` : 'Enviar solicitud'}
           </button>
         </form>
         )}

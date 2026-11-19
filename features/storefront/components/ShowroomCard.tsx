@@ -8,7 +8,7 @@ import { vehicleConditionLabel } from '../lib/vehicleStatus'
 import { VehiclePhotoPlaceholder } from './VehiclePhotoPlaceholder'
 
 function conditionTag(condition: string) {
-  return condition === 'new' ? 'New arrival' : vehicleConditionLabel(condition)
+  return condition === 'new' ? 'Recién ingresado' : vehicleConditionLabel(condition)
 }
 
 // Desktop showroom card: the photo fills the card; title and a dark price plate sit on it.

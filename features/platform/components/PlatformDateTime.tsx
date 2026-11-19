@@ -41,7 +41,7 @@ export function PlatformDateInput({
   required = false,
   min,
   max,
-  placeholder = "Pick a date",
+  placeholder = "Elige una fecha",
   clearable = !required,
   className,
   ...aria

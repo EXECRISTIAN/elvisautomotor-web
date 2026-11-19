@@ -51,7 +51,7 @@ export async function AccountPage() {
           <span className="sf-dot" data-tone="bad" aria-hidden="true" />
           <span className="sf-heading text-[length:var(--sf-text-2xl)]">Cuenta no disponible</span>
         </h1>
-        <p className="sf-muted mt-3">No pudimos cargar tu cuenta. Intentá de nuevo.</p>
+        <p className="sf-muted mt-3">No pudimos cargar tu cuenta. Intenta de nuevo.</p>
         <div className="mt-6 flex flex-wrap gap-2">
           <Link href="/account" prefetch={false} className="sf-btn sf-btn-primary">Reintentar</Link>
           <Link href="/inventory" className="sf-btn sf-btn-ghost">Volver al inventario</Link>

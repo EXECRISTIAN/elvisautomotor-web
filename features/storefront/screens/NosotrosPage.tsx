@@ -31,7 +31,7 @@ export function NosotrosPage() {
           </article>
           <article className="elv-panel">
             <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
-            <h2 className="sf-display mt-5 text-[1.5rem]">Vendelo en Elvis</h2>
+            <h2 className="sf-display mt-5 text-[1.5rem]">Véndelo en Elvis</h2>
             <p className="mt-4" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.buying}</p>
             <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_INFO.planCanje}</p>
             <Link href="/trade-in" className="sf-btn sf-btn-primary mt-6 rounded-[8px]">Cotizar mi auto <ArrowRight className="size-4" aria-hidden="true" /></Link>
@@ -74,7 +74,7 @@ export function NosotrosPage() {
 
       <section className="py-14">
         <Container className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="sf-display text-[1.4rem]">Seguinos</h2>
+          <h2 className="sf-display text-[1.4rem]">Síguenos</h2>
           <div className="flex flex-wrap gap-2">
             {ELVIS_LINKS.social.map((link) => (
               <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost rounded-[8px]">{link.label}</a>

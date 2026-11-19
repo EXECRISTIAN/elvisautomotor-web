@@ -19,29 +19,29 @@ const OWNERSHIP = new Set(['own', 'financing', 'lease'])
 // La tasación la hace el personal y se informa al cliente por separado.
 
 export async function submitTradeIn(_root: unknown, { data }: { data: any }, context: any) {
-  const firstName = requiredText(data.firstName, 'First name', 100)
-  const lastName = requiredText(data.lastName, 'Last name', 100)
+  const firstName = requiredText(data.firstName, 'Nombre', 100)
+  const lastName = requiredText(data.lastName, 'Apellido', 100)
   const email = validEmail(data.email)
   const phone = validPhone(data.phone)
-  const year = finiteNumber(data.year, 'Vehicle year', {
+  const year = finiteNumber(data.year, 'Año', {
     min: 1980,
     max: new Date().getFullYear() + 1,
     integer: true,
   })
-  const mileage = finiteNumber(data.mileage, 'Mileage', { min: 0, max: 2_000_000, integer: true })
-  const make = requiredText(data.make, 'Make', 100)
-  const model = requiredText(data.model, 'Model', 100)
+  const mileage = finiteNumber(data.mileage, 'Kilometraje', { min: 0, max: 2_000_000, integer: true })
+  const make = requiredText(data.make, 'Marca', 100)
+  const model = requiredText(data.model, 'Modelo', 100)
   const trim = optionalText(data.trim, 100, 'Trim')
   const vin = optionalText(data.vin, 17, 'VIN').toUpperCase()
-  const condition = requiredText(data.condition, 'Condition', 30)
-  const ownership = requiredText(data.ownership, 'Ownership', 30)
+  const condition = requiredText(data.condition, 'Estado', 30)
+  const ownership = requiredText(data.ownership, 'Titularidad', 30)
   const notes = optionalText(data.notes, 2000, 'Información adicional')
-  const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Saldo de prenda', { min: 0, max: 10_000_000_000 })
+  const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Saldo del crédito', { min: 0, max: 10_000_000_000 })
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError('El estado o la titularidad no son válidos.')
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
-    throw new SubmissionError('Si cargás el número de chasis, debe tener 17 caracteres.')
+    throw new SubmissionError('Si cargas el número de chasis, debe tener 17 caracteres.')
   }
 
   const summary = `${year} ${make} ${model}${trim ? ` ${trim}` : ''}`
@@ -110,7 +110,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
               tradeInVehicle: summary,
               notes: [
                 `Usado ofrecido desde la web: ${summary}, ${mileage} km.`,
-                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo de prenda informado: ${formatCurrency(payoffAmount)}` : ''}.`,
+                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo del crédito informado: ${formatCurrency(payoffAmount)}` : ''}.`,
                 ...(notes ? [`Información del cliente: ${notes}`] : []),
                 `Vehículo de interés: ${interested}.`,
               ].join('\n'),

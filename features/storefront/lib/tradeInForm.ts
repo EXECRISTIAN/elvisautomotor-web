@@ -28,29 +28,29 @@ export function validateTradeInStep(
   if (step === 1) {
     const year = Number(draft.year)
     if (!Number.isInteger(year) || year < 1980 || year > currentYear + 1) {
-      return 'Elegí un año válido para continuar.'
+      return 'Elige un año válido para continuar.'
     }
-    if (!draft.make.trim()) return 'Indicá la marca para continuar.'
-    if (!draft.model.trim()) return 'Indicá el modelo para continuar.'
+    if (!draft.make.trim()) return 'Indica la marca para continuar.'
+    if (!draft.model.trim()) return 'Indica el modelo para continuar.'
 
     const mileage = Number(draft.mileage)
     if (!Number.isInteger(mileage) || mileage < 0 || mileage > 2_000_000) {
-      return 'Ingresá un kilometraje válido para continuar.'
+      return 'Ingresa un kilometraje válido para continuar.'
     }
 
     const vin = draft.vin.trim().toUpperCase()
     if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
-      return 'Si cargás el número de chasis, debe tener 17 caracteres.'
+      return 'Si cargas el número de chasis, debe tener 17 caracteres.'
     }
     return null
   }
 
-  if (!CONDITIONS.has(draft.condition)) return 'Elegí el estado del vehículo para continuar.'
-  if (!OWNERSHIP.has(draft.ownership)) return 'Elegí la titularidad para continuar.'
+  if (!CONDITIONS.has(draft.condition)) return 'Elige el estado del vehículo para continuar.'
+  if (!OWNERSHIP.has(draft.ownership)) return 'Elige la titularidad para continuar.'
   if (draft.ownership === 'financing' && draft.payoffAmount.trim()) {
     const payoff = Number(draft.payoffAmount)
     if (!Number.isFinite(payoff) || payoff < 0 || payoff > 10_000_000_000) {
-      return 'Ingresá un saldo de prenda válido para continuar.'
+      return 'Ingresa un saldo del crédito válido para continuar.'
     }
   }
   return null

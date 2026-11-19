@@ -22,7 +22,7 @@ type CommonSubmissionInput = {
   website?: string
 }
 
-const SUBMISSION_FAILED = 'No pudimos enviar la solicitud. Intentá de nuevo.'
+const SUBMISSION_FAILED = 'No pudimos enviar la solicitud. Intenta de nuevo.'
 
 async function executeSubmission<T extends SubmissionPayload>(
   field: string,
@@ -225,13 +225,13 @@ export async function submitStorefrontService(input: CommonSubmissionInput & {
 
 const PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
-/** Sube una foto de "Vendelo en Elvis" usando el código temporal devuelto al enviar el formulario. */
+/** Sube una foto de "Véndelo en Elvis" usando el código temporal devuelto al enviar el formulario. */
 export async function uploadStorefrontTradeInPhoto(formData: FormData): Promise<StorefrontSubmissionResult<{ count: number }>> {
   if (isDemoMode()) return { success: false, error: DEMO_SUBMISSION_MESSAGE, code: 'demo-mode' }
   const tradeInId = String(formData.get('tradeInId') || '')
   const photoToken = String(formData.get('photoToken') || '')
   const photo = formData.get('photo')
-  if (!tradeInId || !photoToken || !(photo instanceof File) || photo.size === 0) return { success: false, error: 'Elegí una foto.' }
+  if (!tradeInId || !photoToken || !(photo instanceof File) || photo.size === 0) return { success: false, error: 'Elige una foto.' }
   if (!PHOTO_TYPES.has(photo.type) || photo.size > 8 * 1024 * 1024) return { success: false, error: 'Las fotos deben ser JPG, PNG o WebP de hasta 8 MB.' }
   const query = `mutation AttachTradeInPhoto($tradeInId: ID!, $photoToken: String!, $photo: ImageFieldInput!) {
     attachTradeInPhoto(tradeInId: $tradeInId, photoToken: $photoToken, photo: $photo) { ok errorCode errorMessage count }

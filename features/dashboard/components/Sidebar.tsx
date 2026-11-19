@@ -368,7 +368,7 @@ export function Sidebar({ adminMeta, user, onOpenDialog }: SidebarProps) {
             steps={[{
               href: '#onboarding',
               title: 'Bienvenido a Elvis Automotores',
-              description: 'Configurá el negocio: datos de contacto, inventario y roles del equipo.',
+              description: 'Configura el negocio: datos de contacto, inventario y roles del equipo.',
             }]}
             onboardingStatus={user?.onboardingStatus}
             userRole={user?.role}

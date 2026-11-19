@@ -39,7 +39,7 @@ export async function PhotoCreditsPage() {
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="sf-title-line font-semibold">
               <span className="sf-dot" aria-hidden="true" />
-              No attributed photos listed
+              No hay fotos con créditos para mostrar
             </p>
             <Link href="/inventory" className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">Inventario</Link>
           </div>

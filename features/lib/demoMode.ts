@@ -6,4 +6,4 @@ export function isDemoMode() {
 }
 
 export const DEMO_SUBMISSION_MESSAGE =
-  'Este es un sitio de demostración: los formularios no envían ni guardan datos. Para consultas reales comunicate por los canales oficiales.'
+  'Este es un sitio de demostración: los formularios no envían ni guardan datos. Para consultas reales comunícate por los canales oficiales.'

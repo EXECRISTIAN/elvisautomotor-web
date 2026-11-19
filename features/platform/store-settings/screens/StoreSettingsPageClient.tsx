@@ -79,7 +79,7 @@ function TimezoneSelect({ value, onChange, disabled }: { value: string; onChange
       <Label htmlFor="store-settings-timezone" className={labelClass}>Zona horaria</Label>
       <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger id="store-settings-timezone" className="h-10 w-full rounded-[4px]" aria-label="Zona horaria">
-          <SelectValue placeholder={disabled ? 'No disponible' : 'Elegí la zona horaria'} />
+          <SelectValue placeholder={disabled ? 'No disponible' : 'Elige la zona horaria'} />
         </SelectTrigger>
         <SelectContent className="max-h-[min(420px,var(--radix-select-content-available-height))]">
           <SelectGroup>
@@ -254,7 +254,7 @@ export function StoreSettingsPageClient({
         />
 
         {!initialSettings && !initialError ? (
-          <Notice tone="warn">Completá el nombre del negocio y el nombre corto para publicar la web.</Notice>
+          <Notice tone="warn">Completa el nombre del negocio y el nombre corto para publicar la web.</Notice>
         ) : null}
 
         {warning ? <Notice tone="warn">{warning}</Notice> : null}
@@ -481,7 +481,7 @@ export function StoreSettingsPageClient({
             <Section title="Valores por defecto de operaciones">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Impuesto sobre ventas (%)" inputMode="decimal" className="text-right tabular-nums" value={taxRateText} onChange={setTaxRateText} placeholder="0" error={salesTaxRateBps === null ? TAX_RATE_ERROR : null} />
-                <Field label="Gastos de gestoría ($)" inputMode="decimal" className="text-right tabular-nums" value={docFeeText} onChange={setDocFeeText} placeholder="0" error={docFeeCents === null ? DOC_FEE_ERROR : null} />
+                <Field label="Gastos de trámite ($)" inputMode="decimal" className="text-right tabular-nums" value={docFeeText} onChange={setDocFeeText} placeholder="0" error={docFeeCents === null ? DOC_FEE_ERROR : null} />
               </div>
             </Section>
 

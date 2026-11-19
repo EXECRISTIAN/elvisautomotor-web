@@ -58,10 +58,10 @@ export const RECON_CATEGORIES = ['mechanical', 'body', 'detail', 'tires', 'inspe
 
 export const reconCategoryLabels: Record<string, string> = {
   mechanical: 'Mecánica',
-  body: 'Chapa y pintura',
-  detail: 'Lavado / detalle',
+  body: 'Carrocería y pintura',
+  detail: 'Lavado y detallado',
   tires: 'Neumáticos',
-  inspection: 'Inspección / VTV',
+  inspection: 'Inspección técnica',
   other: 'Otro',
 }
 
@@ -85,7 +85,7 @@ export const costTypeLabels: Record<string, string> = {
   reconditioning: 'Preparación',
   transport: 'Traslado',
   'auction-fee': 'Comisión de subasta',
-  detail: 'Lavado / detalle',
+  detail: 'Lavado y detallado',
   other: 'Otro',
 }
 
@@ -125,7 +125,7 @@ export const feedChannelLabels: Record<string, string> = {
 export const vehicleStatusLabels: Record<string, string> = {
   available: 'Disponible',
   prep: 'En preparación',
-  pending: 'Señado / pendiente',
+  pending: 'Apartado / pendiente',
   hold: 'Reservado',
   service: 'En taller',
   sold: 'Vendido',

@@ -47,7 +47,7 @@ test('countLabel pluralizes', () => {
 });
 
 test('financing form values read as the customer chose them', () => {
-  assert.equal(display.employmentLabel('self-employed'), 'Monotributista / autónomo');
+  assert.equal(display.employmentLabel('self-employed'), 'Independiente / autónomo');
   assert.equal(display.creditTierLabel('good-680-719'), 'Bueno');
   assert.equal(display.creditTierLabel('rebuilding-under-620'), 'Con deudas / en recuperación');
   assert.equal(display.creditTierLabel('legacy-value'), 'legacy-value');

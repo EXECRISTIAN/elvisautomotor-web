@@ -38,7 +38,7 @@ export function LoginPage() {
               <div className="flex items-baseline justify-between gap-3">
                 <label htmlFor="signin-password" className="sf-label">Contraseña</label>
                 <Link href="/account/reset" className="sf-link -my-3 inline-flex min-h-11 items-center text-[length:var(--sf-text-xs)]">
-                  Forgot password?
+                  ¿Olvidaste tu contraseña?
                 </Link>
               </div>
               <input id="signin-password" name="password" type="password" autoComplete="current-password" required className="sf-input" />

@@ -94,7 +94,7 @@ function prepareSettings(input: DealershipStoreSettings): DealershipStoreSetting
   if (whatsappDigits && !/^\d{8,15}$/.test(whatsappDigits)) throw new Error('El WhatsApp debe tener entre 8 y 15 dígitos, con código de país.')
 
   const timezone = boundedText(input.timezone, 100)
-  if (timezone && !isTimeZone(timezone)) throw new Error('Elegí una zona horaria válida.')
+  if (timezone && !isTimeZone(timezone)) throw new Error('Elige una zona horaria válida.')
 
   const salesTaxRateBps = checkedRateBps(input.salesTaxRateBps)
   const docFeeCents = checkedCents(input.docFeeCents, 'Documentation fee')

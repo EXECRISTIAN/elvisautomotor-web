@@ -4,21 +4,21 @@ import { assertPublishableInventory, lockInventoryStock } from '../lifecycle/inv
 
 export function requiredText(value: unknown, label: string, maxLength = 500) {
   const text = String(value || '').trim()
-  if (!text) throw new SubmissionError(`${label} is required.`)
-  if (text.length > maxLength) throw new SubmissionError(`${label} must be ${maxLength} characters or fewer.`)
+  if (!text) throw new SubmissionError(`${label}: es obligatorio.`)
+  if (text.length > maxLength) throw new SubmissionError(`${label}: máximo ${maxLength} caracteres.`)
   return text
 }
 
 export function optionalText(value: unknown, maxLength = 4000, label = 'Value') {
   const text = String(value || '').trim()
-  if (text.length > maxLength) throw new SubmissionError(`${label} must be ${maxLength} characters or fewer.`)
+  if (text.length > maxLength) throw new SubmissionError(`${label}: máximo ${maxLength} caracteres.`)
   return text
 }
 
 export function validEmail(value: unknown) {
   const email = requiredText(value, 'Email', 320).toLowerCase()
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new SubmissionError('A valid email is required.')
+    throw new SubmissionError('Ingresa un email válido.')
   }
   return email
 }
@@ -27,21 +27,21 @@ export function validPhone(value: unknown, required = true) {
   const phone = optionalText(value, 50, 'Phone')
   if (!phone && !required) return ''
   const digits = phone.replace(/\D/g, '')
-  if (digits.length < 7 || digits.length > 15) throw new SubmissionError('A valid phone number is required.')
+  if (digits.length < 7 || digits.length > 15) throw new SubmissionError('Ingresa un teléfono válido.')
   return phone
 }
 
 export function finiteNumber(value: unknown, label: string, options: { min?: number; max?: number; integer?: boolean } = {}) {
   const number = Number(value)
-  if (!Number.isFinite(number)) throw new SubmissionError(`${label} must be a finite number.`)
-  if (options.integer && !Number.isInteger(number)) throw new SubmissionError(`${label} must be a whole number.`)
-  if (options.min != null && number < options.min) throw new SubmissionError(`${label} must be at least ${options.min}.`)
-  if (options.max != null && number > options.max) throw new SubmissionError(`${label} must be at most ${options.max}.`)
+  if (!Number.isFinite(number)) throw new SubmissionError(`${label}: ingresa un número válido.`)
+  if (options.integer && !Number.isInteger(number)) throw new SubmissionError(`${label}: ingresa un número entero.`)
+  if (options.min != null && number < options.min) throw new SubmissionError(`${label}: el mínimo es ${options.min}.`)
+  if (options.max != null && number > options.max) throw new SubmissionError(`${label}: el máximo es ${options.max}.`)
   return number
 }
 
 export function splitCustomerName(value: unknown, fallbackFirst = 'Website', fallbackLast = 'Customer') {
-  const parts = requiredText(value, 'Customer name', 200).split(/\s+/).filter(Boolean)
+  const parts = requiredText(value, 'Nombre', 200).split(/\s+/).filter(Boolean)
   const firstName = parts.shift() || fallbackFirst
   const lastName = parts.length ? parts.join(' ') : fallbackLast
   return { firstName, lastName }
@@ -52,21 +52,21 @@ export function parseScheduledTime(dateValue: unknown, timeValue: unknown, label
   const time = requiredText(timeValue, `${label} time`, 20)
   const match = time.match(/^(\d{1,2}):(\d{2})(?:\s*([ap]m))?$/i)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !match) {
-    throw new SubmissionError(`${label} date or time is invalid.`)
+    throw new SubmissionError(`${label}: la fecha u hora no es válida.`)
   }
   let hours = Number(match[1])
   const minutes = Number(match[2])
   const meridiem = match[3]?.toLowerCase()
-  if (meridiem && (hours < 1 || hours > 12)) throw new SubmissionError(`${label} date or time is invalid.`)
+  if (meridiem && (hours < 1 || hours > 12)) throw new SubmissionError(`${label}: la fecha u hora no es válida.`)
   if (meridiem === 'pm' && hours < 12) hours += 12
   if (meridiem === 'am' && hours === 12) hours = 0
-  if (hours > 23 || minutes > 59) throw new SubmissionError(`${label} date or time is invalid.`)
+  if (hours > 23 || minutes > 59) throw new SubmissionError(`${label}: la fecha u hora no es válida.`)
   let scheduled: Date
   try { scheduled = new Date(localScheduleIso(date, hours, minutes, timezone)) }
-  catch { throw new SubmissionError(`${label} date or time is invalid or ambiguous in the dealership timezone.`) }
+  catch { throw new SubmissionError(`${label}: la fecha u hora no es válida.`) }
   const now = Date.now()
   if (scheduled.getTime() < now - 5 * 60 * 1000 || scheduled.getTime() > now + 366 * 24 * 60 * 60 * 1000) {
-    throw new SubmissionError(`${label} must be within the next year.`)
+    throw new SubmissionError(`${label}: debe ser dentro del próximo año.`)
   }
   return { iso: scheduled.toISOString(), date, time }
 }
@@ -84,7 +84,7 @@ export const PUBLIC_SUBMISSION_VEHICLE_QUERY = `
 
 function unavailableVehicle(): never {
   throw new SubmissionError(
-    'The selected vehicle is no longer available. Please choose another vehicle.',
+    'El vehículo elegido ya no está disponible. Elige otro.',
     404,
     'VEHICLE_NOT_AVAILABLE'
   )

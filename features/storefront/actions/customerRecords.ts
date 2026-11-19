@@ -135,7 +135,7 @@ export async function cancelCustomerBooking(input: { kind: 'test-drive' | 'servi
     revalidatePath('/account', 'layout')
     return { ok: true, message: 'Cancelada' }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'No pudimos cancelar el turno.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos cancelar la cita.') }
   }
 }
 
@@ -150,7 +150,7 @@ export async function rescheduleCustomerBooking(input: { kind: 'test-drive' | 's
     revalidatePath('/account', 'layout')
     return { ok: true, message: 'Reprogramada' }
   } catch (error) {
-    return { ok: false, error: errorMessage(error, 'No pudimos reprogramar el turno.') }
+    return { ok: false, error: errorMessage(error, 'No pudimos reprogramar la cita.') }
   }
 }
 

@@ -189,7 +189,7 @@ export function VehicleDetailPageClient({
       if (response.success) setMessage({ text: success, tone: 'ok' })
       else setMessage({ text: response.error || 'Unable to save.', tone: 'bad' })
     } catch {
-      setMessage({ text: 'No se pudo guardar. Recargá para ver el estado actual.', tone: 'bad' })
+      setMessage({ text: 'No se pudo guardar. Recarga para ver el estado actual.', tone: 'bad' })
     } finally {
       await reload()
       setBusy(null)
@@ -809,7 +809,7 @@ export function VehicleDetailPageClient({
                       </Track>
                     )}
                     {acquisition.status === 'reconditioning' && editable && (!reconDone || !listingApproved || Boolean(publicAction)) && (
-                      <p className="mt-1 text-xs text-muted-foreground">{!reconDone ? 'Para exhibir, terminá la preparación' : 'Para exhibir, aprobá la publicación actual'}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{!reconDone ? 'Para exhibir, termina la preparación' : 'Para exhibir, aprueba la publicación actual'}</p>
                     )}
                     <ol className="mt-3 space-y-2 border-l pl-4">
                       {acquisition.events.map(event => (

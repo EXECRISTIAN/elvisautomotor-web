@@ -12,7 +12,7 @@ UPDATE "DealershipProfile" SET
   city = 'Quilmes',
   state = 'Buenos Aires',
   "postalCode" = '',
-  "hoursMonFri" = '9 a 13 h sin turno (por la tarde, solo con turno asignado)',
+  "hoursMonFri" = '9 a 13 h sin cita (por la tarde, solo con cita asignada)',
   "hoursSaturday" = 'Cerrado',
   "hoursSunday" = 'Cerrado',
   "websiteUrl" = 'https://www.elvisautomotores.com',
@@ -31,8 +31,8 @@ ON CONFLICT (id) DO NOTHING;
 -- Ejemplo real: Oferta progresiva N7 (10/11/2026). Se usa como modelo para cargar las próximas
 -- desde Panel → Tablas → Ofertas progresivas (o la pantalla propia del panel cuando esté).
 INSERT INTO "ProgressiveOffer" (id, number, title, "photoUrl", "startsAt", "startPriceCents", "stepCents", "stepEvery", "stepUnit", "stepMinutes", "floorPriceCents", status, financing, conditions, "includesTransfer", "noAppointment")
-VALUES ('offer_n7', 7, 'Chevrolet Meriva 2010 nafta', '/images/ofertas/meriva-n7.webp', '2026-11-10 12:01:00+00', 1000000000, 100000000, 1, 'hours', 60, 0, 'active',
-  'Contado o hasta 90% financiado si tenés Banco Provincia aprobado. Anticipo mínimo $500.000 y cuotas. Se entrega con la primera cuota.',
-  'Ideal mecánico, chapista, reventa o tentador del destino. Vehículo tomado en Plan Canje, sin inspección y sin garantía. Podés revisarlo completo con un mecánico de tu confianza.',
+VALUES ('offer_n7', 7, 'Chevrolet Meriva 2010 gasolina', '/images/ofertas/meriva-n7.webp', '2026-11-10 12:01:00+00', 1000000000, 100000000, 1, 'hours', 60, 0, 'active',
+  'Contado o hasta 90% financiado si tienes Banco Provincia aprobado. Anticipo mínimo $500.000 y cuotas. Se entrega con la primera cuota.',
+  'Ideal mecánico, chapista, reventa o tentador del destino. Vehículo tomado en Plan Canje, sin inspección y sin garantía. Puedes revisarlo completo con un mecánico de tu confianza.',
   'included', 'walk-in')
 ON CONFLICT (id) DO NOTHING;

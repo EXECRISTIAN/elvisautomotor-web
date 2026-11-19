@@ -31,6 +31,14 @@ function slotLabel(minutes: number) {
   return `${h12}:${String(m).padStart(2, '0')} ${h24 < 12 ? 'AM' : 'PM'}`
 }
 
+/** "1:00 PM" (valor interno) -> "13:00" para mostrar en formato de 24 horas. */
+export function displaySlot(label: string) {
+  const match = /^(\d{1,2}):(\d{2}) (AM|PM)$/.exec(label)
+  if (!match) return label
+  const h = (Number(match[1]) % 12) + (match[3] === 'PM' ? 12 : 0)
+  return `${String(h).padStart(2, '0')}:${match[2]}`
+}
+
 export function slotMinutes(label: string) {
   const match = /^(\d{1,2}):(\d{2}) (AM|PM)$/.exec(label)
   return match ? toMinutes(match[1], match[2], match[3]) : null

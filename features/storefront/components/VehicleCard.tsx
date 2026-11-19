@@ -110,7 +110,7 @@ export function VehicleCard({
               {compareButton}
             </div>
           </div>
-          {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
+          {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Puedes comparar hasta 4 vehículos.</p>}
           <PhotoAttribution src={imageUrl} />
         </div>
       </article>
@@ -172,7 +172,7 @@ export function VehicleCard({
           <PhotoAttribution src={imageUrl} className="min-w-0" />
           {compareButton && <div className="ml-auto shrink-0">{compareButton}</div>}
         </div>
-        {compareFull && <p role="status" className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Podés comparar hasta 4 vehículos.</p>}
+        {compareFull && <p role="status" className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Puedes comparar hasta 4 vehículos.</p>}
       </div>
     </article>
   )

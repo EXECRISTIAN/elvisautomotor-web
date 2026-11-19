@@ -36,15 +36,15 @@ async function getFeaturedVehicles() {
 const HIGHLIGHTS = [
   { icon: ShieldCheck, title: 'Compra segura', text: 'Transparencia y confianza en cada operación.', href: '/inventory' },
   { icon: Handshake, title: 'Venta a crédito', text: 'Financiación de hasta el 100%, sujeta a aprobación.', href: '/financing' },
-  { icon: CarFront, title: 'Vendelo en Elvis', text: 'Compramos tu usado de forma ágil y segura.', href: '/trade-in' },
+  { icon: CarFront, title: 'Véndelo en Elvis', text: 'Compramos tu usado de forma ágil y segura.', href: '/trade-in' },
   { icon: Headset, title: 'Asesoramiento', text: 'Te acompañamos en todo el proceso.', href: '/contact' },
 ]
 
 const BENEFITS = [
   { icon: BadgeCheck, title: `Desde ${ELVIS_ABOUT.since}`, text: 'Compra y venta de usados y 0 km con seguridad, honestidad y eficiencia.' },
-  { icon: Landmark, title: 'Hasta 100% financiado', text: 'Entrega inmediata: el vehículo lo pagás mientras lo usás. Sujeto a calificación y aprobación crediticia.' },
+  { icon: Landmark, title: 'Hasta 100% financiado', text: 'Entrega inmediata: el vehículo lo pagas mientras lo usas. Sujeto a calificación y aprobación crediticia.' },
   { icon: CarFront, title: 'Compramos tu usado', text: 'Resolvemos todo para que cobres tu dinero de manera ágil, segura e inmediata.' },
-  { icon: Headset, title: 'Consulta gratuita', text: 'Consultá tu crédito de forma presencial, personalizada, inmediata y sin costo en nuestro salón.' },
+  { icon: Headset, title: 'Consulta gratuita', text: 'Consulta tu crédito de forma presencial, personalizada, inmediata y sin costo en nuestro salón.' },
 ]
 
 function SectionTitle({ eyebrow, title, id }: { eyebrow: string; title: string; id?: string }) {
@@ -93,7 +93,7 @@ export async function HomePage() {
           )}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
-              Explorá nuestro inventario
+              Explora nuestro inventario
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <WhatsAppButton className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6" />
@@ -120,7 +120,7 @@ export async function HomePage() {
       <section className="elv-cream -mt-16 pb-16 pt-28 md:-mt-20 md:pt-32" aria-labelledby="featured-title">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionTitle eyebrow="Buscá tu auto ideal" title="Encontrá el auto perfecto" id="featured-title" />
+            <SectionTitle eyebrow="Busca tu auto ideal" title="Encuentra el auto perfecto" id="featured-title" />
             <Link href="/inventory" className="sf-btn sf-btn-outline rounded-[8px]" style={{ color: 'var(--elv-cream-ink)' }}>
               Ver todo el inventario
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -137,9 +137,9 @@ export async function HomePage() {
               <p className="font-semibold">
                 {featured.status === 'unavailable' ? 'No pudimos cargar el inventario en este momento.' : 'Estamos actualizando nuestro inventario.'}
               </p>
-              <p className="mt-1 text-[0.9rem]" style={{ color: 'var(--elv-cream-ink-2)' }}>Escribinos y te contamos qué unidades tenemos disponibles.</p>
+              <p className="mt-1 text-[0.9rem]" style={{ color: 'var(--elv-cream-ink-2)' }}>Escríbenos y te contamos qué unidades tenemos disponibles.</p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Link href="/contact" className="sf-btn sf-btn-primary rounded-[8px]">Contactanos</Link>
+                <Link href="/contact" className="sf-btn sf-btn-primary rounded-[8px]">Contáctanos</Link>
                 <WhatsAppButton className="sf-btn sf-btn-outline rounded-[8px]" />
               </div>
             </div>
@@ -204,7 +204,7 @@ export async function HomePage() {
             <span className="elv-panel-photo-shade" aria-hidden="true" />
             <div className="relative">
               <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
-              <p className="elv-eyebrow mt-5">Vendelo en Elvis</p>
+              <p className="elv-eyebrow mt-5">Véndelo en Elvis</p>
               <h2 id="usado-title" className="sf-display mt-2 text-[clamp(1.4rem,2.6vw,1.9rem)]">Compramos tu usado</h2>
               <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
                 {ELVIS_ABOUT.buying} {ELVIS_INFO.planCanje}
@@ -241,7 +241,7 @@ export async function HomePage() {
       <section className="py-16 md:py-20" aria-labelledby="contact-title">
         <Container className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-start">
           <div>
-            <SectionTitle eyebrow="Contacto" title="Visitanos o escribinos" id="contact-title" />
+            <SectionTitle eyebrow="Contacto" title="Visítanos o escríbenos" id="contact-title" />
             <p className="mt-4 max-w-md" style={{ color: 'var(--sf-ink-2)' }}>
               {ELVIS_ABOUT.attention} {ELVIS_INFO.afternoon} {ELVIS_ABOUT.hoursNote} {ELVIS_INFO.contactPreference}
             </p>
@@ -283,7 +283,7 @@ export async function HomePage() {
             {address.length === 0 && !business.phoneDisplay && !business.salesEmail && hours.length === 0 && (
               <div>
                 <dt><MapPin className="size-5" aria-hidden="true" /> Datos de contacto</dt>
-                <dd>Usá el formulario de contacto y te respondemos a la brevedad.</dd>
+                <dd>Usa el formulario de contacto y te respondemos a la brevedad.</dd>
               </div>
             )}
           </dl>

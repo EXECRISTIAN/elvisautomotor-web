@@ -58,7 +58,7 @@ export function ContactPage() {
       setSubmissionReference(customerRequestReference('inquiry', result.data.leadId))
       setSubmitted(true)
     } catch (error) {
-      setSubmissionError(error instanceof Error ? error.message : 'No pudimos enviar tu mensaje. Intentá de nuevo.')
+      setSubmissionError(error instanceof Error ? error.message : 'No pudimos enviar tu mensaje. Intenta de nuevo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -107,13 +107,13 @@ export function ContactPage() {
 
   return (
     <>
-      <PageHeader title={business.fullName} />
+      <PageHeader title="Contacto" />
 
       <Container className="sf-section">
         <div className="grid gap-[var(--sf-space-xl)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:gap-[var(--sf-space-2xl)]">
           <aside className="order-2 min-w-0 space-y-[var(--sf-space-lg)] lg:order-1">
             <section>
-              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Visitanos</h2>
+              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Visítanos</h2>
               {hasAddress ? (
                 <>
                   <address className="not-italic">
@@ -221,7 +221,7 @@ export function ContactPage() {
                 />
               </Field>
               <div>
-                <p id="contact-preferred" className="sf-label">Preferís que te contactemos por</p>
+                <p id="contact-preferred" className="sf-label">Prefieres que te contactemos por</p>
                 <div role="group" aria-labelledby="contact-preferred" className="sf-track">
                   {PREFERRED_CONTACT.map((option) => (
                     <button

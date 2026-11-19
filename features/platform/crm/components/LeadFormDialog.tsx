@@ -25,7 +25,7 @@ export function validateLeadForm(values: LeadFormValues, requireRooftop: boolean
   if (!values.lastName.trim()) errors.lastName = 'Obligatorio'
   const email = values.email.trim()
   const phoneDigits = values.phone.replace(/\D/g, '')
-  if (!email && !values.phone.trim()) errors.phone = 'Ingresá email o teléfono'
+  if (!email && !values.phone.trim()) errors.phone = 'Ingresa email o teléfono'
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Invalid email'
   if (values.phone.trim() && (phoneDigits.length < 7 || phoneDigits.length > 15)) errors.phone = 'Invalid phone'
   if (!values.source) errors.source = 'Obligatorio'
@@ -117,7 +117,7 @@ export function LeadFormDialog({
             {mode === 'create' && rooftops.length > 1 && (
               <FormField id="lead-rooftop" label="Sucursal" error={errors.rooftopId} className="sm:col-span-2">
                 <Select value={values.rooftopId || undefined} onValueChange={value => set('rooftopId', value)}>
-                  <SelectTrigger id="lead-rooftop" className={fieldClass} aria-invalid={Boolean(errors.rooftopId)}><SelectValue placeholder="Elegí la sucursal" /></SelectTrigger>
+                  <SelectTrigger id="lead-rooftop" className={fieldClass} aria-invalid={Boolean(errors.rooftopId)}><SelectValue placeholder="Elige la sucursal" /></SelectTrigger>
                   <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
                 </Select>
               </FormField>
@@ -136,7 +136,7 @@ export function LeadFormDialog({
             </FormField>
             <FormField id="lead-source" label="Origen" error={errors.source}>
               <Select value={values.source || undefined} onValueChange={value => set('source', value)}>
-                <SelectTrigger id="lead-source" className={fieldClass}><SelectValue placeholder="Elegí el origen" /></SelectTrigger>
+                <SelectTrigger id="lead-source" className={fieldClass}><SelectValue placeholder="Elige el origen" /></SelectTrigger>
                 <SelectContent>{sources.map(source => <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>)}</SelectContent>
               </Select>
             </FormField>

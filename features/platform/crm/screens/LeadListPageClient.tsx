@@ -143,7 +143,7 @@ export function LeadListPageClient({
 
   const submitCreate = async (values: LeadFormValues) => {
     const rooftopId = values.rooftopId || (rooftops.length === 1 ? rooftops[0].id : '')
-    if (!rooftopId) return 'Elegí una sucursal'
+    if (!rooftopId) return 'Elige una sucursal'
     const response = await createLead({ ...values, rooftopId, idempotencyKey: createKeyRef.current || `lead-create:${crypto.randomUUID()}` })
     if (!response.success) return response.error
     createKeyRef.current = null

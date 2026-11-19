@@ -23,7 +23,7 @@ export function publicSubmissionResolver(service: SubmissionService) {
       return {
         ok: false,
         errorCode: 'SUBMISSION_FAILED',
-        errorMessage: 'No pudimos procesar la solicitud. Intentá de nuevo o comunicate con nosotros.',
+        errorMessage: 'No pudimos procesar la solicitud. Intenta de nuevo o comunícate con nosotros.',
       }
     }
   }

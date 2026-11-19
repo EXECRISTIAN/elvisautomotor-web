@@ -22,7 +22,7 @@ export const Bank = list({
     website: text({ label: 'Sitio web', validation: { match: { regex: /^$|^https?:\/\//, explanation: 'Debe empezar con http:// o https://' } } }),
     notes: text({ label: 'Notas internas', ui: { displayMode: 'textarea' } }),
     // Integración futura: clave del proveedor (ver features/lib/financing/providers.ts). "manual" = sin API.
-    providerKey: text({ label: 'Integración', defaultValue: 'manual', ui: { description: 'Dejá "manual" hasta que exista una integración con la API del banco.' } }),
+    providerKey: text({ label: 'Integración', defaultValue: 'manual', ui: { description: 'Deja "manual" hasta que exista una integración con la API del banco.' } }),
     plans: relationship({ ref: 'FinancingPlan.bank', many: true, label: 'Planes' }),
   },
 })

@@ -31,7 +31,7 @@ export function EmailLinkPanel({ link }: { link: CustomerEmailLink | null }) {
       </h2>
       {/* Only the address may break anywhere; the sentence wraps at words. */}
       <p className="sf-muted pl-4 text-[length:var(--sf-text-sm)]">
-        {link.verified ? 'Las solicitudes hechas con ' : 'Verificá '}
+        {link.verified ? 'Las solicitudes hechas con ' : 'Verifica '}
         <span className="break-all">{link.email}</span>
         {link.verified ? ' están vinculadas a esta cuenta.' : ' para vincular las solicitudes que hiciste antes de iniciar sesión.'}
       </p>

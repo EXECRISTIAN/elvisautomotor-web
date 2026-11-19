@@ -1,9 +1,9 @@
 // Especificaciones de vehículos para Elvis Automotores (combustible, transmisión, cilindrada).
 export const FUEL_OPTIONS = [
-  { value: 'nafta', label: 'Nafta' },
+  { value: 'gasolina', label: 'Gasolina' },
   { value: 'diesel', label: 'Diésel' },
   { value: 'gnc', label: 'GNC' },
-  { value: 'nafta-gnc', label: 'Nafta / GNC' },
+  { value: 'gasolina-gnc', label: 'Gasolina / GNC' },
   { value: 'hibrido', label: 'Híbrido' },
   { value: 'electrico', label: 'Eléctrico' },
 ] as const

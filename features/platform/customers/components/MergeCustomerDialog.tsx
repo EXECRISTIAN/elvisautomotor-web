@@ -70,7 +70,7 @@ export function MergeCustomerDialog({
     event.preventDefault()
     const found = {
       reason: !reason.trim() ? 'Obligatorio' : reason.length > 1000 ? 'Máximo 1000 caracteres' : undefined,
-      confirmed: confirmed ? undefined : 'Confirmá la unificación',
+      confirmed: confirmed ? undefined : 'Confirma la unificación',
     }
     setErrors(found)
     if (found.reason || found.confirmed) return

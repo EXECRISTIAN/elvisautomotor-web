@@ -65,7 +65,7 @@ export function TransferLeadDialog({
           <FormField id="transfer-owner" label="Nuevo vendedor" error={errors.assignedToId}>
             <Select value={assignedToId || undefined} onValueChange={value => { setAssignedToId(value); setErrors(prev => ({ ...prev, assignedToId: undefined })) }}>
               <SelectTrigger id="transfer-owner" className="h-11 rounded-[4px] sm:h-9" aria-invalid={Boolean(errors.assignedToId)}>
-                <SelectValue placeholder={candidates.length ? 'Elegí el vendedor' : 'No hay personal disponible'} />
+                <SelectValue placeholder={candidates.length ? 'Elige el vendedor' : 'No hay personal disponible'} />
               </SelectTrigger>
               <SelectContent>{candidates.map(person => <SelectItem key={person.id} value={person.id}>{person.name || 'Unnamed'}</SelectItem>)}</SelectContent>
             </Select>

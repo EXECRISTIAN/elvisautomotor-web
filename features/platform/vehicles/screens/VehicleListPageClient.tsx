@@ -129,7 +129,7 @@ const statusTones: Record<string, DeskTone> = {
 const statusLabels: Record<string, string> = {
   available: 'Disponible',
   prep: 'En preparación',
-  pending: 'Señado / pendiente',
+  pending: 'Apartado / pendiente',
   hold: 'Reservado',
   service: 'En taller',
   sold: 'Vendido',
@@ -393,13 +393,13 @@ export function VehicleListPageClient({
         const make = makes.length && field('makeChoice') !== OTHER_MAKE ? field('makeChoice') : field('make')
         const model = field('model')
         const condition = field('condition')
-        if (!CONDITIONS.includes(condition as typeof CONDITIONS[number])) throw new Error('Elegí la condición.')
+        if (!CONDITIONS.includes(condition as typeof CONDITIONS[number])) throw new Error('Elige la condición.')
         const locationCode = field('locationCode').toUpperCase()
         const purchasePriceCents = money('purchaseDollars', 'Purchase cost')
         const priceCents = money('retailDollars', 'Retail price')
-        if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) throw new Error('Ingresá un número de chasis (VIN) válido de 17 caracteres (no usa I, O ni Q).')
+        if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) throw new Error('Ingresa un número de chasis (VIN) válido de 17 caracteres (no usa I, O ni Q).')
         if (!stockNumber || !make || !model || !locationCode || !Number.isInteger(year) || year < 1886 || year > new Date().getFullYear() + 1 || !Number.isSafeInteger(mileage) || mileage < 0 || priceCents <= 0) {
-          throw new Error('Completá número de stock, año válido, marca, modelo, kilometraje, ubicación y un precio de venta mayor a cero.')
+          throw new Error('Completa número de stock, año válido, marca, modelo, kilometraje, ubicación y un precio de venta mayor a cero.')
         }
         const intakeResponse = await intakeInventoryVehicle({
           rooftopId: intakeRooftopId, idempotencyKey: task.idempotencyKey,
@@ -412,7 +412,7 @@ export function VehicleListPageClient({
         if (intakeResponse.success && intakePhotos.length) {
           const failed = await uploadIntakePhotos(intakeResponse.data.intakeInventoryVehicle.stockId, task.idempotencyKey)
           if (failed) {
-            taskSuccessMessage = `Unidad ingresada. ${failed} de ${intakePhotos.length} fotos no se subieron; agregalas desde Fotos.`
+            taskSuccessMessage = `Unidad ingresada. ${failed} de ${intakePhotos.length} fotos no se subieron; agrégalas desde Fotos.`
             taskSuccessTone = 'warn'
           } else {
             taskSuccessMessage = `Unidad ingresada con ${intakePhotos.length} ${intakePhotos.length === 1 ? 'foto' : 'fotos'}.`
@@ -422,7 +422,7 @@ export function VehicleListPageClient({
       } else if (task.type === 'edit' && task.vehicle) {
         const priceCents = money('retailDollars', 'Retail price')
         const mileage = Number(field('mileage'))
-        if (priceCents <= 0 || !Number.isSafeInteger(mileage) || mileage < 0 || !field('description')) throw new Error('Ingresá un precio de venta mayor a cero, el kilometraje y la descripción.')
+        if (priceCents <= 0 || !Number.isSafeInteger(mileage) || mileage < 0 || !field('description')) throw new Error('Ingresa un precio de venta mayor a cero, el kilometraje y la descripción.')
         // Photo changes in this dialog save on their own and move the stock revision forward.
         const current = currentTaskVehicle || task.vehicle
         response = await updateInventoryMerchandisingDraft({
@@ -435,11 +435,11 @@ export function VehicleListPageClient({
         response = await moveInventoryStock({ stockId: task.vehicle.inventoryStockId, locationCode, locationLabel: locationCode, expectedUpdatedAt: task.vehicle.stockUpdatedAt, reason: 'Movido desde el panel de inventario', idempotencyKey: task.idempotencyKey })
       } else if (task.type === 'cost' && task.vehicle) {
         const amountCents = money('dollars', 'Inventory cost')
-        if (amountCents <= 0) throw new Error('Ingresá un costo mayor a cero.')
+        if (amountCents <= 0) throw new Error('Ingresa un costo mayor a cero.')
         response = await recordInventoryCost({ stockId: task.vehicle.inventoryStockId, costType: COST_TYPES.includes(field('costType') as typeof COST_TYPES[number]) ? field('costType') : 'other', amountCents, reference: field('reference') || undefined, reason: 'Costo registrado desde el panel de inventario', idempotencyKey: task.idempotencyKey })
       } else if (task.type === 'recon-open' && task.vehicle) {
         const title = field('title')
-        if (!title) throw new Error('Indicá la tarea de preparación.')
+        if (!title) throw new Error('Indica la tarea de preparación.')
         const estimatedCostCents = money('estimatedDollars', 'Estimated recon cost')
         response = await openInventoryReconWorkItem({ stockId: task.vehicle.inventoryStockId, title, category: RECON_CATEGORIES.includes(field('category') as typeof RECON_CATEGORIES[number]) ? field('category') : 'other', estimatedCostCents, reason: 'Abierto desde el panel de inventario', idempotencyKey: task.idempotencyKey })
       } else if (task.type === 'recon-complete' && task.vehicle && task.reconWorkItem) {
@@ -1188,7 +1188,7 @@ export function VehicleListPageClient({
                     <span className={fieldLabelClass}>Marca</span>
                     <Select value={intakeMakeChoice} onValueChange={value => { updateTaskField('makeChoice', value); updateTaskField('model', '') }}>
                       <SelectTrigger id="inventory-task-makeChoice">
-                        <SelectValue placeholder="Elegí la marca" />
+                        <SelectValue placeholder="Elige la marca" />
                       </SelectTrigger>
                       <SelectContent>
                         {makes.map(make => (

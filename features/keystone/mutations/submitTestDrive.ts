@@ -27,12 +27,12 @@ export type SubmitTestDriveInput = {
 }
 
 export async function submitTestDrive(_root: unknown, { data }: { data: SubmitTestDriveInput }, context: any) {
-  const customerName = requiredText(data.customerName, 'Customer name', 200)
+  const customerName = requiredText(data.customerName, 'Nombre', 200)
   const email = validEmail(data.customerEmail)
   const phone = validPhone(data.customerPhone)
   const message = optionalText(data.message, 4000, 'Message')
-  const requestedDate = requiredText(data.preferredDate, 'Preferred date', 10)
-  const requestedTime = requiredText(data.preferredTime, 'Preferred time', 20)
+  const requestedDate = requiredText(data.preferredDate, 'Fecha', 10)
+  const requestedTime = requiredText(data.preferredTime, 'Hora', 20)
   const { firstName, lastName } = splitCustomerName(customerName, 'Website', 'Lead')
 
   return runPublicSubmission({

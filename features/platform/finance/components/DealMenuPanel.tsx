@@ -137,15 +137,15 @@ export function DealMenuPanel({
       const cost = (v.cost || '').trim() ? parseDollarsToCents(v.cost) : null
       const term = (v.term || '').trim() ? Number(v.term) : null
       if (status === 'quoted') {
-        if (retail == null) errors.retail = 'Ingresá el precio cotizado.'
+        if (retail == null) errors.retail = 'Ingresa el precio cotizado.'
         if (cost == null) errors.cost = 'Enter the quoted dealer cost.'
         if (!(v.reference || '').trim()) errors.reference = 'Enter the provider rate or quote reference.'
       } else {
-        if ((v.retail || '').trim() && retail == null) errors.retail = 'Ingresá un importe.'
-        if ((v.cost || '').trim() && cost == null) errors.cost = 'Ingresá un importe.'
+        if ((v.retail || '').trim() && retail == null) errors.retail = 'Ingresa un importe.'
+        if ((v.cost || '').trim() && cost == null) errors.cost = 'Ingresa un importe.'
       }
       if (term != null && (!Number.isInteger(term) || term < 1 || term > 240)) errors.term = 'Enter 1 to 240 months.'
-      if ((v.reference || '').length > 200) errors.reference = 'Usá 200 caracteres o menos.'
+      if ((v.reference || '').length > 200) errors.reference = 'Usa 200 caracteres o menos.'
       run = () => quoteFinanceProduct({
         dealId: deal.id, productId: dialog.product.id, status,
         retailPriceCents: retail, costCents: cost, termMonths: term,

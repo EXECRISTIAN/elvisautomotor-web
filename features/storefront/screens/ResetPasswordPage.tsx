@@ -11,7 +11,7 @@ export function ResetPasswordPage() {
   const params = useSearchParams()
   const token = params?.get('token') || ''
   const [state, formAction, pending] = useActionState<AccountState, FormData>(resetCustomerPassword, { error: null })
-  const title = token ? 'Elegí una nueva contraseña' : 'Olvidé mi contraseña'
+  const title = token ? 'Elige una nueva contraseña' : 'Olvidé mi contraseña'
 
   return (
     <section className="mx-auto w-full max-w-sm">
@@ -41,7 +41,7 @@ export function ResetPasswordPage() {
       <div className="mt-5 flex justify-center">
         <Link href="/account" className="sf-link inline-flex min-h-11 items-center gap-1.5 text-[length:var(--sf-text-sm)]">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Back to account
+          Volver a mi cuenta
         </Link>
       </div>
     </section>

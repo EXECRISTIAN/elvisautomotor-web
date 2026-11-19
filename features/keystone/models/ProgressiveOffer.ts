@@ -38,7 +38,7 @@ export const ProgressiveOffer = list({
   fields: {
     ...trackingFields,
     number: integer({ label: 'Número de oferta', ui: { description: 'Ej.: 7 para "Oferta progresiva N7"' } }),
-    title: text({ label: 'Vehículo (título)', validation: { isRequired: true }, ui: { description: 'Ej.: Chevrolet Meriva 2010 nafta' } }),
+    title: text({ label: 'Vehículo (título)', validation: { isRequired: true }, ui: { description: 'Ej.: Chevrolet Meriva 2010 gasolina' } }),
     vehicle: relationship({ ref: 'Vehicle', label: 'Vehículo del inventario (opcional)', ui: { displayMode: 'select', labelField: 'stockNumber' } }),
     photo: image({ storage: 'my_images', label: 'Foto' }),
     photoUrl: text({ label: 'Foto (URL)', ui: { description: 'Alternativa a subir la foto: una URL https o una ruta /images/...' } }),
@@ -75,6 +75,6 @@ export const ProgressiveOffer = list({
     financing: text({ label: 'Financiación', ui: { displayMode: 'textarea', description: 'Ej.: Contado o hasta 90% financiado con Banco Provincia aprobado. Anticipo mínimo $500.000.' } }),
     conditions: text({ label: 'Condiciones y aclaraciones', ui: { displayMode: 'textarea', description: 'Ej.: Tomado en Plan Canje, sin inspección y sin garantía. Precio con transferencia incluida.' } }),
     includesTransfer: select({ label: 'Transferencia', type: 'string', defaultValue: 'included', options: [{ label: 'Incluida (se entrega transferido)', value: 'included' }, { label: 'No incluida', value: 'excluded' }] }),
-    noAppointment: select({ label: 'Turno', type: 'string', defaultValue: 'walk-in', options: [{ label: 'Se puede venir sin turno', value: 'walk-in' }, { label: 'Con turno', value: 'appointment' }] }),
+    noAppointment: select({ label: 'Cita', type: 'string', defaultValue: 'walk-in', options: [{ label: 'Se puede venir sin cita', value: 'walk-in' }, { label: 'Con cita', value: 'appointment' }] }),
   },
 })

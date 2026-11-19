@@ -23,7 +23,7 @@ export const FinancingPlan = list({
     validate: ({ resolvedData, item, addValidationError, operation }: any) => {
       if (operation === 'delete') return
       const terms = resolvedData.termsMonths ?? item?.termsMonths
-      if (!parseTerms(terms).length) addValidationError('Cargá al menos un plazo en meses (por ejemplo: 12, 24, 36).')
+      if (!parseTerms(terms).length) addValidationError('Carga al menos un plazo en meses (por ejemplo: 12, 24, 36).')
       const min = resolvedData.minAmountCents ?? item?.minAmountCents
       const max = resolvedData.maxAmountCents ?? item?.maxAmountCents
       if (min != null && max != null && min > max) addValidationError('El monto mínimo no puede superar al máximo.')

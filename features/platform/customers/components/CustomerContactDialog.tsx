@@ -46,7 +46,7 @@ export function CustomerContactDialog({
     if (!values.lastName.trim()) found.lastName = 'Obligatorio'
     const email = values.primaryEmail.trim()
     const digits = values.primaryPhone.replace(/\D/g, '')
-    if (!email && !values.primaryPhone.trim()) found.primaryPhone = 'Ingresá email o teléfono'
+    if (!email && !values.primaryPhone.trim()) found.primaryPhone = 'Ingresa email o teléfono'
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) found.primaryEmail = 'Invalid email'
     if (values.primaryPhone.trim() && (digits.length < 7 || digits.length > 15)) found.primaryPhone = 'Invalid phone'
     setErrors(found)

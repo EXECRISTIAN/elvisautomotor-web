@@ -8,7 +8,7 @@ import { WhatsAppIcon } from './WhatsAppIcon'
 // (nunca dejamos un botón sin funcionamiento).
 export function WhatsAppButton({
   message,
-  label = 'Consultá por WhatsApp',
+  label = 'Consulta por WhatsApp',
   className = 'sf-btn sf-btn-outline',
   iconOnly = false,
 }: {

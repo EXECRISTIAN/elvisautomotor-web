@@ -189,7 +189,7 @@ export function ComparePage() {
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="sf-title-line font-semibold">
               <span className="sf-dot" aria-hidden="true" />
-              No vehicles added
+              Todavía no agregaste vehículos
             </p>
             {browseTrack}
           </div>
@@ -206,7 +206,7 @@ export function ComparePage() {
           <div className="sf-well p-6">
             <p className="sf-title-line font-semibold">
               <span className="sf-dot" data-tone="warn" aria-hidden="true" />
-              These vehicles are no longer available.
+              Estos vehículos ya no están disponibles.
             </p>
             {unavailableList}
           </div>
@@ -228,10 +228,10 @@ export function ComparePage() {
           <div className="flex flex-wrap gap-2">
             <Link href="/inventory" className="sf-btn sf-btn-primary">
               <Plus className="size-4" aria-hidden="true" />
-              Add vehicles
+              Agregar vehículos
             </Link>
             <button type="button" onClick={handleClearAll} className="sf-btn sf-btn-ghost">
-              Clear all
+              Quitar todos
             </button>
           </div>
         }

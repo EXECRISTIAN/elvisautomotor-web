@@ -66,7 +66,7 @@ const CONDITIONS = [
 
 const OWNERSHIP = [
   { value: 'own', label: 'Propio, sin deuda' },
-  { value: 'financing', label: 'Con prenda / crédito' },
+  { value: 'financing', label: 'Con crédito prendario' },
   { value: 'lease', label: 'Leasing' },
 ]
 
@@ -164,7 +164,7 @@ export function TradeInPage() {
       setIdempotencyKey(crypto.randomUUID())
       setSubmitted(true)
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'No pudimos enviar tu solicitud. Intentá de nuevo.')
+      setSubmitError(error instanceof Error ? error.message : 'No pudimos enviar tu solicitud. Intenta de nuevo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -213,14 +213,14 @@ export function TradeInPage() {
     { label: 'Estado', value: optionLabel(CONDITIONS, formData.condition) },
     { label: 'Titularidad', value: optionLabel(OWNERSHIP, formData.ownership) },
     ...(formData.ownership === 'financing' && formData.payoffAmount && Number.isFinite(payoff)
-      ? [{ label: 'Saldo de prenda', value: formatPrice(payoff, business.currencyCode) }]
+      ? [{ label: 'Saldo del crédito', value: formatPrice(payoff, business.currencyCode) }]
       : []),
     ...(photos.length ? [{ label: 'Fotos', value: String(photos.length) }] : []),
   ]
   const contactName = [formData.firstName, formData.lastName].filter(Boolean).join(' ')
 
   const sticker = (rows: StickerRowData[], meta?: string) => (
-    <Sticker title="Vendelo en Elvis" meta={meta} rows={rows}>
+    <Sticker title="Véndelo en Elvis" meta={meta} rows={rows}>
       {interestedVehicle && <StickerVehicle vehicle={interestedVehicle} label="Para cambiar por" />}
     </Sticker>
   )
@@ -228,9 +228,9 @@ export function TradeInPage() {
   if (submitted) {
     return (
       <RequestReceived
-        context="Vendelo en Elvis"
+        context="Véndelo en Elvis"
         reference={submissionReference}
-        note={`Un asesor revisa los datos${photos.length ? ' y las fotos' : ''} y te contacta para coordinar la tasación presencial. No es una oferta automática: el valor final surge de la revisión del vehículo en el salón.${photos.length && uploadedPhotos < photos.length ? ` Se subieron ${uploadedPhotos} de ${photos.length} fotos; podés mandar las que faltan por WhatsApp.` : ''}`}
+        note={`Un asesor revisa los datos${photos.length ? ' y las fotos' : ''} y te contacta para coordinar la tasación presencial. No es una oferta automática: el valor final surge de la revisión del vehículo en el salón.${photos.length && uploadedPhotos < photos.length ? ` Se subieron ${uploadedPhotos} de ${photos.length} fotos; puedes mandar las que faltan por WhatsApp.` : ''}`}
         summary={sticker([
           ...vehicleRows,
           { label: 'Nombre', value: contactName },
@@ -255,7 +255,7 @@ export function TradeInPage() {
 
   return (
     <>
-      <PageHeader title="Vendelo en Elvis" />
+      <PageHeader title="Véndelo en Elvis" />
 
       <RequestLayout summary={summary}>
         <ol className="sf-track mb-[var(--sf-space-lg)]" aria-label="Pasos">
@@ -293,7 +293,7 @@ export function TradeInPage() {
             <FormSection title="Tu vehículo" first>
               <div className="grid gap-4">
                 <Field label="Año" htmlFor="trade-year">
-                  <PlatformSelect id="trade-year" name="year" required value={formData.year} onValueChange={(v) => setFormData((p) => ({ ...p, year: v }))} className="sf-input sf-trigger" placeholder="Elegí el año" searchable options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+                  <PlatformSelect id="trade-year" name="year" required value={formData.year} onValueChange={(v) => setFormData((p) => ({ ...p, year: v }))} className="sf-input sf-trigger" placeholder="Elige el año" searchable options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
                 </Field>
                 <Field label="Marca" htmlFor="trade-make">
                   <input id="trade-make" type="text" required list="trade-make-options" value={formData.make} onChange={(e) => setFormData((p) => ({ ...p, make: e.target.value }))} className="sf-input" placeholder="Ej.: Volkswagen" autoComplete="off" />
@@ -339,7 +339,7 @@ export function TradeInPage() {
                   options={OWNERSHIP}
                 />
                 {formData.ownership === 'financing' && (
-                  <Field label="Saldo aproximado de la prenda" htmlFor="trade-payoff" className="sm:max-w-xs">
+                  <Field label="Saldo aproximado del crédito" htmlFor="trade-payoff" className="sm:max-w-xs">
                     <div className="relative">
                       <span className="sf-figure sf-faint pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">{currencySymbol(business.currencyCode)}</span>
                       <input id="trade-payoff" type="number" inputMode="decimal" min="0" step="1" value={formData.payoffAmount} onChange={(e) => setFormData((p) => ({ ...p, payoffAmount: e.target.value }))} className="sf-input sf-figure pl-8" />
@@ -347,7 +347,7 @@ export function TradeInPage() {
                   </Field>
                 )}
                 <Field label="Información adicional" htmlFor="trade-notes" optional>
-                  <textarea id="trade-notes" rows={3} maxLength={2000} value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} className="sf-input resize-y" placeholder="Service al día, detalles de chapa, cubiertas, único dueño…" />
+                  <textarea id="trade-notes" rows={3} maxLength={2000} value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} className="sf-input resize-y" placeholder="Service al día, detalles de chapa, neumáticos, único dueño…" />
                 </Field>
                 <div>
                   <p className="sf-label">Fotos <span className="sf-faint">/ Opcional, hasta {MAX_PHOTOS}</span></p>
@@ -376,7 +376,7 @@ export function TradeInPage() {
                           event.target.value = ''
                           const valid = files.filter((file) => /^image\/(jpeg|png|webp)$/.test(file.type))
                           const room = MAX_PHOTOS - photos.length
-                          setPhotoNotice(valid.length < files.length ? 'Algunos archivos no son fotos JPG, PNG o WebP y no se agregaron.' : valid.length > room ? `Podés agregar hasta ${MAX_PHOTOS} fotos.` : null)
+                          setPhotoNotice(valid.length < files.length ? 'Algunos archivos no son fotos JPG, PNG o WebP y no se agregaron.' : valid.length > room ? `Puedes agregar hasta ${MAX_PHOTOS} fotos.` : null)
                           setPhotos((current) => [...current, ...valid.slice(0, room).map((file) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) }))])
                         }}
                       />

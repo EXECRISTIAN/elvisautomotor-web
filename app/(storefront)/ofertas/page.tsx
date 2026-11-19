@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Ofertas progresivas',
-  description: 'El precio baja cada hora hasta que alguien se lo lleva. Vos elegís cuánto pagarlo.',
+  description: 'El precio baja cada hora hasta que alguien se lo lleva. Tú eliges cuánto pagarlo.',
 }
 
 export default async function Page() {

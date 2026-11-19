@@ -41,10 +41,10 @@ function packageServiceType(name: string) {
 }
 
 export async function submitServiceBooking(_root: unknown, { data }: { data: any }, context: any) {
-  const customerName = requiredText(data.customerName, 'Customer name', 200)
+  const customerName = requiredText(data.customerName, 'Nombre', 200)
   const email = validEmail(data.customerEmail)
   const phone = validPhone(data.customerPhone)
-  const year = finiteNumber(data.vehicleYear, 'Vehicle year', {
+  const year = finiteNumber(data.vehicleYear, 'Año', {
     min: 1900,
     max: new Date().getFullYear() + 1,
     integer: true,

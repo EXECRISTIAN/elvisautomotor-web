@@ -31,7 +31,7 @@ export function HomeContactPanel() {
                 <ArrowUpRight className="size-4" aria-hidden="true" />
               </a>
             )}
-            <Link href="/contact" className="sf-btn sf-btn-ghost">Escribinos</Link>
+            <Link href="/contact" className="sf-btn sf-btn-ghost">Escríbenos</Link>
           </div>
         </div>
 

@@ -39,11 +39,11 @@ export function validateTradeInForm(values: TradeInFormValues, mode: 'create' | 
   const vin = values.vin.trim().toUpperCase()
   if (vin && !VIN_PATTERN.test(vin)) errors.vin = '17 letters and numbers, no I, O or Q'
   const year = Number(values.year)
-  if (!/^\d{4}$/.test(values.year.trim()) || year < 1900 || year > new Date().getFullYear() + 2) errors.year = 'Ingresá un año de 4 dígitos'
+  if (!/^\d{4}$/.test(values.year.trim()) || year < 1900 || year > new Date().getFullYear() + 2) errors.year = 'Ingresa un año de 4 dígitos'
   if (!values.make.trim()) errors.make = 'La marca es obligatoria'
   if (!values.model.trim()) errors.model = 'El modelo es obligatorio'
   const mileage = values.mileage.trim().replace(/,/g, '')
-  if (mileage && (!/^\d+$/.test(mileage) || Number(mileage) > 2_000_000)) errors.mileage = 'Ingresá kilómetros enteros'
+  if (mileage && (!/^\d+$/.test(mileage) || Number(mileage) > 2_000_000)) errors.mileage = 'Ingresa kilómetros enteros'
   return errors
 }
 
@@ -145,13 +145,13 @@ export function TradeInFormDialog({
               <>
                 <Field label="Sucursal" htmlFor="trade-in-rooftopId" error={shown.rooftopId}>
                   <Select value={values.rooftopId} onValueChange={value => setValues(current => ({ ...current, rooftopId: value, leadId: '' }))}>
-                    <SelectTrigger className="rounded-[4px]" id="trade-in-rooftopId" aria-invalid={shown.rooftopId ? true : undefined}><SelectValue placeholder="Elegí la sucursal" /></SelectTrigger>
+                    <SelectTrigger className="rounded-[4px]" id="trade-in-rooftopId" aria-invalid={shown.rooftopId ? true : undefined}><SelectValue placeholder="Elige la sucursal" /></SelectTrigger>
                     <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
                 <Field label={leadRequired ? 'Consulta del cliente' : 'Consulta del cliente (opcional)'} htmlFor="trade-in-leadId" error={shown.leadId}>
                   <Select value={values.leadId || (leadRequired ? '' : NO_LEAD)} onValueChange={value => set('leadId', value === NO_LEAD ? '' : value)} disabled={!values.rooftopId}>
-                    <SelectTrigger className="rounded-[4px]" id="trade-in-leadId" aria-invalid={shown.leadId ? true : undefined}><SelectValue placeholder={values.rooftopId ? 'Elegí la consulta' : 'Primero elegí la sucursal'} /></SelectTrigger>
+                    <SelectTrigger className="rounded-[4px]" id="trade-in-leadId" aria-invalid={shown.leadId ? true : undefined}><SelectValue placeholder={values.rooftopId ? 'Elige la consulta' : 'Primero elige la sucursal'} /></SelectTrigger>
                     <SelectContent>
                       {!leadRequired && <SelectItem value={NO_LEAD}>Sin consulta</SelectItem>}
                       {rooftopLeads.map(lead => (
@@ -172,7 +172,7 @@ export function TradeInFormDialog({
             <Field label="Kilometraje" htmlFor="trade-in-mileage" error={shown.mileage}>{input('mileage', { inputMode: 'numeric' })}</Field>
             <Field label="Estado" htmlFor="trade-in-condition">
               <Select value={values.condition} onValueChange={value => set('condition', value)}>
-                <SelectTrigger className="rounded-[4px]" id="trade-in-condition"><SelectValue placeholder="Elegí el estado" /></SelectTrigger>
+                <SelectTrigger className="rounded-[4px]" id="trade-in-condition"><SelectValue placeholder="Elige el estado" /></SelectTrigger>
                 <SelectContent>{CONDITION_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
