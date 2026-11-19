@@ -2,7 +2,7 @@
 
 ## Material listo para mostrar al dueño
 - **Logo AE recreado** (aprobado por el autor del proyecto): `docs/elvis/logo/`
-  - `elvis-logo-completo.svg` / `elvis-logo-completo-fondo-negro.png` (monograma + "ELVIS AUTOMOTORES")
+  - `elvis-logo-completo.svg` / `-fondo-negro.png` / `-transparente.png`: imagotipo final (isotipo AE redibujado del original + barra + "ELVIS AUTOMOTORES"). En la web va como un único SVG embebido (`features/storefront/components/ElvisLogo.tsx`).
   - `elvis-ae-monograma.svg` / `elvis-ae-monograma.png` (solo AE, fondo transparente)
   - `elvis-texto.svg` / `elvis-texto-fondo-negro.png` / `elvis-texto-transparente.png` (solo "ELVIS AUTOMOTORES" con la línea divisoria)
   - `elementos/`: cada pieza por separado (monograma AE, línea divisoria, "ELVIS", "AUTOMOTORES") en SVG y PNG (fondo negro y transparente)

@@ -70,15 +70,15 @@ test('an unsafe SVG rejects the save', () => {
   assert.deepEqual(payload({ logoIcon: '<svg onload="alert(1)"></svg>' }), { success: false, error: 'Invalid SVG format' });
 });
 
-test('the storefront always keeps the AE monogram beside the name; the text lockup stays', () => {
+test('the storefront always keeps the AE isotype, bar and ELVIS AUTOMOTORES lockup in one inline SVG', () => {
   const business = fs.readFileSync(path.join(root, 'features/storefront/lib/business.ts'), 'utf8');
   assert.doesNotMatch(business, /svg !== DEFAULT_STORE_LOGO_ICON \? svg : ''/);
   assert.match(business, /sanitizeStoreLogoSvg\(DEFAULT_STORE_LOGO_ICON\)/);
   const mark = fs.readFileSync(path.join(root, 'features/storefront/components/BrandMark.tsx'), 'utf8');
   // Elvis Automotores: la marca usa siempre el monograma AE (public/brand/elvis-ae.svg).
-  assert.match(mark, /<AeMonogram /);
+  assert.match(mark, /<ElvisLogo /);
   assert.ok(fs.existsSync(path.join(root, 'public/brand/elvis-ae.svg')));
-  assert.match(mark, /splitBrandName\(business\.shortName\)/);
+  assert.match(fs.readFileSync(path.join(root, 'features/storefront/components/ElvisLogo.tsx'), 'utf8'), /AUTOMOTORES/);
   const { DEFAULT_STORE_LOGO_ICON } = load('features/lib/store-logo.ts');
   assert.ok(sanitizeStoreLogoSvg(DEFAULT_STORE_LOGO_ICON));
 });
