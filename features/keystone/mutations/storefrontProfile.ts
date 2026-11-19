@@ -8,7 +8,9 @@ function text(value: unknown) {
 }
 
 function phoneHref(phone: string) {
-  const digits = phone.replace(/[^\d+]/g, '')
+  let digits = phone.replace(/[^\d+]/g, '')
+  // Números argentinos locales (011…, 0221…) → formato internacional +54.
+  if (/^0\d{9,10}$/.test(digits)) digits = `+54${digits.slice(1)}`
   return digits ? `tel:${digits}` : ''
 }
 

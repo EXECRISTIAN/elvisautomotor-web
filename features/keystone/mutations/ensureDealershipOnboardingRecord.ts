@@ -99,8 +99,8 @@ const ROLE_PERMISSION_KEYS = [
 
 function profileData(input: SeedObject) {
   const name = required(input.name, 'Dealership name')
-  const currencyCode = text(input.currencyCode, 'USD', 3).toUpperCase()
-  if (currencyCode !== 'USD') throw new Error('Currency must be USD')
+  const currencyCode = text(input.currencyCode, 'ARS', 3).toUpperCase()
+  if (!['ARS', 'USD'].includes(currencyCode)) throw new Error('La moneda debe ser ARS o USD')
   const websiteUrl = text(input.websiteUrl, '', 500)
   if (websiteUrl && !/^https?:\/\//.test(websiteUrl)) throw new Error('Website URL must start with http:// or https://')
   return {
@@ -109,6 +109,7 @@ function profileData(input: SeedObject) {
     salesEmail: optionalEmail(input.salesEmail, 'Sales email'),
     serviceEmail: optionalEmail(input.serviceEmail, 'Service email'),
     phone: text(input.phone, '', 50),
+    whatsappNumber: text(input.whatsappNumber, '', 20).replace(/\D/g, ''),
     addressLine1: text(input.addressLine1, '', 200),
     addressLine2: text(input.addressLine2, '', 200),
     city: text(input.city, '', 100),
@@ -304,6 +305,9 @@ async function ensureVehicle(input: SeedObject, context: any): Promise<EnsureRes
       description: text(input.description, '', 4000),
       features,
       imagePath: text(input.imagePath, '', 500),
+      fuelType: text(input.fuelType, '', 20) || null,
+      transmission: text(input.transmission, '', 20) || null,
+      engine: text(input.engine, '', 40),
       locationCode: text(input.locationCode, 'FRONTLINE', 80),
       locationLabel: text(input.locationLabel, 'Front line', 200),
     }, {
@@ -313,6 +317,7 @@ async function ensureVehicle(input: SeedObject, context: any): Promise<EnsureRes
     }),
     { timeout: 30_000 }
   )
+  if (input.isFeatured === true) await context.sudo().prisma.vehicle.update({ where: { id: intake.vehicleId }, data: { isFeatured: true } })
   return { id: intake.vehicleId, name, reused: !intake.vehicleCreated }
 }
 

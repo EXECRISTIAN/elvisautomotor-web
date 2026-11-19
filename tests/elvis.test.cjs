@@ -23,3 +23,10 @@ test('el simulador no tiene tasas fijas inventadas', () => {
   const page = read('features/storefront/screens/FinancingPage.tsx');
   assert.doesNotMatch(page, /DEFAULT_INTEREST_RATE|7\.5/);
 });
+
+test('los valores internos de combustible no cambian (solo cambian los textos)', () => {
+  const specs = read('features/lib/vehicleSpecs.ts');
+  for (const value of ['nafta', 'diesel', 'gnc', 'nafta-gnc', 'hibrido', 'electrico', 'manual', 'automatica']) {
+    assert.match(specs, new RegExp(`value: '${value}'`));
+  }
+});

@@ -33,3 +33,13 @@
 4. Financiación bancaria — HECHO en la web; falta pantalla propia en el panel (hoy se usa Tablas).
 5. Vendelo en Elvis — HECHO en la web; falta ver las fotos dentro de la ficha del usado en el panel (hoy en Tablas → Fotos de usados).
 6. Calidad, seguridad y SEO final.
+
+## Actualización (19/11/2026)
+- Quitada la franja "Propuesta de sitio web — versión de demostración" del sitio.
+- Base de datos de ejemplo completa en `deploy/local/` + `docker-compose.yml` para correr todo en la PC (ver `PC-LOCAL.md`).
+- Muestra offline regenerada sin la franja (`elvis-muestra-offline.zip`, 14 vehículos).
+- Agregadas redes del Linktree: YouTube, Spotify, Instagram y Facebook de "Elvis Viaja", y X (@autoselvis).
+- Teléfono fijo ahora marca en formato internacional (+54 11 4259-1365).
+- **Por confirmar con Elvis:** la ficha de Google Maps del Linktree dice *Av. Los Quilmes 735, Bernal*; el sitio usa *Andrés Baranda 2134, Quilmes*. ¿Son dos sedes o cambió la dirección?
+- Pendiente: probar la imagen Docker completa (Docker Hub limitó las descargas en el entorno de prueba).
+- Siguen pendientes: panel de administración (traducción final, pantallas propias) y usuarios/roles.

@@ -42,3 +42,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 docs/elvis/elvis-muestra-offline.zip
+.ccr-ca.crt

@@ -32,38 +32,31 @@ import { Badge } from '@/components/ui/badge-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CustomSetupSteps } from './CustomSetupSteps';
 import { SectionRenderer } from './SectionRenderer';
+import seedData from '../lib/seed.json';
 import { useOnboardingState } from '../hooks/useOnboardingState';
 import { useOnboardingApi } from '../hooks/useOnboardingApi';
 import { getItemsFromJsonData } from '../utils/dataUtils';
 import { DEALERSHIP_TEMPLATES, SECTION_DEFINITIONS, SECTION_TYPES } from '../config/templates';
 
 const DEALERSHIP_FIELDS = [
-  { key: 'name', label: 'Dealership name', autoComplete: 'organization', required: true },
-  { key: 'phone', label: 'Phone', autoComplete: 'tel', type: 'tel' },
-  { key: 'addressLine1', label: 'Street address', autoComplete: 'address-line1' },
-  { key: 'city', label: 'City', autoComplete: 'address-level2' },
-  { key: 'state', label: 'State', autoComplete: 'address-level1' },
-  { key: 'postalCode', label: 'ZIP code', autoComplete: 'postal-code' },
-  { key: 'salesEmail', label: 'Sales email', autoComplete: 'email', type: 'email' },
-  { key: 'hoursMonFri', label: 'Hours Mon–Fri' },
-  { key: 'hoursSaturday', label: 'Hours Saturday' },
-  { key: 'hoursSunday', label: 'Hours Sunday' },
+  { key: 'name', label: 'Nombre del negocio', autoComplete: 'organization', required: true },
+  { key: 'phone', label: 'Teléfono', autoComplete: 'tel', type: 'tel' },
+  { key: 'addressLine1', label: 'Dirección', autoComplete: 'address-line1' },
+  { key: 'city', label: 'Ciudad', autoComplete: 'address-level2' },
+  { key: 'state', label: 'Provincia', autoComplete: 'address-level1' },
+  { key: 'postalCode', label: 'Código postal', autoComplete: 'postal-code' },
+  { key: 'salesEmail', label: 'Email de ventas', autoComplete: 'email', type: 'email' },
+  { key: 'hoursMonFri', label: 'Horario lunes a viernes' },
+  { key: 'hoursSaturday', label: 'Horario sábado' },
+  { key: 'hoursSunday', label: 'Horario domingo' },
 ] as const;
 
 type DealershipDetails = Record<(typeof DEALERSHIP_FIELDS)[number]['key'], string>;
 
-const EMPTY_DEALERSHIP: DealershipDetails = {
-  name: '',
-  phone: '',
-  addressLine1: '',
-  city: '',
-  state: '',
-  postalCode: '',
-  salesEmail: '',
-  hoursMonFri: '',
-  hoursSaturday: '',
-  hoursSunday: '',
-};
+// Elvis Automotores: el formulario arranca con los datos del negocio de la plantilla (seed.json).
+const EMPTY_DEALERSHIP: DealershipDetails = Object.fromEntries(
+  DEALERSHIP_FIELDS.map(({ key }) => [key, String((seedData as any)?.dealership?.[key] ?? '')]),
+) as DealershipDetails;
 
 function slugify(value: string) {
   return value.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
@@ -80,14 +73,14 @@ function withDealershipDetails(data: any, details: DealershipDetails) {
       ...data.dealership,
       ...Object.fromEntries(Object.entries(details).map(([key, value]) => [key, value.trim()])),
       name,
-      shortName: name,
       groupSlug: slug,
       rooftopCode: slug.slice(0, 12).toUpperCase(),
       addressLine2: '',
-      serviceEmail: details.salesEmail.trim(),
-      websiteUrl: '',
-      homepageTitle: name,
-      homepageDescription: '',
+      serviceEmail: data.dealership.serviceEmail ?? details.salesEmail.trim(),
+      shortName: name === data.dealership.name ? data.dealership.shortName || name : name,
+      websiteUrl: name === data.dealership.name ? data.dealership.websiteUrl || '' : '',
+      homepageTitle: name === data.dealership.name ? data.dealership.homepageTitle || name : name,
+      homepageDescription: name === data.dealership.name ? data.dealership.homepageDescription || '' : '',
     },
   };
 }
