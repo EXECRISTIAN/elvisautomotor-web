@@ -1,0 +1,653 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Pencil, Plus, Power, RefreshCw, Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { PageContainer } from '@/features/dashboard/components/PageContainer'
+import { basePath } from '@/features/dashboard/lib/config'
+import { Attention, Code, DeskHeader, DeskSection, DeskTable, Figure, Notice, Panel, Pill, Readout, ReadoutStrip, Segmented, Status, Td, Th, Tr, Track, type DeskTone } from '@/features/platform/components/desk'
+import { recordReference, countLabel } from '@/features/platform/lib/format'
+import { parseDollarsToCents } from '@/features/platform/deals/lib/moneyInput'
+import { CommandDialog, type CommandField, type FieldErrors } from '@/features/platform/accounting/components/CommandDialog'
+import { PAYMENT_STATUS_LABEL, dateTime, money, nonce, paymentTone } from '@/features/platform/accounting/lib/format'
+
+import {
+  createPaymentCheckout,
+  createPaymentProvider,
+  getCheckoutSources,
+  getPaymentProviders,
+  getPayments,
+  updatePaymentProvider,
+} from '../actions'
+import { BUILT_IN_ADAPTERS, SETTLED_STATUSES, paymentSource, providerAdapter } from '../lib/format'
+import type { CheckoutSourceOption, PaymentCounts, PaymentListItem, PaymentProviderRecord } from '../lib/types'
+
+type View = 'transactions' | 'providers'
+type ProviderForm = { provider: PaymentProviderRecord | null; values: Record<string, string> }
+
+const STATUS_TABS = ['pending', 'captured', 'partially-refunded', 'refunded', 'failed', 'canceled'] as const
+const RARE_TABS = ['creating', 'authorized'] as const
+const ALL_FILTERS = { status: 'all', provider: 'all', from: '', to: '', search: '' }
+const DAY_MS = 86_400_000
+
+type QueueReason = { rank: number; label: string; tone: DeskTone }
+
+/** Why a payment is waiting on the office, or null when it is settled and reconciled. */
+function queueReason(tx: PaymentListItem): QueueReason | null {
+  if (tx.status === 'failed') return { rank: 0, label: 'Failed', tone: 'bad' }
+  if (SETTLED_STATUSES.includes(tx.status) && !tx.reconciledAt) return { rank: 1, label: 'Not reconciled', tone: 'warn' }
+  if (['creating', 'pending', 'authorized'].includes(tx.status)) return { rank: 2, label: tx.status === 'authorized' ? 'Authorized, not captured' : 'Not captured', tone: 'warn' }
+  return null
+}
+
+function ageDays(value: string) {
+  return Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / DAY_MS))
+}
+
+export function PaymentsPageClient({
+  timeZone,
+  initialTransactions,
+  initialCounts,
+  initialError,
+  initialProviders,
+  initialProviderError,
+}: {
+  timeZone: string
+  initialTransactions: PaymentListItem[]
+  initialCounts: PaymentCounts | null
+  initialError: string | null
+  initialProviders: PaymentProviderRecord[]
+  initialProviderError: string | null
+}) {
+  const router = useRouter()
+  const [view, setView] = useState<View>('transactions')
+  const [message, setMessage] = useState<string | null>(null)
+
+  const [transactions, setTransactions] = useState(initialTransactions)
+  const [counts, setCounts] = useState<PaymentCounts>(initialCounts ?? { all: 0 })
+  const [error, setError] = useState(initialError)
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState('all')
+  const [provider, setProvider] = useState('all')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [search, setSearch] = useState('')
+  const firstLoad = useRef(true)
+  // The queue reads the unfiltered list, so tabs and search below do not hide waiting payments.
+  const [queueSource, setQueueSource] = useState(initialTransactions)
+  const [queueError, setQueueError] = useState(initialError)
+
+  const dateError = from && to && from > to ? 'Start date is after end date' : null
+
+  const loadTransactions = useCallback(
+    async (filters: { status: string; provider: string; from: string; to: string; search: string }) => {
+      setLoading(true)
+      const result = await getPayments(filters, timeZone)
+      if (result.success) {
+        setTransactions(result.data.transactions)
+        setCounts(result.data.counts)
+        setError(null)
+        if (JSON.stringify(filters) === JSON.stringify(ALL_FILTERS)) {
+          setQueueSource(result.data.transactions)
+          setQueueError(null)
+        }
+      } else {
+        setError(result.error)
+      }
+      setLoading(false)
+    },
+    [timeZone],
+  )
+
+  useEffect(() => {
+    if (firstLoad.current) {
+      firstLoad.current = false
+      return
+    }
+    if (dateError) return
+    const timer = setTimeout(() => loadTransactions({ status, provider, from, to, search }), search ? 250 : 0)
+    return () => clearTimeout(timer)
+  }, [status, provider, from, to, search, dateError, loadTransactions])
+
+  // Providers
+  const [providers, setProviders] = useState(initialProviders)
+  const [providerError, setProviderError] = useState(initialProviderError)
+  const [providerForm, setProviderForm] = useState<ProviderForm | null>(null)
+  const [providerFieldErrors, setProviderFieldErrors] = useState<FieldErrors>({})
+  const [providerSubmitError, setProviderSubmitError] = useState<string | null>(null)
+  const [providerBusy, setProviderBusy] = useState(false)
+  const [toggling, setToggling] = useState<string | null>(null)
+
+  const loadProviders = useCallback(async () => {
+    const result = await getPaymentProviders()
+    if (result.success) {
+      setProviders(result.data.paymentProviders || [])
+      setProviderError(null)
+    } else {
+      setProviderError(result.error)
+    }
+  }, [])
+
+  const openProvider = (record: PaymentProviderRecord | null) => {
+    const adapter = record ? providerAdapter(record) : 'manual'
+    const builtIn = adapter && (BUILT_IN_ADAPTERS as readonly string[]).includes(adapter)
+    setProviderForm({
+      provider: record,
+      values: {
+        name: record?.name || '',
+        code: record?.code || 'pp_',
+        adapter: adapter === null ? 'mixed' : builtIn ? adapter : 'custom',
+        adapterUrl: adapter && !builtIn ? adapter : '',
+        isInstalled: record ? (record.isInstalled ? 'yes' : 'no') : 'yes',
+      },
+    })
+    setProviderFieldErrors({})
+    setProviderSubmitError(null)
+  }
+
+  const submitProvider = async () => {
+    if (!providerForm) return
+    const values = providerForm.values
+    const errors: FieldErrors = {}
+    const name = (values.name || '').trim()
+    const code = (values.code || '').trim()
+    if (!name) errors.name = 'Name is required'
+    if (!providerForm.provider) {
+      if (!/^pp_[a-zA-Z0-9-_]+$/.test(code)) errors.code = 'Starts with pp_ then letters, numbers, - or _'
+      else if (providers.some(p => p.code === code)) errors.code = 'Code is already used'
+    }
+    const url = (values.adapterUrl || '').trim()
+    if (values.adapter === 'custom' && !/^https:\/\/\S+$/.test(url)) errors.adapterUrl = 'Enter an https:// adapter URL'
+    setProviderFieldErrors(errors)
+    if (Object.keys(errors).length) return
+    const adapter = values.adapter === 'custom' ? url : values.adapter === 'mixed' ? undefined : values.adapter
+    setProviderBusy(true)
+    setProviderSubmitError(null)
+    const result = providerForm.provider
+      ? await updatePaymentProvider(providerForm.provider.id, { name, isInstalled: values.isInstalled === 'yes', ...(adapter ? { adapter } : {}) })
+      : await createPaymentProvider({ name, code, adapter: adapter || 'manual', isInstalled: values.isInstalled === 'yes' })
+    setProviderBusy(false)
+    if (!result.success) {
+      setProviderSubmitError(result.error)
+      return
+    }
+    setMessage(providerForm.provider ? 'Provider updated.' : 'Provider added.')
+    setProviderForm(null)
+    await loadProviders()
+  }
+
+  const toggleProvider = async (record: PaymentProviderRecord) => {
+    setToggling(record.id)
+    const result = await updatePaymentProvider(record.id, { isInstalled: !record.isInstalled })
+    setToggling(null)
+    setMessage(result.success ? (record.isInstalled ? `${record.name} disabled.` : `${record.name} enabled.`) : result.error)
+    if (result.success) await loadProviders()
+  }
+
+  const providerFields: CommandField[] = providerForm
+    ? [
+        { name: 'name', label: 'Name', maxLength: 100 },
+        { name: 'code', label: 'Code', maxLength: 100, disabled: Boolean(providerForm.provider) },
+        {
+          name: 'adapter',
+          label: 'Adapter',
+          type: 'select',
+          options: [
+            { value: 'manual', label: 'Manual' },
+            { value: 'stripe', label: 'Stripe' },
+            { value: 'custom', label: 'HTTP adapter' },
+            ...(providerForm.values.adapter === 'mixed' ? [{ value: 'mixed', label: 'Per-function (unchanged)' }] : []),
+          ],
+        },
+        { name: 'isInstalled', label: 'Status', type: 'select', options: [{ value: 'yes', label: 'Enabled' }, { value: 'no', label: 'Disabled' }] },
+        ...(providerForm.values.adapter === 'custom' ? [{ name: 'adapterUrl', label: 'Adapter URL', wide: true, maxLength: 500, placeholder: 'https://' } as CommandField] : []),
+      ]
+    : []
+
+  // Checkout
+  const installed = providers.filter(p => p.isInstalled)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutValues, setCheckoutValues] = useState<Record<string, string>>({})
+  const [checkoutOptions, setCheckoutOptions] = useState<CheckoutSourceOption[]>([])
+  const [checkoutOptionsState, setCheckoutOptionsState] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [checkoutFieldErrors, setCheckoutFieldErrors] = useState<FieldErrors>({})
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [checkoutBusy, setCheckoutBusy] = useState(false)
+
+  const loadCheckoutOptions = useCallback(async (type: string) => {
+    setCheckoutOptionsState('loading')
+    setCheckoutOptions([])
+    const result = await getCheckoutSources(type)
+    if (result.success) {
+      setCheckoutOptions(result.data)
+      setCheckoutOptionsState('idle')
+    } else {
+      setCheckoutOptionsState('error')
+    }
+  }, [])
+
+  const openCheckout = () => {
+    setCheckoutValues({ sourceType: 'service', sourceId: '', providerKey: (installed.find(p => p.createPaymentFunction !== 'manual') || installed[0])?.code || '', amount: '' })
+    setCheckoutFieldErrors({})
+    setCheckoutError(null)
+    setCheckoutOpen(true)
+    loadCheckoutOptions('service')
+  }
+
+  const changeCheckout = (values: Record<string, string>) => {
+    if (values.sourceType !== checkoutValues.sourceType) {
+      setCheckoutValues({ ...values, sourceId: '', amount: '' })
+      loadCheckoutOptions(values.sourceType)
+    } else if (values.sourceId !== checkoutValues.sourceId && !values.amount) {
+      const option = checkoutOptions.find(o => o.id === values.sourceId)
+      setCheckoutValues({ ...values, amount: option?.totalCents ? (option.totalCents / 100).toFixed(2) : '' })
+    } else {
+      setCheckoutValues(values)
+    }
+    setCheckoutFieldErrors({})
+  }
+
+  const submitCheckout = async () => {
+    const errors: FieldErrors = {}
+    if (!checkoutValues.sourceId) errors.sourceId = 'Choose a source record'
+    if (!checkoutValues.providerKey) errors.providerKey = 'Choose a provider'
+    const cents = parseDollarsToCents(checkoutValues.amount || '')
+    if (cents === null) errors.amount = 'Enter dollars and cents'
+    else if (cents <= 0) errors.amount = 'Amount must be more than $0'
+    setCheckoutFieldErrors(errors)
+    if (Object.keys(errors).length || !cents) return
+    setCheckoutBusy(true)
+    setCheckoutError(null)
+    const result = await createPaymentCheckout({
+      sourceType: checkoutValues.sourceType,
+      sourceId: checkoutValues.sourceId,
+      providerKey: checkoutValues.providerKey,
+      amountCents: cents,
+      idempotencyKey: nonce('payment-checkout'),
+    })
+    setCheckoutBusy(false)
+    if (!result.success) {
+      setCheckoutError(result.error)
+      return
+    }
+    setCheckoutOpen(false)
+    router.push(`${basePath}/platform/payments/${result.data.createPaymentCheckout.id}`)
+  }
+
+  const checkoutFields: CommandField[] = [
+    { name: 'sourceType', label: 'Source type', type: 'select', options: [{ value: 'service', label: 'Service order' }, { value: 'deal', label: 'Deal' }] },
+    { name: 'providerKey', label: 'Provider', type: 'select', options: installed.map(p => ({ value: p.code, label: p.name })), placeholder: installed.length ? 'Select a provider' : 'No enabled providers' },
+    {
+      name: 'sourceId',
+      label: 'Source record',
+      type: 'select',
+      wide: true,
+      disabled: checkoutOptionsState === 'loading' || checkoutOptions.length === 0,
+      placeholder: checkoutOptionsState === 'loading' ? 'Loading…' : checkoutOptionsState === 'error' ? 'Sources unavailable' : checkoutOptions.length === 0 ? 'No payable records' : 'Select a record',
+      options: checkoutOptions.map(o => ({ value: o.id, label: [o.label, o.detail, o.totalCents ? money(o.totalCents) : ''].filter(Boolean).join(' · ') })),
+    },
+    { name: 'amount', label: 'Amount', type: 'money' },
+  ]
+
+  const loadQueue = useCallback(async () => {
+    const result = await getPayments(ALL_FILTERS, timeZone)
+    if (result.success) {
+      setQueueSource(result.data.transactions)
+      setQueueError(null)
+    } else {
+      setQueueError(result.error)
+    }
+  }, [timeZone])
+
+  const refresh = async () => {
+    await Promise.all([dateError ? Promise.resolve() : loadTransactions({ status, provider, from, to, search }), loadProviders(), loadQueue()])
+  }
+
+  const queue = useMemo(
+    () =>
+      queueSource
+        .map(tx => ({ tx, reason: queueReason(tx) }))
+        .filter((row): row is { tx: PaymentListItem; reason: QueueReason } => row.reason !== null)
+        .sort((a, b) => a.reason.rank - b.reason.rank || new Date(a.tx.createdAt).getTime() - new Date(b.tx.createdAt).getTime()),
+    [queueSource],
+  )
+
+  const filtered = Boolean(search.trim()) || status !== 'all' || provider !== 'all' || Boolean(from) || Boolean(to)
+  const resetFilters = () => {
+    setSearch('')
+    setStatus('all')
+    setProvider('all')
+    setFrom('')
+    setTo('')
+  }
+  const providerName = (code: string) => providers.find(p => p.code === code)?.name || code
+
+  const statusOptions = [
+    { value: 'all', label: 'All', count: counts.all || 0 },
+    { value: 'unreconciled', label: 'Unreconciled', count: counts.unreconciled || 0, tone: 'warn' as const },
+    ...STATUS_TABS.map(value => ({ value, label: PAYMENT_STATUS_LABEL[value], count: counts[value] || 0, tone: paymentTone(value) })),
+    ...RARE_TABS.filter(value => (counts[value] || 0) > 0 || status === value).map(value => ({ value, label: PAYMENT_STATUS_LABEL[value], count: counts[value] || 0, tone: paymentTone(value) })),
+  ]
+
+  const breadcrumbs = [
+    { type: 'link' as const, label: 'Dashboard', href: basePath },
+    { type: 'page' as const, label: 'Platform' },
+    { type: 'page' as const, label: 'Payments' },
+  ]
+
+  const header = (
+    <DeskHeader
+      title="Payments"
+      tone={error ? 'bad' : (counts.failed || 0) > 0 ? 'bad' : (counts.unreconciled || 0) > 0 ? 'warn' : 'ok'}
+      status={error ? 'Unavailable' : (counts.failed || 0) > 0 ? `${counts.failed} failed` : (counts.unreconciled || 0) > 0 ? `${counts.unreconciled} unreconciled` : 'Clear'}
+      meta={
+        error
+          ? 'Unavailable'
+          : [
+              (counts.failed || 0) > 0 ? `${counts.failed} failed` : '',
+              (counts.unreconciled || 0) > 0 ? `${counts.unreconciled} not reconciled` : '',
+              `${counts.all || 0} transactions`,
+              `${installed.length} of ${countLabel(providers.length, 'provider')} enabled`,
+            ].filter(Boolean).join(' · ')
+      }
+      actions={
+        <>
+          <Pill variant="plain" onClick={refresh} disabled={loading} aria-label="Refresh" className="h-11 sm:h-8">
+            <RefreshCw className={loading ? 'animate-spin' : undefined} />
+            Refresh
+          </Pill>
+          {view === 'transactions' ? (
+            <Pill variant="primary" onClick={openCheckout} className="h-11 sm:h-8">
+              <Plus />
+              New checkout
+            </Pill>
+          ) : (
+            <Pill variant="primary" onClick={() => openProvider(null)} className="h-11 sm:h-8">
+              <Plus />
+              Add provider
+            </Pill>
+          )}
+        </>
+      }
+    />
+  )
+
+  return (
+    <PageContainer title="Payments" header={header} breadcrumbs={breadcrumbs}>
+      <div className="min-w-0 max-w-full space-y-6 px-4 pb-24 md:px-6">
+        {message && (
+          <Notice tone="info">
+            <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+              <p className="min-w-0">{message}</p>
+              <Track>
+                <Pill size="sm" variant="plain" onClick={() => setMessage(null)} className="h-10 sm:h-7">Dismiss</Pill>
+              </Track>
+            </div>
+          </Notice>
+        )}
+
+        <DeskSection title="Needs you" count={queueError ? undefined : queue.length} id="payments-queue">
+          {queueError ? (
+            <Notice tone="bad">Queue unavailable: {queueError}</Notice>
+          ) : queue.length === 0 ? (
+            <p className="py-3 text-sm text-muted-foreground">No failed, uncaptured or unreconciled payments</p>
+          ) : (
+            <DeskTable aria-labelledby="payments-queue">
+              <thead>
+                <tr>
+                  <Th>Payment</Th>
+                  <Th>Waiting on</Th>
+                  <Th priority={3}>Provider</Th>
+                  <Th priority={2} align="right">Age</Th>
+                  <Th align="right">Amount</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {queue.map(({ tx, reason }) => {
+                  const source = paymentSource(tx)
+                  const days = ageDays(tx.createdAt)
+                  return (
+                    <Tr key={tx.id} className="cursor-pointer" onClick={() => router.push(`${basePath}/platform/payments/${tx.id}`)}>
+                      <Td className="min-w-0">
+                        <Link href={`${basePath}/platform/payments/${tx.id}`} className="block min-w-0 font-medium text-foreground hover:underline" onClick={event => event.stopPropagation()}>
+                          {source.label}
+                        </Link>
+                        <p className="mt-0.5 flex min-w-0 flex-wrap gap-x-2 text-xs text-muted-foreground">
+                          <Code>{recordReference('PAY', tx.id)}</Code>
+                          {source.detail && <span>{source.detail}</span>}
+                          <span className="md:hidden">{days}d</span>
+                        </p>
+                      </Td>
+                      <Td>
+                        {reason.tone === 'bad' ? (
+                          <span className="inline-flex flex-wrap items-center gap-1.5">
+                            <Status tone="bad">{reason.label}</Status>
+                            <Attention>Retry or cancel</Attention>
+                          </span>
+                        ) : (
+                          <Status tone={reason.tone}>{reason.label}</Status>
+                        )}
+                        {tx.failureCode && <p className="mt-0.5"><Code>{tx.failureCode}</Code></p>}
+                      </Td>
+                      <Td priority={3} className="text-muted-foreground">{providerName(tx.providerKey)}</Td>
+                      <Td priority={2} align="right">
+                        <Figure size="sm">{days}</Figure>
+                        <span className="ml-1 text-xs text-muted-foreground">{days === 1 ? 'day' : 'days'}</span>
+                      </Td>
+                      <Td align="right" className="whitespace-nowrap">
+                        <Figure size="sm">{money(tx.amountCents, tx.currency)}</Figure>
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </tbody>
+            </DeskTable>
+          )}
+        </DeskSection>
+
+
+        <Segmented<View>
+          label="Payments view"
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'transactions', label: 'Transactions', count: counts.all || 0 },
+            { value: 'providers', label: 'Providers', count: providers.length },
+          ]}
+        />
+
+        {view === 'transactions' ? (
+          <div className="space-y-4">
+            <div className="flex min-w-0 flex-col gap-3">
+              <Segmented label="Payment status" value={status} onChange={setStatus} options={statusOptions} />
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_12rem_10rem_10rem]">
+                <div className="relative min-w-0 sm:col-span-2 lg:col-span-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={search} onChange={event => setSearch(event.target.value)} placeholder="Payment ID, provider ID or reference" aria-label="Search payments" className="h-11 rounded-[4px] pl-9 text-[13px] sm:h-9" />
+                </div>
+                <Select value={provider} onValueChange={setProvider}>
+                  <SelectTrigger className="text-[13px] h-11 w-full rounded-[4px] sm:h-9" aria-label="Provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All providers</SelectItem>
+                    {providers.map(p => (
+                      <SelectItem key={p.id} value={p.code}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input type="date" value={from} max={to || undefined} onChange={event => setFrom(event.target.value)} aria-label="From date" aria-invalid={Boolean(dateError)} className="h-11 rounded-[4px] text-[13px] sm:h-9" />
+                <Input type="date" value={to} min={from || undefined} onChange={event => setTo(event.target.value)} aria-label="To date" aria-invalid={Boolean(dateError)} className="h-11 rounded-[4px] text-[13px] sm:h-9" />
+              </div>
+              {dateError && <p className="text-xs text-red-600 dark:text-red-400">{dateError}</p>}
+            </div>
+
+            {error ? (
+              <div className="space-y-3">
+                <Notice tone="bad">
+                  <p className="font-medium">Payments are unavailable</p>
+                  <p className="mt-0.5 text-muted-foreground">{error}</p>
+                </Notice>
+                <Track>
+                  <Pill onClick={() => loadTransactions({ status, provider, from, to, search })} className="h-10 sm:h-8">Retry</Pill>
+                </Track>
+              </div>
+            ) : transactions.length === 0 ? (
+              <Panel aria-busy={loading}>
+                <div className="flex flex-col items-center gap-3 py-10 text-center text-sm text-muted-foreground">
+                  <p>{loading ? 'Loading…' : filtered ? 'No payments match' : 'No payments'}</p>
+                  {filtered && !loading && (
+                    <Track>
+                      <Pill size="sm" onClick={resetFilters} className="h-10 sm:h-7">Reset filters</Pill>
+                    </Track>
+                  )}
+                </div>
+              </Panel>
+            ) : (
+              <div className={loading ? 'opacity-60 transition-opacity' : undefined} aria-busy={loading}>
+                <DeskTable>
+                  <thead>
+                    <tr>
+                      <Th>Payment</Th>
+                      <Th>Status</Th>
+                      <Th priority={2}>Provider</Th>
+                      <Th priority={3}>Reconciled</Th>
+                      <Th priority={3}>Created</Th>
+                      <Th align="right">Amount</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map(tx => {
+                      const source = paymentSource(tx)
+                      return (
+                        <Tr key={tx.id} className="cursor-pointer" onClick={() => router.push(`${basePath}/platform/payments/${tx.id}`)}>
+                          <Td className="min-w-0">
+                            <Link href={`${basePath}/platform/payments/${tx.id}`} className="block min-w-0 font-medium text-foreground hover:underline" onClick={event => event.stopPropagation()}>
+                              {source.label}
+                            </Link>
+                            <p className="mt-0.5 flex min-w-0 flex-wrap gap-x-2 text-xs text-muted-foreground">
+                              <Code>{recordReference('PAY', tx.id)}</Code>
+                              {source.detail && <span>{source.detail}</span>}
+                              <span className="lg:hidden">{dateTime(tx.createdAt, timeZone)}</span>
+                            </p>
+                          </Td>
+                          <Td>
+                            <Status tone={paymentTone(tx.status)}>{PAYMENT_STATUS_LABEL[tx.status] || tx.status}</Status>
+                            {tx.refundedCents > 0 && <p className="mt-0.5 text-xs text-muted-foreground">{money(tx.refundedCents, tx.currency)} refunded</p>}
+                          </Td>
+                          <Td priority={2} className="text-muted-foreground">{providerName(tx.providerKey)}</Td>
+                          <Td priority={3} className="text-muted-foreground">
+                            {tx.reconciledAt ? (
+                              <Status tone="ok">Reconciled</Status>
+                            ) : SETTLED_STATUSES.includes(tx.status) ? (
+                              <Status tone="warn">Not reconciled</Status>
+                            ) : (
+                              '-'
+                            )}
+                          </Td>
+                          <Td priority={3} className="whitespace-nowrap text-muted-foreground">{dateTime(tx.createdAt, timeZone)}</Td>
+                          <Td align="right" className="whitespace-nowrap font-medium">{money(tx.amountCents, tx.currency)}</Td>
+                        </Tr>
+                      )
+                    })}
+                  </tbody>
+                </DeskTable>
+              </div>
+            )}
+          </div>
+        ) : providerError ? (
+          <div className="space-y-3">
+            <Notice tone="bad">
+              <p className="font-medium">Providers are unavailable</p>
+              <p className="mt-0.5 text-muted-foreground">{providerError}</p>
+            </Notice>
+            <Track>
+              <Pill onClick={loadProviders} className="h-10 sm:h-8">Retry</Pill>
+            </Track>
+          </div>
+        ) : providers.length === 0 ? (
+          <Panel>
+            <p className="py-10 text-center text-sm text-muted-foreground">No payment providers</p>
+          </Panel>
+        ) : (
+          <DeskTable>
+            <thead>
+              <tr>
+                <Th>Provider</Th>
+                <Th>Status</Th>
+                <Th priority={3}>Adapter</Th>
+                <Th priority={2} align="right">Transactions</Th>
+                <Th align="right"><span className="sr-only">Actions</span></Th>
+              </tr>
+            </thead>
+            <tbody>
+              {providers.map(record => {
+                const adapter = providerAdapter(record)
+                return (
+                  <Tr key={record.id}>
+                    <Td className="min-w-0">
+                      <p className="font-medium text-foreground">{record.name}</p>
+                      <Code>{record.code}</Code>
+                    </Td>
+                    <Td><Status tone={record.isInstalled ? 'ok' : 'idle'}>{record.isInstalled ? 'Enabled' : 'Disabled'}</Status></Td>
+                    <Td priority={3} className="max-w-[18rem] break-all text-muted-foreground">{adapter ? <Code>{adapter}</Code> : 'Per-function adapters'}</Td>
+                    <Td priority={2} align="right">{record.transactionsCount}</Td>
+                    <Td align="right">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Pill size="sm" className="h-10 sm:h-7" onClick={() => openProvider(record)}>
+                          <Pencil />
+                          Edit
+                        </Pill>
+                        <Pill size="sm" className="h-10 sm:h-7" disabled={toggling === record.id} onClick={() => toggleProvider(record)}>
+                          <Power />
+                          {record.isInstalled ? 'Disable' : 'Enable'}
+                        </Pill>
+                      </div>
+                    </Td>
+                  </Tr>
+                )
+              })}
+            </tbody>
+          </DeskTable>
+        )}
+
+        <CommandDialog
+          open={checkoutOpen}
+          title="New checkout"
+          fields={checkoutFields}
+          values={checkoutValues}
+          fieldErrors={checkoutFieldErrors}
+          error={checkoutError}
+          busy={checkoutBusy}
+          submitLabel="Create checkout"
+          onValuesChange={changeCheckout}
+          onSubmit={submitCheckout}
+          onOpenChange={setCheckoutOpen}
+        />
+
+        <CommandDialog
+          open={Boolean(providerForm)}
+          title={providerForm?.provider ? 'Edit provider' : 'Add provider'}
+          fields={providerFields}
+          values={providerForm?.values || {}}
+          fieldErrors={providerFieldErrors}
+          error={providerSubmitError}
+          busy={providerBusy}
+          submitLabel={providerForm?.provider ? 'Save' : 'Add'}
+          onValuesChange={values => { setProviderForm(current => (current ? { ...current, values } : current)); setProviderFieldErrors({}) }}
+          onSubmit={submitProvider}
+          onOpenChange={open => { if (!open) setProviderForm(null) }}
+        />
+        <ReadoutStrip>
+          <Readout label="Pending" value={(counts.pending || 0) + (counts.creating || 0) + (counts.authorized || 0)} tone={counts.pending ? 'warn' : 'idle'} />
+          <Readout label="Captured" value={counts.captured || 0} tone="ok" />
+          <Readout label="Unreconciled" value={counts.unreconciled || 0} tone={counts.unreconciled ? 'warn' : 'idle'} />
+          <Readout label="Failed" value={counts.failed || 0} tone={counts.failed ? 'bad' : 'idle'} />
+        </ReadoutStrip>
+      </div>
+    </PageContainer>
+  )
+}
