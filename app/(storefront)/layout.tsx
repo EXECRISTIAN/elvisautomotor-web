@@ -4,6 +4,7 @@ import { StorefrontShell } from '@/features/storefront'
 import { loadStorefrontBusiness } from '@/features/storefront/lib/data/storefront-business'
 import { getBaseUrl } from '@/features/storefront/lib/getBaseUrl'
 import { storefrontMetadata } from '@/features/storefront/lib/seo'
+import { dealerJsonLd, jsonLdString } from '@/features/storefront/lib/structuredData'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,5 +24,11 @@ export default async function StorefrontLayout({
   children: React.ReactNode
 }) {
   const settings = await loadStorefrontBusiness()
-  return <StorefrontShell settings={settings}>{children}</StorefrontShell>
+  const jsonLd = settings.status === 'ready' ? dealerJsonLd(settings.business, (await getBaseUrl()) || null) : null
+  return (
+    <>
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />}
+      <StorefrontShell settings={settings}>{children}</StorefrontShell>
+    </>
+  )
 }

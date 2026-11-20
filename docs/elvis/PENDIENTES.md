@@ -46,3 +46,7 @@
 
 ## Ronda automática 1 (20/11/2026)
 - Ficha del vehículo en celular: la barra fija ahora tiene botón de WhatsApp con el auto y el precio ya escritos en el mensaje (antes solo había un formulario). Si no hay número cargado, vuelve a mostrar "Consultar". Probado en iPhone SE y iPhone 13, sin desbordes. Captura: `muestra/ficha-barra-whatsapp-celular.png`.
+
+## Ronda automática 2 (20/11/2026)
+- SEO: datos estructurados para Google (schema.org). Todas las páginas declaran la agencia (AutoDealer: nombre, dirección, teléfono, email, mapa y redes) y cada ficha declara el vehículo (Car: marca, modelo, año, km, combustible, caja, motor, precio y disponibilidad). Solo usa datos cargados en el panel.
+- Al publicar: validar con la "Prueba de resultados enriquecidos" de Google y cargar el sitio en Google Search Console / Perfil de Empresa.
