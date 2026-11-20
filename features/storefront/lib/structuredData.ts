@@ -29,7 +29,7 @@ export function dealerJsonLd(business: StorefrontBusiness, baseUrl: string | nul
     url: baseUrl ?? (business.websiteUrl || undefined),
     telephone: phone || undefined,
     email: business.salesEmail || undefined,
-    image: absolute('/images/showroom-dusk.jpg', baseUrl),
+    image: absolute('/images/elvis/salon-frente.jpg', baseUrl),
     address: business.addressLine1
       ? clean({
           '@type': 'PostalAddress',

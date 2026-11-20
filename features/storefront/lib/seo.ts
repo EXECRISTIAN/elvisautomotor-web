@@ -6,7 +6,7 @@ import { primaryVehicleImage, vehicleImageUrl } from './images'
 import type { Vehicle } from './types'
 
 // Shared photo of the showroom used when a page has no picture of its own (link previews).
-export const SHARE_PHOTO = '/images/showroom-dusk.jpg'
+export const SHARE_PHOTO = '/images/elvis/salon-frente-og.jpg'
 
 function place(business: StorefrontBusiness) {
   return business.addressLine2.split(',')[0]?.trim() || ''
@@ -64,7 +64,7 @@ export function storefrontMetadata(business: StorefrontBusiness, origin: string 
       siteName: business.fullName,
       title: business.homepageTitle || business.fullName,
       description,
-      images: [{ url: SHARE_PHOTO, width: 2400, height: 1029, alt: `Salón de ${business.fullName}` }],
+      images: [{ url: SHARE_PHOTO, width: 1200, height: 630, alt: `Salón de ${business.fullName}` }],
     },
     twitter: { card: 'summary_large_image' },
     ...(process.env.DEMO_MODE === 'true' ? { robots: { index: false, follow: false } } : {}),

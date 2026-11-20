@@ -82,3 +82,11 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Registrado el 09/06/2024 en Squarespace Domains (ex Google Domains); vence el 09/06/2027. DNS en Google Cloud DNS.
 - Solo funciona con "www": elvisautomotores.com (sin www) no abre.
 - Para publicar el sitio nuevo ahí hace falta que Elvis dé acceso a la cuenta de Squarespace/Google donde está el dominio (o que cambie él los DNS). El sitio viejo de Google Sites se reemplaza.
+
+## Fotos reales de Elvis (20/11/2026)
+- Portada y "Nosotros": foto real del frente del salón (Google Maps, subida por la cuenta AUTOMOTORES ELVIS, sep. 2026, 2400×1800). También es la imagen al compartir el link.
+- "Compramos tu usado" (inicio): foto del salón por dentro (Instagram, 640×480).
+- Originales en `docs/elvis/fotos-redes/`.
+- Ficha de Google Maps: 4,1 ★ con 2.404 opiniones, 547 fotos; confirma Andrés Baranda 2134, C1878 Quilmes; el teléfono no está cargado en Maps (sugerirle agregarlo).
+- No se pudo bajar más: Google Maps, Facebook e Instagram piden iniciar sesión para ver galerías completas. Las publicaciones recientes de Instagram son cuadros de video con clientes (no se usan caras de clientes).
+- Para el inventario real hacen falta fotos de cada auto en buena resolución: pedírselas a Elvis o bajarlas con su cuenta.

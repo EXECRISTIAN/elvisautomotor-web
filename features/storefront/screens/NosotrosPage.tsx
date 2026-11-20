@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, BadgeCheck, CarFront, Clock, Landmark, MapPin } from 'lucide-react'
 import { Container } from '../components/Container'
 import { WhatsAppButton } from '../components/WhatsAppButton'
@@ -15,6 +16,12 @@ export function NosotrosPage() {
             Desde {ELVIS_ABOUT.since}, <span className="sf-gold-text">{years} años</span> en la compra y venta de autos
           </h1>
           <p className="mt-6 max-w-3xl text-[1.05rem] leading-relaxed" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.intro}</p>
+          <figure className="mt-10">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--sf-radius-md)] sm:aspect-[16/9]">
+              <Image src="/images/elvis/salon-frente.jpg" alt="Frente del salón de Elvis Automotores en Andrés Baranda 2134, Quilmes" fill sizes="(min-width: 1280px) 1200px, 100vw" className="object-cover object-[50%_70%]" />
+            </div>
+            <figcaption className="mt-3 text-[0.85rem]" style={{ color: 'var(--sf-ink-3)' }}>Nuestro salón en Andrés Baranda 2134, Quilmes.</figcaption>
+          </figure>
         </Container>
       </section>
 

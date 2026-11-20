@@ -14,7 +14,9 @@ import { loadProgressiveOffers } from '../lib/data/progressive-offers'
 import { ProgressiveOfferCard } from '../components/ProgressiveOfferCard'
 import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
 
-const HERO_PHOTO = '/images/showroom-dusk.jpg'
+// Fotos reales de Elvis: frente del salón (Google Maps, subida por la agencia, sep. 2026) e interior (Instagram).
+const HERO_PHOTO = '/images/elvis/salon-frente.jpg'
+const SHOWROOM_PHOTO = '/images/elvis/salon-interior.jpg'
 
 // Primero los vehículos marcados como "destacados" en el panel; se completa hasta 4 con las unidades disponibles más nuevas.
 async function getFeaturedVehicles() {
@@ -78,7 +80,7 @@ export async function HomePage() {
     <div className="sf-home elv-home" data-flush-end>
       {/* ---------- Hero ---------- */}
       <section className="elv-hero" aria-labelledby="hero-title">
-        <Image src={HERO_PHOTO} alt="" fill priority sizes="100vw" className="object-cover object-[65%_55%]" />
+        <Image src={HERO_PHOTO} alt="" fill priority sizes="100vw" className="object-cover object-[60%_75%]" />
         <span className="elv-hero-shade" aria-hidden="true" />
         <span className="elv-hero-stripe" aria-hidden="true" />
         <Container className="relative flex min-h-[34rem] flex-col justify-center pb-28 pt-14 md:min-h-[38rem] md:pb-36">
@@ -200,7 +202,7 @@ export async function HomePage() {
           </article>
 
           <article className="elv-panel elv-panel-photo" aria-labelledby="usado-title">
-            <Image src={HERO_PHOTO} alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-[80%_60%]" />
+            <Image src={SHOWROOM_PHOTO} alt="" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-center" />
             <span className="elv-panel-photo-shade" aria-hidden="true" />
             <div className="relative">
               <CarFront className="size-10" strokeWidth={1.3} style={{ color: 'var(--sf-accent)' }} aria-hidden="true" />
