@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { vehicleHref } from '../lib/localStore'
+import { debtLabel, fuelLabel, gncLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 import Link from 'next/link'
 import Image from 'next/image'
 import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
@@ -37,8 +38,12 @@ const COMPARISON_FIELDS: {
   { label: 'Kilometraje', key: 'mileage', format: (v) => formatMileage(v.mileage), highlight: true, mono: true },
   { label: 'Condición', key: 'condition', format: (v) => (v.condition ? vehicleConditionLabel(v.condition) : '—'), highlight: false },
   { label: 'Color', key: 'color', format: (v) => v.color || '—', highlight: false },
-  { label: 'Consumo ciudad', key: 'mpgCity', format: (v) => String(v.features?.mpgCity ?? '—'), highlight: true, mono: true },
-  { label: 'Consumo ruta', key: 'mpgHighway', format: (v) => String(v.features?.mpgHighway ?? '—'), highlight: true, mono: true },
+  { label: 'Combustible', key: 'fuelType', format: (v) => fuelLabel(v.fuelType) || '—', highlight: false },
+  { label: 'Caja', key: 'transmission', format: (v) => transmissionLabel(v.transmission) || '—', highlight: false },
+  { label: 'Motor', key: 'engine', format: (v) => v.engine || '—', highlight: false },
+  { label: 'Deuda', key: 'usedDebt', format: (v) => (v.condition === 'new' ? '0 km' : debtLabel(String(v.usedReport?.usedDebt ?? '')) || 'Sin informar'), highlight: false },
+  { label: 'GNC', key: 'usedGnc', format: (v) => (v.condition === 'new' ? 'No' : gncLabel(String(v.usedReport?.usedGnc ?? '')) || 'Sin informar'), highlight: false },
+  { label: 'Cubiertas', key: 'usedTireLifePct', format: (v) => (v.condition === 'new' ? 'Nuevas' : typeof v.usedReport?.usedTireLifePct === 'number' ? `${v.usedReport.usedTireLifePct} %` : 'Sin informar'), highlight: false },
   { label: 'Chasis (VIN)', key: 'vin', format: (v) => v.vin, highlight: false, mono: true },
   { label: 'Stock #', key: 'stockNumber', format: (v) => v.stockNumber, highlight: false, mono: true },
 ]
@@ -129,7 +134,7 @@ export function ComparePage() {
           </span>
           <button type="button" onClick={() => removeFromComparison(id)} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10 shrink-0">
             <X className="size-4" aria-hidden="true" />
-            Remove
+            Quitar
           </button>
         </li>
       ))}
@@ -168,7 +173,7 @@ export function ComparePage() {
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <p role="alert" className="sf-title-line font-semibold">
               <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-              These vehicles couldn&apos;t be loaded.
+              No pudimos cargar estos vehículos.
             </p>
             <div className="flex shrink-0 flex-wrap gap-2">
               <button type="button" onClick={() => void loadComparisonVehicles()} className="sf-btn sf-btn-primary">
@@ -229,7 +234,7 @@ export function ComparePage() {
     <>
       <PageHeader
         title="Comparar vehículos"
-        description={`${vehicles.length} of 4 ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}`}
+        description={`${vehicles.length} de 4 ${vehicles.length === 1 ? 'vehículo' : 'vehículos'}`}
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/inventory" className="sf-btn sf-btn-primary">
@@ -266,7 +271,7 @@ export function ComparePage() {
             <thead>
               <tr>
                 <th scope="col" className={`${stickyCell} sf-eyebrow align-bottom py-4`} style={stickyStyle}>
-                  Spec
+                  Dato
                 </th>
                 {vehicles.map((vehicle) => {
                   const imageUrl = vehicleImageUrl(primaryVehicleImage(vehicle.images))
@@ -297,10 +302,10 @@ export function ComparePage() {
                           type="button"
                           onClick={() => removeFromComparison(vehicle.id)}
                           className="sf-btn sf-btn-ghost sf-btn-sm min-h-10"
-                          aria-label={`Remove ${vehicleTitle(vehicle)} from compare`}
+                          aria-label={`Quitar ${vehicleTitle(vehicle)} de la comparación`}
                         >
                           <X className="size-4" aria-hidden="true" />
-                          Remove
+                          Quitar
                         </button>
                       </div>
                     </th>
@@ -335,7 +340,7 @@ export function ComparePage() {
                 </th>
                 {vehicles.map((vehicle) => (
                   <td key={vehicle.id} className="sf-muted px-3 py-3 align-top leading-relaxed sm:px-4">
-                    {vehicle.description || 'Not listed'}
+                    {vehicle.description || 'Sin descripción'}
                   </td>
                 ))}
               </tr>
