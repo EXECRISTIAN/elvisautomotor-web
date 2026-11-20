@@ -299,13 +299,13 @@ export function TradeInPage() {
                   <ComboField id="trade-year" name="year" required inputMode="numeric" maxLength={4} allowCustom={false} emptyText="Elige un año de la lista" value={formData.year} onChange={(v) => setFormData((p) => ({ ...p, year: v }))} placeholder="Elige o escribe el año" options={YEARS.map(String)} />
                 </Field>
                 <Field label="Marca" htmlFor="trade-make">
-                  <ComboField id="trade-make" name="make" required value={formData.make} onChange={(v) => setFormData((p) => (v === p.make ? p : { ...p, make: v, model: '', trim: '' }))} placeholder="Elige o escribe la marca" options={catalogMakes()} popular={POPULAR_MAKES} allLabel="Todas las marcas" />
+                  <ComboField id="trade-make" name="make" required value={formData.make} onChange={(v) => setFormData((p) => (v === p.make ? p : { ...p, make: v, model: '', trim: '' }))} placeholder="Elige o escribe la marca" options={catalogMakes(formData.year)} popular={POPULAR_MAKES} allLabel="Todas las marcas" />
                 </Field>
                 <Field label="Modelo" htmlFor="trade-model">
-                  <ComboField id="trade-model" name="model" required value={formData.model} onChange={(v) => setFormData((p) => (v === p.model ? p : { ...p, model: v, trim: '' }))} placeholder={formData.make ? 'Elige o escribe el modelo' : 'Primero elige la marca'} options={catalogModels(formData.make)} emptyText="Escribe el modelo" />
+                  <ComboField id="trade-model" name="model" required value={formData.model} onChange={(v) => setFormData((p) => (v === p.model ? p : { ...p, model: v, trim: '' }))} placeholder={formData.make ? 'Elige o escribe el modelo' : 'Primero elige la marca'} options={catalogModels(formData.make, formData.year)} emptyText="Escribe el modelo" />
                 </Field>
                 <Field label="Versión" htmlFor="trade-trim" optional>
-                  <ComboField id="trade-trim" name="trim" value={formData.trim} onChange={(v) => setFormData((p) => ({ ...p, trim: v }))} placeholder={formData.model ? 'Elige o escribe la versión' : 'Primero elige el modelo'} options={catalogVersions(formData.make, formData.model)} emptyText="Escribe la versión" />
+                  <ComboField id="trade-trim" name="trim" value={formData.trim} onChange={(v) => setFormData((p) => ({ ...p, trim: v }))} placeholder={formData.model ? 'Elige o escribe la versión' : 'Primero elige el modelo'} options={catalogVersions(formData.make, formData.model, formData.year)} emptyText="Escribe la versión" />
                 </Field>
                 <Field label="Kilometraje" htmlFor="trade-mileage">
                   <input id="trade-mileage" type="number" inputMode="numeric" required min="0" max="2000000" step="1" value={formData.mileage} onChange={(e) => setFormData((p) => ({ ...p, mileage: e.target.value }))} className="sf-input sf-figure" placeholder="Ej.: 85000" />

@@ -1,3 +1,4 @@
+import { VEHICLE_YEARS } from './vehicleYears'
 // Catálogo de referencia de marcas, modelos y versiones comercializados en Argentina
 // (0 km y usados frecuentes). Se usa para las listas desplegables; si algo no figura,
 // el cliente puede escribirlo igual. Versiones: denominaciones comerciales habituales.
@@ -1235,20 +1236,42 @@ const byName = (a: string, b: string) => a.localeCompare(b, 'es', { numeric: tru
 const findKey = (record: Record<string, unknown>, key: string) =>
   Object.keys(record).find((item) => item.toLocaleLowerCase('es') === key.trim().toLocaleLowerCase('es'))
 
-export function catalogMakes() {
-  return Object.keys(VEHICLE_CATALOG).sort(byName)
+const norm = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+const inRange = (range: string | undefined, year: number) => {
+  if (!range) return true
+  const [from, to] = range.split('-')
+  return year >= Number(from) && (!to || year <= Number(to))
+}
+const parseYear = (year?: string | number) => {
+  const y = Number(year)
+  return Number.isInteger(y) && y >= 1900 ? y : null
+}
+function versionFits(make: string, model: string, version: string, year: number) {
+  return inRange(VEHICLE_YEARS[norm(make)]?.[norm(model)]?.[norm(version)], year)
+}
+function modelFits(make: string, model: string, year: number) {
+  const ranges = VEHICLE_YEARS[norm(make)]?.[norm(model)]
+  if (!ranges) return true
+  return Object.values(ranges).some((range) => inRange(range, year))
 }
 
-export function catalogModels(make: string) {
+export function catalogMakes(year?: string | number) {
+  const y = parseYear(year)
+  return Object.keys(VEHICLE_CATALOG).filter((make) => !y || Object.keys(VEHICLE_CATALOG[make]).some((model) => modelFits(make, model, y))).sort(byName)
+}
+
+export function catalogModels(make: string, year?: string | number) {
   const key = findKey(VEHICLE_CATALOG, make)
-  return key ? Object.keys(VEHICLE_CATALOG[key]).sort(byName) : []
+  const y = parseYear(year)
+  return key ? Object.keys(VEHICLE_CATALOG[key]).filter((model) => !y || modelFits(key, model, y)).sort(byName) : []
 }
 
-export function catalogVersions(make: string, model: string) {
+export function catalogVersions(make: string, model: string, year?: string | number) {
   const makeKey = findKey(VEHICLE_CATALOG, make)
   if (!makeKey) return []
   const modelKey = findKey(VEHICLE_CATALOG[makeKey], model)
-  return modelKey ? [...VEHICLE_CATALOG[makeKey][modelKey]] : []
+  const y = parseYear(year)
+  return modelKey ? VEHICLE_CATALOG[makeKey][modelKey].filter((version) => !y || versionFits(makeKey, modelKey, version, y)) : []
 }
 
 /** Marcas más buscadas: se muestran primero en la lista. */
