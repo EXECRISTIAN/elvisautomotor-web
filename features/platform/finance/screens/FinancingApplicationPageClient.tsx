@@ -71,7 +71,7 @@ export function FinancingApplicationPageClient({
     setLoading(true)
     const response = await getFinancingApplication(id)
     if (response.success && response.data.financingApplication) { setApplication(response.data.financingApplication); setError(null) }
-    else setError(response.success ? 'Application not found or not accessible.' : response.error)
+    else setError(response.success ? 'No se encontró la solicitud o no tienes acceso.' : response.error)
     setLoading(false)
     router.refresh()
   }
@@ -104,7 +104,7 @@ export function FinancingApplicationPageClient({
   const openTask = app.lead?.tasks.find(task => !task.completed) || null
   const queueReason = canQueue ? null : `Application is ${statusLabels[app.status]?.toLowerCase() || app.status}`
   const decisionReason = allowedDecisions.length ? null : `Application is ${statusLabels[app.status]?.toLowerCase() || app.status}`
-  const followUpReason = !app.lead ? 'No lead on this application' : openTask ? `Open task: ${openTask.title || 'follow-up'}` : null
+  const followUpReason = !app.lead ? 'Esta solicitud no tiene consulta vinculada' : openTask ? `Open task: ${openTask.title || 'follow-up'}` : null
   const latestApproval = app.decisions.find(decision => ['approved', 'conditional'].includes(decision.decision)) || null
 
   const start = (next: DialogState) => { setFieldErrors({}); setFormError(null); setNotice(null); setDialog(next) }
@@ -116,12 +116,12 @@ export function FinancingApplicationPageClient({
     let run: (() => Promise<{ success: boolean; error?: string }>) | null = null
     let message = 'Guardado.'
     if (dialog.kind === 'queue') {
-      if (!providerLabels[v.providerKey]) errors.providerKey = 'Select a lender channel.'
+      if (!providerLabels[v.providerKey]) errors.providerKey = 'Elige un canal de la entidad.'
       run = () => queueApplicationToLender({ applicationId: app.id, providerKey: v.providerKey, idempotencyKey: dialog.idempotencyKey })
       message = 'Enviada a la entidad.'
     } else if (dialog.kind === 'sent') {
       const reference = (v.reference || '').trim()
-      if (!reference) errors.reference = 'Enter the lender or portal reference.'
+      if (!reference) errors.reference = 'Ingresa la referencia de la entidad o del portal.'
       else if (reference.length > 200) errors.reference = 'Usa 200 caracteres o menos.'
       run = () => recordSubmissionStatus(app.id, { submissionId: dialog.submission.id, status: 'submitted', externalReference: reference, idempotencyKey: dialog.idempotencyKey })
       message = 'Envío registrado.'
@@ -138,12 +138,12 @@ export function FinancingApplicationPageClient({
       message = 'Tarea de seguimiento creada.'
     } else {
       const decision = v.decision
-      if (!allowedDecisions.includes(decision)) errors.decision = 'Select a decision.'
+      if (!allowedDecisions.includes(decision)) errors.decision = 'Elige una decisión.'
       const reference = (v.reference || '').trim()
       const submission = app.submissions.find(item => item.id === v.submissionId)
-      if (!reference && decisionNeedsLenderReference(decision as FinancingDecision, submission?.id)) errors.reference = 'Enter the lender decision reference.'
+      if (!reference && decisionNeedsLenderReference(decision as FinancingDecision, submission?.id)) errors.reference = 'Ingresa la referencia de la decisión de la entidad.'
       const reasonCodes = (v.reasonCodes || '').split(',').map(code => code.trim()).filter(Boolean)
-      if (decision === 'declined' && !reasonCodes.length) errors.reasonCodes = 'Enter at least one reason code.'
+      if (decision === 'declined' && !reasonCodes.length) errors.reasonCodes = 'Ingresa al menos un código de motivo.'
       const hasTerms = ['approved', 'conditional'].includes(decision)
       let approvedAmountCents: number | null = null
       let aprBasisPoints: number | null = null
@@ -151,7 +151,7 @@ export function FinancingApplicationPageClient({
       let monthlyPaymentCents: number | null = null
       if (hasTerms) {
         approvedAmountCents = (v.amount || '').trim() ? parseDollarsToCents(v.amount) : null
-        if (!approvedAmountCents) errors.amount = 'Enter the approved amount.'
+        if (!approvedAmountCents) errors.amount = 'Ingresa el monto aprobado.'
         aprBasisPoints = (v.apr || '').trim() ? parsePercentToBps(v.apr) : null
         if (aprBasisPoints == null) errors.apr = 'Enter the APR, for example 6.49.'
         termMonths = Number(v.term)
@@ -159,7 +159,7 @@ export function FinancingApplicationPageClient({
         monthlyPaymentCents = (v.payment || '').trim() ? parseDollarsToCents(v.payment) : null
         if ((v.payment || '').trim() && monthlyPaymentCents == null) errors.payment = 'Ingresa un importe.'
       }
-      if (app.submissions.length && !submission && decision !== 'cancelled') errors.submissionId = 'Select the submission this decision answers.'
+      if (app.submissions.length && !submission && decision !== 'cancelled') errors.submissionId = 'Elige el envío al que responde esta decisión.'
       run = () => recordApplicationDecision({
         applicationId: app.id,
         submissionId: submission?.id,

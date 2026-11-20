@@ -96,10 +96,10 @@ export function LeadRoutingPanel({
     const name = draft.name.trim()
     const priority = Number(draft.priority)
     const minutes = Number(draft.firstResponseMinutes)
-    if (!draft.rooftopId) errors.rooftopId = 'Choose a rooftop'
-    if (!name) errors.name = 'Name is required'
-    else if (name.length > 200) errors.name = 'Name is too long'
-    if (!draft.assigneeId) errors.assigneeId = 'Choose who receives these leads'
+    if (!draft.rooftopId) errors.rooftopId = 'Elige una sucursal'
+    if (!name) errors.name = 'El nombre es obligatorio'
+    else if (name.length > 200) errors.name = 'El nombre es demasiado largo'
+    if (!draft.assigneeId) errors.assigneeId = 'Elige quién recibe estas consultas'
     if (!draft.priority.trim() || !Number.isInteger(priority) || priority < 0 || priority > 10000) errors.priority = 'Whole number from 0 to 10000'
     if (!draft.firstResponseMinutes.trim() || !Number.isInteger(minutes) || minutes < 1 || minutes > 10080) errors.firstResponseMinutes = 'Whole number from 1 to 10080'
     setFieldErrors(errors)
@@ -217,7 +217,7 @@ export function LeadRoutingPanel({
                       <Td align="right" priority={3}><Code>{rule.priority}</Code></Td>
                       <Td align="right" className="w-px whitespace-nowrap">
                         <div className="inline-flex flex-wrap justify-end gap-1">
-                          <Pill size="sm" className={TAP_SM} disabled={togglingId === rule.id || !rule.assignee?.id} title={!rule.assignee?.id ? 'Assign someone first' : undefined} onClick={() => toggle(rule)}>
+                          <Pill size="sm" className={TAP_SM} disabled={togglingId === rule.id || !rule.assignee?.id} title={!rule.assignee?.id ? 'Primero asigna a alguien' : undefined} onClick={() => toggle(rule)}>
                             <Power />
                             {togglingId === rule.id ? 'Saving…' : rule.active ? 'Deactivate' : 'Activate'}
                           </Pill>
@@ -241,7 +241,7 @@ export function LeadRoutingPanel({
 
       <FormDialog
         open={draft !== null}
-        title={draft?.ruleId ? 'Edit routing rule' : 'Add routing rule'}
+        title={draft?.ruleId ? 'Edit routing rule' : 'Agregar regla de asignación'}
         busy={busy}
         error={formError}
         onSubmit={submit}
@@ -268,7 +268,7 @@ export function LeadRoutingPanel({
           </Field>
           <Field id="rule-assignee" label="Asignar a" error={fieldErrors.assigneeId || staffError}>
             <Select value={draft?.assigneeId || ''} onValueChange={value => setDraft(current => current && { ...current, assigneeId: value })}>
-              <SelectTrigger id="rule-assignee" className={TAP_INPUT}><SelectValue placeholder={staffOptions.length ? 'Select person' : 'No eligible staff'} /></SelectTrigger>
+              <SelectTrigger id="rule-assignee" className={TAP_INPUT}><SelectValue placeholder={staffOptions.length ? 'Elige una persona' : 'No eligible staff'} /></SelectTrigger>
               <SelectContent>{staffOptions.map(user => <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>)}</SelectContent>
             </Select>
           </Field>

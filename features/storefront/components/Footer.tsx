@@ -63,9 +63,9 @@ export function Footer({ branding = true }: { branding?: boolean }) {
             <WhatsAppButton className="sf-btn sf-btn-outline sf-btn-sm mt-3 min-h-11" />
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--sf-text-xs)]" aria-label="Redes sociales">
               {ELVIS_LINKS.social.map((link) => (
-                <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center hover:text-[var(--sf-accent)]">{link.label}</a></li>
+                <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center hover:text-[var(--sf-accent)]">{link.label}</a></li>
               ))}
-              <li><a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center hover:text-[var(--sf-accent)]">Canal de WhatsApp</a></li>
+              <li><a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center hover:text-[var(--sf-accent)]">Canal de WhatsApp</a></li>
             </ul>
           </div>
 

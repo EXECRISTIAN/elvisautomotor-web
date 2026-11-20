@@ -129,7 +129,7 @@ export function VehiclePhotoEditor({
         <div className="flex min-w-0 flex-col gap-2">
           <Track className="self-start">
             <Pill className="max-sm:h-11" disabled={busy} onClick={() => inputRef.current?.click()}>
-              <ImagePlus /> {tiles.length ? 'Add more photos' : 'Add photos'}
+              <ImagePlus /> {tiles.length ? 'Agregar más fotos' : 'Agregar fotos'}
             </Pill>
           </Track>
           <div className="flex min-w-0 items-center gap-2">
@@ -203,7 +203,7 @@ export function LiveVehiclePhotos({
     try {
       setError(await work())
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to save photos.')
+      setError(caught instanceof Error ? caught.message : 'No se pudieron guardar las fotos.')
     } finally {
       setStatus(null)
       await onChanged()

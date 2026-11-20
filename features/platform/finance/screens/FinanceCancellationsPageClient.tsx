@@ -148,7 +148,7 @@ export function FinanceCancellationsPageClient({
     if (dialog.kind === 'new') {
       const [menuId, code] = (v.product || '').split('|')
       const target = cancellable.find(item => item.menu.id === menuId && item.code === code)
-      if (!target?.menu.deal) errors.product = 'Select a sold product.'
+      if (!target?.menu.deal) errors.product = 'Elige un producto vendido.'
       const estimate = (v.estimate || '').trim() ? parseDollarsToCents(v.estimate) : 0
       if (estimate == null) errors.estimate = 'Ingresa un importe.'
       if (target?.menu.deal && estimate != null) payload = {
@@ -158,7 +158,7 @@ export function FinanceCancellationsPageClient({
     } else if (dialog.kind === 'complete') {
       const refund = (v.refund || '').trim() ? parseDollarsToCents(v.refund) : null
       if (refund == null) errors.refund = 'Enter the refund amount, $0 if none.'
-      if (!(v.reference || '').trim()) errors.reference = 'Enter the provider cancellation reference.'
+      if (!(v.reference || '').trim()) errors.reference = 'Ingresa la referencia de cancelación del proveedor.'
       const basis = basisFor(dialog.item)
       if (refund != null && dialog.item.deal) payload = {
         dealId: dialog.item.deal.id, menuId: dialog.item.menu.id, productCode: dialog.item.productCode, status: 'completed',
@@ -219,7 +219,7 @@ export function FinanceCancellationsPageClient({
         <>
           <Pill asChild variant="plain"><Link href={`${basePath}/platform/finance`}><ArrowLeft />Financiación</Link></Pill>
           <Pill variant="plain" onClick={reload} disabled={loading} aria-label="Actualizar"><RefreshCw className={loading ? 'animate-spin' : undefined} />Actualizar</Pill>
-          <Pill variant="primary" onClick={openNew} disabled={!cancellableForFilter.length} title={!cancellableForFilter.length ? 'No accepted menu products to cancel' : undefined}>
+          <Pill variant="primary" onClick={openNew} disabled={!cancellableForFilter.length} title={!cancellableForFilter.length ? 'No hay productos aceptados para cancelar' : undefined}>
             <Plus />Nueva cancelación
           </Pill>
         </>
@@ -475,7 +475,7 @@ export function FinanceCancellationsPageClient({
           errors={fieldErrors}
           error={formError}
           busy={busy}
-          submitLabel={dialog?.kind === 'new' ? 'Record request' : dialog?.kind === 'complete' ? 'Completar' : 'Denegar'}
+          submitLabel={dialog?.kind === 'new' ? 'Registrar pedido' : dialog?.kind === 'complete' ? 'Completar' : 'Denegar'}
           onValuesChange={values => setDialog(current => current ? { ...current, values } as DialogState : current)}
           onSubmit={submit}
           onOpenChange={open => { if (!open && !busy) setDialog(null) }}

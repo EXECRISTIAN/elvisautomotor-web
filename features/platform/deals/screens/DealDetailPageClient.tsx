@@ -253,7 +253,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
       setLenderOffers(offers.success ? offers.data?.dealLenderOffers || [] : [])
     } else {
       setDeal(null)
-      setError(response.error || 'The deal was not found.')
+      setError(response.error || 'No se encontró la operación.')
     }
     setLoading(false)
   }
@@ -278,7 +278,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
       lines = { fees: normalizeMoneyLines(deal.fees, 'Fee'), rebates: normalizeMoneyLines(deal.rebates, 'Rebate'), products: normalizeMoneyLines(deal.products, 'Product'), taxLines: normalizeMoneyLines(deal.taxLines, 'Tax') }
       assertValidDealPrice(calculateDealPrice({ ...amounts, ...lines, taxAmountCents: sumMoneyLines(lines.taxLines) }))
     } catch (validationError) {
-      setError(validationError instanceof Error ? validationError.message : 'Check the worksheet amounts')
+      setError(validationError instanceof Error ? validationError.message : 'Revisa los montos de la hoja')
       return
     }
     setUpdating(true)
@@ -294,7 +294,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
         residualValueCents: deal.structureType === 'lease' ? deal.residualValueCents : null,
         moneyFactorBasisPoints: deal.structureType === 'lease' ? deal.moneyFactorBasisPoints : null,
         expectedUpdatedAt: deal.updatedAt,
-        reason: 'Saved from deal workspace before presentation.',
+        reason: 'Guardada desde la operación antes de presentarla.',
         idempotencyKey: `deal-worksheet:${deal.id}:${deal.updatedAt}`,
       })
       if (!response.success) throw new Error(response.error || 'Worksheet save failed')
@@ -302,7 +302,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Worksheet save failed'
       setError(isVersionConflict(message)
-        ? 'This deal was changed by someone else since you opened it. Your edits have not been lost. Copy your edits before reloading.'
+        ? 'Otra persona cambió esta operación mientras la tenías abierta. Tus cambios no se perdieron: cópialos antes de recargar.'
         : `Worksheet not saved: ${message}`)
     } finally {
       setUpdating(false)
@@ -337,11 +337,11 @@ export function DealDetailPageClient({ id }: { id: string }) {
     const acknowledgment = acceptanceValues.acknowledgment.trim()
     const idempotencyKey = acceptanceIdempotencyKeyRef.current
     if (!acknowledgment) {
-      setAcceptanceError('Acceptance method or reference is required.')
+      setAcceptanceError('Indica la forma de aceptación o una referencia.')
       return
     }
     if (!idempotencyKey) {
-      setAcceptanceError('Close and reopen this dialog to try again.')
+      setAcceptanceError('Cierra y vuelve a abrir esta ventana para reintentar.')
       return
     }
 
@@ -410,7 +410,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
       return
     }
     if (!idempotencyKey) {
-      setReopenError('Close and reopen this dialog to try again.')
+      setReopenError('Cierra y vuelve a abrir esta ventana para reintentar.')
       return
     }
 
@@ -458,16 +458,16 @@ export function DealDetailPageClient({ id }: { id: string }) {
 
   const updateStatus = async (newStatus: string, approvalDecision?: 'pending' | 'approved' | 'rejected' | 'changes-requested') => {
     const defaultNote = approvalDecision === 'pending'
-      ? 'Submitted for approval from the deal page.'
+      ? 'Enviada a aprobación desde la página de la operación.'
       : approvalDecision === 'approved'
-        ? 'Approved from the deal page.'
+        ? 'Aprobada desde la página de la operación.'
         : approvalDecision === 'rejected'
-          ? 'Rejected from the deal page.'
+          ? 'Rechazada desde la página de la operación.'
           : ''
 
     if (approvalDecision) {
       const title = approvalDecision === 'pending'
-        ? 'Submit for approval'
+        ? 'Enviar a aprobación'
         : approvalDecision === 'approved'
           ? 'Approve deal'
           : approvalDecision === 'rejected'
@@ -523,7 +523,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
       return
     }
     if (!cancelIdempotencyKeyRef.current) {
-      setCancelError('Close and reopen this dialog to try again.')
+      setCancelError('Cierra y vuelve a abrir esta ventana para reintentar.')
       return
     }
     setCancelError(null)
@@ -552,7 +552,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
       if (response.success) setTradeInOptions(response.data.tradeIns)
       else {
         setTradeInOptions([])
-        setTradeInError(response.error || 'Unable to load trade-ins.')
+        setTradeInError(response.error || 'No se pudieron cargar los usados.')
       }
     }
   }
@@ -562,9 +562,9 @@ export function DealDetailPageClient({ id }: { id: string }) {
     if (!deal || !tradeInDialog) return
     const tradeInId = tradeInDialog === 'attach' ? tradeInValues.tradeInId : null
     const reason = tradeInValues.reason.trim()
-    if (tradeInDialog === 'attach' && !tradeInId) return setTradeInError('Select a trade-in.')
+    if (tradeInDialog === 'attach' && !tradeInId) return setTradeInError('Elige un usado.')
     if (tradeInDialog === 'detach' && !reason) return setTradeInError('A reason is required.')
-    if (!tradeInIdempotencyKeyRef.current) return setTradeInError('Close and reopen this dialog to try again.')
+    if (!tradeInIdempotencyKeyRef.current) return setTradeInError('Cierra y vuelve a abrir esta ventana para reintentar.')
     setUpdating(true)
     setTradeInError(null)
     try {
@@ -625,7 +625,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
         breadcrumbs={breadcrumbs('Deal')}
       >
         <div className="px-4 pb-24 md:px-6">
-          <Notice tone="bad">{error || 'The deal was not found.'}</Notice>
+          <Notice tone="bad">{error || 'No se encontró la operación.'}</Notice>
         </div>
       </PageContainer>
     )
@@ -633,7 +633,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
 
   const dealChecklist = [
     { label: 'Consulta del cliente vinculada', complete: Boolean(deal.lead), detail: deal.lead ? `${deal.lead.firstName} ${deal.lead.lastName}` : 'Attach customer before contracting' },
-    { label: 'Vehículo elegido', complete: Boolean(deal.vehicle), detail: deal.vehicle ? `${deal.vehicle.stockNumber} · ${deal.vehicle.vin}` : 'Attach vehicle and VIN' },
+    { label: 'Vehículo elegido', complete: Boolean(deal.vehicle), detail: deal.vehicle ? `${deal.vehicle.stockNumber} · ${deal.vehicle.vin}` : 'Vincular vehículo y chasis' },
     { label: 'Precio negociado cargado', complete: Number(deal.vehiclePrice || 0) > 0, detail: formatCurrency(deal.vehiclePrice) },
     { label: 'Estructura completa', complete: deal.structureType === 'cash' ? deal.worksheetVersion > 0 : Number(deal.financingAmount || 0) > 0 && Number(deal.loanTerm || 0) > 0 && Number(deal.monthlyPayment || 0) > 0, detail: deal.structureType === 'cash' ? 'Cash structure' : `${formatCurrency(deal.financingAmount)} · ${deal.loanTerm || '-'} mo · ${formatCurrency(deal.monthlyPayment)}/mo` },
     { label: 'Anticipo previsto', complete: deal.structureType === 'cash' || Number(deal.downPayment || 0) > 0, detail: deal.structureType === 'cash' ? `${formatCurrency(deal.downPayment)} · cash deal, full total due at signing` : formatCurrency(deal.downPayment) },
@@ -647,7 +647,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
   const worksheetSaved = deal.worksheetVersion > 0
   // Server math: a cash structure finances nothing, so the whole total is due at signing and the
   // down payment is a part of it, not a deduction. Finance: amount financed = total - down payment.
-  const downPaymentLabel = isCash ? 'Down payment (part of amount due)' : 'Planned down payment'
+  const downPaymentLabel = isCash ? 'Anticipo (parte del monto a pagar)' : 'Planned down payment'
 
   const dealTitle = deal.vehicle ? `${deal.vehicle.year} ${deal.vehicle.make} ${deal.vehicle.model}` : 'Deal'
   const customerName = deal.lead ? `${deal.lead.firstName} ${deal.lead.lastName}` : 'No customer'
@@ -783,7 +783,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
             cells={[
               { label: 'Precio del vehículo', value: formatCurrency(savedPricing.vehiclePriceCents / 100), sub: deal.vehicle ? `${deal.vehicle.condition === 'new' ? 'MSRP' : 'Asking'} ${formatCurrency(deal.vehicle.price)}` : undefined },
               { label: 'Usado', value: formatUsdCredit(savedPricing.tradeInValueCents / 100), sub: dealTradeIn ? tradeInName(dealTradeIn) : 'No trade' },
-              { label: isCash ? 'Down (part of amount due)' : 'Down payment', value: formatCurrency(savedPricing.downPaymentCents / 100) },
+              { label: isCash ? 'Anticipo (parte del monto a pagar)' : 'Down payment', value: formatCurrency(savedPricing.downPaymentCents / 100) },
               savedPricing.loanTerm > 0
                 ? { label: 'Pago', value: `${formatCurrency(savedPricing.monthlyPaymentCents / 100)}/mo`, sub: deal.structureType === 'lease' ? `Lease · ${savedPricing.loanTerm} mo` : `${savedPricing.apr}% APR · ${savedPricing.loanTerm} mo` }
                 : { label: 'Monto financiado', value: formatCurrency(savedPricing.financingAmountCents / 100), sub: deal.structureType === 'cash' ? 'Cash' : undefined },
@@ -885,7 +885,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
                     {([
                       ['Negotiated vehicle price', 'vehiclePrice'],
                       ['Trade-in credit', 'tradeInValue'],
-                      [isCash ? 'Down payment (part of amount due)' : 'Down payment', 'downPayment'],
+                      [isCash ? 'Anticipo (parte del monto a pagar)' : 'Down payment', 'downPayment'],
                     ] as const).map(([label, field]) => (
                       <label key={field} className="grid min-w-0 gap-1.5">
                         <span className={fieldLabel}>{label}</span>
@@ -922,7 +922,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
                                   const price = calculateDealPrice({ vehiclePriceCents: Math.round(deal.vehiclePrice * 100), tradeInValueCents: Math.round(deal.tradeInValue * 100), downPaymentCents: Math.round(deal.downPayment * 100), ...lines, taxAmountCents: sumMoneyLines(deal.taxLines) })
                                   editWorksheet({ monthlyPayment: leasePaymentCents(Math.max(0, price.balanceCents), deal.residualValueCents || 0, deal.loanTerm, deal.moneyFactorBasisPoints || 0) / 100 })
                                 } catch {
-                                  setError('Check the worksheet amounts')
+                                  setError('Revisa los montos de la hoja')
                                 }
                               }}
                             >
@@ -950,7 +950,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
             {deal.structureType !== 'cash' && (
               <DeskSection title={worksheetSaved ? `Lender offers · worksheet ${deal.worksheetVersion}` : 'Lender offers · unsaved worksheet'} count={lenderOffers.length}>
                 <div className="space-y-3">
-                  {!finance?.selectedOfferCurrent && <Notice tone="warn" role="status">{finance?.issue || 'Select or reconfirm an offer for this saved worksheet.'}</Notice>}
+                  {!finance?.selectedOfferCurrent && <Notice tone="warn" role="status">{finance?.issue || 'Elige o reconfirma una oferta para esta hoja guardada.'}</Notice>}
                   {lenderOffers.length === 0 ? (
                     <p className="py-6 text-center text-sm text-muted-foreground">Sin decisiones aprobadas o condicionales de entidades</p>
                   ) : (
@@ -971,7 +971,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
                             </dl>
                             <Track>
                               <Pill size="sm" variant={offer.selected ? 'primary' : 'raised'} disabled={updating || worksheetDirty || (offer.selected && Boolean(finance?.selectedOfferCurrent)) || deal.status !== 'pencil'} onClick={() => selectLenderOffer(offer.id)}>
-                                {offer.selected && finance?.selectedOfferCurrent ? 'Current selection' : offer.selected ? 'Reconfirm offer' : 'Select offer'}
+                                {offer.selected && finance?.selectedOfferCurrent ? 'Current selection' : offer.selected ? 'Reconfirm offer' : 'Elegir oferta'}
                               </Pill>
                             </Track>
                           </div>
@@ -1117,8 +1117,8 @@ export function DealDetailPageClient({ id }: { id: string }) {
                   )}
                 </div>
                 <Facts items={[
-                  { label: 'Documentos de financiación', value: <Status tone={finance?.prerequisites?.current ? 'ok' : 'warn'}>{finance?.prerequisites?.current ? 'Current' : 'Review required'}</Status> },
-                  { label: 'Fondeo', value: <Status tone={finance?.fundingCurrent ? 'ok' : 'warn'}>{finance?.fundingCurrent ? 'Current' : 'Reconfirmation required'}</Status> },
+                  { label: 'Documentos de financiación', value: <Status tone={finance?.prerequisites?.current ? 'ok' : 'warn'}>{finance?.prerequisites?.current ? 'Current' : 'Requiere revisión'}</Status> },
+                  { label: 'Fondeo', value: <Status tone={finance?.fundingCurrent ? 'ok' : 'warn'}>{finance?.fundingCurrent ? 'Current' : 'Requiere reconfirmación'}</Status> },
                   finance?.fundingStatus ? { label: 'Estado del fondeo', value: <span className="capitalize">{finance.fundingStatus}</span> } : null,
                   finance?.fundingReference ? { label: 'Referencia de fondeo', value: finance.fundingReference, mono: true } : null,
                   { label: 'Hoja de trabajo fondeada', value: finance?.fundingWorksheetVersion ? `v${finance.fundingWorksheetVersion}` : 'Ninguno' },
@@ -1213,7 +1213,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
         <OperatorActionDialog
           open={cancelDialogOpen}
           title="Cancelar operación"
-          description={deal.status === 'pencil' ? 'The deal is closed as cancelled.' : 'The deal is closed as cancelled, the vehicle is released and any open delivery is cancelled.'}
+          description={deal.status === 'pencil' ? 'La operación se cierra como cancelada.' : 'La operación se cierra como cancelada, el vehículo queda libre y se cancela cualquier entrega abierta.'}
           fields={[{ name: 'reason', label: 'Motivo de cancelación', type: 'textarea', required: true, maxLength: 1000 }]}
           values={cancelValues}
           error={cancelError}
@@ -1228,7 +1228,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
         />
         <OperatorActionDialog
           open={tradeInDialog !== null}
-          title={tradeInDialog === 'attach' ? 'Attach trade-in' : 'Detach trade-in'}
+          title={tradeInDialog === 'attach' ? 'Vincular usado' : 'Desvincular usado'}
           description={tradeInDialog === 'attach' ? 'The appraisal offer becomes the trade credit; tax and payment are repriced.' : 'Trade credit returns to $0; tax and payment are repriced.'}
           fields={tradeInDialog === 'attach'
             ? [
@@ -1236,7 +1236,7 @@ export function DealDetailPageClient({ id }: { id: string }) {
                   name: 'tradeInId',
                   label: 'Usado',
                   type: 'select',
-                  placeholder: tradeInOptions === null ? 'Loading trade-ins' : tradeInOptions.length === 0 ? 'No available trade-ins' : 'Select trade-in',
+                  placeholder: tradeInOptions === null ? 'Loading trade-ins' : tradeInOptions.length === 0 ? 'No available trade-ins' : 'Elige un usado',
                   options: (tradeInOptions || []).filter(option => option.offerAmountCents != null).map(option => ({ value: option.id, label: `${tradeInName(option)} · ${formatCurrency((option.offerAmountCents || 0) / 100)}` })),
                 },
                 { name: 'reason', label: 'Nota (opcional)', type: 'textarea', required: false, maxLength: 500 },

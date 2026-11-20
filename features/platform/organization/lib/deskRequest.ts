@@ -32,13 +32,13 @@ function describeFailure(error: unknown): { error: string; fieldErrors?: Record<
         const match = detail.match(/^[A-Za-z]+\.([A-Za-z]+):\s*(.+)$/)
         if (match) fieldErrors[match[1]] = match[2]
       }
-      return { error: details.length ? details.map(detail => detail.replace(/^[A-Za-z]+(?:\.[A-Za-z]+)?:\s*/, '')).join('. ') : 'Check the highlighted fields', fieldErrors }
+      return { error: details.length ? details.map(detail => detail.replace(/^[A-Za-z]+(?:\.[A-Za-z]+)?:\s*/, '')).join('. ') : 'Revisa los campos marcados', fieldErrors }
     }
     if (code === 'KS_PRISMA_ERROR' && /Unique constraint/i.test(message)) {
       const field = message.match(/\(`([A-Za-z]+)`\)/)?.[1]
-      return { error: field ? `That ${field} is already in use` : 'That value is already in use', fieldErrors: field ? { [field]: 'Already in use' } : undefined }
+      return { error: field ? `That ${field} is already in use` : 'Ese valor ya está en uso', fieldErrors: field ? { [field]: 'Ya está en uso' } : undefined }
     }
-    if (code === 'KS_ACCESS_DENIED') return { error: 'You do not have permission for this change' }
+    if (code === 'KS_ACCESS_DENIED') return { error: 'No tienes permiso para este cambio' }
   }
   return null
 }

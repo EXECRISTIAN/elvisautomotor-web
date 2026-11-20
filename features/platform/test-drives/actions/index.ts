@@ -120,7 +120,7 @@ export async function scheduleTestDrive(data: {
   `, { data })
   if (!response.success) return response
   const payload = response.data.submitTestDrive
-  if (!payload?.ok) return { success: false as const, error: payload?.errorMessage || 'Unable to schedule test drive' }
+  if (!payload?.ok) return { success: false as const, error: payload?.errorMessage || 'No se pudo agendar la prueba de manejo' }
   revalidatePath(TEST_DRIVES_PATH)
   return { success: true as const, data: payload }
 }

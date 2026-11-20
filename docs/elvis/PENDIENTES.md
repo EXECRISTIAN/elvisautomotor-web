@@ -28,11 +28,20 @@
 
 - Ofertas progresivas: página /ofertas, sección en el inicio, filtro en inventario, precio y cuenta regresiva en vivo, baja por hora o por día. Se cargan desde Panel → Tablas → Ofertas progresivas (falta pantalla propia del panel). Ejemplo N7 en `perfil-elvis.sql`.
 
-## Etapas restantes
-3. Panel administrativo en español y simplificado — EN CURSO. Hecho: menú, marca, formato es-AR/ARS/km, Configuración, Inventario, Consultas, Clientes, Usados ofrecidos, Pruebas de manejo, Solicitudes de crédito. Falta (parte 3): Operaciones, Personal/roles, Resumen, Estadísticas, Organización, Catálogo, Reportes, pantallas de ingreso.
-4. Financiación bancaria — HECHO en la web; falta pantalla propia en el panel (hoy se usa Tablas).
-5. Vendelo en Elvis — HECHO en la web; falta ver las fotos dentro de la ficha del usado en el panel (hoy en Tablas → Fotos de usados).
-6. Calidad, seguridad y SEO final.
+## Etapas (estado al 20/11/2026)
+1–2. Identidad visual, inicio e inventario — HECHO.
+3. Panel administrativo en español — HECHO: todas las secciones visibles, interfaz de Tablas, alta de personal simplificada, roles en español. Las secciones ocultas para Elvis (Taller, Repuestos, Pagos, Contabilidad, Entregas, API) siguen en inglés porque no se usan.
+4. Financiación bancaria — HECHO. Bancos y Planes tienen acceso directo en el menú (Financiación). **Faltan las tasas reales de Elvis.**
+5. Véndelo en Elvis — HECHO, incluidas las fotos dentro de la ficha del usado en el panel.
+6. Calidad — HECHO: datos para Google, velocidad (todas las páginas < 1 s en local), revisión de accesibilidad en celular.
+7. Usuarios y roles — HECHO: roles en español (Administrador, Gerente de ventas, Vendedor, Responsable de créditos, Administración…), alta de vendedores probada de punta a punta.
+
+## Lo único que falta (depende de Elvis o de publicar)
+- Tasas y condiciones reales de Banco Nación y Banco Provincia.
+- Fotos reales de autos y del salón.
+- Confirmar dirección: Andrés Baranda 2134 (Quilmes) vs. Av. Los Quilmes 735 (Bernal) que figura en Google Maps.
+- Autorización del dueño para usar marca, logo y textos.
+- Publicar: dominio/hosting, almacenamiento de fotos (S3 o similar), Google Search Console y Perfil de Empresa.
 
 ## Actualización (19/11/2026)
 - Quitada la franja "Propuesta de sitio web — versión de demostración" del sitio.
@@ -50,3 +59,11 @@
 ## Ronda automática 2 (20/11/2026)
 - SEO: datos estructurados para Google (schema.org). Todas las páginas declaran la agencia (AutoDealer: nombre, dirección, teléfono, email, mapa y redes) y cada ficha declara el vehículo (Car: marca, modelo, año, km, combustible, caja, motor, precio y disponibilidad). Solo usa datos cargados en el panel.
 - Al publicar: validar con la "Prueba de resultados enriquecidos" de Google y cargar el sitio en Google Search Console / Perfil de Empresa.
+
+## Bloque completo (20/11/2026)
+- Panel traducido: Resumen, Operaciones, Estadísticas, Personal, Organización, Catálogo, Reportes, Tablas (crear/editar/borrar/filtros/paginación), mensajes de error y conteos.
+- Menú lateral: accesos directos a Ofertas progresivas, Bancos y Planes de financiación. "Tablas" muestra solo las 17 tablas útiles, con nombres en español.
+- Alta de integrante: formulario corto en español (nombre, email, contraseña, rol, teléfono, vendedor / créditos).
+- Zona horaria por defecto: Buenos Aires (antes Nueva York; afectaba horarios de citas y ofertas).
+- Ficha del usado en el panel: galería con las fotos que mandó el cliente.
+- Sitio: enlace "X (Twitter)" del pie más fácil de tocar; página Comparar explica cómo usarla.

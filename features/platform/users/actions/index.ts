@@ -85,7 +85,7 @@ export async function getUsers(
     console.error('Error fetching users:', response.error);
     return {
       success: false,
-      error: response.error || 'Failed to fetch users',
+      error: response.error || 'No se pudieron cargar los usuarios',
       data: { items: [], count: 0 },
     };
   }
@@ -120,7 +120,7 @@ export async function getUserStatusCounts() {
     console.error('Error fetching user status counts:', response.error);
     return {
       success: false,
-      error: response.error || 'Failed to fetch user status counts',
+      error: response.error || 'No se pudieron cargar los conteos de personal',
       data: { all: 0, sales: 0, service: 0, finance: 0 },
     };
   }

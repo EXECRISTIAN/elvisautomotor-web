@@ -100,7 +100,7 @@ export async function startInventoryAcquisition(data: {
     mutation StartInventoryAcquisition($data: StartInventoryAcquisitionInput!) {
       startInventoryAcquisition(data: $data) { id reference status }
     }
-  `, { data: { ...data, reason: 'Appraisal recorded from the acquisitions desk' } })
+  `, { data: { ...data, reason: 'Tasación registrada desde la mesa de ingresos' } })
   if (response.success) revalidate()
   return response
 }
@@ -122,7 +122,7 @@ export async function receiveAcquisitionIntoStock(data: {
     mutation EstablishInventoryStock($data: EstablishInventoryStockInput!) {
       establishInventoryStock(data: $data) { id stockId reused }
     }
-  `, { data: { ...data, locationLabel: data.locationCode, reason: 'Acquisition received into stock from the acquisitions desk' } })
+  `, { data: { ...data, locationLabel: data.locationCode, reason: 'Ingreso recibido en stock desde la mesa de ingresos' } })
   if (response.success) revalidate()
   return response
 }

@@ -37,9 +37,9 @@ export function AuditPanel({ rooftops, timeZone }: { rooftops: ReportRooftop[]; 
     const errors: Record<string, string> = {}
     const since = next.from ? zonedDayStart(next.from, timeZone) : null
     const until = next.to ? zonedDayStart(next.to, timeZone, 1) : null
-    if (next.from && !since) errors.from = 'Date is invalid'
-    if (next.to && !until) errors.to = 'Date is invalid'
-    if (since && until && since >= until) errors.to = 'To must be on or after From'
+    if (next.from && !since) errors.from = 'La fecha no es válida'
+    if (next.to && !until) errors.to = 'La fecha no es válida'
+    if (since && until && since >= until) errors.to = 'La fecha final debe ser igual o posterior a la inicial'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return
     setLoading(true); setError(null)

@@ -247,7 +247,7 @@ export async function addInventoryVehiclePhoto(formData: FormData) {
   const data = {
     stockId: String(formData.get('stockId') || ''),
     imageUrl: String(formData.get('imageUrl') || '') || null,
-    reason: 'Photo added from inventory operations desk',
+    reason: 'Foto agregada desde la mesa de inventario',
     idempotencyKey: String(formData.get('idempotencyKey') || ''),
   }
   const mutation = `
@@ -267,7 +267,7 @@ export async function arrangeInventoryVehiclePhotos(data: { stockId: string; ima
     mutation ArrangeInventoryVehiclePhotos($data: ArrangeInventoryVehiclePhotosInput!) {
       arrangeInventoryVehiclePhotos(data: $data) { id stockId merchandisingStatus updatedAt reused }
     }
-  `, { data: { ...data, reason: 'Photos reordered from inventory operations desk' } })
+  `, { data: { ...data, reason: 'Fotos reordenadas desde la mesa de inventario' } })
 }
 
 export async function removeInventoryVehiclePhoto(data: { stockId: string; imageId: string; idempotencyKey: string }) {
@@ -275,7 +275,7 @@ export async function removeInventoryVehiclePhoto(data: { stockId: string; image
     mutation RemoveInventoryVehiclePhoto($data: RemoveInventoryVehiclePhotoInput!) {
       removeInventoryVehiclePhoto(data: $data) { id stockId merchandisingStatus updatedAt reused }
     }
-  `, { data: { ...data, reason: 'Photo removed from inventory operations desk' } })
+  `, { data: { ...data, reason: 'Foto quitada desde la mesa de inventario' } })
 }
 
 export async function moveInventoryStock(data: {

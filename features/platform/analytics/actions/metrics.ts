@@ -95,7 +95,7 @@ export async function getSalesMetrics(): Promise<{ success: boolean; data?: Sale
     })
 
     if (!response.success || !response.data) {
-      return { success: false, error: response.error || 'Failed to fetch deals' }
+      return { success: false, error: response.error || 'No se pudieron cargar las operaciones' }
     }
 
     const records = completeRecordSet<any>('Sales', response.data.deals, response.data.dealsCount, METRICS_RECORD_BUDGET)
@@ -183,7 +183,7 @@ export async function getSalesMetrics(): Promise<{ success: boolean; data?: Sale
     }
   } catch {
     console.error('Sales metrics failed without logging provider details.')
-    return { success: false, error: 'Failed to fetch sales metrics' }
+    return { success: false, error: 'No se pudieron cargar las métricas de ventas' }
   }
 }
 
@@ -212,7 +212,7 @@ export async function getInventoryMetrics(): Promise<{ success: boolean; data?: 
     })
 
     if (!response.success || !response.data) {
-      return { success: false, error: response.error || 'Failed to fetch vehicles' }
+      return { success: false, error: response.error || 'No se pudieron cargar los vehículos' }
     }
 
     const records = completeRecordSet<any>('Inventory', response.data.vehicles, response.data.vehiclesCount, METRICS_RECORD_BUDGET)
@@ -295,7 +295,7 @@ export async function getInventoryMetrics(): Promise<{ success: boolean; data?: 
     }
   } catch {
     console.error('Inventory metrics failed without logging provider details.')
-    return { success: false, error: 'Failed to fetch inventory metrics' }
+    return { success: false, error: 'No se pudieron cargar las métricas de inventario' }
   }
 }
 
@@ -347,7 +347,7 @@ export async function getServiceMetrics(timeZone: string): Promise<{ success: bo
     }>(query, { take: METRICS_RECORD_BUDGET, partsTake: PARTS_RECORD_BUDGET })
 
     if (!response.success || !response.data) {
-      return { success: false, error: response.error || 'Failed to fetch service metrics' }
+      return { success: false, error: response.error || 'No se pudieron cargar las métricas de servicio' }
     }
 
     const appointmentRecords = completeRecordSet<any>('Service appointment', response.data.serviceAppointments, response.data.serviceAppointmentsCount, METRICS_RECORD_BUDGET)
@@ -430,6 +430,6 @@ export async function getServiceMetrics(timeZone: string): Promise<{ success: bo
     }
   } catch {
     console.error('Service metrics failed without logging provider details.')
-    return { success: false, error: 'Failed to fetch service metrics' }
+    return { success: false, error: 'No se pudieron cargar las métricas de servicio' }
   }
 }

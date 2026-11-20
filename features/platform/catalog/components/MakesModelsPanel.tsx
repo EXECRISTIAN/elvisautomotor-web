@@ -75,8 +75,8 @@ export function MakesModelsPanel({
     if (!makeDraft) return
     const name = makeDraft.name.trim()
     const errors: Record<string, string> = {}
-    if (!name) errors.name = 'Name is required'
-    else if (name.length > 100) errors.name = 'Name is too long'
+    if (!name) errors.name = 'El nombre es obligatorio'
+    else if (name.length > 100) errors.name = 'El nombre es demasiado largo'
     else if (makes.some(make => make.id !== makeDraft.id && make.name.toLowerCase() === name.toLowerCase())) errors.name = 'This make already exists'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return
@@ -94,9 +94,9 @@ export function MakesModelsPanel({
     const name = modelDraft.name.trim()
     const make = makes.find(item => item.id === modelDraft.makeId)
     const errors: Record<string, string> = {}
-    if (!make) errors.makeId = 'Choose a make'
-    if (!name) errors.name = 'Name is required'
-    else if (name.length > 100) errors.name = 'Name is too long'
+    if (!make) errors.makeId = 'Elige una marca'
+    if (!name) errors.name = 'El nombre es obligatorio'
+    else if (name.length > 100) errors.name = 'El nombre es demasiado largo'
     else if (make?.models.some(model => model.id !== modelDraft.id && model.name.toLowerCase() === name.toLowerCase())) errors.name = `${make.name} already has this model`
     let baseYear: number | null = null
     if (modelDraft.baseYear.trim()) {
@@ -150,7 +150,7 @@ export function MakesModelsPanel({
             <Track>
               <Pill size="sm" variant="primary" className={TAP_SM} disabled={addingPairs !== null} onClick={() => addPairs(missingPairs, 'all')}>
                 <Plus />
-                {addingPairs === 'all' ? 'Adding…' : 'Add all'}
+                {addingPairs === 'all' ? 'Adding…' : 'Agregar todos'}
               </Pill>
             </Track>
           }
@@ -320,7 +320,7 @@ export function MakesModelsPanel({
 
       <FormDialog
         open={makeDraft !== null}
-        title={makeDraft?.id ? 'Rename make' : 'Add make'}
+        title={makeDraft?.id ? 'Rename make' : 'Agregar marca'}
         busy={busy}
         error={formError}
         onSubmit={submitMake}
@@ -333,7 +333,7 @@ export function MakesModelsPanel({
 
       <FormDialog
         open={modelDraft !== null}
-        title={modelDraft?.id ? 'Edit model' : 'Add model'}
+        title={modelDraft?.id ? 'Edit model' : 'Agregar modelo'}
         busy={busy}
         error={formError}
         onSubmit={submitModel}

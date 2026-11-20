@@ -29,7 +29,7 @@ const SINCE_DAYS: FilterField = { key: 'sinceDays', label: 'Last N days', kind: 
 export const REPORT_FILTER_FIELDS: Record<string, FilterField[]> = {
   operations: [],
   audit: [
-    { key: 'aggregateType', label: 'Record type', kind: 'text', maxLength: 100 },
+    { key: 'aggregateType', label: 'Tipo de registro', kind: 'text', maxLength: 100 },
     { key: 'action', label: 'Action contains', kind: 'text', maxLength: 100 },
     SINCE_DAYS,
   ],

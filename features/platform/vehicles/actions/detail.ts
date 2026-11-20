@@ -181,7 +181,7 @@ export async function getInventoryVehicleDetail(id: string): Promise<VehicleDeta
   `, { id }, { cache: 'no-store' })
   if (!core.success) return { success: false, error: core.error }
   const raw = core.data.vehicle
-  if (!raw) return { success: false, error: 'Vehicle not found', notFound: true }
+  if (!raw) return { success: false, error: 'Vehículo no encontrado', notFound: true }
   const stockId: string | null = raw.inventoryStock?.id ?? null
   const none = Promise.resolve({ success: true as const, data: null as any })
 
@@ -337,7 +337,7 @@ export async function updateInventoryVehicleDetails(data: {
     mutation UpdateInventoryVehicleDetails($data: UpdateInventoryVehicleDetailsInput!) {
       updateInventoryVehicleDetails(data: $data) { id stockId merchandisingStatus feedStatus updatedAt reused }
     }
-  `, { data: { ...input, reason: 'Vehicle details edited from the vehicle page' } })
+  `, { data: { ...input, reason: 'Datos del vehículo editados desde su página' } })
   if (response.success) revalidateVehicle(vehicleId)
   return response
 }
@@ -375,11 +375,11 @@ export type ConditionReportInput = {
 /** VehicleConditionReport is open CRUD gated by canManageInventory and the rooftop scope. */
 export async function saveConditionReport(input: ConditionReportInput): Promise<{ success: true } | { success: false; error: string }> {
   const date = new Date(input.reportDate)
-  if (Number.isNaN(date.getTime())) return { success: false, error: 'Report date is invalid' }
+  if (Number.isNaN(date.getTime())) return { success: false, error: 'La fecha del reporte no es válida' }
   for (const [label, value] of [['Overall', input.overallCondition], ['Mechanical', input.mechanicalRating], ['Body', input.bodyRating], ['Interior', input.interiorRating]]) {
     if (value && !RATINGS.has(value)) return { success: false, error: `${label} rating is invalid` }
   }
-  if (input.estimatedRepairs != null && (!Number.isSafeInteger(input.estimatedRepairs) || input.estimatedRepairs < 0)) return { success: false, error: 'Estimated repairs must be a whole dollar amount' }
+  if (input.estimatedRepairs != null && (!Number.isSafeInteger(input.estimatedRepairs) || input.estimatedRepairs < 0)) return { success: false, error: 'Las reparaciones estimadas deben ser un monto entero' }
   const data: Record<string, unknown> = {
     reportDate: date.toISOString(),
     inspector: input.inspector.trim().slice(0, 200),
@@ -418,7 +418,7 @@ export type VehicleHistoryInput = {
 /** VehicleHistory is one-to-one with the vehicle and open CRUD gated by canManageInventory. */
 export async function saveVehicleHistory(input: VehicleHistoryInput): Promise<{ success: true } | { success: false; error: string }> {
   const acquisitionDate = input.acquisitionDate ? new Date(input.acquisitionDate) : null
-  if (acquisitionDate && Number.isNaN(acquisitionDate.getTime())) return { success: false, error: 'Acquisition date is invalid' }
+  if (acquisitionDate && Number.isNaN(acquisitionDate.getTime())) return { success: false, error: 'La fecha de ingreso no es válida' }
   if (input.previousOwners != null && (!Number.isSafeInteger(input.previousOwners) || input.previousOwners < 0 || input.previousOwners > 99)) return { success: false, error: 'Previous owners must be 0 to 99' }
   const data: Record<string, unknown> = {
     acquisitionDate: acquisitionDate ? acquisitionDate.toISOString() : null,

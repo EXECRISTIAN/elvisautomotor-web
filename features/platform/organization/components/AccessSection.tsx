@@ -132,7 +132,7 @@ export function AccessSection({
 
   const assignableRoles = roles.filter(roleIsTenantAssignable)
 
-  const ownReason = (membership: Membership) => (membership.user?.id && membership.user.id === viewer?.id ? 'You cannot change your own access' : undefined)
+  const ownReason = (membership: Membership) => (membership.user?.id && membership.user.id === viewer?.id ? 'No puedes cambiar tu propio acceso' : undefined)
 
   const openChange = (kind: ChangeKind, membership: Membership) => {
     setError(null)
@@ -155,8 +155,8 @@ export function AccessSection({
     const membership = change.membership
     const reason = change.reason.trim()
     const errors: FieldErrors = {}
-    if (!change.roleId) errors.role = 'Role is required'
-    if (!reason) errors.reason = 'Reason is required'
+    if (!change.roleId) errors.role = 'El rol es obligatorio'
+    if (!reason) errors.reason = 'El motivo es obligatorio'
     else if (reason.length > 500) errors.reason = '500 characters or fewer'
     setFieldErrors(errors)
     if (Object.keys(errors).length || !membership.user?.id) return
@@ -191,18 +191,18 @@ export function AccessSection({
     const parsed = parseScope(grant.scope)
     const reason = grant.reason.trim()
     const errors: FieldErrors = {}
-    if (grant.mode === 'existing' && !grant.userId) errors.user = 'Choose a staff member'
+    if (grant.mode === 'existing' && !grant.userId) errors.user = 'Elige un integrante'
     if (grant.mode === 'invite') {
-      if (!grant.name.trim()) errors.name = 'Name is required'
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(grant.email.trim())) errors.email = 'Enter a valid email'
+      if (!grant.name.trim()) errors.name = 'El nombre es obligatorio'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(grant.email.trim())) errors.email = 'Ingresa un email válido'
       else if (staff.some(person => person.email.toLowerCase() === grant.email.trim().toLowerCase())) errors.email = 'Already on staff; choose Existing staff'
       if (grant.password.length < 8) errors.password = 'At least 8 characters'
     }
-    if (!parsed) errors.scope = 'Choose a dealer group or rooftop'
-    if (!grant.roleId) errors.role = 'Role is required'
-    if (!reason) errors.reason = 'Reason is required'
+    if (!parsed) errors.scope = 'Elige un grupo o sucursal'
+    if (!grant.roleId) errors.role = 'El rol es obligatorio'
+    if (!reason) errors.reason = 'El motivo es obligatorio'
     else if (reason.length > 500) errors.reason = '500 characters or fewer'
-    if (grant.mode === 'existing' && grant.userId && grant.userId === viewer?.id) errors.user = 'You cannot change your own access'
+    if (grant.mode === 'existing' && grant.userId && grant.userId === viewer?.id) errors.user = 'No puedes cambiar tu propio acceso'
     setFieldErrors(errors)
     if (Object.keys(errors).length || !parsed) return
 
@@ -213,7 +213,7 @@ export function AccessSection({
       const created = await createStaffUser({ name: grant.name.trim(), email: grant.email.trim(), password: grant.password })
       if (!created.success || !created.data.createUser) {
         setBusy(false)
-        setError(created.success ? 'Staff login was not created' : created.error)
+        setError(created.success ? 'No se creó el acceso' : created.error)
         if (!created.success && created.fieldErrors) setFieldErrors(created.fieldErrors)
         return
       }
@@ -274,7 +274,7 @@ export function AccessSection({
             ]}
           />
           <Track>
-            <Pill variant="primary" className="h-11 sm:h-8" disabled={!canManage || !scopeOptions.length} title={!scopeOptions.length ? 'No dealer group or rooftop' : lockedReason} onClick={openGrant}>
+            <Pill variant="primary" className="h-11 sm:h-8" disabled={!canManage || !scopeOptions.length} title={!scopeOptions.length ? 'Sin grupo ni sucursal' : lockedReason} onClick={openGrant}>
               <UserPlus />
               Dar acceso
             </Pill>
@@ -493,7 +493,7 @@ export function AccessSection({
             {grant.mode === 'existing' ? (
               <Field id="grant-user" label="Integrante" error={fieldErrors.user || errors.staff} className="sm:col-span-2">
                 <Select value={grant.userId} onValueChange={value => setGrant({ ...grant, userId: value })}>
-                  <SelectTrigger {...fieldA11y('grant-user', fieldErrors.user)} className="h-11 sm:h-9"><SelectValue placeholder={staff.length ? 'Select staff member' : 'No staff'} /></SelectTrigger>
+                  <SelectTrigger {...fieldA11y('grant-user', fieldErrors.user)} className="h-11 sm:h-9"><SelectValue placeholder={staff.length ? 'Elige un integrante' : 'No staff'} /></SelectTrigger>
                   <SelectContent>
                     {staff.map(person => (
                       <SelectItem key={person.id} value={person.id} disabled={person.id === viewer?.id}>
@@ -524,7 +524,7 @@ export function AccessSection({
             </Field>
             <Field id="grant-role" label="Rol" error={fieldErrors.role}>
               <Select value={grant.roleId} onValueChange={value => setGrant({ ...grant, roleId: value })}>
-                <SelectTrigger {...fieldA11y('grant-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder={assignableRoles.length ? 'Select role' : 'No assignable roles'} /></SelectTrigger>
+                <SelectTrigger {...fieldA11y('grant-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder={assignableRoles.length ? 'Elige un rol' : 'No assignable roles'} /></SelectTrigger>
                 <SelectContent>
                   {roles.map(role => (
                     <SelectItem key={role.id} value={role.id} disabled={!roleIsTenantAssignable(role)}>

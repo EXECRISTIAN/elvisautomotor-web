@@ -35,7 +35,7 @@ export function createMerchandisingCommandAttempt(
       stockId,
       versionId: latestRevision.id,
       decision: 'approved',
-      reason: 'Approved from inventory operations desk',
+      reason: 'Aprobado desde la mesa de inventario',
       expectedUpdatedAt: latestRevision.updatedAt,
       idempotencyKey: `merch-approve:${latestRevision.id}`,
     }
@@ -44,7 +44,7 @@ export function createMerchandisingCommandAttempt(
   return {
     kind: 'submit',
     stockId,
-    reason: 'Submitted from inventory operations desk',
+    reason: 'Enviado desde la mesa de inventario',
     idempotencyKey: `merch-submit:${stockId}:${createUuid()}`,
   }
 }
@@ -82,7 +82,7 @@ export function merchandisingCommandResultMessage(attempt: MerchandisingCommandA
   const expectedStatus = attempt.kind === 'submit' ? 'submitted' : 'approved'
 
   if (result.merchandisingStatus === expectedStatus) {
-    return attempt.kind === 'approve' ? 'Listing approved.' : attempt.kind === 'reapprove' ? 'Listing re-approved.' : 'Listing submitted for approval.'
+    return attempt.kind === 'approve' ? 'Listing approved.' : attempt.kind === 'reapprove' ? 'Listing re-approved.' : 'Publicación enviada a aprobación.'
   }
 
   return `Listing status is ${result.merchandisingStatus}. Refresh and review before continuing.`

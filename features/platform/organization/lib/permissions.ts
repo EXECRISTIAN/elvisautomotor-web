@@ -3,8 +3,8 @@ export const PERMISSION_GROUPS: ReadonlyArray<{ title: string; flags: ReadonlyAr
   {
     title: 'Platform administration',
     flags: [
-      { key: 'canAccessDashboard', label: 'Access the dashboard' },
-      { key: 'canManageDealerships', label: 'Manage dealer groups, rooftops and access' },
+      { key: 'canAccessDashboard', label: 'Acceder al panel' },
+      { key: 'canManageDealerships', label: 'Administrar grupos, sucursales y accesos' },
       { key: 'canManageRoles', label: 'Manage roles' },
       { key: 'canReadRoles', label: 'Read roles' },
       { key: 'canManageSettings', label: 'Manage dealership settings' },
@@ -17,7 +17,7 @@ export const PERMISSION_GROUPS: ReadonlyArray<{ title: string; flags: ReadonlyAr
     flags: [
       { key: 'canSeeOtherPeople', label: 'See other people' },
       { key: 'canEditOtherPeople', label: 'Edit other people' },
-      { key: 'canManagePeople', label: 'Create and remove people' },
+      { key: 'canManagePeople', label: 'Crear y quitar personas' },
       { key: 'canReadUsers', label: 'Read users' },
       { key: 'canManageUsers', label: 'Manage users' },
     ],
@@ -36,9 +36,9 @@ export const PERMISSION_GROUPS: ReadonlyArray<{ title: string; flags: ReadonlyAr
     ],
   },
   {
-    title: 'Service and reporting',
+    title: 'Taller y reportes',
     flags: [
-      { key: 'canManageService', label: 'Manage service and parts' },
+      { key: 'canManageService', label: 'Administrar taller y repuestos' },
       { key: 'canViewReports', label: 'View reports' },
       { key: 'canReadPayments', label: 'Read payments' },
       { key: 'canManagePayments', label: 'Manage payments' },

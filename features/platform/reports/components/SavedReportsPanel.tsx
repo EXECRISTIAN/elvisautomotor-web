@@ -90,9 +90,9 @@ export function SavedReportsPanel({
     if (!draft) return
     const errors: Record<string, string> = {}
     const name = draft.name.trim()
-    if (!draft.rooftopId) errors.rooftopId = 'Choose a rooftop'
-    if (!name) errors.name = 'Name is required'
-    else if (name.length > 100) errors.name = 'Name is too long'
+    if (!draft.rooftopId) errors.rooftopId = 'Elige una sucursal'
+    if (!name) errors.name = 'El nombre es obligatorio'
+    else if (name.length > 100) errors.name = 'El nombre es demasiado largo'
     const filters: Record<string, string | number> = {}
     for (const field of REPORT_FILTER_FIELDS[draft.reportType] || []) {
       const value = (draft.filters[field.key] || '').trim()

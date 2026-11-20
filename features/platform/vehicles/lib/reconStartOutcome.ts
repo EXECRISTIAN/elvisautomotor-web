@@ -25,7 +25,7 @@ export function createReconStartAttempt(
     stockId,
     toStatus: 'in-progress',
     expectedUpdatedAt,
-    reason: 'Started from inventory operations desk',
+    reason: 'Iniciado desde la mesa de inventario',
     idempotencyKey: `recon-transition:${workItemId}:${createUuid()}`,
   }
 }

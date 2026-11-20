@@ -160,7 +160,7 @@ export async function saveDealershipStoreSettings(
   try {
     data = prepareSettings(input)
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Settings are invalid.' }
+    return { success: false, error: error instanceof Error ? error.message : 'La configuración no es válida.' }
   }
 
   const { id, timezone, ...settingsData } = data
@@ -190,7 +190,7 @@ export async function saveDealershipStoreSettings(
       }
     `, { id: rooftop.rooftopId, timezone })
     if (rooftopResponse.success && rooftopResponse.data.updateRooftop) savedTimezone = rooftopResponse.data.updateRooftop.timezone
-    else timezoneError = rooftopResponse.success ? 'Timezone was not saved.' : `Timezone was not saved: ${rooftopResponse.error}`
+    else timezoneError = rooftopResponse.success ? 'No se guardó la zona horaria.' : `Timezone was not saved: ${rooftopResponse.error}`
   } else if (timezone && !rooftop) {
     timezoneError = 'Timezone was not saved: storefront location unavailable.'
   }

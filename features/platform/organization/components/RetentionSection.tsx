@@ -64,7 +64,7 @@ export function RetentionSection({
 
   const blockedReason = (row: Row) => {
     if (!canManage) return 'Requires dealership administration permission'
-    if (row.rooftop.status !== 'active') return 'Rooftop is not active'
+    if (row.rooftop.status !== 'active') return 'La sucursal no está activa'
     return undefined
   }
 
@@ -88,7 +88,7 @@ export function RetentionSection({
     const rationale = form.rationale.trim()
     const errors: FieldErrors = {}
     if (!/^\d+$/.test(daysText) || retentionDays < 1 || retentionDays > MAX_RETENTION_DAYS) errors.retentionDays = `Whole number from 1 to ${MAX_RETENTION_DAYS.toLocaleString('es-AR')}`
-    if (!rationale) errors.rationale = 'Rationale is required'
+    if (!rationale) errors.rationale = 'El fundamento es obligatorio'
     else if (rationale.length > 1000) errors.rationale = '1,000 characters or fewer'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return

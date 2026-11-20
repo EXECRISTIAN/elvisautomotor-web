@@ -34,8 +34,8 @@ const fieldLabel = 'text-[12px] font-medium text-muted-foreground'
 
 export function validateTradeInForm(values: TradeInFormValues, mode: 'create' | 'edit', leadRequired: boolean) {
   const errors: Partial<Record<keyof TradeInFormValues, string>> = {}
-  if (mode === 'create' && !values.rooftopId) errors.rooftopId = 'Select a rooftop'
-  if (mode === 'create' && leadRequired && !values.leadId) errors.leadId = 'Select the customer lead'
+  if (mode === 'create' && !values.rooftopId) errors.rooftopId = 'Elige una sucursal'
+  if (mode === 'create' && leadRequired && !values.leadId) errors.leadId = 'Elige la consulta del cliente'
   const vin = values.vin.trim().toUpperCase()
   if (vin && !VIN_PATTERN.test(vin)) errors.vin = '17 letters and numbers, no I, O or Q'
   const year = Number(values.year)

@@ -122,9 +122,9 @@ export async function getReportRunResult(id: string): Promise<Result<{ snapshot:
     query ReportRunResult($id: ID!) { reportRun(where: { id: $id }) { resultSnapshot exportFormat completedAt expiresAt savedReport { name } } }
   `, { id }, { cache: 'no-store' })
   if (!response.success) return { success: false, error: response.error }
-  if (!response.data.reportRun) return { success: false, error: 'Run not found' }
+  if (!response.data.reportRun) return { success: false, error: 'Ejecución no encontrada' }
   const run = response.data.reportRun
-  if (run.expiresAt && new Date(run.expiresAt).getTime() <= Date.now()) return { success: false, error: 'This run has expired. Run the report again for current results.' }
+  if (run.expiresAt && new Date(run.expiresAt).getTime() <= Date.now()) return { success: false, error: 'Esta ejecución venció. Vuelve a ejecutar el reporte para ver datos actuales.' }
   return { success: true, data: { snapshot: run.resultSnapshot, exportFormat: run.exportFormat, name: run.savedReport?.name || 'report', completedAt: run.completedAt } }
 }
 

@@ -156,7 +156,7 @@ export function VehicleDetailPageClient({
     return (
       <PageContainer title="Vehículo" breadcrumbs={breadcrumbs} header={<DeskHeader title="Vehículo" tone="bad" status="No disponible" />}>
         <div className="space-y-4 px-4 pb-24 md:px-6">
-          <Notice tone="bad">{error || 'Vehicle not found'}</Notice>
+          <Notice tone="bad">{error || 'Vehículo no encontrado'}</Notice>
           <Track>
             <Pill onClick={reload} disabled={loading}><RefreshCw className={loading ? 'animate-spin' : undefined} /> Reintentar</Pill>
             <Pill asChild variant="plain"><Link href={VEHICLES_HREF}><ArrowLeft /> Inventario</Link></Pill>
@@ -187,7 +187,7 @@ export function VehicleDetailPageClient({
     try {
       const response = await work()
       if (response.success) setMessage({ text: success, tone: 'ok' })
-      else setMessage({ text: response.error || 'Unable to save.', tone: 'bad' })
+      else setMessage({ text: response.error || 'No se pudo guardar.', tone: 'bad' })
     } catch {
       setMessage({ text: 'No se pudo guardar. Recarga para ver el estado actual.', tone: 'bad' })
     } finally {
@@ -210,7 +210,7 @@ export function VehicleDetailPageClient({
 
   // Actions -------------------------------------------------------------------------------------
 
-  const submitListing = () => stock && run('listing', () => submitInventoryMerchandising({ stockId: stock.id, reason: 'Enviado desde la ficha del vehículo', idempotencyKey: key('submit') }), 'Listing submitted for approval.')
+  const submitListing = () => stock && run('listing', () => submitInventoryMerchandising({ stockId: stock.id, reason: 'Enviado desde la ficha del vehículo', idempotencyKey: key('submit') }), 'Publicación enviada a aprobación.')
   const approveVersion = (versionId: string, updatedAt: string, reapprove = false) => run('listing', () => decideInventoryMerchandising({
     id: versionId, decision: 'approved', reason: reapprove ? 'Re-aprobado desde la ficha del vehículo' : 'Aprobado desde la ficha del vehículo', expectedUpdatedAt: updatedAt, idempotencyKey: key('approve'),
   }), reapprove ? 'Publicación aprobada nuevamente.' : 'Publicación aprobada.')
@@ -301,7 +301,7 @@ export function VehicleDetailPageClient({
         success = 'Unit moved.'
       }
     } else if (dialog.kind === 'cost' && stock) {
-      if (!COST_TYPES.includes(v('costType') as typeof COST_TYPES[number])) errors.costType = 'Choose a cost type'
+      if (!COST_TYPES.includes(v('costType') as typeof COST_TYPES[number])) errors.costType = 'Elige un tipo de costo'
       const amountCents = cents('amount', 'Importe', { required: true, positive: true })
       if (Object.keys(errors).length === 0) {
         work = () => recordInventoryCost({ stockId: stock.id, costType: v('costType'), amountCents: amountCents!, reference: v('reference') || undefined, reason: 'Costo registrado desde la ficha del vehículo', idempotencyKey: dialog.idempotencyKey })
@@ -309,9 +309,9 @@ export function VehicleDetailPageClient({
       }
     } else if (dialog.kind === 'recon-open' && stock) {
       requireText('title', 'Tarea')
-      if (!RECON_CATEGORIES.includes(v('category') as typeof RECON_CATEGORIES[number])) errors.category = 'Choose a category'
+      if (!RECON_CATEGORIES.includes(v('category') as typeof RECON_CATEGORIES[number])) errors.category = 'Elige una categoría'
       const estimatedCostCents = cents('estimate', 'Estimate')
-      if (v('dueAt') && Number.isNaN(new Date(`${v('dueAt')}T12:00:00`).getTime())) errors.dueAt = 'Enter a valid date'
+      if (v('dueAt') && Number.isNaN(new Date(`${v('dueAt')}T12:00:00`).getTime())) errors.dueAt = 'Ingresa una fecha válida'
       if (Object.keys(errors).length === 0) {
         work = () => openInventoryReconWorkItem({
           stockId: stock.id, title: v('title'), category: v('category'), estimatedCostCents: estimatedCostCents ?? 0, vendorName: v('vendorName'),
@@ -327,7 +327,7 @@ export function VehicleDetailPageClient({
       if (item && Object.keys(errors).length === 0) {
         work = () => transitionInventoryReconWorkItem({
           id: item.id, toStatus: dialog.kind === 'recon-complete' ? 'completed' : 'cancelled', actualCostCents: actualCostCents ?? undefined,
-          expectedUpdatedAt: item.updatedAt, reason: dialog.kind === 'recon-complete' ? 'Completed from the vehicle page' : v('reason'), idempotencyKey: dialog.idempotencyKey,
+          expectedUpdatedAt: item.updatedAt, reason: dialog.kind === 'recon-complete' ? 'Completado desde la página del vehículo' : v('reason'), idempotencyKey: dialog.idempotencyKey,
         })
         success = dialog.kind === 'recon-complete' ? 'Tarea terminada.' : 'Tarea cancelada.'
       }
@@ -339,9 +339,9 @@ export function VehicleDetailPageClient({
         success = 'Listing rejected.'
       }
     } else if (dialog.kind === 'condition') {
-      if (!v('reportDate') || Number.isNaN(new Date(`${v('reportDate')}T12:00:00`).getTime())) errors.reportDate = 'Enter a valid date'
+      if (!v('reportDate') || Number.isNaN(new Date(`${v('reportDate')}T12:00:00`).getTime())) errors.reportDate = 'Ingresa una fecha válida'
       const estimatedRepairs = whole('estimatedRepairs', 'Estimated repairs', { max: 10_000_000 })
-      if (!v('overallCondition')) errors.overallCondition = 'Choose an overall rating'
+      if (!v('overallCondition')) errors.overallCondition = 'Elige una calificación general'
       if (Object.keys(errors).length === 0) {
         work = () => saveConditionReport({
           id: dialog.targetId, vehicleId: vehicle.id, rooftopId: vehicle.rooftopId, reportDate: new Date(`${v('reportDate')}T12:00:00`).toISOString(),
@@ -351,9 +351,9 @@ export function VehicleDetailPageClient({
         success = 'Condition report saved.'
       }
     } else if (dialog.kind === 'history') {
-      if (v('acquisitionDate') && Number.isNaN(new Date(`${v('acquisitionDate')}T12:00:00`).getTime())) errors.acquisitionDate = 'Enter a valid date'
+      if (v('acquisitionDate') && Number.isNaN(new Date(`${v('acquisitionDate')}T12:00:00`).getTime())) errors.acquisitionDate = 'Ingresa una fecha válida'
       const previousOwners = whole('previousOwners', 'Dueños anteriores', { max: 99 })
-      if (values.hasAccidents === 'yes' && !v('accidentDetails')) errors.accidentDetails = 'Describe the accident history'
+      if (values.hasAccidents === 'yes' && !v('accidentDetails')) errors.accidentDetails = 'Describe el historial de choques'
       if (Object.keys(errors).length === 0) {
         work = () => saveVehicleHistory({
           id: dialog.targetId, vehicleId: vehicle.id, rooftopId: vehicle.rooftopId,
@@ -372,7 +372,7 @@ export function VehicleDetailPageClient({
     try {
       const response = await work()
       if (!response.success) {
-        setFormError(response.error || 'Unable to save.')
+        setFormError(response.error || 'No se pudo guardar.')
         return
       }
       setDialog(null)
@@ -639,7 +639,7 @@ export function VehicleDetailPageClient({
                   <Pill
                     size="sm"
                     disabled={Boolean(busy) || stock.merchandisingStatus === 'submitted' || needsPhotos || needsDetails}
-                    title={stock.merchandisingStatus === 'submitted' ? 'Review already pending' : needsPhotos ? 'Add a photo first' : needsDetails ? 'Add a price and description first' : undefined}
+                    title={stock.merchandisingStatus === 'submitted' ? 'Review already pending' : needsPhotos ? 'Primero agrega una foto' : needsDetails ? 'Primero agrega precio y descripción' : undefined}
                     onClick={() => void submitListing()}
                   >
                     Enviar a revisión

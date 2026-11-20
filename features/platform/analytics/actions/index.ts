@@ -59,6 +59,6 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     service: serviceRes.success && serviceRes.data ? serviceRes.data : null,
     operations: operationsRes.success ? operationsRes.data.operationalReport : null,
     currencyCode: (operationsRes.success && operationsRes.data.dealershipProfile?.currencyCode) || 'USD',
-    error: failure ? failure.error || 'Unable to load analytics.' : null,
+    error: failure ? failure.error || 'No se pudieron cargar las estadísticas.' : null,
   }
 }

@@ -131,7 +131,7 @@ export async function getCatalogData(): Promise<CatalogData> {
 type Result = { success: true } | { success: false; error: string }
 
 function done(response: { success: boolean; error?: string }): Result {
-  if (!response.success) return { success: false, error: response.error || 'Unable to save' }
+  if (!response.success) return { success: false, error: response.error || 'No se pudo guardar' }
   revalidatePath(CATALOG_PATH)
   return { success: true }
 }
@@ -140,7 +140,7 @@ function done(response: { success: boolean; error?: string }): Result {
 
 export async function saveMake(input: { id?: string; name: string }): Promise<Result> {
   const name = input.name.trim()
-  if (!name) return { success: false, error: 'Name is required' }
+  if (!name) return { success: false, error: 'El nombre es obligatorio' }
   const response = input.id
     ? await keystoneClient(`mutation UpdateMake($id: ID!, $data: MakeUpdateInput!) { updateMake(where: { id: $id }, data: $data) { id } }`, { id: input.id, data: { name } })
     : await keystoneClient(`mutation CreateMake($data: MakeCreateInput!) { createMake(data: $data) { id } }`, { data: { name } })
@@ -155,7 +155,7 @@ export type ModelInput = { id?: string; makeId: string; name: string; bodyStyle:
 
 export async function saveModel(input: ModelInput): Promise<Result> {
   const name = input.name.trim()
-  if (!name) return { success: false, error: 'Name is required' }
+  if (!name) return { success: false, error: 'El nombre es obligatorio' }
   const data = { name, bodyStyle: input.bodyStyle || null, baseYear: input.baseYear, make: { connect: { id: input.makeId } } }
   const response = input.id
     ? await keystoneClient(`mutation UpdateModel($id: ID!, $data: ModelUpdateInput!) { updateModel(where: { id: $id }, data: $data) { id } }`, { id: input.id, data })
@@ -169,7 +169,7 @@ export async function deleteModel(id: string): Promise<Result> {
 
 /** Adds the given inventory pairs to the catalog, creating any make that does not exist yet. */
 export async function addInventoryPairs(pairs: Array<{ make: string; model: string }>): Promise<Result & { added?: number }> {
-  if (!pairs.length) return { success: false, error: 'Nothing to add' }
+  if (!pairs.length) return { success: false, error: 'Nada para agregar' }
   const current = await getCatalogMakes()
   if (current.error) return { success: false, error: current.error }
   const makeIds = new Map(current.data.map(make => [make.name.toLowerCase(), make.id]))

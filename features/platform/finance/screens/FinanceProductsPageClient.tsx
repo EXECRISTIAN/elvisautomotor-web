@@ -82,14 +82,14 @@ export function FinanceProductsPageClient({ initial, initialError }: { initial: 
     const v = editor.values
     const errors: FieldErrors = {}
     const code = (v.code || '').trim().toUpperCase()
-    if (!v.rooftopId) errors.rooftopId = 'Select a rooftop.'
+    if (!v.rooftopId) errors.rooftopId = 'Elige una sucursal.'
     if (editor.mode === 'create') {
       if (!CODE_PATTERN.test(code)) errors.code = 'Use 2-80 letters, digits, dashes or underscores.'
-      else if ((catalog?.products || []).some(product => product.rooftop?.id === v.rooftopId && product.code === code)) errors.code = 'This code already exists at this rooftop.'
+      else if ((catalog?.products || []).some(product => product.rooftop?.id === v.rooftopId && product.code === code)) errors.code = 'Ese código ya existe en esta sucursal.'
     }
-    if (!(v.name || '').trim()) errors.name = 'Enter a product name.'
+    if (!(v.name || '').trim()) errors.name = 'Ingresa un nombre de producto.'
     else if (v.name.trim().length > 200) errors.name = 'Usa 200 caracteres o menos.'
-    if (!PRODUCT_CATEGORIES.includes(v.category as typeof PRODUCT_CATEGORIES[number])) errors.category = 'Select a category.'
+    if (!PRODUCT_CATEGORIES.includes(v.category as typeof PRODUCT_CATEGORIES[number])) errors.category = 'Elige una categoría.'
     const retail = (v.retail || '').trim() ? parseDollarsToCents(v.retail) : null
     if (retail == null) errors.retail = 'Enter a dollar amount, for example 1,299.50.'
     const costHidden = editor.mode === 'edit' && editor.product?.costCents == null

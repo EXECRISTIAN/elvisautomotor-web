@@ -180,7 +180,7 @@ function label(map: Record<string, string>, value: string | null | undefined) {
 function paymentMethodLabel(method: string, providerKey: string) {
   if (method === 'reservation-deposit') return 'Online reservation deposit'
   if (method) return label(DEAL_PAYMENT_METHOD_LABELS, method)
-  return providerKey === 'operator-recorded' ? 'Method not recorded' : label({ stripe: 'Tarjeta (online)' }, providerKey)
+  return providerKey === 'operator-recorded' ? 'Forma no registrada' : label({ stripe: 'Tarjeta (online)' }, providerKey)
 }
 
 function isCashDeal(deal: Deal) {
@@ -211,7 +211,7 @@ function getDealWarnings(deal: Deal) {
   // Loan risk flags only apply to financed deals; a cash buyer pays the whole amount.
   if (!isCashDeal(deal)) {
     if (total > 0 && downPayment / total < 0.05) warnings.push('Low down payment')
-    if (total > 0 && amountFinanced / total > 0.9) warnings.push('High loan-to-value')
+    if (total > 0 && amountFinanced / total > 0.9) warnings.push('Financiación alta respecto del valor')
     if (apr >= 12) warnings.push('High APR')
   }
   if ((deal.profit || 0) < 0) warnings.push('Negative gross')
@@ -362,14 +362,14 @@ export function FinanceDeskPageClient({
       providerKey: 'operator-recorded',
       idempotencyKey: `lender-queue:${application.id}:${crypto.randomUUID()}`,
     })
-    setNotice(response.success ? 'Application queued for lender review.' : `No se pudo enviar a la entidad: ${response.error}`)
+    setNotice(response.success ? 'Solicitud en cola para revisión de la entidad.' : `No se pudo enviar a la entidad: ${response.error}`)
     await loadDeals()
     setUpdatingId(null)
   }
 
   const recordApplicationDecision = (application: FinanceApplication) => {
     const submission = application.submissions[0]
-    if (!submission) { setNotice('Queue this application for lender review before recording a decision.'); return }
+    if (!submission) { setNotice('Envía la solicitud a revisión de la entidad antes de registrar una decisión.'); return }
     openFinanceTask({
       kind: 'lender-decision', application, submission,
       fields: { decision: '', externalReference: '', reasonCodes: '', approvedAmount: '', apr: '', termMonths: '', monthlyPayment: '' },
@@ -613,7 +613,7 @@ export function FinanceDeskPageClient({
         })
       } else if (task.kind === 'prerequisite-review' && deal) {
         const digest = deal.financeEvidence?.prerequisites?.digest
-        if (!digest) throw new Error(stepFor(deal, 'review')?.blockedReason || 'Record the menu decision, checks and signed contract first.')
+        if (!digest) throw new Error(stepFor(deal, 'review')?.blockedReason || 'Primero registra la decisión, los controles y el contrato firmado.')
         response = await reviewFinancePrerequisites({
           dealId: deal.id,
           worksheetVersion: deal.worksheetVersion,

@@ -156,7 +156,7 @@ function Field({
 type TextSettingKey = { [K in keyof DealershipStoreSettings]-?: DealershipStoreSettings[K] extends string ? K : never }[keyof DealershipStoreSettings]
 
 const TAX_RATE_ERROR = 'Enter a rate from 0 to 100, up to two decimals'
-const DOC_FEE_ERROR = 'Enter a dollar amount, up to two decimals'
+const DOC_FEE_ERROR = 'Ingresa un monto, con hasta dos decimales'
 
 export function StoreSettingsPageClient({
   initialSettings,

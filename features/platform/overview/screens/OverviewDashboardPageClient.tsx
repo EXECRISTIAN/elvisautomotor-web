@@ -169,7 +169,7 @@ export function OverviewDashboardPageClient({
       setReport(response.data.operationalReport)
       setCurrencyCode(response.data.dealershipProfile?.currencyCode || 'USD')
     } else {
-      setError(response.success ? 'Unable to load the overview.' : response.error)
+      setError(response.success ? 'No se pudo cargar el resumen.' : response.error)
     }
     setLoading(false)
   }
@@ -199,7 +199,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'today',
           label: 'Citas y pruebas de manejo de hoy',
-          detail: 'Service appointments and scheduled test drives',
+          detail: 'Citas de taller y pruebas de manejo programadas',
           count: metrics.todayAppointments,
           status: 'Today',
           tone: 'info',
@@ -211,7 +211,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'desk',
           label: 'Operaciones en curso',
-          detail: staleDesk ? `Pencil or submitted · some waiting ${DESK_STALE_DAYS}+ days` : 'Pencil or submitted',
+          detail: staleDesk ? `Pencil or submitted · some waiting ${DESK_STALE_DAYS}+ days` : 'En negociación o enviada',
           count: metrics.pendingDeals,
           status: 'Waiting',
           tone: 'warn',
@@ -234,7 +234,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'ro-estimate',
           label: 'Presupuestos esperando aprobación',
-          detail: 'Repair orders in Estimate',
+          detail: 'Órdenes de taller en presupuesto',
           count: orderCount('estimate'),
           status: 'Estimate',
           tone: 'warn',
@@ -245,7 +245,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'ro-approved',
           label: 'Órdenes aprobadas sin comenzar',
-          detail: 'Repair orders in Approved',
+          detail: 'Órdenes de taller aprobadas',
           count: orderCount('approved'),
           status: 'Aprobada',
           tone: 'info',
@@ -256,7 +256,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'ro-progress',
           label: 'Órdenes en el taller',
-          detail: 'Repair orders in progress',
+          detail: 'Órdenes de taller en curso',
           count: orderCount('in-progress'),
           status: 'In progress',
           tone: 'info',
@@ -267,7 +267,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'ro-completed',
           label: 'Órdenes terminadas sin facturar',
-          detail: 'Repair orders in Completed',
+          detail: 'Órdenes de taller completadas',
           count: orderCount('completed'),
           status: 'To invoice',
           tone: 'warn',
@@ -278,7 +278,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'funding',
           label: 'Contratos con observaciones de fondeo',
-          detail: 'Funding cases in Exception',
+          detail: 'Fondeos con observaciones',
           count: report.exceptions.funding,
           status: 'Exception',
           tone: 'bad',
@@ -289,7 +289,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'payments',
           label: 'Pagos con error o trabados',
-          detail: 'Payment transactions in Failed or Creating',
+          detail: 'Pagos con error o en creación',
           count: report.exceptions.payments,
           status: 'Exception',
           tone: 'bad',
@@ -300,7 +300,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'accounting',
           label: 'Lotes contables con error o en proceso',
-          detail: 'Journal batches in Failed or Posting',
+          detail: 'Lotes contables con error o en proceso',
           count: report.exceptions.accounting,
           status: 'Exception',
           tone: 'bad',
@@ -311,7 +311,7 @@ export function OverviewDashboardPageClient({
         {
           key: 'parts',
           label: 'Repuestos en o bajo el mínimo',
-          detail: 'On hand less committed, at or under the minimum',
+          detail: 'Existencia menos comprometido, en o bajo el mínimo',
           count: metrics.parts?.lowStockCount ?? 0,
           status: 'Low stock',
           tone: 'warn',

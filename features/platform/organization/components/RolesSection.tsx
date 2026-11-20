@@ -68,9 +68,9 @@ export function RolesSection({
     if (!form) return
     const name = form.name.trim()
     const errors: FieldErrors = {}
-    if (!name) errors.name = 'Name is required'
+    if (!name) errors.name = 'El nombre es obligatorio'
     else if (name.length > 200) errors.name = '200 characters or fewer'
-    else if (roles.some(role => role.name.trim().toLowerCase() === name.toLowerCase() && role.id !== form.role?.id)) errors.name = 'Already in use'
+    else if (roles.some(role => role.name.trim().toLowerCase() === name.toLowerCase() && role.id !== form.role?.id)) errors.name = 'Ya está en uso'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return
     setBusy(true)
@@ -150,7 +150,7 @@ export function RolesSection({
             {visible.map(role => {
               const assignable = roleIsTenantAssignable(role)
               const used = usage(role)
-              const deleteBlocked = lockedReason || (used > 0 ? 'Role is in use' : role.id === viewer?.roleId ? 'This is your role' : undefined)
+              const deleteBlocked = lockedReason || (used > 0 ? 'El rol está en uso' : role.id === viewer?.roleId ? 'Este es tu rol' : undefined)
               return (
                 <Tr key={role.id}>
                   <Td className="max-w-0 min-w-[8rem]">

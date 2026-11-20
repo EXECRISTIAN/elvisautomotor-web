@@ -79,16 +79,16 @@ export function RooftopsSection({
     const publicSlug = values.publicSlug.trim()
     const errors: FieldErrors = {}
     if (form.mode === 'create') {
-      if (!values.dealerGroupId) errors.dealerGroup = 'Dealer group is required'
-      if (!code) errors.code = 'Code is required'
+      if (!values.dealerGroupId) errors.dealerGroup = 'El grupo es obligatorio'
+      if (!code) errors.code = 'El código es obligatorio'
       else if (code.length > 40) errors.code = '40 characters or fewer'
-      else if (rooftops.some(rooftop => rooftop.dealerGroup?.id === values.dealerGroupId && rooftop.code === code)) errors.code = 'Already in use in this group'
+      else if (rooftops.some(rooftop => rooftop.dealerGroup?.id === values.dealerGroupId && rooftop.code === code)) errors.code = 'Ya está en uso en este grupo'
     }
-    if (!name) errors.name = 'Name is required'
+    if (!name) errors.name = 'El nombre es obligatorio'
     else if (name.length > 200) errors.name = '200 characters or fewer'
     if (!SLUG_PATTERN.test(publicSlug) || publicSlug.length < 2 || publicSlug.length > 120) errors.publicSlug = 'Lowercase letters, numbers and single hyphens, 2-120 characters'
-    else if (rooftops.some(rooftop => rooftop.publicSlug === publicSlug && (form.mode === 'create' || rooftop.id !== form.rooftop.id))) errors.publicSlug = 'Already in use'
-    if (!isValidTimeZone(values.timezone)) errors.timezone = 'Choose a time zone'
+    else if (rooftops.some(rooftop => rooftop.publicSlug === publicSlug && (form.mode === 'create' || rooftop.id !== form.rooftop.id))) errors.publicSlug = 'Ya está en uso'
+    if (!isValidTimeZone(values.timezone)) errors.timezone = 'Elige una zona horaria'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return
     setBusy(true)
@@ -100,7 +100,7 @@ export function RooftopsSection({
     if (!response.success) {
       setError(response.error)
       const serverErrors = { ...(response.fieldErrors || {}) }
-      if (serverErrors.rooftopKey) serverErrors.code = 'Already in use in this group'
+      if (serverErrors.rooftopKey) serverErrors.code = 'Ya está en uso en este grupo'
       setFieldErrors(serverErrors)
       return
     }

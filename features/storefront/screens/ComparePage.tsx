@@ -187,10 +187,15 @@ export function ComparePage() {
         <PageHeader title="No hay vehículos para comparar" />
         <Container className="py-[var(--sf-space-xl)]">
           <div className="sf-well flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="sf-title-line font-semibold">
-              <span className="sf-dot" aria-hidden="true" />
-              Todavía no agregaste vehículos
-            </p>
+            <div>
+              <p className="sf-title-line font-semibold">
+                <span className="sf-dot" aria-hidden="true" />
+                Todavía no agregaste vehículos
+              </p>
+              <p className="sf-muted mt-1 text-[length:var(--sf-text-sm)]">
+                En el inventario, toca «Comparar» en hasta 4 vehículos para verlos lado a lado: precio, kilometraje, motor y equipamiento.
+              </p>
+            </div>
             {browseTrack}
           </div>
         </Container>

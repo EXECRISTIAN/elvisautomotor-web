@@ -47,6 +47,6 @@ export const ELVIS_LINKS = {
     { label: 'Spotify Elvis Viaja', href: 'https://open.spotify.com/show/76FPAKqGzjaaKrNM2L7CNQ' },
     { label: 'Instagram Elvis Viaja', href: 'https://www.instagram.com/elvisviaja' },
     { label: 'Facebook Elvis Viaja', href: 'https://www.facebook.com/elvisviaja1' },
-    { label: 'X', href: 'https://x.com/autoselvis' },
+    { label: 'X (Twitter)', href: 'https://x.com/autoselvis' },
   ],
 }

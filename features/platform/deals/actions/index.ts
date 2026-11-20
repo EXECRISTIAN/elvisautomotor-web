@@ -312,7 +312,7 @@ export async function createDealWorksheet(data: Parameters<typeof createDealPenc
       createDealPencil(data: $data) { id updatedAt }
     }
   `, { data })
-  if (!created.success || !created.data?.createDealPencil?.id) return { success: false as const, error: created.success ? 'The deal was not created' : created.error }
+  if (!created.success || !created.data?.createDealPencil?.id) return { success: false as const, error: created.success ? 'No se creó la operación' : created.error }
   const deal = created.data.createDealPencil
   // Fees and tax lines are omitted, so version 1 keeps the dealership defaults the pencil was seeded with.
   const saved = await operatorCommandRequest<{ saveDealWorksheet: DealCommandResult }>(`
@@ -335,5 +335,5 @@ export async function createDealWorksheet(data: Parameters<typeof createDealPenc
     idempotencyKey: `${data.idempotencyKey}:worksheet-1`,
   } })
   revalidateDeal(deal.id)
-  return { success: true as const, data: { dealId: deal.id, worksheetError: saved.success ? null : saved.error || 'The worksheet was not saved' } }
+  return { success: true as const, data: { dealId: deal.id, worksheetError: saved.success ? null : saved.error || 'La hoja no se guardó' } }
 }

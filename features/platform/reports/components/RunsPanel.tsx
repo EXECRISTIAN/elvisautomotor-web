@@ -81,7 +81,7 @@ export function RunsPanel({
     setBulk(null)
     if (!response.success) { setNotice({ tone: 'bad', text: response.error }); return }
     const count = response.data?.queuedCount || 0
-    setNotice({ tone: count ? 'ok' : 'warn', text: count ? `${count} due ${count === 1 ? 'report' : 'reports'} queued` : 'No scheduled reports are due' })
+    setNotice({ tone: count ? 'ok' : 'warn', text: count ? `${count} due ${count === 1 ? 'report' : 'reports'} queued` : 'No hay reportes programados pendientes' })
     await onReload()
   }
 
@@ -94,7 +94,7 @@ export function RunsPanel({
     setViewing(run); setPreview(null); setPreviewError(null)
     if (effectiveRunStatus(run) !== 'completed' && effectiveRunStatus(run) !== 'expired') return
     const response = await getReportRunResult(run.id)
-    if (!response.success || !response.data) { setPreviewError(response.success ? 'Run has no result' : response.error); return }
+    if (!response.success || !response.data) { setPreviewError(response.success ? 'La ejecución no tiene resultado' : response.error); return }
     const report = (response.data.snapshot as { report?: { content?: string } } | null)?.report
     const text = typeof report?.content === 'string' ? report.content : JSON.stringify(report ?? {}, null, 2)
     setPreview({ text: text.slice(0, PREVIEW_LIMIT), truncated: text.length > PREVIEW_LIMIT })

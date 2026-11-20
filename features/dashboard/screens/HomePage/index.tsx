@@ -110,7 +110,7 @@ export async function HomePage() {
     <div className="flex flex-col">
       <h1 className="text-lg font-semibold md:text-2xl">Panel</h1>
       {enhancedLists.length > 0 && (
-        <p className="text-muted-foreground">{enhancedLists.length} Models</p>
+        <p className="text-muted-foreground">{enhancedLists.length} tablas</p>
       )}
     </div>
   )

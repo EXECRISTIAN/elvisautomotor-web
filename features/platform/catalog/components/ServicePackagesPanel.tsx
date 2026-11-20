@@ -74,19 +74,19 @@ export function ServicePackagesPanel({
     if (!draft) return
     const errors: Record<string, string> = {}
     const name = draft.name.trim()
-    if (!draft.id && !draft.rooftopId) errors.rooftopId = 'Choose a rooftop'
-    if (!name) errors.name = 'Name is required'
-    else if (name.length > 200) errors.name = 'Name is too long'
-    else if (packages.some(item => item.id !== draft.id && item.rooftop?.id === draft.rooftopId && item.name.toLowerCase() === name.toLowerCase())) errors.name = 'This rooftop already has a package with this name'
+    if (!draft.id && !draft.rooftopId) errors.rooftopId = 'Elige una sucursal'
+    if (!name) errors.name = 'El nombre es obligatorio'
+    else if (name.length > 200) errors.name = 'El nombre es demasiado largo'
+    else if (packages.some(item => item.id !== draft.id && item.rooftop?.id === draft.rooftopId && item.name.toLowerCase() === name.toLowerCase())) errors.name = 'Esta sucursal ya tiene un paquete con ese nombre'
     const priceCents = draft.price.trim() ? parseDollarsToCents(draft.price) : null
-    if (!draft.price.trim()) errors.price = 'Price is required'
+    if (!draft.price.trim()) errors.price = 'El precio es obligatorio'
     else if (priceCents === null) errors.price = 'Enter dollars and cents, e.g. 89.95'
     let duration: number | null = null
     if (draft.duration.trim()) {
       duration = Number(draft.duration.trim())
       if (!Number.isInteger(duration) || duration < 1 || duration > 1440) errors.duration = 'Minutes must be a whole number from 1 to 1440'
     }
-    if (draft.description.length > 2000) errors.description = 'Description is too long'
+    if (draft.description.length > 2000) errors.description = 'La descripción es demasiado larga'
     setFieldErrors(errors)
     if (Object.keys(errors).length) return
     setBusy(true); setFormError(null)
@@ -188,7 +188,7 @@ export function ServicePackagesPanel({
 
       <FormDialog
         open={draft !== null}
-        title={draft?.id ? 'Edit service package' : 'Add service package'}
+        title={draft?.id ? 'Edit service package' : 'Agregar paquete de servicio'}
         busy={busy}
         error={formError}
         onSubmit={submit}

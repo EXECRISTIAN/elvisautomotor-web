@@ -100,7 +100,7 @@ export function FeedHistoryPageClient({
   const publish = async () => {
     const attempt = resolvePublicFeedRunAttempt(pendingFeedRun, candidates.map(vehicle => vehicle.inventoryStockId), () => `public-feed:${crypto.randomUUID()}`)
     if (!attempt) {
-      setMessage({ text: 'No vehicles are ready to publish.', tone: 'idle' })
+      setMessage({ text: 'No hay vehículos listos para publicar.', tone: 'idle' })
       return
     }
     setPendingFeedRun(attempt)
@@ -141,7 +141,7 @@ export function FeedHistoryPageClient({
     event.preventDefault()
     const included = exportable.filter(vehicle => exportRows[vehicle.inventoryStockId]?.included)
     if (!included.length) {
-      setExportError('Select at least one unit')
+      setExportError('Elige al menos una unidad')
       return
     }
     const errors = included.flatMap(vehicle => {
@@ -161,7 +161,7 @@ export function FeedHistoryPageClient({
       setMessage({ text: `Export recorded: ${countLabel(run.attemptedCount, 'unit')}, ${run.failedCount} refused.`, tone: run.failedCount ? 'warn' : 'ok' })
       await load()
     } catch {
-      setExportError('Unable to confirm the export was recorded. Retry to finish.')
+      setExportError('No se pudo confirmar la exportación. Reintenta para terminar.')
     } finally {
       setBusy(null)
     }
@@ -393,7 +393,7 @@ export function FeedHistoryPageClient({
               <DialogFooter className="sm:justify-end">
                 <Track>
                   <Pill variant="plain" className="max-sm:h-11" disabled={busy === 'export'} onClick={() => setExportOpen(false)}>Cancelar</Pill>
-                  <Pill type="submit" variant="primary" className="max-sm:h-11" disabled={busy === 'export'}>{busy === 'export' ? 'Saving…' : 'Record export'}</Pill>
+                  <Pill type="submit" variant="primary" className="max-sm:h-11" disabled={busy === 'export'}>{busy === 'export' ? 'Saving…' : 'Registrar exportación'}</Pill>
                 </Track>
               </DialogFooter>
             </form>

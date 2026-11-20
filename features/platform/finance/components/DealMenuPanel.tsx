@@ -132,14 +132,14 @@ export function DealMenuPanel({
     if (dialog.kind === 'quote') {
       const v = dialog.values
       const status = v.status as 'requested' | 'quoted' | 'failed'
-      if (!['requested', 'quoted', 'failed'].includes(status)) errors.status = 'Select a quote result.'
+      if (!['requested', 'quoted', 'failed'].includes(status)) errors.status = 'Elige un resultado de cotización.'
       const retail = (v.retail || '').trim() ? parseDollarsToCents(v.retail) : null
       const cost = (v.cost || '').trim() ? parseDollarsToCents(v.cost) : null
       const term = (v.term || '').trim() ? Number(v.term) : null
       if (status === 'quoted') {
         if (retail == null) errors.retail = 'Ingresa el precio cotizado.'
-        if (cost == null) errors.cost = 'Enter the quoted dealer cost.'
-        if (!(v.reference || '').trim()) errors.reference = 'Enter the provider rate or quote reference.'
+        if (cost == null) errors.cost = 'Ingresa el costo cotizado.'
+        if (!(v.reference || '').trim()) errors.reference = 'Ingresa la tasa o referencia de cotización del proveedor.'
       } else {
         if ((v.retail || '').trim() && retail == null) errors.retail = 'Ingresa un importe.'
         if ((v.cost || '').trim() && cost == null) errors.cost = 'Ingresa un importe.'
@@ -157,9 +157,9 @@ export function DealMenuPanel({
       message = dialog.picked.length ? `Menú presentado con ${countLabel(dialog.picked.length, 'producto')}.` : 'Menú presentado sin productos.'
     } else {
       const codes = Object.keys(dialog.choices)
-      for (const code of codes) if (!dialog.choices[code]) errors[`choice:${code}`] = 'Choose or decline.'
+      for (const code of codes) if (!dialog.choices[code]) errors[`choice:${code}`] = 'Elige o rechaza.'
       const acknowledgment = (dialog.values.acknowledgment || '').trim()
-      if (!acknowledgment) errors.acknowledgment = 'Enter the disclosure acknowledgment.'
+      if (!acknowledgment) errors.acknowledgment = 'Ingresa la conformidad informada.'
       const selected = codes.filter(code => dialog.choices[code] === 'chosen')
       run = () => decideDealFinanceMenu({
         dealId: deal.id, expectedUpdatedAt: deal.updatedAt, menuId: dialog.menu.id,
@@ -204,7 +204,7 @@ export function DealMenuPanel({
     )
   }
 
-  const presentDisabledReason = inactiveReason || (currentMenu?.status === 'presented' ? 'Record the customer decision first' : null)
+  const presentDisabledReason = inactiveReason || (currentMenu?.status === 'presented' ? 'Primero registra la decisión del cliente' : null)
   const decideDisabledReason = inactiveReason || (currentMenu?.status !== 'presented' ? decideStep?.blockedReason || 'Present the F&I menu first' : null)
   const chosenTotal = currentMenu ? (currentMenu.optionsSnapshot || []).filter(option => (currentMenu.selectedProductCodes || []).includes(option.code)).reduce((sum, option) => sum + (option.retailPriceCents || 0), 0) : 0
 

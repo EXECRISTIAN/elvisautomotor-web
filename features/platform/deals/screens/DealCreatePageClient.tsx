@@ -96,13 +96,13 @@ const EMPTY_WALK_IN: WalkInForm = { firstName: '', lastName: '', phone: '', emai
 
 function walkInErrors(form: WalkInForm) {
   const errors: Partial<Record<keyof WalkInForm, string>> = {}
-  if (!form.firstName.trim()) errors.firstName = 'First name is required'
-  if (!form.lastName.trim()) errors.lastName = 'Last name is required'
+  if (!form.firstName.trim()) errors.firstName = 'El nombre es obligatorio'
+  if (!form.lastName.trim()) errors.lastName = 'El apellido es obligatorio'
   const email = form.email.trim()
   const digits = form.phone.replace(/\D/g, '')
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Email is invalid'
-  if (form.phone.trim() && (digits.length < 7 || digits.length > 15)) errors.phone = 'Phone is invalid'
-  if (!email && !form.phone.trim()) errors.phone = 'Enter a phone or email'
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'El email no es válido'
+  if (form.phone.trim() && (digits.length < 7 || digits.length > 15)) errors.phone = 'El teléfono no es válido'
+  if (!email && !form.phone.trim()) errors.phone = 'Ingresa un teléfono o email'
   return errors
 }
 
@@ -177,7 +177,7 @@ export function DealCreatePageClient({
         if (!current) return
         setSalesRepsLoading(false)
         if (response.success && response.data) setSalesReps(response.data.users)
-        else setError(response.error || 'Unable to load sales reps.')
+        else setError(response.error || 'No se pudieron cargar los vendedores.')
         // The lead's assigned salesperson is the only one the server accepts.
         if (response.success && response.data) {
           setFormData(previous => {
@@ -201,7 +201,7 @@ export function DealCreatePageClient({
       setTradeIns(response.data.tradeIns)
       setDealDefaults(response.data.dealDefaults)
     } else {
-      setError(response.error || 'Unable to load deal options.')
+      setError(response.error || 'No se pudieron cargar las opciones de la operación.')
     }
     setLoading(false)
   }
@@ -218,7 +218,7 @@ export function DealCreatePageClient({
   const handleSave = async () => {
     setSaveError(null)
     if (!formData.vehicleId) {
-      setSaveError('Select a vehicle.')
+      setSaveError('Elige un vehículo.')
       return
     }
 
@@ -227,13 +227,13 @@ export function DealCreatePageClient({
     const selectedVehicle = vehicles.find(vehicle => vehicle.id === formData.vehicleId)
     if (!selectedVehicle?.rooftop?.id) {
       setSaving(false)
-      setSaveError('The selected vehicle has no rooftop.')
+      setSaveError('El vehículo elegido no tiene sucursal.')
       return
     }
     const lead = leads.find(item => item.id === formData.leadId)
     if (lead?.rooftop?.id && lead.rooftop.id !== selectedVehicle.rooftop.id) {
       setSaving(false)
-      setSaveError('The customer and vehicle are at different rooftops.')
+      setSaveError('El cliente y el vehículo están en sucursales distintas.')
       return
     }
 
@@ -276,7 +276,7 @@ export function DealCreatePageClient({
     setWalkInTouched(true)
     setWalkInError(null)
     const vehicle = vehicles.find(item => item.id === formData.vehicleId)
-    if (!vehicle?.rooftop?.id) { setWalkInError('Choose a vehicle first'); return }
+    if (!vehicle?.rooftop?.id) { setWalkInError('Primero elige un vehículo'); return }
     if (Object.keys(walkInFieldErrors).length > 0) return
     setWalkInSaving(true)
     const response = await openWalkInLead({
@@ -289,7 +289,7 @@ export function DealCreatePageClient({
       idempotencyKey: walkInKeyRef.current,
     })
     setWalkInSaving(false)
-    if (!response.success) { setWalkInError(response.error || 'Unable to add the customer'); return }
+    if (!response.success) { setWalkInError(response.error || 'No se pudo agregar el cliente'); return }
     const created = response.data.openLead
     const lead: Lead = {
       id: created.id,
@@ -362,12 +362,12 @@ export function DealCreatePageClient({
   )
 
   const salesRepPlaceholder = !formData.vehicleId
-    ? 'Choose a vehicle first'
+    ? 'Primero elige un vehículo'
     : salesRepsLoading
       ? 'Loading sales reps'
       : salesReps.length === 0
-        ? 'No sales reps at this rooftop'
-        : 'Select sales rep'
+        ? 'No hay vendedores en esta sucursal'
+        : 'Elige un vendedor'
 
   const frontGross = selectedVehicle ? formData.vehiclePrice - (selectedVehicle.purchasePrice || 0) : null
 
@@ -649,7 +649,7 @@ export function DealCreatePageClient({
               <Track>
                 <Pill type="button" variant="plain" onClick={() => setWalkInOpen(false)} disabled={walkInSaving}>Cancelar</Pill>
                 <Pill type="submit" variant="primary" disabled={walkInSaving || !formData.vehicleId}>
-                  {walkInSaving ? 'Adding…' : 'Add customer'}
+                  {walkInSaving ? 'Adding…' : 'Agregar cliente'}
                 </Pill>
               </Track>
             </DialogFooter>

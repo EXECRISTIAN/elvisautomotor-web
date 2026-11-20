@@ -152,7 +152,7 @@ const acquisitionLabels: Record<string, string> = {
   approved: 'Ingreso aprobado',
   purchased: 'Comprado',
   arrived: 'Recibido',
-  reconditioning: 'Sent to recon',
+  reconditioning: 'Enviado a preparación',
   frontline: 'En exhibición',
   cancelled: 'Ingreso cancelado',
 }
@@ -283,7 +283,7 @@ export function VehicleListPageClient({
         return { ...current, ...Object.fromEntries(stages.map(stage => [stage, counted[stage] || 0])) }
       })
     } else {
-      setError(response.error || 'Unable to load inventory.')
+      setError(response.error || 'No se pudo cargar el inventario.')
     }
     setLoading(false)
   }
@@ -299,7 +299,7 @@ export function VehicleListPageClient({
 
   const beginTask = (type: InventoryTaskType, vehicle: Vehicle | null = null, reconWorkItem?: Vehicle['reconWorkItems'][number]) => {
     if (type === 'intake' && !intakeRooftopId) {
-      setActionMessage('No rooftop is available for intake.')
+      setActionMessage('No hay sucursal disponible para el ingreso.')
       return
     }
     const fields: Record<string, string> = type === 'intake' ? {
@@ -448,7 +448,7 @@ export function VehicleListPageClient({
           task.vehicle!.inventoryStockId,
           task.reconWorkItem!.updatedAt,
           money('actualDollars', 'Actual recon cost'),
-          'Completed from inventory operations desk',
+          'Completado desde la mesa de inventario',
           task.idempotencyKey
         ))
         reconCompletionAttempt = attempt
@@ -474,7 +474,7 @@ export function VehicleListPageClient({
         taskSuccessMessage = reconCompletionResultMessage(result)
       }
       if (!response?.success) {
-        setTaskError(response?.error || 'Unable to save. Your entries are kept so you can retry.')
+        setTaskError(response?.error || 'No se pudo guardar. Tus datos quedan cargados para reintentar.')
         return
       }
       closeTask()
@@ -495,7 +495,7 @@ export function VehicleListPageClient({
     if (!vehicle.acquisition || !['arrived', 'reconditioning'].includes(vehicle.acquisition.status)) return
     const toStatus = vehicle.acquisition.status === 'arrived' ? 'reconditioning' : 'frontline'
     if (toStatus === 'frontline' && (vehicle.reconStatus !== 'completed' || vehicle.merchandisingStatus !== 'approved')) {
-      setActionMessage('Finish recon and approve the listing before marking frontline.', 'warn')
+      setActionMessage('Termina la preparación y aprueba la publicación antes de marcarlo como listo para la venta.', 'warn')
       return
     }
     setActionId(vehicle.inventoryStockId)
@@ -602,7 +602,7 @@ export function VehicleListPageClient({
   const recordPublicFeed = async () => {
     const candidateStockIds = selectPublicFeedRunCandidates(vehicles).map(vehicle => vehicle.inventoryStockId)
     const attempt = resolvePublicFeedRunAttempt(pendingFeedRun, candidateStockIds, () => `public-feed:${crypto.randomUUID()}`)
-    if (!attempt) { setActionMessage('No vehicles are ready to publish.'); return }
+    if (!attempt) { setActionMessage('No hay vehículos listos para publicar.'); return }
     setPendingFeedRun(attempt)
     setActionId('feed')
     try {
@@ -732,7 +732,7 @@ export function VehicleListPageClient({
     if (active && !reconDone && acquisitionStatus !== 'arrived') {
       actions.push({
         key: 'recon',
-        label: !activeRecon ? 'Add work item' : activeRecon.status === 'in-progress' ? 'Terminar tarea' : 'Iniciar tarea',
+        label: !activeRecon ? 'Agregar tarea' : activeRecon.status === 'in-progress' ? 'Terminar tarea' : 'Iniciar tarea',
         onClick: () => advanceRecon(vehicle),
         disabled: Boolean(pendingReconStart),
       })
@@ -1227,7 +1227,7 @@ export function VehicleListPageClient({
               {task?.type === 'cost' && <>
                 {taskSelect('costType', 'Tipo de costo', COST_TYPES.map(value => ({ value, label: costTypeLabels[value] })))}
                 {taskInput('dollars', `Importe (${currencyCode})`, { inputMode: 'decimal' })}
-                {taskInput('reference', 'Invoice or reference (optional)', { required: false })}
+                {taskInput('reference', 'Factura o referencia (opcional)', { required: false })}
               </>}
               {task?.type === 'recon-open' && <>
                 {taskInput('title', 'Tarea')}

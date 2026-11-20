@@ -14,7 +14,7 @@ export function StoreSettingsSaveBar({
   onSave,
   isSaving,
   status,
-  label = 'Save Settings',
+  label = 'Guardar configuración',
   button,
   className,
 }: {

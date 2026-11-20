@@ -77,7 +77,7 @@ export function UserDetailsComponent({ user }: UserDetailsComponentProps) {
           {user.role ? <Status tone="ok">Activo</Status> : <Status tone="warn">Sin rol</Status>}
         </Td>
         <Td align="right" priority={2} className="whitespace-nowrap text-muted-foreground">
-          {leads} {leads === 1 ? "lead" : "leads"} · {deals} {deals === 1 ? "deal" : "deals"}
+          {leads} {leads === 1 ? "consulta" : "consultas"} · {deals} {deals === 1 ? "operación" : "operaciones"}
         </Td>
         <Td align="right" className="w-px whitespace-nowrap">
           <div className="inline-flex items-center gap-1">

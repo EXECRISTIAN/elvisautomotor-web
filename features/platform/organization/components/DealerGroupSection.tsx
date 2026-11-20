@@ -50,7 +50,7 @@ export function DealerGroupSection({
     const slug = edit.values.slug.trim()
     const legalName = edit.values.legalName.trim()
     const errors: FieldErrors = {}
-    if (!name) errors.name = 'Name is required'
+    if (!name) errors.name = 'El nombre es obligatorio'
     else if (name.length > 200) errors.name = '200 characters or fewer'
     if (!SLUG_PATTERN.test(slug) || slug.length < 2 || slug.length > 120) errors.slug = 'Lowercase letters, numbers and single hyphens, 2-120 characters'
     if (legalName.length > 240) errors.legalName = '240 characters or fewer'

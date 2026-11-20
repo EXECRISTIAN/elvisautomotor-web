@@ -17,6 +17,7 @@ export type TradeInDealRef = {
 
 export type TradeIn = {
   id: string
+  photos?: Array<{ id: string; image: { url: string | null } | null }>
   createdAt: string | null
   updatedAt: string | null
   vin: string | null
@@ -106,7 +107,7 @@ export async function getTradeIns() {
 export async function getTradeIn(id: string) {
   const [tradeIn, acquisitions, timeline] = await Promise.all([
     keystoneClient<{ tradeIn: TradeIn | null }>(`
-      query TradeInDetail($id: ID!) { tradeIn(where: { id: $id }) { ${TRADE_IN_FIELDS} } }
+      query TradeInDetail($id: ID!) { tradeIn(where: { id: $id }) { ${TRADE_IN_FIELDS} photos(orderBy: { sortOrder: asc }) { id image { url } } } }
     `, { id }, { cache: 'no-store' }),
     keystoneClient<{ inventoryAcquisitions: TradeInAcquisition[] }>(`
       query TradeInAcquisition($reference: String!) {

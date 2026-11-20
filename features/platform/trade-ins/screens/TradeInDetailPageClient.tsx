@@ -209,7 +209,7 @@ export function TradeInDetailPageClient({
     await finish('Trade-in updated')
   }
 
-  const offerError = offerCents <= 0 ? 'Enter the offer' : null
+  const offerError = offerCents <= 0 ? 'Ingresa la oferta' : null
 
   const submitAppraisal = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -320,8 +320,8 @@ export function TradeInDetailPageClient({
   const estimate = preliminaryWholesaleEstimate(tradeIn.referenceValue || 0, tradeIn.condition, tradeIn.mileage)
   const spread = tradeIn.referenceValue != null && tradeIn.offerAmount != null ? tradeIn.referenceValue - tradeIn.offerAmount : null
 
-  const appraiseBlocked = deal ? 'Detach from the deal to re-appraise' : null
-  const attachBlocked = tradeIn.offerAmount == null ? 'Record an offer first' : null
+  const appraiseBlocked = deal ? 'Desvincula de la operación para volver a tasar' : null
+  const attachBlocked = tradeIn.offerAmount == null ? 'Primero registra una oferta' : null
   const detachBlocked = deal && !dealIsPencil ? `The deal is ${labelForDeal(deal.status || '').toLowerCase()}` : null
   const editBlocked = deal && !dealIsPencil ? `On a ${labelForDeal(deal.status || '').toLowerCase()} deal` : null
   const allowed = tradeInActions(tradeIn, acquisition)
@@ -452,6 +452,23 @@ export function TradeInDetailPageClient({
               ]} />
             </DeskSection>
 
+            <DeskSection title="Fotos enviadas por el cliente" count={tradeIn.photos?.length ?? 0}>
+              {tradeIn.photos?.some((photo) => photo.image?.url) ? (
+                <ul className="grid grid-cols-2 gap-2 py-2 sm:grid-cols-4">
+                  {tradeIn.photos.filter((photo) => photo.image?.url).map((photo, index) => (
+                    <li key={photo.id}>
+                      <a href={photo.image!.url!} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md border bg-muted" aria-label={`Abrir foto ${index + 1} en tamaño completo`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photo.image!.url!} alt={`Foto ${index + 1} del usado`} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="py-2 text-sm text-muted-foreground">El cliente no envió fotos.</p>
+              )}
+            </DeskSection>
+
             <DeskSection title="Notas del estado">
               {tradeIn.exteriorCondition || tradeIn.interiorCondition || tradeIn.mechanicalIssues ? (
                 <Facts items={[
@@ -545,7 +562,7 @@ export function TradeInDetailPageClient({
       </ActionDialog>
 
       <ActionDialog open={dialog === 'attach'} title="Vincular a operación" description={`La oferta de ${formatWholeUsd(tradeIn.offerAmount)} pasa a ser el valor de toma`} busy={busy} error={dialogError} submitLabel="Vincular" onSubmit={submitAttach} onOpenChange={closeDialog}>
-        <FieldRow label="Operación borrador" htmlFor="attach-deal" error={showErrors && !selectedDeal ? 'Select a deal' : null}>
+        <FieldRow label="Operación borrador" htmlFor="attach-deal" error={showErrors && !selectedDeal ? 'Elige una operación' : null}>
           <Select value={dealId} onValueChange={setDealId} disabled={busy || pencilDeals === null || eligibleDeals.length === 0}>
             <SelectTrigger id="attach-deal" className="rounded-[4px]" aria-invalid={showErrors && !selectedDeal ? true : undefined}>
               <SelectValue placeholder={pencilDeals === null ? 'Loading deals' : eligibleDeals.length === 0 ? 'No hay operaciones borrador sin usado' : 'Elige la operación'} />
@@ -576,7 +593,7 @@ export function TradeInDetailPageClient({
         )}
       </ActionDialog>
 
-      <ActionDialog open={dialog === 'detach'} title="Desvincular de la operación" description={deal ? `${dealLabel(deal)} · trade credit returns to $0` : undefined} busy={busy} error={dialogError} submitLabel="Desvincular" onSubmit={submitDetach} onOpenChange={closeDialog}>
+      <ActionDialog open={dialog === 'detach'} title="Desvincular de la operación" description={deal ? `${dealLabel(deal)} · el crédito por el usado vuelve a $0` : undefined} busy={busy} error={dialogError} submitLabel="Desvincular" onSubmit={submitDetach} onOpenChange={closeDialog}>
         <FieldRow label="Motivo" htmlFor="detach-reason" error={showErrors && !reason.trim() ? 'El motivo es obligatorio' : null}>
           <Textarea className="rounded-[4px]" id="detach-reason" rows={2} maxLength={500} value={reason} onChange={event => setReason(event.target.value)} disabled={busy} aria-invalid={showErrors && !reason.trim() ? true : undefined} />
         </FieldRow>

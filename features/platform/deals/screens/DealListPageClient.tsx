@@ -121,7 +121,7 @@ export function DealListPageClient({
       if (status === 'all') setBoardDeals(toListDeals(loaded))
       setStatusCounts(current => (status === 'all' ? countByStatus(loaded) : { ...current, [status]: loaded.length }))
     } else {
-      setError(response.error || 'Unable to load deals.')
+      setError(response.error || 'No se pudieron cargar las operaciones.')
     }
     setLoading(false)
   }, [])

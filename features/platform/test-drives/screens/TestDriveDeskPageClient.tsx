@@ -178,7 +178,7 @@ export function TestDriveDeskPageClient({
       if (!options.length) setScheduleError('No hay vehículos disponibles')
     } else {
       setVehicleOptions([])
-      setScheduleError(response.error || 'Unable to load vehicles')
+      setScheduleError(response.error || 'No se pudieron cargar los vehículos')
     }
   }
 
@@ -202,7 +202,7 @@ export function TestDriveDeskPageClient({
     })
     setScheduleBusy(false)
     if (!response.success) {
-      setScheduleError(response.error || 'Unable to schedule test drive')
+      setScheduleError(response.error || 'No se pudo agendar la prueba de manejo')
       return
     }
     setSchedule(null)
@@ -222,7 +222,7 @@ export function TestDriveDeskPageClient({
       setFeedbackDrafts(feedbackDraftsFor(loaded))
       setInterestDrafts(interestDraftsFor(loaded))
     } else {
-      setError(response.error || 'Unable to load test drives.')
+      setError(response.error || 'No se pudieron cargar las pruebas de manejo.')
     }
 
     setLoading(false)
@@ -291,7 +291,7 @@ export function TestDriveDeskPageClient({
     const response = await markTestDriveNoShow(testDrive.id)
 
     if (!response.success) {
-      setNoShowError(response.error || 'Unable to mark no-show.')
+      setNoShowError(response.error || 'No se pudo marcar la ausencia.')
       setUpdatingId(null)
       return
     }
@@ -308,7 +308,7 @@ export function TestDriveDeskPageClient({
     const response = await cancelTestDrive(testDrive.id)
 
     if (!response.success) {
-      setCancelError(response.error || 'Unable to cancel this test drive.')
+      setCancelError(response.error || 'No se pudo cancelar esta prueba de manejo.')
       setUpdatingId(null)
       return
     }

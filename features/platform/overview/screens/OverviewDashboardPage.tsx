@@ -8,7 +8,7 @@ export async function OverviewDashboardPage() {
     <OverviewDashboardPageClient
       initialReport={response.success ? response.data.operationalReport : null}
       initialCurrencyCode={response.success ? response.data.dealershipProfile?.currencyCode || 'USD' : 'USD'}
-      initialError={response.success ? (response.data.operationalReport ? null : 'Unable to load the overview.') : response.error}
+      initialError={response.success ? (response.data.operationalReport ? null : 'No se pudo cargar el resumen.') : response.error}
     />
   )
 }

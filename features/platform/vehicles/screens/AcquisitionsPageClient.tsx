@@ -133,7 +133,7 @@ export function AcquisitionsPageClient({
       const response = await transitionInventoryAcquisition({ id: row.id, toStatus, expectedUpdatedAt: row.updatedAt, reason: `${acquisitionActionLabels[toStatus] || toStatus} from the acquisitions desk`, idempotencyKey: `acquisition-transition:${row.id}:${crypto.randomUUID()}` })
       setMessage(response.success ? { text: `${row.reference}: ${acquisitionStatusLabels[toStatus] || toStatus}.`, tone: 'ok' } : { text: response.error, tone: 'bad' })
     } catch {
-      setMessage({ text: 'Unable to save. Reload to check the current state.', tone: 'bad' })
+      setMessage({ text: 'No se pudo guardar. Recarga para ver el estado actual.', tone: 'bad' })
     } finally {
       await load()
       setBusy(null)
@@ -169,15 +169,15 @@ export function AcquisitionsPageClient({
 
     if (dialog.kind === 'start') {
       const rooftopId = v('rooftopId') || rooftops[0]?.id || ''
-      if (!rooftopId) errors.rooftopId = 'Choose a rooftop'
-      if (!ACQUISITION_SOURCES.includes(v('acquisitionSource') as typeof ACQUISITION_SOURCES[number])) errors.acquisitionSource = 'Choose a source'
+      if (!rooftopId) errors.rooftopId = 'Elige una sucursal'
+      if (!ACQUISITION_SOURCES.includes(v('acquisitionSource') as typeof ACQUISITION_SOURCES[number])) errors.acquisitionSource = 'Elige un origen'
       const vin = v('vin').toUpperCase()
       if (!VIN_PATTERN.test(vin)) errors.vin = '17 characters, no I, O or Q'
       const year = Number(v('year'))
       const maxYear = new Date().getFullYear() + 2
       if (!Number.isInteger(year) || year < 1900 || year > maxYear) errors.year = `Between 1900 and ${maxYear}`
-      if (!v('make')) errors.make = 'Make is required'
-      if (!v('model')) errors.model = 'Model is required'
+      if (!v('make')) errors.make = 'La marca es obligatoria'
+      if (!v('model')) errors.model = 'El modelo es obligatorio'
       const odometer = v('odometer') ? Number(v('odometer').replace(/,/g, '')) : null
       if (odometer != null && (!Number.isSafeInteger(odometer) || odometer < 0)) errors.odometer = 'Whole miles only'
       const appraisalCents = cents('appraisal', 'Appraisal', true)
@@ -193,14 +193,14 @@ export function AcquisitionsPageClient({
       const purchaseCents = cents('purchase', 'Purchase amount', true, true)
       const reconEstimateCents = cents('reconEstimate', 'Recon estimate', false)
       if (Object.keys(errors).length === 0) {
-        work = () => transitionInventoryAcquisition({ id: row.id, toStatus: 'purchased', purchaseCents, reconEstimateCents, expectedUpdatedAt: row.updatedAt, reason: 'Purchase recorded from the acquisitions desk', idempotencyKey: dialog.idempotencyKey })
+        work = () => transitionInventoryAcquisition({ id: row.id, toStatus: 'purchased', purchaseCents, reconEstimateCents, expectedUpdatedAt: row.updatedAt, reason: 'Compra registrada desde la mesa de ingresos', idempotencyKey: dialog.idempotencyKey })
         success = `${row.reference}: purchased.`
       }
     } else if (dialog.kind === 'stock' && row) {
-      if (!v('stockNumber')) errors.stockNumber = 'Stock number is required'
+      if (!v('stockNumber')) errors.stockNumber = 'El número de stock es obligatorio'
       else if (v('stockNumber').length > 80) errors.stockNumber = 'At most 80 characters'
-      if (!v('locationCode')) errors.locationCode = 'Location is required'
-      if (!row.vehicle && !CONDITIONS.includes(v('condition') as typeof CONDITIONS[number])) errors.condition = 'Choose a condition'
+      if (!v('locationCode')) errors.locationCode = 'La ubicación es obligatoria'
+      if (!row.vehicle && !CONDITIONS.includes(v('condition') as typeof CONDITIONS[number])) errors.condition = 'Elige un estado'
       if (Object.keys(errors).length === 0) {
         work = () => receiveAcquisitionIntoStock({
           acquisitionId: row.id, vehicleId: row.vehicle?.id, stockNumber: v('stockNumber').toUpperCase(), locationCode: v('locationCode').toUpperCase(),
@@ -209,7 +209,7 @@ export function AcquisitionsPageClient({
         success = `${row.reference}: stocked as ${v('stockNumber').toUpperCase()}.`
       }
     } else if (dialog.kind === 'cancel' && row) {
-      if (!v('reason')) errors.reason = 'Reason is required'
+      if (!v('reason')) errors.reason = 'El motivo es obligatorio'
       if (Object.keys(errors).length === 0) {
         work = () => transitionInventoryAcquisition({ id: row.id, toStatus: 'cancelled', expectedUpdatedAt: row.updatedAt, reason: v('reason'), idempotencyKey: dialog.idempotencyKey })
         success = `${row.reference}: cancelled.`
@@ -223,24 +223,24 @@ export function AcquisitionsPageClient({
     try {
       const response = await work()
       if (!response.success) {
-        setFormError(response.error || 'Unable to save.')
+        setFormError(response.error || 'No se pudo guardar.')
         return
       }
       setDialog(null)
       setMessage({ text: success, tone: 'ok' })
       await load()
     } catch {
-      setFormError('Unable to save. Your entries are kept so you can retry.')
+      setFormError('No se pudo guardar. Tus datos quedan cargados para reintentar.')
     } finally {
       setBusy(null)
     }
   }
 
   const dialogConfig: Record<DialogKind, { title: string; fields: InventoryFormField[]; submitLabel: string }> = {
-    start: { title: 'Appraise a unit', submitLabel: 'Record appraisal', fields: [
+    start: { title: 'Tasar una unidad', submitLabel: 'Registrar tasación', fields: [
       ...(rooftops.length > 1 ? [{ name: 'rooftopId', label: 'Rooftop', type: 'select' as const, options: rooftops.map(rooftop => ({ value: rooftop.id, label: rooftop.name })), wide: true }] : []),
       { name: 'acquisitionSource', label: 'Source', type: 'select', options: ACQUISITION_SOURCES.map(value => ({ value, label: acquisitionSourceLabels[value] })) },
-      { name: 'sourceReference', label: 'Source reference', maxLength: 200, required: false, placeholder: 'Lot #, seller, trade-in ref' },
+      { name: 'sourceReference', label: 'Source reference', maxLength: 200, required: false, placeholder: 'Lote, vendedor o referencia del usado' },
       { name: 'vin', label: 'VIN', maxLength: 17, wide: true },
       { name: 'year', label: 'Model year', type: 'number', min: 1900 },
       { name: 'odometer', label: 'Odometer (mi)', type: 'number', min: 0, required: false },
@@ -249,7 +249,7 @@ export function AcquisitionsPageClient({
       { name: 'appraisal', label: `Appraisal (${currencyCode})`, type: 'money' },
       { name: 'reconEstimate', label: `Recon estimate (${currencyCode})`, type: 'money', required: false },
     ] },
-    purchase: { title: 'Record purchase', submitLabel: 'Record purchase', fields: [
+    purchase: { title: 'Registrar compra', submitLabel: 'Registrar compra', fields: [
       { name: 'purchase', label: `Purchase amount (${currencyCode})`, type: 'money' },
       { name: 'reconEstimate', label: `Recon estimate (${currencyCode})`, type: 'money', required: false },
     ] },
@@ -366,7 +366,7 @@ export function AcquisitionsPageClient({
             </Notice>
           ) : rows.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">{search || filter !== 'active' ? 'No matches' : 'No acquisitions in progress'}</p>
+              <p className="text-sm text-muted-foreground">{search || filter !== 'active' ? 'No matches' : 'No hay ingresos en curso'}</p>
               {(search || filter !== 'active') && <Track><Pill size="sm" onClick={() => { setSearch(''); setFilter('active') }}>Reset filters</Pill></Track>}
             </div>
           ) : (

@@ -7,11 +7,11 @@ export async function downloadReportRun(runId: string): Promise<string | null> {
   const response = await getReportRunResult(runId)
   if (!response.success) return response.error
   const result = response.data
-  if (!result) return 'Run has no result'
+  if (!result) return 'La ejecución no tiene resultado'
   const snapshot = (result.snapshot || {}) as { report?: unknown }
   const report = snapshot.report as { contentType?: string; content?: string } | undefined
   const isCsv = result.exportFormat === 'csv' && typeof report?.content === 'string'
-  if (!report) return 'Run has no result'
+  if (!report) return 'La ejecución no tiene resultado'
   const body = isCsv ? (report.content as string) : JSON.stringify(report, null, 2)
   const blob = new Blob([body], { type: isCsv ? 'text/csv' : 'application/json' })
   const url = URL.createObjectURL(blob)

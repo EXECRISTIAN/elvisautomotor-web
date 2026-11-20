@@ -393,7 +393,7 @@ export function EditItemDrawerClient({
                     Guardado
                   </>
                 ) : (
-                  'Save Changes'
+                  'Guardar cambios'
                 )}
               </Button>
             </div>
