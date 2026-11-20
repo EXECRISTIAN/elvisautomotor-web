@@ -13,7 +13,7 @@ import { ELVIS_INFO } from '../lib/elvisContent'
 import { PageHeader } from '../components/PageHeader'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
-import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
+import { catalogMakes, POPULAR_MAKES, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatMileage, formatPrice } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
@@ -299,7 +299,7 @@ export function TradeInPage() {
                   <ComboField id="trade-year" name="year" required inputMode="numeric" maxLength={4} allowCustom={false} emptyText="Elige un año de la lista" value={formData.year} onChange={(v) => setFormData((p) => ({ ...p, year: v }))} placeholder="Elige o escribe el año" options={YEARS.map(String)} />
                 </Field>
                 <Field label="Marca" htmlFor="trade-make">
-                  <ComboField id="trade-make" name="make" required value={formData.make} onChange={(v) => setFormData((p) => (v === p.make ? p : { ...p, make: v, model: '', trim: '' }))} placeholder="Elige o escribe la marca" options={catalogMakes()} />
+                  <ComboField id="trade-make" name="make" required value={formData.make} onChange={(v) => setFormData((p) => (v === p.make ? p : { ...p, make: v, model: '', trim: '' }))} placeholder="Elige o escribe la marca" options={catalogMakes()} popular={POPULAR_MAKES} allLabel="Todas las marcas" />
                 </Field>
                 <Field label="Modelo" htmlFor="trade-model">
                   <ComboField id="trade-model" name="model" required value={formData.model} onChange={(v) => setFormData((p) => (v === p.model ? p : { ...p, model: v, trim: '' }))} placeholder={formData.make ? 'Elige o escribe el modelo' : 'Primero elige la marca'} options={catalogModels(formData.make)} emptyText="Escribe el modelo" />

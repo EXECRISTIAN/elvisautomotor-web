@@ -5,6 +5,125 @@
 type Catalog = Record<string, Record<string, string[]>>
 
 export const VEHICLE_CATALOG: Catalog = {
+  'Abarth': {
+    '500': ['1.4T 595', '1.4T 695'],
+    'Pulse': ['1.3T Abarth'],
+  },
+  'Arcfox': {
+    'T1': ['Eléctrico'],
+    'Alpha T': ['Eléctrico'],
+  },
+  'Changan': {
+    'CS15': ['1.5 Comfort'],
+    'CS35 Plus': ['1.4T Luxury'],
+    'CS55 Plus': ['1.5T Luxury'],
+    'Hunter': ['2.0T 4x4'],
+  },
+  'DFSK': {
+    'Glory 500': ['1.5T Luxury'],
+    'Glory 580': ['1.5T Luxury'],
+    'C31': ['1.5 Cabina simple'],
+    'K01': ['1.2 Furgón'],
+  },
+  'Dongfeng': {
+    'Rich 6': ['2.5 TD 4x4'],
+    'AX4': ['1.6 Comfort'],
+  },
+  'Forthing': {
+    'T5 Evo': ['1.5T Luxury'],
+    'U-Tour': ['1.5T'],
+  },
+  'Foton': {
+    'Tunland': ['2.8 TD 4x2', '2.8 TD 4x4'],
+    'View': ['2.8 TD Minibús'],
+    'Gratour': ['1.5 Furgón'],
+  },
+  'GAC': {
+    'GS3': ['1.5T'],
+    'GS4': ['1.5T'],
+    'Emkoo': ['2.0T'],
+  },
+  'Geely': {
+    'Coolray': ['1.5T Sport'],
+    'Geometry C': ['Eléctrico'],
+    'EX5': ['Eléctrico'],
+  },
+  'Great Wall': {
+    'Wingle 5': ['2.0 TD 4x2'],
+    'Wingle 7': ['2.0 TD 4x4'],
+    'Poer': ['2.0 TD 4x4'],
+  },
+  'GWM': {
+    'Ora 03': ['Eléctrico'],
+    'Poer': ['2.0 TD 4x4'],
+    'Tank 300': ['2.0T Híbrido'],
+  },
+  'JAC': {
+    'S2': ['1.5 Comfort'],
+    'S3': ['1.6 Luxury'],
+    'T6': ['2.0 TD 4x4'],
+    'T8': ['2.0 TD 4x4'],
+    'E10X': ['Eléctrico'],
+  },
+  'JMC': {
+    'Vigus': ['2.0 TD 4x4'],
+    'Grand Avenue': ['2.0 TD 4x4'],
+  },
+  'JMEV': {
+    'Easy 3': ['Eléctrico'],
+  },
+  'Kaiyi': {
+    'X3 Pro': ['1.5 CVT'],
+    'X7': ['1.5T'],
+  },
+  'Leapmotor': {
+    'T03': ['Eléctrico'],
+    'C10': ['Eléctrico'],
+  },
+  'Lexus': {
+    'UX': ['250h'],
+    'NX': ['350h'],
+    'RX': ['450h+'],
+    'ES': ['300h'],
+  },
+  'Lynk & Co': {
+    '01': ['1.5T PHEV'],
+    '02': ['Eléctrico'],
+  },
+  'Maxus': {
+    'T60': ['2.8 TD 4x4'],
+    'T90': ['2.0 TD 4x4'],
+    'Deliver 9': ['2.0 TD Furgón'],
+  },
+  'MG': {
+    'ZS': ['1.5 Comfort', '1.5 Luxury'],
+    'ZS EV': ['Eléctrico'],
+    'MG3': ['1.5 Hybrid+'],
+    'HS': ['1.5T Luxury'],
+    'MG4': ['Eléctrico'],
+  },
+  'Rely': {
+    'X7': ['1.5T'],
+  },
+  'Shineray': {
+    'T30': ['1.5 Cabina simple'],
+    'X30': ['1.5 Furgón'],
+  },
+  'Skywell': {
+    'ET5': ['Eléctrico'],
+  },
+  'Smart': {
+    'ForTwo': ['1.0'],
+    '#1': ['Eléctrico'],
+  },
+  'Soueast': {
+    'DX3': ['1.5'],
+    'S06': ['1.5T'],
+  },
+  'SWM': {
+    'G01': ['1.5T'],
+    'G05': ['1.5T'],
+  },
   'Alfa Romeo': {
     Giulia: ['2.0 Super', '2.0 Veloce', 'Quadrifoglio'],
     Stelvio: ['2.0 Super', '2.0 Veloce', 'Quadrifoglio'],
@@ -134,6 +253,10 @@ export const VEHICLE_CATALOG: Catalog = {
     Mustang: ['2.3 EcoBoost', '5.0 GT', 'Mach 1'],
     Transit: ['2.2 TD Furgón', '2.2 TD Minibús'],
     Mondeo: ['2.0 SE', '2.0 Titanium'],
+    'F-100': ['3.9 TD', '4.0 Duty'],
+    'Fiesta Kinetic Design': ['1.6 S', '1.6 SE', '1.6 Titanium'],
+    'Focus II': ['1.6 Ambiente', '2.0 Trend', '2.0 Ghia'],
+    'S-Max': ['2.3 Trend', '2.3 Titanium'],
   },
   Haval: {
     Jolion: ['1.5T Deluxe', '1.5 HEV Supreme'],
@@ -344,3 +467,6 @@ export function catalogVersions(make: string, model: string) {
   const modelKey = findKey(VEHICLE_CATALOG[makeKey], model)
   return modelKey ? [...VEHICLE_CATALOG[makeKey][modelKey]] : []
 }
+
+/** Marcas más buscadas: se muestran primero en la lista. */
+export const POPULAR_MAKES = ['Volkswagen', 'Ford', 'Chevrolet', 'Toyota', 'Peugeot', 'Renault']

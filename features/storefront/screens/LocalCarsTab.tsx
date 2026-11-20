@@ -6,7 +6,7 @@ import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
 import { applyCarChanges, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
-import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
+import { catalogMakes, POPULAR_MAKES, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS, USED_REPORT_TEXT_FIELDS } from '@/features/lib/vehicleSpecs'
 
 const money = (n: unknown) => (Number(n) > 0 ? Number(n).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }) : 'Sin precio')
@@ -110,7 +110,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div><span className="sf-label">Estado</span><div className="sf-track sf-track-choices mt-2">{[['used', 'Usado'], ['new', '0 km']].map(([v, l]) => <button key={v} type="button" className="sf-pill min-h-11" aria-pressed={editing.condition === v} onClick={() => set({ condition: v })}>{l}</button>)}</div></div>
             <div><label htmlFor="lc-year" className="sf-label">Año</label><div className="mt-2"><ComboField id="lc-year" value={String(editing.year || '')} onChange={(v) => set({ year: v })} options={YEARS} inputMode="numeric" maxLength={4} allowCustom={false} /></div></div>
-            <div><label htmlFor="lc-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="lc-make" value={editing.make} onChange={(v) => set({ make: v, model: v === editing.make ? editing.model : '' })} options={catalogMakes()} /></div></div>
+            <div><label htmlFor="lc-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="lc-make" value={editing.make} onChange={(v) => set({ make: v, model: v === editing.make ? editing.model : '' })} options={catalogMakes()} popular={POPULAR_MAKES} allLabel="Todas las marcas" /></div></div>
             <div><label htmlFor="lc-model" className="sf-label">Modelo</label><div className="mt-2"><ComboField id="lc-model" value={editing.model} onChange={(v) => set({ model: v })} options={catalogModels(editing.make)} emptyText="Escribe el modelo" /></div></div>
             <div><label htmlFor="lc-trim" className="sf-label">Versión</label><div className="mt-2"><ComboField id="lc-trim" value={editing.trim} onChange={(v) => set({ trim: v })} options={catalogVersions(editing.make, editing.model)} emptyText="Escribe la versión" /></div></div>
             <div><label htmlFor="lc-price" className="sf-label">Precio ($)</label><input id="lc-price" inputMode="numeric" value={editing.price || ''} onChange={(e) => set({ price: e.target.value.replace(/\D/g, '') })} className={field} placeholder="Ej.: 25000000" /></div>

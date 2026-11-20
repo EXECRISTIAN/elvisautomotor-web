@@ -122,3 +122,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Ronda 14:28: Ventas del panel local → botón Comprobante (imprimir o guardar en PDF; documento interno, no fiscal).
 - Ronda 15:27: Consultas del panel local muestran prioridad (alta/media/baja) de cada precalificación según sus respuestas, para ordenar a quién llamar primero.
 - Ronda 16:27: tarjetas del Resumen del panel local llevan a su sección (Consultas nuevas abre Consultas filtradas). Fecha del comprobante en formato 20/11/2026 verificada.
+
+### Ronda 20/11 17:30 — catálogo ampliado
+- Catálogo: 55+ marcas (se sumaron Abarth, Changan, DFSK, Foton, GAC, Geely, Great Wall, GWM, JAC, Lexus, MG, Maxus, Smart, etc.) y modelos Ford faltantes (F-100, Focus II, S-Max…).
+- Listas de marca con grupo "Más populares" arriba (Vende tu auto, Precalificador, panel Autos).

@@ -18,6 +18,9 @@ type Props = {
   allowCustom?: boolean
   emptyText?: string
   disabled?: boolean
+  /** Opciones destacadas que se muestran primero ("Más populares"). */
+  popular?: string[]
+  allLabel?: string
 }
 
 const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
@@ -26,7 +29,7 @@ const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, ''
  * Campo con lista desplegable debajo: se puede tocar para elegir o escribir para filtrar.
  * Funciona con mouse, teclado (flechas, Enter, Escape) y pantallas táctiles.
  */
-export function ComboField({ id, name, value, onChange, options, placeholder, required, inputMode = 'text', maxLength, allowCustom = true, emptyText = 'Sin coincidencias', disabled }: Props) {
+export function ComboField({ id, name, value, onChange, options, placeholder, required, inputMode = 'text', maxLength, allowCustom = true, emptyText = 'Sin coincidencias', disabled, popular, allLabel = 'Todas' }: Props) {
   const listId = useId()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<string | null>(null)
@@ -38,11 +41,13 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
   const text = query ?? value
   const filtered = useMemo(() => {
     const q = normalize(query ?? '')
-    if (!q) return options
+    if (!q) return popular?.length ? [...popular, ...options] : options
     const starts = options.filter((option) => normalize(option).startsWith(q))
     const contains = options.filter((option) => !normalize(option).startsWith(q) && normalize(option).includes(q))
     return [...starts, ...contains]
-  }, [options, query])
+  }, [options, query, popular])
+  const grouped = !normalize(query ?? '') && !!popular?.length
+  const popularCount = grouped ? popular!.length : 0
 
   useEffect(() => {
     if (!open) return
@@ -145,9 +150,14 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
           className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto overscroll-contain rounded-[8px] border py-1 shadow-xl"
           style={{ background: 'var(--sf-paper, #111)', borderColor: 'var(--sf-rule)' }}
         >
-          {filtered.length ? filtered.map((option, index) => (
+          {filtered.length ? filtered.map((option, index) => [
+            grouped && (index === 0 || index === popularCount) ? (
+              <li key={`h${index}`} role="presentation" className="px-4 pb-1 pt-2 text-[0.75rem] uppercase tracking-wide" style={{ color: 'var(--sf-ink-3)' }}>
+                {index === 0 ? 'Más populares' : allLabel}
+              </li>
+            ) : null,
             <li
-              key={option}
+              key={`${index}-${option}`}
               id={`${listId}-${index}`}
               role="option"
               data-index={index}
@@ -159,8 +169,8 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
               onClick={() => choose(option)}
             >
               {option}
-            </li>
-          )) : (
+            </li>,
+          ]) : (
             <li className="px-4 py-3 text-[0.9rem]" style={{ color: 'var(--sf-ink-3)' }}>
               {allowCustom && query ? `Se usará “${query.trim()}”` : emptyText}
             </li>
