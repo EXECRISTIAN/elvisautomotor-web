@@ -13,10 +13,13 @@ const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 
 // "Closed Sundays" when the store is shut that day, "No times left today" once today's slots have passed.
 export function closedDayLabel(availability: Extract<DayAvailability, { status: 'closed' }>) {
-  return availability.reason === 'past' ? 'No quedan horarios para hoy.' : `Cerrado ese día (${availability.weekday}).`
+  const es: Record<string, string> = { Sunday: 'domingo', Monday: 'lunes', Tuesday: 'martes', Wednesday: 'miércoles', Thursday: 'jueves', Friday: 'viernes', Saturday: 'sábado' }
+  return availability.reason === 'past' ? 'No quedan horarios para hoy.' : `Cerrado ese día (${es[availability.weekday] ?? availability.weekday}).`
 }
 
 const TIME_PATTERN = /(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)/gi
+// Horarios en español de 24 h: "9 a 13 h", "9:30 a 18 hs", "9-13".
+const ES_RANGE = /(\d{1,2})(?::(\d{2}))?\s*(?:a|al|hasta|-|–)\s*(\d{1,2})(?::(\d{2}))?\s*(?:h\b|hs\b|horas\b)?/i
 
 function toMinutes(hour: string, minute: string | undefined, meridiem: string) {
   const h = Number(hour) % 12
@@ -64,9 +67,13 @@ export function dayAvailability(hours: Hours, date: string, defaultSlots: string
   const weekday = WEEKDAYS[weekdayIndex] ?? ''
   const text = (hoursForWeekday(hours, weekdayIndex) || '').trim()
   const anyHoursListed = [hours.hoursMonFri, hours.hoursSaturday, hours.hoursSunday].some((value) => value?.trim())
-  if (/\bclosed\b/i.test(text) || (!text && anyHoursListed)) return { status: 'closed', reason: 'closed', weekday }
+  if (/\b(closed|cerrado|cerrada)\b/i.test(text) || (!text && anyHoursListed)) return { status: 'closed', reason: 'closed', weekday }
 
-  const times = Array.from(text.matchAll(TIME_PATTERN)).map((match) => toMinutes(match[1], match[2], match[3]))
+  let times = Array.from(text.matchAll(TIME_PATTERN)).map((match) => toMinutes(match[1], match[2], match[3]))
+  if (times.length < 2) {
+    const es = ES_RANGE.exec(text)
+    if (es && Number(es[1]) < 24 && Number(es[3]) <= 24) times = [Number(es[1]) * 60 + Number(es[2] || 0), Number(es[3]) * 60 + Number(es[4] || 0)]
+  }
   let slots = defaultSlots
   if (times.length >= 2 && times[1] > times[0]) {
     const [open, close] = times

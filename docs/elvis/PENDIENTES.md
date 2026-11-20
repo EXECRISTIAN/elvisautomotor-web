@@ -114,3 +114,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Para la versión online: pasar estas funciones (ventas, caja, permisos, edición del sitio) al panel real con base de datos.
 - Ronda 07:27: panel local → Sitio → "Respaldo de datos" (descargar y cargar una copia de todo). Probado.
 - Ronda 08:27: muestra local incluye Comparar y Créditos de fotos (antes daban 404); Comparar en español y con datos reales (combustible, caja, motor, deuda, GNC, cubiertas). Auditoría de botones y enlaces de la muestra: 0 rotos.
+- Ronda 09:27: formularios de crédito y prueba de manejo probados en la muestra (se guardan). Turnos de prueba de manejo/servicio respetan el horario en español ("9 a 13 h" → 9, 10, 11 y 12 h) y los días "Cerrado" (sábado y domingo).

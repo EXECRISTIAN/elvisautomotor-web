@@ -226,7 +226,7 @@ export function TestDrivePage() {
                 <div className="sf-well p-4">
                   <p role="alert" className="sf-title-line text-[length:var(--sf-text-sm)]">
                     <span className="sf-dot" data-tone="bad" aria-hidden="true" />
-                    <span>{closedDayLabel(availability)} Choose another date.</span>
+                    <span>{closedDayLabel(availability)} Elige otra fecha.</span>
                   </p>
                 </div>
               ) : (
