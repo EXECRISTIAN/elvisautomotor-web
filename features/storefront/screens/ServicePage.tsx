@@ -314,6 +314,7 @@ export function ServicePage() {
                     <Field label="Date" htmlFor="appointmentDate">
                       <PlatformDateInput
                         id="appointmentDate"
+                        isDateDisabled={(key) => { const day = dayAvailability(business, key, DEFAULT_SERVICE_SLOTS); return day.status === 'closed' && day.reason === 'closed' }}
                         name="appointmentDate"
                         required
                         min={minDate}

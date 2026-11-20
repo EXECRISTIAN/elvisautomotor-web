@@ -38,6 +38,7 @@ export function PlatformDateInput({
   defaultValue = "",
   onChange,
   disabled = false,
+  isDateDisabled,
   required = false,
   min,
   max,
@@ -52,6 +53,8 @@ export function PlatformDateInput({
   defaultValue?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
+  /** Días no elegibles (por ejemplo, días cerrados), con la fecha como "yyyy-MM-dd". */
+  isDateDisabled?: (dateKey: string) => boolean;
   required?: boolean;
   min?: string;
   max?: string;
@@ -67,7 +70,10 @@ export function PlatformDateInput({
   const triggerId = id ?? generatedId;
   const minDate = parseDateKey(min ?? "");
   const maxDate = parseDateKey(max ?? "");
-  const outOfRange = [minDate ? { before: minDate } : null, maxDate ? { after: maxDate } : null].filter((m): m is NonNullable<typeof m> => m !== null);
+  const closedDays = isDateDisabled
+    ? (day: Date) => isDateDisabled(`${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`)
+    : null
+  const outOfRange = [minDate ? { before: minDate } : null, maxDate ? { after: maxDate } : null, closedDays].filter((m): m is NonNullable<typeof m> => m !== null);
   function set(next: string) {
     if (value === undefined) setInner(next);
     onChange?.(next);

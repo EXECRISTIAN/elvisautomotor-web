@@ -213,6 +213,7 @@ export function TestDrivePage() {
               <Field label="Fecha" htmlFor="preferredDate" className="sm:max-w-xs">
                 <PlatformDateInput
                   id="preferredDate"
+                  isDateDisabled={(key) => { const day = dayAvailability(business, key, DEFAULT_TEST_DRIVE_SLOTS); return day.status === 'closed' && day.reason === 'closed' }}
                   name="preferredDate"
                   required
                   min={minDate}
