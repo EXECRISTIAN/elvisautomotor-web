@@ -260,7 +260,7 @@ export function TradeInPage() {
       <PageHeader title="Véndelo en Elvis" />
 
       <RequestLayout summary={summary}>
-        <ol className="sf-track mb-[var(--sf-space-lg)]" aria-label="Pasos">
+        <ol className="sf-track sf-steps mb-[var(--sf-space-lg)]" aria-label="Pasos">
           {STEPS.map((label, i) => {
             const n = i + 1
             return (
@@ -271,8 +271,7 @@ export function TradeInPage() {
                 aria-current={step === n ? 'step' : undefined}
                 style={step > n ? { color: 'var(--sf-ink)' } : undefined}
               >
-                <span className="sf-figure hidden opacity-70 sm:inline">{n}</span>
-                {label}
+                <span><span className="sf-figure opacity-70">{n}</span> {label}</span>
               </li>
             )
           })}

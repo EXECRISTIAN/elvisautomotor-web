@@ -176,3 +176,8 @@
 .elv-used-rail-item > * { height: 100%; }
 @media (min-width: 640px) { .elv-used-rail { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; } }
 @media (min-width: 1024px) { .elv-used-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Indicador de pasos: los pasos siempre visibles, a lo ancho, también en celular. */
+.storefront .sf-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+.storefront .sf-steps > .sf-pill { white-space: normal; text-align: center; line-height: 1.2; min-height: 3rem; padding-inline: 0.4rem; font-size: 0.8rem; gap: 0.3rem; }
+@media (min-width: 640px) { .storefront .sf-steps > .sf-pill { font-size: var(--sf-text-sm); padding-inline: 0.95rem; } }
