@@ -132,3 +132,8 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Años 1900 → año actual+1; marca/modelo/versión filtrados por año de fabricación (los que siguen en producción quedan abiertos a futuro).
 - Opción "Aquí no aparece el mío" en marca, modelo y versión.
 - Pendiente: hacer lo mismo en el filtro del inventario si se quiere.
+
+### Ronda 20/11 19:30
+- Precalificador (permuta): Año primero, luego Marca/Modelo filtrados por año y nuevo campo Versión.
+- Ícono de pestaña: isotipo AE original (también en la muestra).
+- El filtro del inventario usa las marcas del stock real (correcto, no usa el catálogo).
