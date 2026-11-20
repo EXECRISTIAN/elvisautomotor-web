@@ -157,3 +157,8 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 20/11 21:30
 - Prueba de manejo y turnos de taller: la confirmación mostraba fecha y hora en inglés ("Wed, Nov 25 · 9:00 AM"); ahora "miércoles, 25 de noviembre de 2026 · 09:00". Etiquetas del resumen del taller en español y precios con formato argentino.
+
+### Ronda 20/11 22:30
+- Revisión de textos en inglés visibles en 12 páginas: ninguno.
+- Quitado el botón "Taller" de Contacto y de Mi cuenta (Elvis no tiene taller; /service redirige a Contacto y en la muestra daba 404). /service ahora existe en la muestra por si llega un enlace viejo.
+- Recorrido de enlaces internos en la muestra: 35 páginas, ninguna rota.

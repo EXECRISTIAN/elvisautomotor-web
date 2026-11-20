@@ -36,7 +36,6 @@ function isScheduledKind(item: CustomerRequest) {
 
 const NEW_REQUESTS = [
   { href: '/test-drive', label: 'Prueba de manejo' },
-  { href: '/service', label: 'Taller' },
   { href: '/trade-in', label: 'Usado' },
   { href: '/financing', label: 'Financiación' },
 ]

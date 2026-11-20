@@ -94,7 +94,6 @@ export function ContactPage() {
           <>
             <Link href="/" className="sf-btn sf-btn-primary">Volver al inicio</Link>
             <Link href="/inventory" className="sf-btn sf-btn-ghost">Inventario</Link>
-            <Link href="/service" className="sf-btn sf-btn-ghost">Taller</Link>
           </>
         }
       />

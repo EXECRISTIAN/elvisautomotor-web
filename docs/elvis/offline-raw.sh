@@ -4,7 +4,7 @@ set -e
 SITE=/var/tmp/offline3/sitio; RAW=$SITE/_raw; rm -rf $RAW; mkdir -p $RAW/inventory
 save() { curl -sS -m 30 "http://localhost:3000$1" -o "$RAW/$2"; }
 save / index.html
-for r in panel inventory ofertas financing precalificador trade-in nosotros contact test-drive compare photo-credits; do save /$r $r.html; done
+for r in panel inventory ofertas financing precalificador trade-in nosotros contact test-drive compare photo-credits service; do save /$r $r.html; done
 save '/inventory?condition=new' 'inventory@condition=new.html'
 save '/inventory?condition=used' 'inventory@condition=used.html'
 for id in $(psql "postgresql://postgres:pg@localhost:5433/elvis_demo" -Atc "select id from \"Vehicle\""); do save /inventory/$id inventory/$id.html; done
