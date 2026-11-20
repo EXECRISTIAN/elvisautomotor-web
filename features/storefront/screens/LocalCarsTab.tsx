@@ -72,6 +72,12 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
     if (!editing) return
     if (!String(editing.make).trim() || !String(editing.model).trim() || !Number(editing.year)) { setError('Completa marca, modelo y año.'); return }
     if (!(Number(editing.price) > 0)) { setError('Indica el precio.'); return }
+    if (editing.ofertaSeccion === 'progresiva') {
+      const p = { inicial: 0, baja: 0, piso: 0, ...(editing.progresiva ?? {}) }
+      if (!p.inicial || !p.baja) { setError('Para la oferta progresiva carga el precio inicial y cuánto baja.'); return }
+      if (p.piso >= p.inicial) { setError('El precio final tiene que ser menor que el inicial.'); return }
+      if (!editing.progresiva?.desde) editing.progresiva = { ...prog, ...editing.progresiva }
+    }
     if (editing.ofertaSeccion === 'express' && !editing.previousPrice) { setError('Para mostrarlo en la oferta express carga el precio anterior (más alto que el actual).'); return }
     if (editing.previousPrice && Number(editing.previousPrice) <= Number(editing.price)) { setError('El precio anterior (oferta express) tiene que ser mayor al precio actual. Déjalo vacío si no está en oferta.'); return }
     const report = editing.condition === 'new' ? null : Object.fromEntries(Object.entries(editing.usedReport ?? {}).filter(([, v]) => v !== '' && v != null))
@@ -95,12 +101,15 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
   const set = (patch: Partial<LocalCar>) => editing && setEditing({ ...editing, ...patch })
   const setReport = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, usedReport: { ...(editing.usedReport ?? {}), ...patch } })
   const field = 'sf-input mt-2 w-full'
+  const prog = { inicial: 0, baja: 0, cada: '1 hora', piso: 0, desde: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), condiciones: '', ...(editing?.progresiva ?? {}) }
+  const setProg = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, progresiva: { ...prog, ...patch } })
   const sections = offerSections().filter((sec) => sec.activa)
   const site = siteSettings()
   const expressName = site.ofertaExpressNombre?.trim() || 'Ofertas express'
-  const offerOptions = ['No', expressName, ...sections.map((sec) => sec.nombre)]
-  const offerLabel = (car: LocalCar) => car.ofertaSeccion === 'express' ? expressName : sections.find((sec) => sec.id === car.ofertaSeccion)?.nombre ?? (car.previousPrice ? expressName : 'No')
-  const setOffer = (label: string) => set({ ofertaSeccion: label === expressName ? 'express' : sections.find((sec) => sec.nombre === label)?.id ?? '' })
+  const progName = site.ofertaProgresivaNombre?.trim() || 'Oferta progresiva'
+  const offerOptions = ['No', expressName, progName, ...sections.map((sec) => sec.nombre)]
+  const offerLabel = (car: LocalCar) => car.ofertaSeccion === 'express' ? expressName : car.ofertaSeccion === 'progresiva' ? progName : sections.find((sec) => sec.id === car.ofertaSeccion)?.nombre ?? (car.previousPrice ? expressName : 'No')
+  const setOffer = (label: string) => set({ ofertaSeccion: label === expressName ? 'express' : label === progName ? 'progresiva' : sections.find((sec) => sec.nombre === label)?.id ?? '' })
 
   if (base === null) return <p className="sf-muted mt-6">Cargando autos…</p>
 
@@ -132,6 +141,17 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
             <div><label htmlFor="lc-stock" className="sf-label">Stock n.º</label><input id="lc-stock" value={editing.stockNumber || ''} onChange={(e) => set({ stockNumber: e.target.value })} className={field} /></div>
             <div><span className="sf-label">Disponibilidad</span><div className="mt-2"><ComboField id="lc-status" value={STATUS[editing.status] ?? 'Disponible'} onChange={(v) => set({ status: Object.keys(STATUS).find((k) => STATUS[k] === v) ?? 'available' })} options={Object.values(STATUS)} allowCustom={false} /></div></div>
           </div>
+          {editing.ofertaSeccion === 'progresiva' && (
+            <fieldset className="grid gap-4 rounded-[10px] border p-4 sm:grid-cols-2 lg:grid-cols-5" style={{ borderColor: 'var(--sf-rule)' }}>
+              <legend className="sf-label px-1">{progName}: el precio baja solo hasta que alguien se lo lleva</legend>
+              <div><label htmlFor="pg-ini" className="sf-label">Precio inicial ($)</label><input id="pg-ini" inputMode="numeric" value={prog.inicial || ''} onChange={(e) => setProg({ inicial: Number(e.target.value.replace(/\D/g, '')) })} className={field} /></div>
+              <div><label htmlFor="pg-baja" className="sf-label">Baja ($)</label><input id="pg-baja" inputMode="numeric" value={prog.baja || ''} onChange={(e) => setProg({ baja: Number(e.target.value.replace(/\D/g, '')) })} className={field} /></div>
+              <div><span className="sf-label">Cada</span><div className="mt-2"><ComboField id="pg-cada" value={prog.cada} onChange={(v) => setProg({ cada: v })} options={['1 hora', '2 horas', '6 horas', '12 horas', '1 día', '2 días', '1 semana']} allowCustom={false} /></div></div>
+              <div><label htmlFor="pg-piso" className="sf-label">Precio final ($)</label><input id="pg-piso" inputMode="numeric" value={prog.piso ?? ''} onChange={(e) => setProg({ piso: Number(e.target.value.replace(/\D/g, '')) })} className={field} placeholder="0 = gratis" /></div>
+              <div><label htmlFor="pg-ini-f" className="sf-label">Empieza</label><input id="pg-ini-f" type="datetime-local" value={prog.desde} onChange={(e) => setProg({ desde: e.target.value })} className={field} /></div>
+              <div className="sm:col-span-2 lg:col-span-5"><label htmlFor="pg-cond" className="sf-label">Condiciones <span className="sf-faint">(opcional)</span></label><input id="pg-cond" value={prog.condiciones || ''} onChange={(e) => setProg({ condiciones: e.target.value })} className={field} placeholder="Ej.: contado, se entrega como está" /></div>
+            </fieldset>
+          )}
           <label className="flex min-h-11 items-center gap-3"><input type="checkbox" className="size-5" checked={Boolean(editing.isFeatured)} onChange={(e) => set({ isFeatured: e.target.checked })} />Destacado en la página principal</label>
           <div><label htmlFor="lc-desc" className="sf-label">Descripción</label><textarea id="lc-desc" rows={3} value={editing.description || ''} onChange={(e) => set({ description: e.target.value })} className={field} /></div>
 

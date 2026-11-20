@@ -140,7 +140,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### 20/11 20:00 — ofertas, rifa, patente, títulos
 - Panel → "Ofertas y rifas": renombrar Express/Progresivas/Rifa, crear/editar/ocultar/borrar secciones propias, rifas (crear, vender números, reservas desde la web, marcar pagado, liberar, sortear al azar entre pagados).
-- Autos: campo Patente (buscable) y "Mostrar en ofertas" (No / Express / sección propia).
+- Autos: campo Patente (buscable) y "Mostrar en ofertas" (No / Express / Progresiva con precio inicial, baja, cada cuánto, precio final y fecha / sección propia).
 - /ofertas: secciones propias y rifa con grilla de números; en la muestra offline la progresiva (Meriva N7) queda siempre en curso.
 - Títulos de pestaña "AE: Sección"; favicon con trazo más grueso.
 - Pendiente online: pasar secciones y rifas a la base real. Rifas requieren autorización (Lotería de la Provincia).

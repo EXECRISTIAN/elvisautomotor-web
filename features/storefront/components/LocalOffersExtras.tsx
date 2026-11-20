@@ -7,7 +7,9 @@ import { Container } from './Container'
 import { VehicleCard } from './VehicleCard'
 import { useLiveVehicles } from './LiveVehicles'
 import { ProgressiveOfferCard, type PublicProgressiveOffer } from './ProgressiveOfferCard'
-import { isLocalDemo, listRaffles, offerSections, reserveRaffleNumber, saveSubmission, siteSettings, type OfferSection, type Raffle } from '../lib/localStore'
+import { applyCarChanges, isLocalDemo, listRaffles, offerSections, reserveRaffleNumber, saveSubmission, siteSettings, type OfferSection, type Raffle } from '../lib/localStore'
+
+const STEP_MINUTES: Record<string, number> = { '1 hora': 60, '2 horas': 120, '6 horas': 360, '12 horas': 720, '1 día': 1440, '2 días': 2880, '1 semana': 10080 }
 
 const money = (n: number) => `$ ${Math.round(n || 0).toLocaleString('es-AR')}`
 
@@ -20,10 +22,25 @@ export function ProgressiveOffersList({ offers }: { offers: PublicProgressiveOff
   useEffect(() => {
     if (!isLocalDemo()) return
     const now = Date.now()
-    setList(offers.map((offer) => {
+    const base = offers.map((offer) => {
       if (offer.status === 'sold') return offer
       return { ...offer, startsAt: new Date(now - offer.stepMinutes * 60000 + 1000).toISOString(), phase: 'live' }
-    }))
+    })
+    setList(base)
+    void fetch('/_offline/datos.json').then((r) => r.json()).then((d) => {
+      const fromPanel = applyCarChanges(d.vehicles ?? []).filter((car) => car.ofertaSeccion === 'progresiva' && car.progresiva?.inicial).map((car): PublicProgressiveOffer => {
+        const p = car.progresiva
+        const img = (car.images ?? []).find((i: any) => i.isPrimary) ?? car.images?.[0]
+        return {
+          id: `panel-${car.id}`, number: null, title: `${car.make} ${car.model} ${car.year}`,
+          imageUrl: img?.image?.url || (img?.imagePath ? `/images/vehicles/${String(img.imagePath).split('/').pop()}` : null),
+          vehicleId: car.id, startsAt: new Date(p.desde || now).toISOString(), startPriceCents: p.inicial * 100, stepCents: p.baja * 100,
+          stepMinutes: STEP_MINUTES[p.cada] ?? 60, floorPriceCents: (p.piso || 0) * 100, status: car.status === 'sold' ? 'sold' : 'active', phase: 'live',
+          financing: '', conditions: p.condiciones || '', includesTransfer: true, walkIn: true,
+        }
+      })
+      if (fromPanel.length) setList([...fromPanel, ...base])
+    }).catch(() => {})
   }, [offers])
   const current = list.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming')
   const past = list.filter((offer) => offer.phase === 'sold' || offer.phase === 'final')
