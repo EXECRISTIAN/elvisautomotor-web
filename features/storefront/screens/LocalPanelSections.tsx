@@ -34,14 +34,17 @@ function useCars() {
   useEffect(() => { void fetch('/_offline/datos.json').then((r) => r.json()).then((d) => setBase(d.vehicles ?? [])).catch(() => setBase([])) }, [])
   return { cars: useMemo(() => (base ? applyCarChanges(base) : []), [base, v]), refresh: () => setV((x) => x + 1), ready: base !== null }
 }
-function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="elv-pq-panel !p-4">
+function Stat({ label, value, note, onClick }: { label: string; value: string; note?: string; onClick?: () => void }) {
+  const body = (
+    <>
       <p className="sf-muted text-[0.78rem] uppercase tracking-[0.06em]">{label}</p>
       <p className="sf-display mt-1 text-[1.35rem] tabular-nums">{value}</p>
       {note && <p className="sf-faint mt-0.5 text-[0.78rem]">{note}</p>}
-    </div>
+    </>
   )
+  return onClick
+    ? <button type="button" onClick={onClick} className="elv-pq-panel !p-4 text-left transition-colors hover:border-[var(--sf-accent)]" aria-label={`${label}: ${value}. Ver detalle`}>{body}</button>
+    : <div className="elv-pq-panel !p-4">{body}</div>
 }
 function Bars({ data }: { data: Array<{ label: string; value: number }> }) {
   const max = Math.max(1, ...data.map((d) => d.value))
@@ -58,7 +61,7 @@ function Bars({ data }: { data: Array<{ label: string; value: number }> }) {
 }
 
 // ---------- Resumen ----------
-export function SummarySection() {
+export function SummarySection({ go }: { go?: (tab: string, filter?: string) => void }) {
   const { cars } = useCars()
   const sales = listSales().filter((s) => !s.anulada)
   const cash = listCash()
@@ -73,14 +76,14 @@ export function SummarySection() {
   return (
     <div className="mt-6 grid gap-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Vendido este mes" value={money(monthSales.reduce((t, s) => t + s.precio, 0))} note={`${monthSales.length} ${monthSales.length === 1 ? 'auto' : 'autos'}`} />
-        <Stat label="Ganancia del mes" value={money(monthSales.reduce((t, s) => t + (s.precio - (s.costo || 0)), 0))} note="Precio de venta menos costo" />
-        <Stat label="Saldo de caja" value={money(balance)} note={`Mes: +${money(monthIn)} / −${money(monthOut)}`} />
-        <Stat label="Consultas nuevas" value={String(newLeads)} note="Sin responder" />
-        <Stat label="Autos en stock" value={String(stock.length)} note={`${stock.filter((c) => c.condition === 'new').length} 0 km · ${stock.filter((c) => c.condition !== 'new').length} usados`} />
-        <Stat label="Valor del stock" value={money(stock.reduce((t, c) => t + (Number(c.price) || 0), 0))} note="A precio publicado" />
-        <Stat label="Vendido en total" value={money(sales.reduce((t, s) => t + s.precio, 0))} note={`${sales.length} ventas`} />
-        <Stat label="Ticket promedio" value={money(sales.length ? sales.reduce((t, s) => t + s.precio, 0) / sales.length : 0)} />
+        <Stat onClick={go && (() => go('ventas'))} label="Vendido este mes" value={money(monthSales.reduce((t, s) => t + s.precio, 0))} note={`${monthSales.length} ${monthSales.length === 1 ? 'auto' : 'autos'}`} />
+        <Stat onClick={go && (() => go('ventas'))} label="Ganancia del mes" value={money(monthSales.reduce((t, s) => t + (s.precio - (s.costo || 0)), 0))} note="Precio de venta menos costo" />
+        <Stat onClick={go && (() => go('caja'))} label="Saldo de caja" value={money(balance)} note={`Mes: +${money(monthIn)} / −${money(monthOut)}`} />
+        <Stat onClick={go && (() => go('consultas', 'nueva'))} label="Consultas nuevas" value={String(newLeads)} note="Sin responder" />
+        <Stat onClick={go && (() => go('autos'))} label="Autos en stock" value={String(stock.length)} note={`${stock.filter((c) => c.condition === 'new').length} 0 km · ${stock.filter((c) => c.condition !== 'new').length} usados`} />
+        <Stat onClick={go && (() => go('autos'))} label="Valor del stock" value={money(stock.reduce((t, c) => t + (Number(c.price) || 0), 0))} note="A precio publicado" />
+        <Stat onClick={go && (() => go('ventas'))} label="Vendido en total" value={money(sales.reduce((t, s) => t + s.precio, 0))} note={`${sales.length} ventas`} />
+        <Stat onClick={go && (() => go('ventas'))} label="Ticket promedio" value={money(sales.length ? sales.reduce((t, s) => t + s.precio, 0) / sales.length : 0)} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="elv-pq-panel"><p className="font-bold">Ventas por mes</p><div className="mt-4"><Bars data={months.map((m) => ({ label: monthLabel(m), value: sales.filter((s) => monthKey(s.fecha) === m).reduce((t, s) => t + s.precio, 0) }))} /></div></div>

@@ -162,7 +162,7 @@ export function LocalPanelPage() {
           ))}
         </nav>
 
-        {current === 'resumen' ? <SummarySection />
+        {current === 'resumen' ? <SummarySection go={(key, filter) => { refresh(); if (key === 'consultas') { setStatusFilter(filter ?? ''); setKind(''); setSearch('') } setTab(key) }} />
         : current === 'ventas' ? <SalesSection user={user} />
         : current === 'caja' ? <CashSection user={user} />
         : current === 'clientes' ? <ClientsSection />
