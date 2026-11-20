@@ -6,7 +6,7 @@ import { Download, Plus, Trash2 } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import {
   PERMISSIONS, ROLES, addCashClose, addCashMove, applyCarChanges, deleteCashMove, listActivity, listCash, listCloses, listSales,
-  listSubmissions, logActivity, newId, rolePermissions, saveCar, saveRolePermissions, saveSale, saveSiteSettings, siteSettings, voidSale,
+  listSubmissions, logActivity, newId, exportAll, importAll, rolePermissions, saveCar, saveRolePermissions, saveSale, saveSiteSettings, siteSettings, voidSale,
   type LocalCar, type LocalUser, type Sale,
 } from '../lib/localStore'
 
@@ -311,6 +311,16 @@ export function SiteSection({ user }: { user: LocalUser }) {
               : <input id={`st-${key}`} value={values[key] || ''} onChange={(e) => { setSaved(false); setValues({ ...values, [key]: e.target.value }) }} className={field} placeholder={placeholder} />}
           </div>
         ))}
+      </div>
+      <div className="elv-pq-panel grid gap-3">
+        <p className="font-bold">Respaldo de datos</p>
+        <p className="sf-muted text-[0.85rem]">Descarga una copia de todo (consultas, autos, ventas, caja, usuarios y ajustes) o carga una copia anterior. Las fotos están en la carpeta "datos/fotos".</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" onClick={() => { const url = URL.createObjectURL(new Blob([exportAll()], { type: 'application/json' })); Object.assign(document.createElement('a'), { href: url, download: `elvis-respaldo-${today()}.json` }).click(); URL.revokeObjectURL(url); logActivity(user.name, 'Descargó un respaldo de datos') }}><Download className="size-4" aria-hidden="true" />Descargar respaldo</button>
+          <label className="sf-btn sf-btn-ghost min-h-12 cursor-pointer rounded-[10px]">Cargar respaldo
+            <input type="file" accept="application/json,.json" className="sr-only" onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; if (!window.confirm('¿Reemplazar todos los datos actuales por los del respaldo?')) return; try { importAll(await file.text()); logActivity(user.name, 'Cargó un respaldo de datos'); window.alert('Respaldo cargado.'); window.location.reload() } catch (err) { window.alert(err instanceof Error ? err.message : 'No se pudo cargar el respaldo.') } }} />
+          </label>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar cambios del sitio</button><a href="/" target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]">Ver el sitio</a>{saved && <span role="status" className="sf-muted">Guardado.</span>}</div>
     </form>

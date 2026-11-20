@@ -112,3 +112,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Panel local (/panel, 123/123): Resumen, Consultas, Autos, Ventas, Caja (cierre con arqueo), Clientes, Sitio (textos, contacto, aviso, colores), Usuarios, Permisos por rol, Actividad. Exportación a Excel en cada sección.
 - El sitio público refleja lo cargado en el panel (autos nuevos, precios, ofertas express, vendidos, textos y colores).
 - Para la versión online: pasar estas funciones (ventas, caja, permisos, edición del sitio) al panel real con base de datos.
+- Ronda 07:27: panel local → Sitio → "Respaldo de datos" (descargar y cargar una copia de todo). Probado.

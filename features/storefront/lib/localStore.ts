@@ -239,3 +239,16 @@ export function saveSiteSettings(settings: SiteSettings) {
   db().sitio = settings
   persist()
 }
+
+// ---------- Respaldo ----------
+/** Copia completa de los datos (sin las fotos, que quedan en datos/fotos). */
+export function exportAll() {
+  return JSON.stringify(db(), null, 2)
+}
+/** Reemplaza todos los datos por los de un respaldo. */
+export function importAll(json: string) {
+  const parsed = JSON.parse(json)
+  if (!parsed || typeof parsed !== 'object' || !('consultas' in parsed || 'usuarios' in parsed || 'autos' in parsed)) throw new Error('El archivo no es un respaldo de Elvis.')
+  cache = normalize(parsed)
+  persist()
+}

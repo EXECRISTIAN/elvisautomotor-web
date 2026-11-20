@@ -21,7 +21,8 @@ QUÉ FUNCIONA
   · Ventas: registrar ventas (el auto queda vendido y lo cobrado entra a caja), anular, Excel.
   · Caja: ingresos y egresos por categoría y medio, cierre con arqueo, Excel.
   · Clientes: agenda armada con consultas y ventas.
-  · Sitio: aviso destacado, textos de portada y Nosotros, contacto, horarios y colores.
+  · Sitio: aviso destacado, textos de portada y Nosotros, contacto, horarios y colores;
+    respaldo de datos (descargar y cargar una copia).
   · Usuarios y Permisos: crear usuarios y decidir qué puede hacer cada rol.
   · Actividad: quién hizo qué y cuándo.
 
