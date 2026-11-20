@@ -18,6 +18,7 @@ import { VehicleGallery } from '../components/vdp/VehicleGallery'
 import { VehicleNotFound } from '../components/vdp/VehicleNotFound'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { UsedReport } from '../components/UsedReport'
+import { ShareButton } from '../components/ShareButton'
 import { isLocalDemo } from '../lib/localStore'
 import { PreviousPrice, isExpressOffer } from '../components/PreviousPrice'
 import { formatMileage, formatPrice, vehicleTitle } from '../lib/format'
@@ -394,6 +395,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                     </Link>
                   )}
                 </div>
+                <ShareButton title={title} text={`${title} — ${displayPrice} en ${business.shortName}`} className="sf-btn-block" />
                 <div className="grid grid-cols-2 gap-2">
                 <Link href={tradeInHref} className="sf-btn sf-btn-ghost px-3">Plan canje</Link>
                 <button

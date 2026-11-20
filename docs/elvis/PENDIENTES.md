@@ -116,3 +116,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Ronda 08:27: muestra local incluye Comparar y Créditos de fotos (antes daban 404); Comparar en español y con datos reales (combustible, caja, motor, deuda, GNC, cubiertas). Auditoría de botones y enlaces de la muestra: 0 rotos.
 - Ronda 09:27: formularios de crédito y prueba de manejo probados en la muestra (se guardan). Turnos de prueba de manejo/servicio respetan el horario en español ("9 a 13 h" → 9, 10, 11 y 12 h) y los días "Cerrado" (sábado y domingo).
 - Ronda 10:27: el calendario de prueba de manejo y de servicio deshabilita los días cerrados (sábados y domingos según el horario cargado).
+- Ronda 11:27: panel local revisado en iPhone SE y iPad (sin desbordes ni botones chicos). Ficha del auto: botón Compartir (menú del celular o copia el enlace).
