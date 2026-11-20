@@ -72,7 +72,25 @@ function persist() {
   if (!cache) return
   const json = JSON.stringify(cache)
   try { window.localStorage.setItem(MIRROR, json) } catch { /* lleno o bloqueado */ }
-  if (diskAvailable) void fetch('/_local/db', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: json, keepalive: json.length < 60000 }).catch(() => {})
+  if (diskAvailable) queueDiskWrite(json)
+}
+
+// Guardado en disco en fila: una escritura por vez y siempre la última versión (así no se pisan).
+let writing = false
+let pending: string | null = null
+function queueDiskWrite(json: string) {
+  pending = json
+  if (writing) return
+  writing = true
+  const next = () => {
+    const body = pending
+    pending = null
+    if (body == null) { writing = false; return }
+    fetch('/_local/db', { method: 'PUT', headers: { 'content-type': 'application/json' }, body, keepalive: body.length < 60000 })
+      .catch(() => {})
+      .finally(next)
+  }
+  next()
 }
 
 export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase()

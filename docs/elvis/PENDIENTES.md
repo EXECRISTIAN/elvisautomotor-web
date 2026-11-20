@@ -162,3 +162,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Revisión de textos en inglés visibles en 12 páginas: ninguno.
 - Quitado el botón "Taller" de Contacto y de Mi cuenta (Elvis no tiene taller; /service redirige a Contacto y en la muestra daba 404). /service ahora existe en la muestra por si llega un enlace viejo.
 - Recorrido de enlaces internos en la muestra: 35 páginas, ninguna rota.
+
+### Ronda 20/11 23:30
+- Muestra offline: guardado en la carpeta "datos" en fila (una escritura por vez, siempre la última). Antes, dos guardados seguidos podían llegar desordenados y pisar datos. Probado 3 veces: lo guardado en un navegador aparece en otro navegador nuevo (patente y rifa).
