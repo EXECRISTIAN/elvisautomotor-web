@@ -1,16 +1,17 @@
 'use client'
+'use no memo' // Lee datos guardados fuera de React (carpeta datos): sin memorización automática.
 
 import { useEffect, useMemo, useState } from 'react'
 import { Download, LogOut, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Container } from '../components/Container'
 import { LocalCarsTab } from './LocalCarsTab'
+import { ActivitySection, CashSection, ClientsSection, PermissionsSection, SalesSection, SiteSection, SummarySection } from './LocalPanelSections'
 import { ComboField } from '../components/ComboField'
 import {
-  checkLogin, deleteSubmission, isLocalDemo, listSubmissions, listUsers, newId, saveUsers, updateSubmission,
+  ROLES, can, checkLogin, deleteSubmission, logActivity, isLocalDemo, listSubmissions, listUsers, newId, saveUsers, updateSubmission,
   type LocalSubmission, type LocalUser,
 } from '../lib/localStore'
 
-const ROLES = ['Administrador', 'Gerente de ventas', 'Vendedor', 'Responsable de créditos', 'Administración']
 const STATUSES = ['nueva', 'contactado', 'cerrada']
 const KINDS: Record<string, string> = { consulta: 'Consultas', precalificacion: 'Precalificador', usado: 'Usados ofrecidos', credito: 'Créditos', prueba: 'Pruebas de manejo', servicio: 'Servicio', reserva: 'Reservas' }
 const SESSION = 'elvis:sesion'
@@ -40,7 +41,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateSty
 export function LocalPanelPage() {
   const [ready, setReady] = useState(false)
   const [user, setUser] = useState<LocalUser | null>(null)
-  const [tab, setTab] = useState<'consultas' | 'autos' | 'usuarios'>('consultas')
+  const [tab, setTab] = useState('')
   const [items, setItems] = useState<LocalSubmission[]>([])
   const [users, setUsers] = useState<LocalUser[]>([])
   const [kind, setKind] = useState('')
@@ -68,6 +69,7 @@ export function LocalPanelPage() {
     const found = checkLogin(login.username, login.password)
     if (!found) { setLogin((l) => ({ ...l, error: 'Usuario o contraseña incorrectos.' })); return }
     try { window.sessionStorage.setItem(SESSION, found.id) } catch { /* sin almacenamiento */ }
+    logActivity(found.name, 'Ingresó al panel')
     setUser(found)
   }
   function logout() { try { window.sessionStorage.removeItem(SESSION) } catch { /* nada */ } setUser(null); setLogin({ username: '', password: '', error: '' }) }
@@ -89,13 +91,13 @@ export function LocalPanelPage() {
     if (users.some((u) => u.id !== editing.id && u.username.toLowerCase() === username.toLowerCase())) { setFormError('Ese usuario ya existe.'); return }
     const next = users.some((u) => u.id === editing.id) ? users.map((u) => (u.id === editing.id ? { ...editing, name, username } : u)) : [...users, { ...editing, name, username }]
     if (!next.some((u) => u.active && u.role === 'Administrador')) { setFormError('Debe quedar al menos un administrador activo.'); return }
-    saveUsers(next); setUsers(next); setEditing(null); setFormError('')
+    saveUsers(next); setUsers(next); logActivity(user?.name ?? '', `${users.some((u) => u.id === editing.id) ? 'Editó' : 'Creó'} el usuario ${username} (${editing.role})`); setEditing(null); setFormError('')
   }
   function removeUser(target: LocalUser) {
     const next = users.filter((u) => u.id !== target.id)
     if (!next.some((u) => u.active && u.role === 'Administrador')) { window.alert('Debe quedar al menos un administrador activo.'); return }
     if (!window.confirm(`¿Borrar a ${target.name}?`)) return
-    saveUsers(next); setUsers(next)
+    saveUsers(next); setUsers(next); logActivity(user?.name ?? '', `Borró el usuario ${target.username}`)
   }
 
   if (!ready) return null
@@ -118,7 +120,9 @@ export function LocalPanelPage() {
     )
   }
 
-  const isAdmin = user.role === 'Administrador'
+  const allSections: Array<[string, string]> = [['resumen', 'Resumen'], ['consultas', `Consultas (${items.filter((i) => i.status === 'nueva').length})`], ['autos', 'Autos'], ['ventas', 'Ventas'], ['caja', 'Caja'], ['clientes', 'Clientes'], ['sitio', 'Sitio'], ['usuarios', 'Usuarios'], ['permisos', 'Permisos'], ['actividad', 'Actividad']]
+  const sections = allSections.filter(([key]) => can(user, key === 'permisos' ? 'usuarios' : key))
+  const current = sections.some(([key]) => key === tab) ? tab : sections[0]?.[0] ?? ''
   return (
     <section className="py-8 md:py-12">
       <Container>
@@ -130,15 +134,22 @@ export function LocalPanelPage() {
           <button type="button" onClick={logout} className="sf-btn sf-btn-ghost min-h-11 rounded-[10px]"><LogOut className="size-4" aria-hidden="true" />Salir</button>
         </div>
 
-        <div className="sf-track sf-track-choices mt-6" role="tablist">
-          <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'consultas'} aria-selected={tab === 'consultas'} onClick={() => { refresh(); setTab('consultas') }}>Consultas ({items.length})</button>
-          <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'autos'} aria-selected={tab === 'autos'} onClick={() => setTab('autos')}>Autos</button>
-          {isAdmin && <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'usuarios'} aria-selected={tab === 'usuarios'} onClick={() => setTab('usuarios')}>Usuarios ({users.length})</button>}
-        </div>
+        <nav className="elv-panel-nav mt-6" role="tablist" aria-label="Secciones del panel">
+          {sections.map(([key, label]) => (
+            <button key={key} type="button" role="tab" className="sf-pill min-h-11 shrink-0" aria-pressed={current === key} aria-selected={current === key} onClick={() => { refresh(); setTab(key) }}>{label}</button>
+          ))}
+        </nav>
 
-        {tab === 'autos' ? (
-          <LocalCarsTab />
-        ) : tab === 'consultas' ? (
+        {current === 'resumen' ? <SummarySection />
+        : current === 'ventas' ? <SalesSection user={user} />
+        : current === 'caja' ? <CashSection user={user} />
+        : current === 'clientes' ? <ClientsSection />
+        : current === 'sitio' ? <SiteSection user={user} />
+        : current === 'permisos' ? <PermissionsSection user={user} />
+        : current === 'actividad' ? <ActivitySection />
+        : current === 'autos' ? (
+          <LocalCarsTab user={user} />
+        ) : current === 'consultas' ? (
           <div className="mt-6">
             <div className="flex flex-wrap items-end gap-3">
               <div className="w-full sm:w-64">
@@ -177,9 +188,9 @@ export function LocalPanelPage() {
                         </ul>
                       )}
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {STATUSES.map((s) => <button key={s} type="button" className="sf-pill min-h-11 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={item.status === s} onClick={() => { updateSubmission(item.id, { status: s }); refresh() }}>{s}</button>)}
+                        {STATUSES.map((s) => <button key={s} type="button" className="sf-pill min-h-11 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={item.status === s} onClick={() => { updateSubmission(item.id, { status: s }); logActivity(user.name, `Marcó como ${s} la consulta de ${who(item)}`); refresh() }}>{s}</button>)}
                         {item.data.phone ? <a className="sf-btn sf-btn-primary min-h-11 rounded-[8px]" href={`https://wa.me/549${String(item.data.phone).replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noreferrer">Escribir por WhatsApp</a> : null}
-                        <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { if (window.confirm('¿Borrar esta consulta?')) { deleteSubmission(item.id); refresh() } }}><Trash2 className="size-4" aria-hidden="true" />Borrar</button>
+                        <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { if (window.confirm('¿Borrar esta consulta?')) { deleteSubmission(item.id); logActivity(user.name, `Borró la consulta de ${who(item)}`); refresh() } }}><Trash2 className="size-4" aria-hidden="true" />Borrar</button>
                       </div>
                     </div>
                   )}
@@ -187,7 +198,7 @@ export function LocalPanelPage() {
               ))}
             </ul>
           </div>
-        ) : (
+        ) : current === 'usuarios' ? (
           <div className="mt-6">
             <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={() => { setFormError(''); setEditing({ id: newId('U'), name: '', username: '', password: '', role: 'Vendedor', active: true, createdAt: new Date().toISOString() }) }}><Plus className="size-4" aria-hidden="true" />Nuevo usuario</button>
             {editing && (
@@ -213,6 +224,8 @@ export function LocalPanelPage() {
               ))}
             </ul>
           </div>
+        ) : (
+          <p className="sf-muted mt-6">Tu rol no tiene secciones habilitadas. Pídele a un administrador que te dé permisos.</p>
         )}
       </Container>
     </section>

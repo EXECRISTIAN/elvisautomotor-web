@@ -104,3 +104,11 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Panel en la PC: usuario **123** / contraseña **123** (solo local; cambiar antes de publicar). `INICIAR-ELVIS.bat` levanta todo con Docker Desktop y guarda los datos en la PC.
 - Muestra rápida: `INICIAR-MUESTRA.bat` (menús y simulador funcionan; no guarda datos).
 - Se quitó "Basado en Openfront (MIT)" del pie (la licencia sigue en el repositorio, que es lo que exige).
+
+## Muestra local completa (20/11/2026, noche)
+- Todo se guarda en la carpeta `datos/` junto a INICIAR-MUESTRA.bat (consultas, usuarios, autos, ventas, caja, fotos, ajustes del sitio).
+- Fotos: galería/archivos o cámara (celular) / webcam (computadora), en Vende tu auto y en el panel.
+- Link de la publicación del auto (Vende tu auto y precalificador).
+- Panel local (/panel, 123/123): Resumen, Consultas, Autos, Ventas, Caja (cierre con arqueo), Clientes, Sitio (textos, contacto, aviso, colores), Usuarios, Permisos por rol, Actividad. Exportación a Excel en cada sección.
+- El sitio público refleja lo cargado en el panel (autos nuevos, precios, ofertas express, vendidos, textos y colores).
+- Para la versión online: pasar estas funciones (ventas, caja, permisos, edición del sitio) al panel real con base de datos.

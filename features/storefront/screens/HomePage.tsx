@@ -99,14 +99,14 @@ export async function HomePage() {
         <span className="elv-hero-shade" aria-hidden="true" />
         <span className="elv-hero-stripe" aria-hidden="true" />
         <Container className="relative flex min-h-[34rem] flex-col justify-center pb-28 pt-14 md:min-h-[38rem] md:pb-36">
-          <p className="elv-kicker">Calidad <span aria-hidden="true">•</span> Confianza <span aria-hidden="true">•</span> Respaldo</p>
+          <p className="elv-kicker" data-edit="kicker">Calidad <span aria-hidden="true">•</span> Confianza <span aria-hidden="true">•</span> Respaldo</p>
           <h1 id="hero-title" className="mt-4">
             <span className="block text-[clamp(3rem,9vw,5.75rem)] font-semibold uppercase leading-none tracking-[0.12em]" style={{ color: 'var(--sf-bone)' }}>{lead}</span>
             {rest && <span className="sf-gold-text mt-2 block text-[clamp(1.6rem,5vw,3.25rem)] font-bold uppercase leading-none tracking-[0.12em]">{rest}</span>}
           </h1>
-          <p className="elv-tagline mt-5">{tagline}</p>
+          <p className="elv-tagline mt-5" data-edit="heroTitulo">{tagline}</p>
           {business.homepageDescription && (
-            <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }}>{business.homepageDescription}</p>
+            <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }} data-edit="heroTexto">{business.homepageDescription}</p>
           )}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">

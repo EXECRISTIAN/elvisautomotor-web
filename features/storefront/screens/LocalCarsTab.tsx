@@ -1,10 +1,11 @@
 'use client'
+'use no memo' // Lee datos guardados fuera de React (carpeta datos): sin memorización automática.
 
 import { useEffect, useMemo, useState } from 'react'
 import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
-import { applyCarChanges, deleteCar, deletePhoto, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
+import { applyCarChanges, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
 import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS, USED_REPORT_TEXT_FIELDS } from '@/features/lib/vehicleSpecs'
 
@@ -21,7 +22,7 @@ function photoUrl(car: LocalCar) {
   return img?.image?.url || (img?.imagePath ? `/images/vehicles/${img.imagePath.split('/').pop()}` : '')
 }
 
-export function LocalCarsTab() {
+export function LocalCarsTab({ user }: { user?: { name: string } }) {
   const [base, setBase] = useState<LocalCar[] | null>(null)
   const [version, setVersion] = useState(0)
   const [editing, setEditing] = useState<LocalCar | null>(null)
@@ -74,16 +75,19 @@ export function LocalCarsTab() {
     if (editing.previousPrice && Number(editing.previousPrice) <= Number(editing.price)) { setError('El precio anterior (oferta express) tiene que ser mayor al precio actual. Déjalo vacío si no está en oferta.'); return }
     const report = editing.condition === 'new' ? null : Object.fromEntries(Object.entries(editing.usedReport ?? {}).filter(([, v]) => v !== '' && v != null))
     saveCar({ ...editing, year: Number(editing.year), price: Number(editing.price), previousPrice: editing.previousPrice ? Number(editing.previousPrice) : null, mileage: editing.condition === 'new' ? 0 : Number(editing.mileage) || 0, usedReport: report && Object.keys(report).length ? report : null })
+    logActivity(user?.name ?? '', `${editing.__new ? 'Publicó' : 'Editó'} ${editing.year} ${editing.make} ${editing.model}`)
     setEditing(null)
     setVersion((v) => v + 1)
   }
   function remove(car: LocalCar) {
     if (!window.confirm(`¿Borrar ${car.year} ${car.make} ${car.model}? Deja de verse en el sitio.`)) return
     deleteCar(car.id)
+    logActivity(user?.name ?? '', `Borró ${car.year} ${car.make} ${car.model}`)
     setVersion((v) => v + 1)
   }
   function quick(car: LocalCar, patch: Partial<LocalCar>) {
     saveCar({ ...car, ...patch })
+    logActivity(user?.name ?? '', `${patch.status === 'sold' ? 'Marcó como vendido' : 'Volvió a publicar'} ${car.year} ${car.make} ${car.model}`)
     setVersion((v) => v + 1)
   }
 

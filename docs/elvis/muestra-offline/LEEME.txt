@@ -13,8 +13,17 @@ QUÉ FUNCIONA
 - Fotos: "Agregar fotos" (galería/archivos) o "Sacar foto" (cámara del celular o webcam).
 - Panel: abajo de todo, "Acceso al panel" (o la dirección /panel).
   Usuario: 123   Contraseña: 123
-  Ahí ves las consultas que llegaron, cambias su estado, las exportas a Excel,
-  y creas, editas o borras usuarios con su rol.
+  Secciones:
+  · Resumen: vendido en el mes y en total, ganancia, saldo de caja, stock y su valor, gráficos.
+  · Consultas: todo lo que llega desde la web (con fotos y links), estado, WhatsApp, Excel.
+  · Autos: publicar, editar, fotos (galería o cámara), precio anterior (oferta express),
+    marcar vendido, destacado en el inicio, informe del usado.
+  · Ventas: registrar ventas (el auto queda vendido y lo cobrado entra a caja), anular, Excel.
+  · Caja: ingresos y egresos por categoría y medio, cierre con arqueo, Excel.
+  · Clientes: agenda armada con consultas y ventas.
+  · Sitio: aviso destacado, textos de portada y Nosotros, contacto, horarios y colores.
+  · Usuarios y Permisos: crear usuarios y decidir qué puede hacer cada rol.
+  · Actividad: quién hizo qué y cuándo.
 
 PARA TENER EN CUENTA
 - Es una demostración: los autos y usuarios de ejemplo son inventados.

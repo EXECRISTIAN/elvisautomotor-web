@@ -9,10 +9,15 @@ export type LocalSubmission = { id: string; kind: string; label: string; created
 export type LocalUser = { id: string; name: string; username: string; password: string; role: string; active: boolean; createdAt: string }
 export type LocalCar = Record<string, any> & { id: string }
 type CarChanges = { added: LocalCar[]; edits: Record<string, Partial<LocalCar>>; deleted: string[] }
-type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges }
+export type Sale = { id: string; fecha: string; autoId: string; auto: string; cliente: string; telefono: string; dni: string; precio: number; costo: number; formaPago: string; anticipo: number; canje: number; vendedor: string; notas: string; anulada?: boolean }
+export type CashMove = { id: string; fecha: string; tipo: 'ingreso' | 'egreso'; categoria: string; medio: string; monto: number; detalle: string; usuario: string; ventaId?: string }
+export type CashClose = { id: string; fecha: string; esperado: number; contado: number; diferencia: number; usuario: string; nota: string }
+export type Activity = { id: string; fecha: string; usuario: string; accion: string }
+export type SiteSettings = Record<string, string>
+type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings }
 
 const MIRROR = 'elvis:datos'
-const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] } }
+const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {} }
 
 export function isLocalDemo() {
   return typeof window !== 'undefined' && (window as unknown as { __ELVIS_OFFLINE__?: boolean }).__ELVIS_OFFLINE__ === true
@@ -26,6 +31,12 @@ function normalize(raw: any): Db {
     consultas: Array.isArray(raw?.consultas) ? raw.consultas : [],
     usuarios: Array.isArray(raw?.usuarios) ? raw.usuarios : [],
     autos: { added: raw?.autos?.added ?? [], edits: raw?.autos?.edits ?? {}, deleted: raw?.autos?.deleted ?? [] },
+    ventas: Array.isArray(raw?.ventas) ? raw.ventas : [],
+    caja: Array.isArray(raw?.caja) ? raw.caja : [],
+    cierres: Array.isArray(raw?.cierres) ? raw.cierres : [],
+    actividad: Array.isArray(raw?.actividad) ? raw.actividad : [],
+    permisos: raw?.permisos && typeof raw.permisos === 'object' ? raw.permisos : {},
+    sitio: raw?.sitio && typeof raw.sitio === 'object' ? raw.sitio : {},
   }
 }
 
@@ -161,4 +172,70 @@ export function vehicleHref(id: string) {
     if (base) return `/inventory/${base}#${id}`
   }
   return `/inventory/${id}`
+}
+
+
+// ---------- Permisos por rol ----------
+export const PERMISSIONS: Array<[string, string]> = [
+  ['resumen', 'Ver resumen y balances'], ['consultas', 'Ver y gestionar consultas'], ['clientes', 'Ver clientes'],
+  ['autos', 'Publicar y editar autos'], ['ventas', 'Registrar ventas'], ['caja', 'Movimientos y cierre de caja'],
+  ['sitio', 'Editar contenido y diseño del sitio'], ['usuarios', 'Usuarios y permisos'], ['actividad', 'Ver registro de actividad'],
+]
+export const ROLES = ['Administrador', 'Gerente de ventas', 'Vendedor', 'Responsable de créditos', 'Administración']
+const DEFAULT_PERMS: Record<string, string[]> = {
+  Administrador: PERMISSIONS.map(([k]) => k),
+  'Gerente de ventas': ['resumen', 'consultas', 'clientes', 'autos', 'ventas', 'caja', 'actividad'],
+  Vendedor: ['consultas', 'clientes', 'autos', 'ventas'],
+  'Responsable de créditos': ['consultas', 'clientes'],
+  Administración: ['resumen', 'clientes', 'ventas', 'caja', 'actividad'],
+}
+export function rolePermissions(): Record<string, string[]> {
+  return { ...DEFAULT_PERMS, ...db().permisos, Administrador: DEFAULT_PERMS.Administrador }
+}
+export function saveRolePermissions(perms: Record<string, string[]>) {
+  db().permisos = perms
+  persist()
+}
+export function can(user: LocalUser | null, permission: string) {
+  return Boolean(user && (rolePermissions()[user.role] ?? []).includes(permission))
+}
+
+// ---------- Actividad ----------
+export function logActivity(usuario: string, accion: string) {
+  db().actividad = [{ id: newId('A'), fecha: new Date().toISOString(), usuario, accion }, ...db().actividad].slice(0, 2000)
+  persist()
+}
+export const listActivity = () => db().actividad
+
+// ---------- Ventas y caja ----------
+export const listSales = () => db().ventas
+export const listCash = () => db().caja
+export const listCloses = () => db().cierres
+export function saveSale(sale: Sale, cash?: Omit<CashMove, 'id'>) {
+  db().ventas = [sale, ...db().ventas.filter((s) => s.id !== sale.id)]
+  if (cash && cash.monto > 0) db().caja = [{ ...cash, id: newId('C') }, ...db().caja]
+  persist()
+}
+export function voidSale(id: string) {
+  db().ventas = db().ventas.map((s) => (s.id === id ? { ...s, anulada: true } : s))
+  persist()
+}
+export function addCashMove(move: Omit<CashMove, 'id'>) {
+  db().caja = [{ ...move, id: newId('C') }, ...db().caja]
+  persist()
+}
+export function deleteCashMove(id: string) {
+  db().caja = db().caja.filter((m) => m.id !== id)
+  persist()
+}
+export function addCashClose(close: Omit<CashClose, 'id'>) {
+  db().cierres = [{ ...close, id: newId('Z') }, ...db().cierres]
+  persist()
+}
+
+// ---------- Contenido y diseño del sitio ----------
+export const siteSettings = (): SiteSettings => db().sitio
+export function saveSiteSettings(settings: SiteSettings) {
+  db().sitio = settings
+  persist()
 }

@@ -181,3 +181,7 @@
 .storefront .sf-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
 .storefront .sf-steps > .sf-pill { white-space: normal; text-align: center; line-height: 1.2; min-height: 3rem; padding-inline: 0.4rem; font-size: 0.8rem; gap: 0.3rem; }
 @media (min-width: 640px) { .storefront .sf-steps > .sf-pill { font-size: var(--sf-text-sm); padding-inline: 0.95rem; } }
+
+/* Menú de secciones del panel local: se desliza en celular. */
+.storefront .elv-panel-nav { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.35rem; scrollbar-width: thin; }
+.storefront .elv-panel-nav > .sf-pill { border: 1px solid var(--sf-rule); border-radius: 999px; padding-inline: 1rem; }

@@ -4,6 +4,7 @@ import '@/features/storefront/styles/signage.css'
 import '@/features/storefront/styles/elvis.css'
 import { ComparisonBar } from './ComparisonBar'
 import { Footer } from './Footer'
+import { LocalSiteOverrides } from './LocalSiteOverrides'
 import { Header } from './Header'
 import { StorefrontBusinessProvider } from './StorefrontBusinessProvider'
 import type { StorefrontSettingsState } from '../lib/business'
@@ -56,6 +57,7 @@ export function StorefrontShell({
         className={`storefront ${display.variable} min-h-screen flex flex-col`}
         style={brandStyle}
       >
+        <LocalSiteOverrides />
         <Header />
         <main className="sf-main flex-1">{children}</main>
         <Footer branding={!hideBranding} />

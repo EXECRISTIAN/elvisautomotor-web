@@ -15,7 +15,7 @@ export function NosotrosPage() {
           <h1 className="sf-display mt-3 text-[clamp(1.9rem,4vw,3rem)]">
             Desde {ELVIS_ABOUT.since}, <span className="sf-gold-text">{years} años</span> en la compra y venta de autos
           </h1>
-          <p className="mt-6 max-w-3xl text-[1.05rem] leading-relaxed" style={{ color: 'var(--sf-ink-2)' }}>{ELVIS_ABOUT.intro}</p>
+          <p className="mt-6 max-w-3xl text-[1.05rem] leading-relaxed" style={{ color: 'var(--sf-ink-2)' }} data-edit="nosotrosIntro">{ELVIS_ABOUT.intro}</p>
           <figure className="mt-10">
             <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--sf-radius-md)] sm:aspect-[16/9]">
               <Image src="/images/elvis/salon-frente.jpg" alt="Frente del salón de Elvis Automotores en Andrés Baranda 2134, Quilmes" fill sizes="(min-width: 1280px) 1200px, 100vw" className="object-cover object-[50%_70%]" />
