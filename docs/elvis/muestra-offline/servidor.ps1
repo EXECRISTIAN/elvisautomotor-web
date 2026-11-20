@@ -1,4 +1,4 @@
-# Elvis Automotores — muestra local. Sirve la carpeta "sitio" en http://localhost:8080 y abre el navegador.
+﻿# Elvis Automotores - muestra local. Sirve la carpeta "sitio" en http://localhost:8080 y abre el navegador.
 # No instala nada: usa PowerShell, que viene con Windows. Para cerrarlo, cierra esta ventana.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Web
@@ -12,7 +12,7 @@ $types = @{ '.html'='text/html; charset=utf-8'; '.js'='application/javascript'; 
   '.woff2'='font/woff2'; '.woff'='font/woff'; '.txt'='text/plain; charset=utf-8'; '.xml'='application/xml' }
 
 $listener = $null
-# Siempre el mismo puerto si está libre: así el navegador conserva los datos guardados.
+# Siempre el mismo puerto si esta libre: asi el navegador conserva los datos guardados.
 foreach ($port in 8080, 8081, 8082, 8090, 8765) {
   try {
     $l = New-Object System.Net.HttpListener
@@ -23,7 +23,7 @@ foreach ($port in 8080, 8081, 8082, 8090, 8765) {
 if (-not $listener) { Write-Host 'No se pudo abrir un puerto local. Cierra otros programas e intenta de nuevo.'; Read-Host 'Enter para salir'; exit 1 }
 $base = $listener.Prefixes | Select-Object -First 1
 Write-Host ''
-Write-Host '  ELVIS AUTOMOTORES — muestra local' -ForegroundColor Yellow
+Write-Host '  ELVIS AUTOMOTORES - muestra local' -ForegroundColor Yellow
 Write-Host "  Abierta en $base  (deja esta ventana abierta mientras la miras)"
 Write-Host ''
 Start-Process $base
@@ -53,7 +53,7 @@ function Find-File($url) {
   $candidates += (Join-Path $raw ($name + '.html'))
   $candidates += (Join-Path $root $rel)
   foreach ($c in $candidates) { if ((Test-Path -LiteralPath $c -PathType Leaf) -and (Inside $c)) { return $c } }
-  # Autos agregados desde el panel: se usa una ficha como plantilla y la página carga el auto por su dirección.
+  # Autos agregados desde el panel: se usa una ficha como plantilla y la pagina carga el auto por su direccion.
   if ($rel -like ('inventory' + [IO.Path]::DirectorySeparatorChar + '*')) {
     $tpl = Get-ChildItem -LiteralPath (Join-Path $raw 'inventory') -Filter '*.html' | Select-Object -First 1
     if ($tpl) { return $tpl.FullName }

@@ -117,3 +117,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Ronda 09:27: formularios de crédito y prueba de manejo probados en la muestra (se guardan). Turnos de prueba de manejo/servicio respetan el horario en español ("9 a 13 h" → 9, 10, 11 y 12 h) y los días "Cerrado" (sábado y domingo).
 - Ronda 10:27: el calendario de prueba de manejo y de servicio deshabilita los días cerrados (sábados y domingos según el horario cargado).
 - Ronda 11:27: panel local revisado en iPhone SE y iPad (sin desbordes ni botones chicos). Ficha del auto: botón Compartir (menú del celular o copia el enlace).
+- Ronda 12:27: servidor.ps1 sin caracteres especiales y con BOM UTF-8 (evita que Windows PowerShell 5.1 lo lea mal y no arranque).
