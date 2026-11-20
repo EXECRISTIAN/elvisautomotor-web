@@ -5,6 +5,20 @@
 type Catalog = Record<string, Record<string, string[]>>
 
 export const VEHICLE_CATALOG: Catalog = {
+  Chrysler: {
+    'Town & Country': ['3.6 Limited'],
+    '300C': ['3.5 V6', '5.7 Hemi'],
+    'PT Cruiser': ['2.4 Touring', '2.4 Limited'],
+    Neon: ['2.0 LE', '2.0 SE'],
+    Caravan: ['2.4 SE', '3.3 LE'],
+  },
+  SEAT: {
+    Ibiza: ['1.4 Reference', '1.6 Sport', '1.8T FR'],
+    León: ['1.6 Stylance', '1.8T FR', '2.0 TFSI Cupra'],
+    Toledo: ['1.6', '1.8T'],
+    Córdoba: ['1.6', '1.9 TDI'],
+    Altea: ['1.6 Reference', '2.0 FSI Sport'],
+  },
   'Abarth': {
     '500': ['1.4T 595', '1.4T 695'],
     'Pulse': ['1.3T Abarth'],
