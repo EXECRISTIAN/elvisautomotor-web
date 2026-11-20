@@ -34,6 +34,7 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<string | null>(null)
   const [active, setActive] = useState(0)
+  const [manual, setManual] = useState(false)
   const wrap = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
   const list = useRef<HTMLUListElement>(null)
@@ -119,9 +120,9 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
         maxLength={maxLength}
         required={required}
         disabled={disabled}
-        placeholder={placeholder}
+        placeholder={manual ? 'Escribe el tuyo aquí' : placeholder}
         value={text}
-        onFocus={() => { setOpen(true); setActive(0) }}
+        onFocus={() => { if (!manual) setOpen(true); setActive(0) }}
         onClick={() => setOpen(true)}
         onChange={(event) => {
           const next = inputMode === 'numeric' ? event.target.value.replace(/\D/g, '') : event.target.value
@@ -170,7 +171,19 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
             >
               {option}
             </li>,
-          ]) : (
+          ]).concat(allowCustom && !query ? [
+            <li
+              key="no-aparece"
+              role="option"
+              aria-selected={false}
+              className="flex min-h-11 cursor-pointer items-center border-t px-4 text-[0.95rem] font-semibold"
+              style={{ borderColor: 'var(--sf-rule)', color: 'var(--sf-accent)' }}
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={() => { onChange(''); setQuery(''); setManual(true); setOpen(false); input.current?.focus() }}
+            >
+              Aquí no aparece el mío
+            </li>,
+          ] : []) : (
             <li className="px-4 py-3 text-[0.9rem]" style={{ color: 'var(--sf-ink-3)' }}>
               {allowCustom && query ? `Se usará “${query.trim()}”` : emptyText}
             </li>
