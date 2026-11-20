@@ -50,7 +50,7 @@
 - Agregadas redes del Linktree: YouTube, Spotify, Instagram y Facebook de "Elvis Viaja", y X (@autoselvis).
 - Teléfono fijo ahora marca en formato internacional (+54 11 4259-1365).
 - **Por confirmar con Elvis:** la ficha de Google Maps del Linktree dice *Av. Los Quilmes 735, Bernal*; el sitio usa *Andrés Baranda 2134, Quilmes*. ¿Son dos sedes o cambió la dirección?
-- Pendiente: probar la imagen Docker completa (Docker Hub limitó las descargas en el entorno de prueba).
+- Imagen Docker probada de punta a punta (20/11): base de ejemplo, sitio con inventario y acceso al panel.
 - Siguen pendientes: panel de administración (traducción final, pantallas propias) y usuarios/roles.
 
 ## Ronda automática 1 (20/11/2026)
