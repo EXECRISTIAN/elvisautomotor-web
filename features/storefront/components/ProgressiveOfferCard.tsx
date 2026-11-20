@@ -8,6 +8,7 @@ import { offerDay, offerSchedule, offerState, offerTime } from '@/features/lib/p
 const shortDay = (date: Date) => date.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', weekday: 'short', day: 'numeric', month: 'numeric' }).replace(/-/g, '/').replace(',', '')
 import { formatPrice } from '../lib/format'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
+import { isLocalDemo } from '../lib/localStore'
 import { WhatsAppButton } from './WhatsAppButton'
 
 export type PublicProgressiveOffer = {
@@ -49,7 +50,13 @@ function countdown(to: Date, now: Date) {
   return `${h > 0 ? `${h} h ` : ''}${String(m).padStart(2, '0')} min ${String(s).padStart(2, '0')} s`
 }
 
-export function ProgressiveOfferCard({ offer, compact = false }: { offer: PublicProgressiveOffer; compact?: boolean }) {
+export function ProgressiveOfferCard({ offer: given, compact = false }: { offer: PublicProgressiveOffer; compact?: boolean }) {
+  // Muestra offline: las ofertas cargadas de antes se mantienen siempre en curso.
+  const [offer, setOffer] = useState(given)
+  useEffect(() => {
+    if (!isLocalDemo() || given.status === 'sold' || given.id.startsWith('panel-')) return setOffer(given)
+    setOffer({ ...given, startsAt: new Date(Date.now() - given.stepMinutes * 60000 + 1000).toISOString(), phase: 'live' })
+  }, [given])
   const business = useStorefrontBusiness()
   const now = useNow()
   const price = (cents: number) => (cents <= 0 ? 'GRATIS' : formatPrice(cents / 100, business.currencyCode || 'ARS'))

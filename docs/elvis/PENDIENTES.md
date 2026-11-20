@@ -150,3 +150,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Analítica local en Resumen: visitas por día, páginas más vistas, conversión (consultas/visitas) y tiempo típico de carga. Sin servicios externos.
 - Navegadores: probado solo en Chromium (Firefox/Safari no disponibles en el entorno). Pendiente: probar en Safari de iPhone y Firefox reales.
 - Online: conectar analítica real (p. ej. Google Analytics o Plausible) cuando se publique.
+
+### Ronda 20/11 20:30
+- Panel: auditoría responsive con sesión iniciada (todas las pestañas a 320/768/1280 px): sin desbordes.
+- Inicio: la oferta progresiva de la muestra offline también queda siempre en curso (antes solo en /ofertas).
