@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Check, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
-import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
+import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
 import { Vehicle } from '@/features/storefront/lib/types'
 import {
   addToComparison,
@@ -11,7 +11,7 @@ import {
   isInComparison,
   removeFromComparison,
 } from '@/features/storefront/lib/comparison'
-import { reserveStorefrontVehicle, submitStorefrontInquiry, submitStorefrontTestDrive } from '../actions/submissions'
+import { reserveStorefrontVehicle, submitStorefrontInquiry, submitStorefrontTestDrive } from '../lib/submit'
 import { Container } from '../components/Container'
 import { LeadCaptureModal, LeadIntent, type LeadSubmissionFeedback } from '../components/LeadCaptureModal'
 import { VehicleGallery } from '../components/vdp/VehicleGallery'

@@ -120,6 +120,7 @@ export function Footer(_props: { branding?: boolean } = {}) {
           <p>© {year} {business.fullName.replace(/\.$/, '')}. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link href="/photo-credits" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Créditos de fotos</Link>
+            <Link href="/panel" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Acceso al panel</Link>
           </div>
         </div>
       </Container>

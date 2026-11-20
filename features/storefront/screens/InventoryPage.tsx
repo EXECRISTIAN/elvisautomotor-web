@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react'
-import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
+import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import { buildVehicleOrderBy, buildVehicleWhereInput, EMPTY_INVENTORY_FILTERS, inventoryQueryFromSearch } from '@/features/storefront/lib/data/vehicle-inventory'

@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
-import { submitStorefrontInquiry } from '../actions/submissions'
+import { submitStorefrontInquiry } from '../lib/submit'
 import { Container } from '../components/Container'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'

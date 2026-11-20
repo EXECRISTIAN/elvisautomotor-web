@@ -7,7 +7,7 @@ import { Container } from '../components/Container'
 import { ComboField } from '../components/ComboField'
 import { WhatsAppChannelButton } from '../components/WhatsAppChannelButton'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
-import { submitStorefrontPrecalification } from '../actions/submissions'
+import { submitStorefrontPrecalification } from '../lib/submit'
 import { catalogMakes, catalogModels } from '@/features/lib/vehicleCatalog'
 
 type Answers = Record<string, string>

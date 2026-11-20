@@ -1,4 +1,4 @@
-import { fetchGraphQL } from './graphql-client'
+import { fetchGraphQL } from './public-read'
 
 // Lightweight read of the listed (publicly available) inventory, used to build
 // make/model facets and the test-drive vehicle picker. The public query caps a

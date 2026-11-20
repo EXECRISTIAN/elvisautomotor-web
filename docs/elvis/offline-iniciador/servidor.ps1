@@ -8,6 +8,7 @@ $types = @{ '.html'='text/html; charset=utf-8'; '.js'='application/javascript'; 
   '.woff2'='font/woff2'; '.woff'='font/woff'; '.txt'='text/plain; charset=utf-8'; '.xml'='application/xml' }
 
 $listener = $null
+# Siempre el mismo puerto si está libre: así el navegador conserva los datos guardados.
 foreach ($port in 8080, 8081, 8082, 8090, 8765) {
   try {
     $l = New-Object System.Net.HttpListener
@@ -37,6 +38,7 @@ function Find-File($url) {
   $rel = [System.Uri]::UnescapeDataString($path).Trim('/').Replace('/', [IO.Path]::DirectorySeparatorChar)
   $candidates = @()
   if ($query) { $candidates += (Join-Path $raw ($rel + '@' + $query + '.html')) }
+  if ($rel -like 'dashboard*') { $rel = 'panel' }
   $name = $(if ($rel -eq '') { 'index' } else { $rel })
   $candidates += (Join-Path $raw ($name + '.html'))
   $candidates += (Join-Path $root $rel)

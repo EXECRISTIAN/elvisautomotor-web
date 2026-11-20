@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Landmark } from 'lucide-react'
 import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
-import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
+import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
 import { SIMULATION_DISCLAIMER, formatBpsPercent, simulate, termRange, type AmortizationSystem } from '@/features/lib/financing/simulate'
 import { normalizeMoneyText } from '@/features/platform/deals/lib/moneyInput'
-import { submitStorefrontFinancing } from '../actions/submissions'
+import { submitStorefrontFinancing } from '../lib/submit'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { WhatsAppButton } from '../components/WhatsAppButton'
@@ -59,11 +59,11 @@ function parsePesos(text: string) {
   return Number.isFinite(value) && value >= 0 ? value : null
 }
 
-export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
+export function FinancingPage({ plans, initialVehicles }: { plans: PublicFinancingPlan[]; initialVehicles?: Vehicle[] | null }) {
   const business = useStorefrontBusiness()
   const money = (pesos: number) => formatPrice(pesos, business.currencyCode || 'ARS')
   const searchParams = useSearchParams()
-  const [vehicles, setVehicles] = useState<Vehicle[] | null>(null)
+  const [vehicles, setVehicles] = useState<Vehicle[] | null>(initialVehicles ?? null)
   const [vehicleId, setVehicleId] = useState(searchParams?.get('vehicleId') || '')
   const [manualPrice, setManualPrice] = useState('')
   const [downPayment, setDownPayment] = useState('')
@@ -82,12 +82,13 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
   }, [prefill])
 
   useEffect(() => {
+    if (initialVehicles) return
     let active = true
     void fetchGraphQL<{ publicInventoryVehicles: { items: Vehicle[] } }>(GET_VEHICLES, { where: { status: { equals: 'available' } }, orderBy: [{ year: 'desc' }], take: 100 })
       .then((data) => { if (active) setVehicles(data.publicInventoryVehicles?.items ?? []) })
       .catch(() => { if (active) setVehicles([]) })
     return () => { active = false }
-  }, [])
+  }, [initialVehicles])
 
   const vehicle = vehicles?.find((item) => item.id === vehicleId) ?? null
   const price = vehicle && vehicle.price > 0 ? vehicle.price : parsePesos(manualPrice)

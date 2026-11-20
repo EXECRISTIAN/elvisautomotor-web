@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
+import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
 import { GET_VEHICLE_BY_ID } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import {
