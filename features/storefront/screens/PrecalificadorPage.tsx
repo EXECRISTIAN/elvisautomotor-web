@@ -40,7 +40,7 @@ const CHOICES: Choice[] = [
 ]
 
 const PROVINCES = ['Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán']
-const YEARS = Array.from({ length: 30 }, (_, i) => String(new Date().getFullYear() - i))
+const YEARS = Array.from({ length: new Date().getFullYear() + 2 - 1900 }, (_, i) => String(new Date().getFullYear() + 1 - i))
 
 const onlyDigits = (value: string) => value.replace(/\D/g, '')
 function formatCuil(value: string) {

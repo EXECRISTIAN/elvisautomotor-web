@@ -11,7 +11,7 @@ import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRA
 
 const money = (n: unknown) => (Number(n) > 0 ? Number(n).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }) : 'Sin precio')
 const STATUS: Record<string, string> = { available: 'Disponible', reserved: 'Reservado', sold: 'Vendido' }
-const YEARS = Array.from({ length: 40 }, (_, i) => String(new Date().getFullYear() + 1 - i))
+const YEARS = Array.from({ length: new Date().getFullYear() + 2 - 1900 }, (_, i) => String(new Date().getFullYear() + 1 - i))
 const opt = (list: readonly { label: string; value: string }[]) => list.map((o) => o.label.replace(/ \(se informa abajo\)$/, ''))
 const toValue = (list: readonly { label: string; value: string }[], label: string) => list.find((o) => o.label.replace(/ \(se informa abajo\)$/, '') === label)?.value ?? ''
 const toLabel = (list: readonly { label: string; value: string }[], value?: string) => list.find((o) => o.value === value)?.label.replace(/ \(se informa abajo\)$/, '') ?? ''

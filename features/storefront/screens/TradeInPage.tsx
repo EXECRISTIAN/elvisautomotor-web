@@ -52,8 +52,8 @@ async function shrinkPhoto(file: File): Promise<File> {
   }
 }
 const currentYear = new Date().getFullYear()
-// Matches the server's accepted range (1980 through next model year).
-const OLDEST_TRADE_YEAR = 1980
+// Matches the server's accepted range (1900 through next model year).
+const OLDEST_TRADE_YEAR = 1900
 const YEARS = Array.from({ length: currentYear + 1 - OLDEST_TRADE_YEAR + 1 }, (_, i) => currentYear + 1 - i)
 
 const CONDITIONS = [

@@ -24,7 +24,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
   const email = validEmail(data.email)
   const phone = validPhone(data.phone)
   const year = finiteNumber(data.year, 'Año', {
-    min: 1980,
+    min: 1900,
     max: new Date().getFullYear() + 1,
     integer: true,
   })

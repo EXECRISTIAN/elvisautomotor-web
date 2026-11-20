@@ -29,7 +29,7 @@ export function validateTradeInStep(
 ) {
   if (step === 1) {
     const year = Number(draft.year)
-    if (!Number.isInteger(year) || year < 1980 || year > currentYear + 1) {
+    if (!Number.isInteger(year) || year < 1900 || year > currentYear + 1) {
       return 'Elige un año válido para continuar.'
     }
     if (!draft.make.trim()) return 'Indica la marca para continuar.'
