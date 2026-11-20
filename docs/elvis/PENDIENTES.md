@@ -19,7 +19,6 @@
 - Tasas y condiciones reales de Banco Nación y Banco Provincia (los bancos ya están creados, sin planes).
 - Fotos reales de autos y del salón (la foto del hero es de demostración).
 - Publicar la URL temporal (Railway) — ver `docs/elvis/DEMO.md`.
-- Confirmar con el cliente el uso de su marca, logo y textos antes de producción.
 
 ## Hecho recientemente (sitio público)
 - Precios en pesos sin límite práctico (antes el máximo era $21.474.836).
@@ -40,7 +39,6 @@
 - Tasas y condiciones reales de Banco Nación y Banco Provincia.
 - Fotos reales de autos y del salón.
 - Confirmar dirección: Andrés Baranda 2134 (Quilmes) vs. Av. Los Quilmes 735 (Bernal) que figura en Google Maps.
-- Autorización del dueño para usar marca, logo y textos.
 - Publicar: dominio/hosting, almacenamiento de fotos (S3 o similar), Google Search Console y Perfil de Empresa.
 
 ## Actualización (19/11/2026)
