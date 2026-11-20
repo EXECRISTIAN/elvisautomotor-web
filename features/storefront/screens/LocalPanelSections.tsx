@@ -90,6 +90,30 @@ export function SummarySection() {
   )
 }
 
+// ---------- Comprobante de venta (no fiscal) ----------
+const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string)
+function printReceipt(sale: Sale) {
+  const site = siteSettings()
+  const win = window.open('', '_blank', 'width=820,height=1000')
+  if (!win) { window.alert('Permite las ventanas emergentes para imprimir el comprobante.'); return }
+  const row = (label: string, value: string) => `<tr><th>${esc(label)}</th><td>${esc(value)}</td></tr>`
+  win.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Comprobante ${esc(sale.id)}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:32px;max-width:720px}h1{font-size:22px;margin:0}h2{font-size:15px;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.06em}
+.head{display:flex;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:12px}.muted{color:#555;font-size:13px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px 4px;border-bottom:1px solid #ddd;font-size:14px}th{width:38%;color:#444;font-weight:600}
+.total{font-size:20px;font-weight:700}.firmas{display:flex;gap:48px;margin-top:64px}.firmas div{flex:1;border-top:1px solid #111;padding-top:6px;text-align:center;font-size:13px}.nota{margin-top:28px;font-size:12px;color:#555}@media print{button{display:none}body{margin:12mm}}</style></head><body>
+<div class="head"><div><h1>Elvis Automotores S.R.L.</h1><div class="muted">${esc(site.direccion || 'Andrés Baranda 2134')}, ${esc(site.localidad || 'Quilmes, Provincia de Buenos Aires, Argentina')}<br>Tel. ${esc(site.telefono || '(011) 4259-1365')}</div></div>
+<div style="text-align:right"><strong>Comprobante de venta</strong><div class="muted">N.º ${esc(sale.id)}<br>Fecha: ${esc(sale.fecha.split("-").reverse().join("/"))}</div></div></div>
+<h2>Cliente</h2><table>${row('Nombre', sale.cliente)}${sale.dni ? row('DNI', sale.dni) : ''}${sale.telefono ? row('Teléfono', sale.telefono) : ''}</table>
+<h2>Vehículo</h2><table>${row('Unidad', sale.auto)}</table>
+<h2>Operación</h2><table>${row('Forma de pago', sale.formaPago)}${sale.canje ? row('Usado entregado (valor)', money(sale.canje)) : ''}${sale.anticipo ? row('Anticipo', money(sale.anticipo)) : ''}${row('Vendedor', sale.vendedor)}${sale.notas ? row('Notas', sale.notas) : ''}
+<tr><th>Precio total</th><td class="total">${esc(money(sale.precio))}</td></tr></table>
+<div class="firmas"><div>Firma del cliente</div><div>Por Elvis Automotores</div></div>
+<p class="nota">Documento interno, no válido como factura. La transferencia del dominio se realiza ante el Registro de la Propiedad Automotor.</p>
+<p><button onclick="window.print()" style="padding:10px 18px;font-size:15px">Imprimir o guardar en PDF</button></p>
+<script>setTimeout(function(){window.print()},300)</script></body></html>`)
+  win.document.close()
+}
+
 // ---------- Ventas ----------
 export function SalesSection({ user }: { user: LocalUser }) {
   const { cars, refresh } = useCars()
@@ -146,6 +170,7 @@ export function SalesSection({ user }: { user: LocalUser }) {
           <li key={s.id} className="elv-pq-panel !p-4 flex flex-wrap items-center justify-between gap-3" style={s.anulada ? { opacity: 0.55 } : undefined}>
             <span className="min-w-0"><span className="block font-bold">{s.auto}</span><span className="sf-muted block text-[0.85rem]">{s.fecha} · {s.cliente} · {s.formaPago} · {s.vendedor}{s.anulada ? ' · ANULADA' : ''}</span></span>
             <span className="flex items-center gap-3"><span className="text-right"><span className="block font-bold tabular-nums">{money(s.precio)}</span>{s.costo > 0 && <span className="sf-faint block text-[0.8rem] tabular-nums">Ganancia {money(s.precio - s.costo)}</span>}</span>
+              {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => printReceipt(s)}>Comprobante</button>}
               {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { if (window.confirm('¿Anular esta venta? El movimiento de caja queda; puedes cargar un egreso si devolviste dinero.')) { voidSale(s.id); logActivity(user.name, `Anuló la venta de ${s.auto}`); setV((x) => x + 1) } }}>Anular</button>}</span>
           </li>
         ))}

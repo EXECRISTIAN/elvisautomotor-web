@@ -119,3 +119,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Ronda 11:27: panel local revisado en iPhone SE y iPad (sin desbordes ni botones chicos). Ficha del auto: botón Compartir (menú del celular o copia el enlace).
 - Ronda 12:27: servidor.ps1 sin caracteres especiales y con BOM UTF-8 (evita que Windows PowerShell 5.1 lo lea mal y no arranque).
 - Ronda 13:28: Consultas del panel local con buscador (nombre, teléfono, email, patente, auto) y filtro por estado.
+- Ronda 14:28: Ventas del panel local → botón Comprobante (imprimir o guardar en PDF; documento interno, no fiscal).
