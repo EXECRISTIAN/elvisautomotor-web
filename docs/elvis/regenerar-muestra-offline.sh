@@ -20,3 +20,7 @@ EOF
 rm -f /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip
 zip -qr /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip ABRIR-AQUI.html LEEME.txt sitio
 ls -la /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip
+# Copia descomprimida en el repositorio (se ve y se descarga desde GitHub)
+rm -rf /home/user/elvisautomotor-web/docs/elvis/muestra-offline
+mkdir -p /home/user/elvisautomotor-web/docs/elvis/muestra-offline
+cp -r /var/tmp/offline3/. /home/user/elvisautomotor-web/docs/elvis/muestra-offline/

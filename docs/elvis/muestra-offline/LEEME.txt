@@ -1,0 +1,9 @@
+ELVIS AUTOMOTORES — MUESTRA OFFLINE
+
+Cómo verla:
+1. Descomprime esta carpeta (si ya tenías una versión anterior, reemplázala completa).
+2. Haz doble clic en "ABRIR-AQUI.html" (se abre en el navegador, no necesita internet).
+
+Es una copia fija del sitio con los datos de ejemplo. Se puede navegar entre páginas;
+los formularios, la cuenta regresiva en vivo y el panel necesitan el sitio corriendo
+(ver docs/elvis/PC-LOCAL.md).
