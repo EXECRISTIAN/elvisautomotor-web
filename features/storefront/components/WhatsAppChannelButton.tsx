@@ -1,20 +1,17 @@
 import { ELVIS_LINKS } from '../lib/elvisContent'
 import { WhatsAppIcon } from './WhatsAppIcon'
 
-/** Botón llamativo del canal de WhatsApp de Elvis (noticias y ofertas). */
+/** Botón del canal de WhatsApp de Elvis: mismo tamaño y forma que el resto, en verde WhatsApp. */
 export function WhatsAppChannelButton({ className = '', compact = false }: { className?: string; compact?: boolean }) {
   return (
     <a
       href={ELVIS_LINKS.whatsappChannel}
       target="_blank"
       rel="noopener noreferrer"
-      className={`elv-wa-channel ${compact ? 'elv-wa-channel-compact' : ''} ${className}`}
+      className={`sf-btn elv-wa-channel max-w-full whitespace-normal text-center ${compact ? 'sf-btn-sm min-h-11' : 'min-h-12 rounded-[8px] px-6'} ${className}`}
     >
-      <span className="elv-wa-channel-icon" aria-hidden="true"><WhatsAppIcon className="size-6" /></span>
-      <span className="min-w-0 text-left">
-        <span className="block font-bold uppercase tracking-[0.04em]">Noticias y ofertas por WhatsApp</span>
-        {!compact && <span className="block text-[0.8rem] font-medium opacity-90">Únete al canal de Elvis: avisamos primero las ofertas.</span>}
-      </span>
+      <WhatsAppIcon className={`${compact ? 'size-4' : 'size-5'} shrink-0`} />
+      <span>Noticias y ofertas por WhatsApp</span>
     </a>
   )
 }

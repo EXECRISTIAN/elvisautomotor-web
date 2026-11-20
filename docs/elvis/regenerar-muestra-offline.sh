@@ -7,10 +7,10 @@ wget -q -e robots=off --mirror --convert-links --adjust-extension --page-requisi
 mv "localhost+3000" sitio
 python3 /home/user/elvisautomotor-web/docs/elvis/offline-fix-imagenes.py /var/tmp/offline3/sitio /home/user/elvisautomotor-web/public
 bash /home/user/elvisautomotor-web/docs/elvis/offline-raw.sh
-cp /var/tmp/offline2/ABRIR-AQUI.html .
+
 cp /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/LEEME.txt /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/INICIAR-MUESTRA.bat /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/servidor.ps1 .
 rm -f /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip
-zip -qr /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip INICIAR-MUESTRA.bat servidor.ps1 ABRIR-AQUI.html LEEME.txt sitio
+zip -qr /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip INICIAR-MUESTRA.bat servidor.ps1 LEEME.txt sitio
 ls -la /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip
 # Copia descomprimida en el repositorio (se ve y se descarga desde GitHub)
 rm -rf /home/user/elvisautomotor-web/docs/elvis/muestra-offline

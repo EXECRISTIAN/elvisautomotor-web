@@ -18,4 +18,5 @@ PARA TENER EN CUENTA
 - Los datos quedan en el navegador que uses (si cambias de navegador o borras el
   historial, se pierden). Es una demostración: los autos y usuarios son de ejemplo.
 - Las fotos que se adjuntan en "Vende tu auto" no se guardan en la muestra.
-- "ABRIR-AQUI.html" sirve solo para mirar: abierto así, los menús no responden.
+- Ábrela SIEMPRE con "INICIAR-MUESTRA.bat". Si abres los archivos de la carpeta "sitio"
+  directamente, se ven las páginas pero los menús, listas y botones no responden.

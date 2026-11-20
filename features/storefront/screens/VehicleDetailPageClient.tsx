@@ -180,7 +180,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
           phone: formData.phone,
           preferredContact: 'email',
           intent: intent === 'get-quote' ? 'get-quote' : 'vehicle-question',
-          message: formData.message,
+          message: intent === 'get-quote' ? ['Quiero comprar este vehículo de contado.', formData.message].filter(Boolean).join(' ') : formData.message,
           vehicleId: vehicle.id,
           website: formData.website,
           rooftopSlug: business.rooftopSlug,
@@ -190,7 +190,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
         setFeedback({
           status: 'success',
           message: intent === 'get-quote'
-            ? `${business.fullName} recibió tu pedido de cotización.`
+            ? `${business.fullName} recibió tu pedido para comprarlo de contado. Te contactamos para coordinar.`
             : `${business.fullName} recibió tu consulta.`,
           reference: customerRequestReference('inquiry', result.data.leadId),
         })
@@ -357,7 +357,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                     onClick={() => openLead('get-quote', quoteOpenerRef)}
                     className="sf-btn sf-btn-ghost px-3"
                   >
-                    Pedir cotización
+                    Comprar de contado
                   </button>
                   {vehicle.status === 'reserved' ? (
                     <>
@@ -380,16 +380,19 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                     </Link>
                   )}
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                <Link href={tradeInHref} className="sf-btn sf-btn-ghost px-3">Plan canje</Link>
                 <button
                   type="button"
                   onClick={toggleCompare}
-                  className={`sf-btn sf-btn-block ${comparing ? 'sf-btn-secondary' : 'sf-btn-ghost'}`}
+                  className={`sf-btn ${comparing ? 'sf-btn-secondary' : 'sf-btn-ghost'} px-3`}
                   aria-pressed={comparing}
                   aria-label={comparing ? `Quitar ${title} de la comparación` : `Agregar ${title} a la comparación`}
                 >
                   {comparing ? <Check className="size-4" aria-hidden="true" /> : <Plus className="size-4" aria-hidden="true" />}
                   Comparar
                 </button>
+                </div>
                 {compareFull && <p role="status" className="sf-muted text-[length:var(--sf-text-xs)]">Puedes comparar hasta 4 vehículos.</p>}
                 <div className="hidden flex-wrap gap-x-5 gap-y-1 pt-1 text-[length:var(--sf-text-sm)] lg:flex">
                   <button
@@ -400,7 +403,6 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                   >
                     Hacer una consulta
                   </button>
-                  <Link href={tradeInHref} className="sf-link inline-flex min-h-10 items-center">Entregar mi usado</Link>
                 </div>
               </div>
             )}
@@ -528,7 +530,7 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
             Prueba
           </button>
           <Link href={financingHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Financiar</Link>
-          <Link href={tradeInHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Mi usado</Link>
+          <Link href={tradeInHref} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1">Plan canje</Link>
         </div>
       </div>
       )}

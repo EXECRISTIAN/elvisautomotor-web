@@ -20,6 +20,18 @@ const HERO_PHOTO = '/images/elvis/salon-frente.jpg'
 const SHOWROOM_PHOTO = '/images/elvis/salon-interior.jpg'
 
 // Primero los vehículos marcados como "destacados" en el panel; se completa hasta 4 con las unidades disponibles más nuevas.
+// Usados para su sección propia del inicio: los más nuevos primero.
+async function getUsedVehicles() {
+  return loadHomeQuery(
+    () => fetchGraphQL<unknown>(GET_VEHICLES, {
+      where: { AND: [{ status: { equals: 'available' } }, { condition: { equals: 'used' } }] },
+      orderBy: [{ year: 'desc' }],
+      take: 100,
+    }),
+    selectHomeFeaturedVehicles<Vehicle>,
+  )
+}
+
 async function getFeaturedVehicles() {
   const query = (featuredOnly: boolean) => loadHomeQuery(
     () => fetchGraphQL<unknown>(GET_VEHICLES, {
@@ -60,7 +72,9 @@ function SectionTitle({ eyebrow, title, id }: { eyebrow: string; title: string; 
 }
 
 export async function HomePage() {
-  const [featured, settings, offers] = await Promise.all([getFeaturedVehicles(), loadStorefrontBusiness(), loadProgressiveOffers()])
+  const [featured, settings, offers, usedResult] = await Promise.all([getFeaturedVehicles(), loadStorefrontBusiness(), loadProgressiveOffers(), getUsedVehicles()])
+  const usedAll = usedResult.status === 'ready' ? usedResult.value : []
+  const used = usedAll.slice(0, 4)
   const liveOffers = offers.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming').slice(0, 2)
   const business = settings.status === 'ready' ? settings.business : createStorefrontBusiness()
   const vehicles = featured.status === 'ready' ? featured.value.slice(0, 4) : []
@@ -94,18 +108,11 @@ export async function HomePage() {
           {business.homepageDescription && (
             <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }}>{business.homepageDescription}</p>
           )}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            {/* Accesos directos: comprar 0 km o usado (un solo grupo, no suma bloques nuevos). */}
-            <nav aria-label="Comprar un auto" className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
-              <Link href="/inventory?condition=new" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-5 sm:px-6">
-                Autos 0 km
-                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-              </Link>
-              <Link href="/inventory?condition=used" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-5 sm:px-6">
-                Autos usados
-                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-              </Link>
-            </nav>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
+              Explora nuestro inventario
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
             <WhatsAppButton className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6" />
           </div>
         </Container>
@@ -159,6 +166,37 @@ export async function HomePage() {
           </div>
         </Container>
       </section>
+
+      {/* ---------- Usados seleccionados ---------- */}
+      {used.length > 0 && (
+        <section className="elv-band py-14 md:py-20" aria-labelledby="used-title">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="max-w-2xl">
+                <p className="elv-eyebrow">Usados</p>
+                <h2 id="used-title" className="sf-display mt-2 text-[clamp(1.6rem,3.2vw,2.4rem)]">Usados seleccionados, <span className="sf-gold-text">con informe</span></h2>
+                <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>Cada usado tiene su informe de estado: deuda, infracciones, GNC, aire, cubiertas, chapa, pintura y mecánica. Sin sorpresas.</p>
+              </div>
+              <Link href="/inventory?condition=used" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
+                Ver todos los usados{usedAll.length > 4 ? ` (${usedAll.length})` : ''}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+            {/* En celular, carrusel que se desliza con el dedo; desde tablet, grilla. */}
+            <div className="elv-used-rail mt-8" role="list" aria-label="Usados seleccionados">
+              {used.map((vehicle) => (
+                <div key={vehicle.id} role="listitem" className="elv-used-rail-item">
+                  <FeaturedVehicleCard vehicle={vehicle} currencyCode={business.currencyCode} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+              <Link href="/financing" className="sf-btn sf-btn-outline min-h-12 whitespace-normal rounded-[8px] text-center">Financiación para usados</Link>
+              <Link href="/trade-in" className="sf-btn sf-btn-ghost min-h-12 whitespace-normal rounded-[8px] text-center">Entrega tu usado como parte de pago</Link>
+            </div>
+          </Container>
+        </section>
+      )}
 
       {/* ---------- Ofertas progresivas ---------- */}
       {liveOffers.length > 0 && (

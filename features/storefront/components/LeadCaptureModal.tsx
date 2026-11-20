@@ -121,7 +121,7 @@ export function LeadCaptureModal({
   const titles: Record<LeadIntent, string> = {
     contact: 'Consulta por este vehículo',
     'test-drive': 'Coordina una prueba de manejo',
-    'get-quote': 'Pide una cotización',
+    'get-quote': 'Comprar de contado',
     reserve: 'Reserva este vehículo',
   }
 

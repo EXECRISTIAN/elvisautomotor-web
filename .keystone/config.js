@@ -9103,7 +9103,7 @@ async function runPublicSubmission(options) {
 var INTENTS = {
   "general-contact": "Consulta general",
   "vehicle-question": "Consulta por un veh\xEDculo",
-  "get-quote": "Pedido de cotizaci\xF3n",
+  "get-quote": "Compra de contado",
   // Reserve this vehicle: a hold request for staff. It does not change the vehicle's status;
   // only a deal moves inventory to pending, so an anonymous request cannot pull a car offline.
   "reserve-vehicle": "Pedido de reserva"

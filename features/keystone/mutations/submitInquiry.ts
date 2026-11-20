@@ -6,7 +6,7 @@ import { optionalText, requiredText, resolveAvailableVehicle, validEmail, validP
 const INTENTS: Record<string, string> = {
   'general-contact': 'Consulta general',
   'vehicle-question': 'Consulta por un vehículo',
-  'get-quote': 'Pedido de cotización',
+  'get-quote': 'Compra de contado',
   // Reserve this vehicle: a hold request for staff. It does not change the vehicle's status;
   // only a deal moves inventory to pending, so an anonymous request cannot pull a car offline.
   'reserve-vehicle': 'Pedido de reserva',
