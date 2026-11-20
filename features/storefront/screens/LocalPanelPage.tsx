@@ -35,6 +35,20 @@ function valueText(key: string, value: unknown): string {
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
 }
+// Prioridad de una precalificación según sus respuestas (orientativa, para ordenar llamados).
+const SCORE: Array<[RegExp, number]> = [
+  [/Quiero comprar de contado/, 3], [/Empleado en blanco|Autónomo en blanco|Jubilado/, 2], [/Empleado en negro|Autónomo en negro/, 0], [/Desempleado/, -3],
+  [/Más de \$5 millones/, 2], [/\$2 a \$5 millones/, 1], [/Uso y pago al día|No uso tarjeta/, 1], [/Estoy atrasado actualmente/, -3], [/algún atraso y ya lo regularicé/, 0],
+  [/Tengo atrasos en créditos/, -3], [/lo pago al día|Terminé de pagar/, 1], [/Ya sé que hoy no me aprueban|Veraz/, -4], [/ya califiqué en otro lado/, 2],
+  [/Esta semana/, 2], [/Dentro de 30 días/, 1], [/Solo estoy averiguando/, -1], [/Sí, tengo permuta/, 1],
+]
+function leadPriority(item: LocalSubmission): { label: string; tone: string } | null {
+  const answers = item.data.answers
+  if (!Array.isArray(answers)) return null
+  const text = answers.map((a: { answer?: string }) => a.answer ?? '').join(' | ')
+  const score = SCORE.reduce((total, [pattern, points]) => total + (pattern.test(text) ? points : 0), 0)
+  return score >= 5 ? { label: 'Prioridad alta', tone: '#3fb37f' } : score >= 2 ? { label: 'Prioridad media', tone: '#e0a23a' } : { label: 'Prioridad baja', tone: '#9a9a9a' }
+}
 const who = (s: LocalSubmission) => String(s.data.fullName || [s.data.firstName, s.data.lastName].filter(Boolean).join(' ') || 'Sin nombre')
 const fmtDate = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
 
@@ -184,7 +198,10 @@ export function LocalPanelPage() {
                       <span className="block font-bold">{who(item)}</span>
                       <span className="sf-muted block text-[0.85rem]">{item.label} · {fmtDate(item.createdAt)}{item.data.phone ? ` · ${item.data.phone}` : ''}</span>
                     </span>
-                    <span className="sf-chip" data-status={item.status}>{item.status}</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      {(() => { const pr = leadPriority(item); return pr ? <span className="sf-chip" style={{ borderColor: pr.tone, color: pr.tone }}>{pr.label}</span> : null })()}
+                      <span className="sf-chip" data-status={item.status}>{item.status}</span>
+                    </span>
                   </button>
                   {open === item.id && (
                     <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--sf-rule)' }}>
