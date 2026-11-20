@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Download, LogOut, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Container } from '../components/Container'
+import { OffersAdminSection } from './LocalOffersAdmin'
 import { LocalCarsTab } from './LocalCarsTab'
 import { ActivitySection, CashSection, ClientsSection, PermissionsSection, SalesSection, SiteSection, SummarySection } from './LocalPanelSections'
 import { ComboField } from '../components/ComboField'
@@ -142,7 +143,7 @@ export function LocalPanelPage() {
     )
   }
 
-  const allSections: Array<[string, string]> = [['resumen', 'Resumen'], ['consultas', `Consultas (${items.filter((i) => i.status === 'nueva').length})`], ['autos', 'Autos'], ['ventas', 'Ventas'], ['caja', 'Caja'], ['clientes', 'Clientes'], ['sitio', 'Sitio'], ['usuarios', 'Usuarios'], ['permisos', 'Permisos'], ['actividad', 'Actividad']]
+  const allSections: Array<[string, string]> = [['resumen', 'Resumen'], ['consultas', `Consultas (${items.filter((i) => i.status === 'nueva').length})`], ['autos', 'Autos'], ['ventas', 'Ventas'], ['caja', 'Caja'], ['clientes', 'Clientes'], ['ofertas', 'Ofertas y rifas'], ['sitio', 'Sitio'], ['usuarios', 'Usuarios'], ['permisos', 'Permisos'], ['actividad', 'Actividad']]
   const sections = allSections.filter(([key]) => can(user, key === 'permisos' ? 'usuarios' : key))
   const current = sections.some(([key]) => key === tab) ? tab : sections[0]?.[0] ?? ''
   return (
@@ -167,6 +168,7 @@ export function LocalPanelPage() {
         : current === 'caja' ? <CashSection user={user} />
         : current === 'clientes' ? <ClientsSection />
         : current === 'sitio' ? <SiteSection user={user} />
+        : current === 'ofertas' ? <OffersAdminSection user={user} />
         : current === 'permisos' ? <PermissionsSection user={user} />
         : current === 'actividad' ? <ActivitySection />
         : current === 'autos' ? (

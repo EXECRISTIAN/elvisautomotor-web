@@ -14,10 +14,13 @@ export type CashMove = { id: string; fecha: string; tipo: 'ingreso' | 'egreso'; 
 export type CashClose = { id: string; fecha: string; esperado: number; contado: number; diferencia: number; usuario: string; nota: string }
 export type Activity = { id: string; fecha: string; usuario: string; accion: string }
 export type SiteSettings = Record<string, string>
-type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings }
+export type OfferSection = { id: string; nombre: string; descripcion: string; activa: boolean }
+export type RaffleEntry = { numero: number; nombre: string; telefono: string; estado: 'reservado' | 'pagado'; fecha: string }
+export type Raffle = { id: string; titulo: string; premio: string; autoId: string; precioNumero: number; cantidad: number; fechaSorteo: string; estado: 'activa' | 'cerrada' | 'sorteada'; bases: string; numeros: RaffleEntry[]; ganador: number | null; creada: string }
+type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings; secciones: OfferSection[]; rifas: Raffle[] }
 
 const MIRROR = 'elvis:datos'
-const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {} }
+const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {}, secciones: [], rifas: [] }
 
 export function isLocalDemo() {
   return typeof window !== 'undefined' && (window as unknown as { __ELVIS_OFFLINE__?: boolean }).__ELVIS_OFFLINE__ === true
@@ -37,6 +40,8 @@ function normalize(raw: any): Db {
     actividad: Array.isArray(raw?.actividad) ? raw.actividad : [],
     permisos: raw?.permisos && typeof raw.permisos === 'object' ? raw.permisos : {},
     sitio: raw?.sitio && typeof raw.sitio === 'object' ? raw.sitio : {},
+    secciones: Array.isArray(raw?.secciones) ? raw.secciones : [],
+    rifas: Array.isArray(raw?.rifas) ? raw.rifas : [],
   }
 }
 
@@ -179,12 +184,12 @@ export function vehicleHref(id: string) {
 export const PERMISSIONS: Array<[string, string]> = [
   ['resumen', 'Ver resumen y balances'], ['consultas', 'Ver y gestionar consultas'], ['clientes', 'Ver clientes'],
   ['autos', 'Publicar y editar autos'], ['ventas', 'Registrar ventas'], ['caja', 'Movimientos y cierre de caja'],
-  ['sitio', 'Editar contenido y diseño del sitio'], ['usuarios', 'Usuarios y permisos'], ['actividad', 'Ver registro de actividad'],
+  ['sitio', 'Editar contenido y diseño del sitio'], ['ofertas', 'Ofertas y rifas'], ['usuarios', 'Usuarios y permisos'], ['actividad', 'Ver registro de actividad'],
 ]
 export const ROLES = ['Administrador', 'Gerente de ventas', 'Vendedor', 'Responsable de créditos', 'Administración']
 const DEFAULT_PERMS: Record<string, string[]> = {
   Administrador: PERMISSIONS.map(([k]) => k),
-  'Gerente de ventas': ['resumen', 'consultas', 'clientes', 'autos', 'ventas', 'caja', 'actividad'],
+  'Gerente de ventas': ['resumen', 'consultas', 'clientes', 'autos', 'ofertas', 'ventas', 'caja', 'actividad'],
   Vendedor: ['consultas', 'clientes', 'autos', 'ventas'],
   'Responsable de créditos': ['consultas', 'clientes'],
   Administración: ['resumen', 'clientes', 'ventas', 'caja', 'actividad'],
@@ -251,4 +256,34 @@ export function importAll(json: string) {
   if (!parsed || typeof parsed !== 'object' || !('consultas' in parsed || 'usuarios' in parsed || 'autos' in parsed)) throw new Error('El archivo no es un respaldo de Elvis.')
   cache = normalize(parsed)
   persist()
+}
+
+
+// ---------- Secciones de ofertas ----------
+export const offerSections = (): OfferSection[] => db().secciones
+export function saveOfferSections(list: OfferSection[]) {
+  db().secciones = list
+  persist()
+}
+
+// ---------- Rifas ----------
+export const listRaffles = (): Raffle[] => db().rifas
+export function saveRaffle(raffle: Raffle) {
+  const list = db().rifas
+  const i = list.findIndex((r) => r.id === raffle.id)
+  if (i >= 0) list[i] = raffle
+  else list.unshift(raffle)
+  persist()
+}
+export function deleteRaffle(id: string) {
+  db().rifas = db().rifas.filter((r) => r.id !== id)
+  persist()
+}
+/** Reserva un número desde la web. Devuelve false si ya estaba tomado. */
+export function reserveRaffleNumber(raffleId: string, entry: Omit<RaffleEntry, 'estado' | 'fecha'>) {
+  const raffle = db().rifas.find((r) => r.id === raffleId)
+  if (!raffle || raffle.estado !== 'activa' || raffle.numeros.some((n) => n.numero === entry.numero)) return false
+  raffle.numeros.push({ ...entry, estado: 'reservado', fecha: new Date().toISOString() })
+  persist()
+  return true
 }

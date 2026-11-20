@@ -26,6 +26,7 @@ function matches(v: Vehicle, where: any): boolean {
     if (key === 'make' || key === 'model' || key === 'trim') return cond?.contains ? lower(v[key]).includes(lower(cond.contains)) : cond?.equals ? lower(v[key]) === lower(cond.equals) : true
     if (key === 'isFeatured' || key === 'progressiveOffer') return cond?.equals === true ? Boolean(v[key]) : true
     if (key === 'expressOffer') return cond?.equals === true ? Boolean(v.previousPrice && v.previousPrice > v.price) : true
+    if (key === 'ofertaSeccion') return cond?.equals ? v.ofertaSeccion === cond.equals : true
     if (key === 'year' || key === 'mileage') return inRange(v[key], cond)
     if (key === 'priceCents') return inRange(v.price == null ? null : Math.round(v.price * 100), cond)
     if (key === 'id') return cond?.in ? cond.in.includes(v.id) : cond?.equals ? v.id === cond.equals : true

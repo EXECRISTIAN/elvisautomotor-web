@@ -57,7 +57,7 @@ export function storefrontMetadata(business: StorefrontBusiness, origin: string 
   const description = businessDescription(business)
   return {
     ...(origin ? { metadataBase: new URL(origin) } : {}),
-    title: { default: business.homepageTitle || business.fullName, template: `%s | ${business.shortName}` },
+    title: { default: 'AE: Inicio', template: 'AE: %s' },
     description,
     openGraph: {
       type: 'website',

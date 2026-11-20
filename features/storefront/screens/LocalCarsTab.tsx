@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
-import { applyCarChanges, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
+import { applyCarChanges, offerSections, siteSettings, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
 import { catalogMakes, POPULAR_MAKES, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS, USED_REPORT_TEXT_FIELDS } from '@/features/lib/vehicleSpecs'
 
@@ -35,7 +35,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
   }, [])
 
   const cars = useMemo(() => (base ? applyCarChanges(base) : []), [base, version])
-  const shown = cars.filter((car) => !query || `${car.year} ${car.make} ${car.model} ${car.trim} ${car.stockNumber}`.toLowerCase().includes(query.toLowerCase()))
+  const shown = cars.filter((car) => !query || `${car.year} ${car.make} ${car.model} ${car.trim} ${car.stockNumber} ${car.patente ?? ''} ${String(car.patente ?? '').replace(/\s/g, '')}`.toLowerCase().includes(query.toLowerCase()))
 
   const startNew = () => {
     setError('')
@@ -72,6 +72,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
     if (!editing) return
     if (!String(editing.make).trim() || !String(editing.model).trim() || !Number(editing.year)) { setError('Completa marca, modelo y año.'); return }
     if (!(Number(editing.price) > 0)) { setError('Indica el precio.'); return }
+    if (editing.ofertaSeccion === 'express' && !editing.previousPrice) { setError('Para mostrarlo en la oferta express carga el precio anterior (más alto que el actual).'); return }
     if (editing.previousPrice && Number(editing.previousPrice) <= Number(editing.price)) { setError('El precio anterior (oferta express) tiene que ser mayor al precio actual. Déjalo vacío si no está en oferta.'); return }
     const report = editing.condition === 'new' ? null : Object.fromEntries(Object.entries(editing.usedReport ?? {}).filter(([, v]) => v !== '' && v != null))
     saveCar({ ...editing, year: Number(editing.year), price: Number(editing.price), previousPrice: editing.previousPrice ? Number(editing.previousPrice) : null, mileage: editing.condition === 'new' ? 0 : Number(editing.mileage) || 0, usedReport: report && Object.keys(report).length ? report : null })
@@ -94,6 +95,12 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
   const set = (patch: Partial<LocalCar>) => editing && setEditing({ ...editing, ...patch })
   const setReport = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, usedReport: { ...(editing.usedReport ?? {}), ...patch } })
   const field = 'sf-input mt-2 w-full'
+  const sections = offerSections().filter((sec) => sec.activa)
+  const site = siteSettings()
+  const expressName = site.ofertaExpressNombre?.trim() || 'Ofertas express'
+  const offerOptions = ['No', expressName, ...sections.map((sec) => sec.nombre)]
+  const offerLabel = (car: LocalCar) => car.ofertaSeccion === 'express' ? expressName : sections.find((sec) => sec.id === car.ofertaSeccion)?.nombre ?? (car.previousPrice ? expressName : 'No')
+  const setOffer = (label: string) => set({ ofertaSeccion: label === expressName ? 'express' : sections.find((sec) => sec.nombre === label)?.id ?? '' })
 
   if (base === null) return <p className="sf-muted mt-6">Cargando autos…</p>
 
@@ -101,7 +108,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
     <div className="mt-6">
       <div className="flex flex-wrap items-end gap-3">
         <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={startNew}><Plus className="size-4" aria-hidden="true" />Agregar auto</button>
-        <div className="min-w-0 flex-1 sm:max-w-xs"><label htmlFor="lc-q" className="sf-label">Buscar</label><input id="lc-q" value={query} onChange={(e) => setQuery(e.target.value)} className={field} placeholder="Marca, modelo o stock" /></div>
+        <div className="min-w-0 flex-1 sm:max-w-xs"><label htmlFor="lc-q" className="sf-label">Buscar</label><input id="lc-q" value={query} onChange={(e) => setQuery(e.target.value)} className={field} placeholder="Patente, marca, modelo o stock" /></div>
       </div>
 
       {editing && (
@@ -120,6 +127,8 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
             <div><label htmlFor="lc-trans" className="sf-label">Caja</label><div className="mt-2"><ComboField id="lc-trans" value={toLabel(TRANSMISSION_OPTIONS, editing.transmission)} onChange={(v) => set({ transmission: toValue(TRANSMISSION_OPTIONS, v) })} options={opt(TRANSMISSION_OPTIONS)} allowCustom={false} /></div></div>
             <div><label htmlFor="lc-engine" className="sf-label">Motor</label><input id="lc-engine" value={editing.engine || ''} onChange={(e) => set({ engine: e.target.value })} className={field} placeholder="Ej.: 1.6" /></div>
             <div><label htmlFor="lc-color" className="sf-label">Color</label><input id="lc-color" value={editing.color || ''} onChange={(e) => set({ color: e.target.value })} className={field} /></div>
+            <div><label htmlFor="lc-plate" className="sf-label">Patente</label><input id="lc-plate" value={editing.patente || ''} onChange={(e) => set({ patente: e.target.value.toUpperCase() })} className={field} placeholder="Ej.: AB123CD" autoCapitalize="characters" /></div>
+            <div><span className="sf-label">Mostrar en ofertas</span><div className="mt-2"><ComboField id="lc-offer" value={offerLabel(editing)} onChange={(v) => setOffer(v)} options={offerOptions} allowCustom={false} /></div></div>
             <div><label htmlFor="lc-stock" className="sf-label">Stock n.º</label><input id="lc-stock" value={editing.stockNumber || ''} onChange={(e) => set({ stockNumber: e.target.value })} className={field} /></div>
             <div><span className="sf-label">Disponibilidad</span><div className="mt-2"><ComboField id="lc-status" value={STATUS[editing.status] ?? 'Disponible'} onChange={(v) => set({ status: Object.keys(STATUS).find((k) => STATUS[k] === v) ?? 'available' })} options={Object.values(STATUS)} allowCustom={false} /></div></div>
           </div>
