@@ -76,3 +76,9 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - El simulador ahora suma IVA (21 %) sobre los intereses: reproduce exacto el ejemplo de BNA ($15 M a 36 meses → $662.022 al 25 % y $895.841 al 46 %).
 - Se quitó el "Banco de ejemplo".
 - Dirección definida: Andrés Baranda 2134, Quilmes, Provincia de Buenos Aires, Argentina.
+
+## Dominio elvisautomotores.com (verificado 20/11/2026)
+- Es de Elvis: www.elvisautomotores.com muestra un sitio de Google Sites con su texto institucional, "Elvis Automotores SRL", elvisautomotores@gmail.com y 4259-1365. Secciones: Sobre Nosotros, Vendelo en Elvis, Contacto y Redes.
+- Registrado el 09/06/2024 en Squarespace Domains (ex Google Domains); vence el 09/06/2027. DNS en Google Cloud DNS.
+- Solo funciona con "www": elvisautomotores.com (sin www) no abre.
+- Para publicar el sitio nuevo ahí hace falta que Elvis dé acceso a la cuenta de Squarespace/Google donde está el dominio (o que cambie él los DNS). El sitio viejo de Google Sites se reemplaza.
