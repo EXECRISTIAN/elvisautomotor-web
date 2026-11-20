@@ -154,3 +154,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 20/11 20:30
 - Panel: auditoría responsive con sesión iniciada (todas las pestañas a 320/768/1280 px): sin desbordes.
 - Inicio: la oferta progresiva de la muestra offline también queda siempre en curso (antes solo en /ofertas).
+
+### Ronda 20/11 21:30
+- Prueba de manejo y turnos de taller: la confirmación mostraba fecha y hora en inglés ("Wed, Nov 25 · 9:00 AM"); ahora "miércoles, 25 de noviembre de 2026 · 09:00". Etiquetas del resumen del taller en español y precios con formato argentino.

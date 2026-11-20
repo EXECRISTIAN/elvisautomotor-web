@@ -11,7 +11,7 @@ export function formatServicePackagePrice(value: unknown, currencyCode?: string 
     return null
   }
 
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: storefrontCurrency(currencyCode),
     minimumFractionDigits: 2,

@@ -156,7 +156,7 @@ export function TestDrivePage() {
             meta={business.shortName || business.fullName}
             rows={[
               { label: 'Fecha', value: submittedSummary ? formatRequestDate(submittedSummary.date) : null },
-              { label: 'Hora', value: submittedSummary?.time },
+              { label: 'Hora', value: submittedSummary?.time ? displaySlot(submittedSummary.time) : null },
               { label: 'Nombre', value: submittedSummary?.name },
               { label: 'Email', value: submittedSummary?.email },
               { label: 'Teléfono', value: submittedSummary?.phone },
@@ -187,7 +187,7 @@ export function TestDrivePage() {
       meta={business.shortName || business.fullName}
       rows={[
         { label: 'Fecha', value: formData.preferredDate ? formatRequestDate(formData.preferredDate) : null },
-        { label: 'Hora', value: formData.preferredTime, strong: true },
+        { label: 'Hora', value: formData.preferredTime ? displaySlot(formData.preferredTime) : null, strong: true },
         { label: 'Nombre', value: formData.customerName },
       ]}
     >

@@ -247,10 +247,10 @@ export const PILL_TARGET = 'min-h-11'
 /* A row of standalone sf-btn actions that wraps on narrow phones. */
 export const ACTION_ROW = 'flex flex-wrap gap-2'
 
-/* "2026-10-24" -> "Sat, Oct 24, 2026" without shifting the day across time zones. */
+/* "2026-10-24" -> "sáb 24 de oct. de 2026" sin correr el día por la zona horaria. */
 export function formatRequestDate(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
   if (!match) return value
   const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  return date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 }

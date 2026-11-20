@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Check, X } from 'lucide-react'
 import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
 import { submitStorefrontService } from '../lib/submit'
+import { displaySlot } from '../lib/bookingSlots'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatServicePackagePrice } from '../lib/servicePackagePrice'
@@ -155,12 +156,12 @@ export function ServicePage() {
 
   const summaryRows = (): StickerRowData[] => [
     ...(selectedPackage
-      ? [{ label: 'Package', value: selectedPackage }]
-      : [{ label: 'Service', value: serviceTypeLabel }]),
-    ...(selectedPackagePrice ? [{ label: 'Price', value: selectedPackagePrice, strong: true }] : []),
-    { label: 'Date', value: formData.appointmentDate ? formatRequestDate(formData.appointmentDate) : null },
-    { label: 'Time', value: formData.appointmentTime },
-    { label: 'Vehicle', value: vehicleLabel },
+      ? [{ label: 'Paquete', value: selectedPackage }]
+      : [{ label: 'Servicio', value: serviceTypeLabel }]),
+    ...(selectedPackagePrice ? [{ label: 'Precio', value: selectedPackagePrice, strong: true }] : []),
+    { label: 'Fecha', value: formData.appointmentDate ? formatRequestDate(formData.appointmentDate) : null },
+    { label: 'Hora', value: formData.appointmentTime ? displaySlot(formData.appointmentTime) : null },
+    { label: 'Vehículo', value: vehicleLabel },
     ...(formData.vehicleVin ? [{ label: 'VIN', value: formData.vehicleVin }] : []),
   ]
 
