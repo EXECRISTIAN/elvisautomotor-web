@@ -7,6 +7,7 @@ wget -q -e robots=off --mirror --convert-links --adjust-extension --page-requisi
 mv "localhost+3000" sitio
 python3 /home/user/elvisautomotor-web/docs/elvis/offline-fix-imagenes.py /var/tmp/offline3/sitio /home/user/elvisautomotor-web/public
 bash /home/user/elvisautomotor-web/docs/elvis/offline-raw.sh
+cp /home/user/elvisautomotor-web/app/favicon.ico /home/user/elvisautomotor-web/app/icon.png /home/user/elvisautomotor-web/app/apple-icon.png sitio/
 
 cp /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/LEEME.txt /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/INICIAR-MUESTRA.bat /home/user/elvisautomotor-web/docs/elvis/offline-iniciador/servidor.ps1 .
 rm -f /home/user/elvisautomotor-web/docs/elvis/elvis-muestra-offline.zip
