@@ -4,7 +4,7 @@ Mientras Elvis Automotores no apruebe el proyecto, la web se muestra **solo en m
 
 | Variable | Valor | Efecto |
 |---|---|---|
-| `DEMO_MODE` | `true` | Banner "Propuesta de sitio web — versión de demostración, no oficial", `noindex` (robots.txt, meta y cabecera `X-Robots-Tag`), formularios públicos y registro de clientes desactivados (no se guardan datos de personas). |
+| `DEMO_MODE` | `true` | `noindex` (robots.txt, meta y cabecera `X-Robots-Tag`), formularios públicos y registro de clientes desactivados (no se guardan datos de personas). |
 | `DEMO_PASSWORD` | una clave | El navegador pide usuario/contraseña (usuario: cualquiera). Recomendado: así nadie la encuentra ni la confunde con el sitio oficial. |
 
 No apuntar el dominio `elvisautomotores.com` a esta demo. Usar el subdominio que da el proveedor (por ejemplo `xxxx.up.railway.app` o `xxxx.vercel.app`).

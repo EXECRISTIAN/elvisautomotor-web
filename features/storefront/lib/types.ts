@@ -14,6 +14,8 @@ export interface Vehicle {
   progressiveOffer?: boolean
   mileage: number
   price: number
+  previousPrice?: number | null
+  usedReport?: Record<string, string | number> | null
   status: string
   condition: string
   features?: any

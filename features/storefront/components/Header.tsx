@@ -24,7 +24,9 @@ const NAV = [
 const MENU = [
   { href: '/', label: 'Inicio' },
   { href: '/inventory', label: 'Inventario' },
-  { href: '/ofertas', label: 'Ofertas progresivas' },
+  { href: '/inventory?condition=new', label: 'Autos 0 km' },
+  { href: '/inventory?condition=used', label: 'Autos usados' },
+  { href: '/ofertas', label: 'Ofertas' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/test-drive', label: 'Prueba de manejo' },

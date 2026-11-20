@@ -23,6 +23,11 @@ export function parseTerms(value: string | null | undefined): number[] {
   return [...new Set(String(value || '').split(/[^\d]+/).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 120))].sort((a, b) => a - b)
 }
 
+/** Rango de cuotas que se puede elegir con un plan: del plazo menor al mayor que ofrece el banco. */
+export function termRange(terms: number[]): [number, number] {
+  return terms.length ? [Math.min(...terms), Math.max(...terms)] : [0, 0]
+}
+
 export function formatBpsPercent(bps: number | null | undefined) {
   if (bps == null || !Number.isFinite(bps)) return '-'
   return `${(bps / 100).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} %`
@@ -38,7 +43,10 @@ export function simulate(plan: PlanTerms, input: SimulationInput): SimulationRes
   if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: 'Indica el precio del vehículo.' }
   if (!Number.isFinite(down) || down < 0) return { ok: false, reason: 'El anticipo no es válido.' }
   if (down >= price) return { ok: false, reason: 'El anticipo cubre el precio total: no hace falta financiar.' }
-  if (!plan.termsMonths.includes(n)) return { ok: false, reason: 'Elige un plazo disponible para este plan.' }
+  const [minTerm, maxTerm] = termRange(plan.termsMonths)
+  if (!Number.isInteger(n) || !(plan.termsMonths.includes(n) || (n >= minTerm && n <= maxTerm))) {
+    return { ok: false, reason: `Elige entre ${minTerm} y ${maxTerm} cuotas para este plan.` }
+  }
   const financed = price - down
   if (plan.maxFinancedBps != null && financed > Math.floor((price * plan.maxFinancedBps) / 10_000)) {
     const minDown = price - Math.floor((price * plan.maxFinancedBps) / 10_000)

@@ -17,6 +17,8 @@ import { LeadCaptureModal, LeadIntent, type LeadSubmissionFeedback } from '../co
 import { VehicleGallery } from '../components/vdp/VehicleGallery'
 import { VehicleNotFound } from '../components/vdp/VehicleNotFound'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
+import { UsedReport } from '../components/UsedReport'
+import { PreviousPrice, isExpressOffer } from '../components/PreviousPrice'
 import { formatMileage, formatPrice, vehicleTitle } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
 import { parseVehicleFeatures, resolveVehicleDetail } from '../lib/data/vehicle-detail-response'
@@ -321,6 +323,12 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
 
             <div className="mt-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-y py-4" style={{ borderColor: 'var(--sf-rule-strong)' }}>
               <p className="sf-price text-[2.375rem] md:text-[2.75rem]">{displayPrice}</p>
+              {!readOnly && hasPublicPrice && isExpressOffer(vehicle) && (
+                <p className="mt-1 flex flex-wrap items-center gap-2 text-[length:var(--sf-text-sm)]">
+                  <span className="sf-chip" style={{ background: 'var(--sf-gold-gradient)', color: 'var(--sf-accent-ink)' }}>Oferta express</span>
+                  <PreviousPrice previous={vehicle.previousPrice} price={vehicle.price} currencyCode={business.currencyCode} />
+                </p>
+              )}
               {vehicle.stockNumber && <span className="sf-stall text-[length:var(--sf-text-sm)]">#{vehicle.stockNumber}</span>}
             </div>
 
@@ -443,6 +451,8 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
                 ))}
               </dl>
             </section>
+
+            <UsedReport report={vehicle.usedReport} />
 
             <section className="mt-10 border-t pt-8" style={{ borderColor: 'var(--sf-rule)' }} aria-labelledby="vdp-description">
               <h2 id="vdp-description" className="sf-caps text-[0.875rem] font-medium">Descripción</h2>

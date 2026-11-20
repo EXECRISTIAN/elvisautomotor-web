@@ -11,6 +11,8 @@ import { submitStorefrontTradeIn, uploadStorefrontTradeInPhoto } from '../action
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { ELVIS_INFO } from '../lib/elvisContent'
 import { PageHeader } from '../components/PageHeader'
+import { ComboField } from '../components/ComboField'
+import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatMileage, formatPrice } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
@@ -31,10 +33,6 @@ import {
 } from '../components/forms/RequestForm'
 
 // Marcas habituales en Argentina (el campo acepta cualquier otra).
-const MAKES = [
-  'Audi', 'BMW', 'Chery', 'Chevrolet', 'Citroën', 'Fiat', 'Ford', 'Honda', 'Hyundai', 'Jeep', 'Kia',
-  'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Peugeot', 'Ram', 'Renault', 'Suzuki', 'Toyota', 'Volkswagen',
-]
 const MAX_PHOTOS = 8
 
 /** Achica la foto en el navegador (máx. 1600 px, JPEG) para que suba rápido desde el celular. */
@@ -78,6 +76,8 @@ const EMPTY = {
   model: '',
   trim: '',
   mileage: '',
+  licensePlate: '',
+  engineNumber: '',
   vin: '',
   condition: 'good',
   ownership: 'own',
@@ -209,6 +209,8 @@ export function TradeInPage() {
   const vehicleRows: StickerRowData[] = [
     { label: 'Vehículo', value: [formData.year, formData.make, formData.model, formData.trim].filter(Boolean).join(' '), strong: true },
     { label: 'Kilometraje', value: formData.mileage && Number.isFinite(mileage) ? formatMileage(mileage) : null },
+    { label: 'Patente', value: formData.licensePlate ? formData.licensePlate.toUpperCase() : null },
+    ...(formData.engineNumber ? [{ label: 'Motor n.º', value: formData.engineNumber.toUpperCase() }] : []),
     ...(formData.vin ? [{ label: 'Chasis', value: formData.vin }] : []),
     { label: 'Estado', value: optionLabel(CONDITIONS, formData.condition) },
     { label: 'Titularidad', value: optionLabel(OWNERSHIP, formData.ownership) },
@@ -293,20 +295,25 @@ export function TradeInPage() {
             <FormSection title="Tu vehículo" first>
               <div className="grid gap-4">
                 <Field label="Año" htmlFor="trade-year">
-                  <PlatformSelect id="trade-year" name="year" required value={formData.year} onValueChange={(v) => setFormData((p) => ({ ...p, year: v }))} className="sf-input sf-trigger" placeholder="Elige el año" searchable options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+                  <ComboField id="trade-year" name="year" required inputMode="numeric" maxLength={4} allowCustom={false} emptyText="Elige un año de la lista" value={formData.year} onChange={(v) => setFormData((p) => ({ ...p, year: v }))} placeholder="Elige o escribe el año" options={YEARS.map(String)} />
                 </Field>
                 <Field label="Marca" htmlFor="trade-make">
-                  <input id="trade-make" type="text" required list="trade-make-options" value={formData.make} onChange={(e) => setFormData((p) => ({ ...p, make: e.target.value }))} className="sf-input" placeholder="Ej.: Volkswagen" autoComplete="off" />
-                  <datalist id="trade-make-options">{MAKES.map((m) => <option key={m} value={m} />)}</datalist>
+                  <ComboField id="trade-make" name="make" required value={formData.make} onChange={(v) => setFormData((p) => (v === p.make ? p : { ...p, make: v, model: '', trim: '' }))} placeholder="Elige o escribe la marca" options={catalogMakes()} />
                 </Field>
                 <Field label="Modelo" htmlFor="trade-model">
-                  <input id="trade-model" type="text" required value={formData.model} onChange={(e) => setFormData((p) => ({ ...p, model: e.target.value }))} className="sf-input" placeholder="Ej.: Gol Trend" />
+                  <ComboField id="trade-model" name="model" required value={formData.model} onChange={(v) => setFormData((p) => (v === p.model ? p : { ...p, model: v, trim: '' }))} placeholder={formData.make ? 'Elige o escribe el modelo' : 'Primero elige la marca'} options={catalogModels(formData.make)} emptyText="Escribe el modelo" />
                 </Field>
                 <Field label="Versión" htmlFor="trade-trim" optional>
-                  <input id="trade-trim" type="text" value={formData.trim} onChange={(e) => setFormData((p) => ({ ...p, trim: e.target.value }))} className="sf-input" placeholder="Ej.: Highline" />
+                  <ComboField id="trade-trim" name="trim" value={formData.trim} onChange={(v) => setFormData((p) => ({ ...p, trim: v }))} placeholder={formData.model ? 'Elige o escribe la versión' : 'Primero elige el modelo'} options={catalogVersions(formData.make, formData.model)} emptyText="Escribe la versión" />
                 </Field>
                 <Field label="Kilometraje" htmlFor="trade-mileage">
                   <input id="trade-mileage" type="number" inputMode="numeric" required min="0" max="2000000" step="1" value={formData.mileage} onChange={(e) => setFormData((p) => ({ ...p, mileage: e.target.value }))} className="sf-input sf-figure" placeholder="Ej.: 85000" />
+                </Field>
+                <Field label="Patente" htmlFor="trade-plate">
+                  <input id="trade-plate" type="text" required value={formData.licensePlate} onChange={(e) => setFormData((p) => ({ ...p, licensePlate: e.target.value.toUpperCase() }))} className="sf-input sf-figure uppercase" placeholder="Ej.: AB123CD o ABC123" maxLength={9} autoCapitalize="characters" autoComplete="off" spellCheck={false} pattern="\s*[A-Za-z]{2}\s?-?\d{3}\s?-?[A-Za-z]{2}\s*|\s*[A-Za-z]{3}\s?-?\d{3}\s*" title="Formato AB123CD o ABC123" />
+                </Field>
+                <Field label="Número de motor" htmlFor="trade-engine" optional>
+                  <input id="trade-engine" type="text" value={formData.engineNumber} onChange={(e) => setFormData((p) => ({ ...p, engineNumber: e.target.value.toUpperCase() }))} className="sf-input sf-figure uppercase" placeholder="Figura en la cédula verde" maxLength={30} autoCapitalize="characters" autoComplete="off" spellCheck={false} />
                 </Field>
                 <Field label="Número de chasis (VIN)" htmlFor="trade-vin" optional>
                   <input id="trade-vin" type="text" value={formData.vin} onChange={(e) => setFormData((p) => ({ ...p, vin: e.target.value }))} className="sf-input sf-figure" placeholder="17 caracteres" maxLength={17} autoCapitalize="characters" spellCheck={false} />

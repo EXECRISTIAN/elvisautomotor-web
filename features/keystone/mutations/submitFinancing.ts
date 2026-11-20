@@ -52,7 +52,7 @@ export async function submitFinancing(_root: unknown, { data }: { data: any }, c
   if (financingPlanId) {
     plan = (await loadActiveFinancingPlans(context)).find((item: any) => item.id === financingPlanId) || null
     if (!plan) throw new SubmissionError('El plan elegido ya no está vigente. Vuelve a simular.')
-    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError('Elige un plazo disponible para el plan.')
+    // El plazo (de la lista del banco o una cantidad personalizada dentro de su rango) lo valida simulate().
     const price = finiteNumber(data.vehiclePrice, 'Precio del vehículo', { min: 1, max: MAX_AMOUNT })
     const result = simulate(plan as any, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm })
     if (!result.ok) throw new SubmissionError(result.reason)

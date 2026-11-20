@@ -1,0 +1,13 @@
+ELVIS AUTOMOTORES — MUESTRA LOCAL
+
+RECOMENDADO (menús, simulador, filtros y botones funcionan):
+1. Descomprime esta carpeta (si tenías una versión anterior, bórrala antes).
+2. Doble clic en "INICIAR-MUESTRA.bat". Se abre una ventana negra y el navegador.
+   Deja esa ventana abierta mientras miras la muestra; para terminar, ciérrala.
+   Si Windows avisa por seguridad: "Más información" > "Ejecutar de todas formas".
+
+SOLO PARA MIRAR (sin ejecutar nada):
+- Doble clic en "ABRIR-AQUI.html". Se ve todo, pero los menús y el simulador no responden.
+
+Esta muestra NO guarda datos (formularios, panel, usuarios).
+Para todo funcionando y guardando en tu PC: ELVIS-COMPLETO (ver docs/elvis/PC-LOCAL.md).

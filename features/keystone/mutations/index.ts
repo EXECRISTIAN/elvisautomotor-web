@@ -133,6 +133,8 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         progressiveOffer: Boolean
         mileage: Int
         price: Float
+        previousPrice: Float
+        usedReport: JSON
         status: String
         condition: String
         description: String
@@ -147,6 +149,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         email: String!
         phone: String
         preferredContact: String!
+        contactTimes: [String!]
         intent: String!
         message: String
         vehicleId: ID
@@ -224,6 +227,8 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         model: String!
         trim: String
         vin: String
+        licensePlate: String!
+        engineNumber: String
         mileage: Int!
         condition: String!
         ownership: String!

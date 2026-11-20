@@ -7,6 +7,7 @@ import { Vehicle } from '@/features/storefront/lib/types'
 import { Container } from '../components/Container'
 import { FeaturedVehicleCard } from '../components/FeaturedVehicleCard'
 import { WhatsAppButton } from '../components/WhatsAppButton'
+import { WhatsAppChannelButton } from '../components/WhatsAppChannelButton'
 import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
 import { loadStorefrontBusiness } from '../lib/data/storefront-business'
 import { createStorefrontBusiness } from '../lib/business'
@@ -93,11 +94,18 @@ export async function HomePage() {
           {business.homepageDescription && (
             <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }}>{business.homepageDescription}</p>
           )}
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
-              Explora nuestro inventario
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            {/* Accesos directos: comprar 0 km o usado (un solo grupo, no suma bloques nuevos). */}
+            <nav aria-label="Comprar un auto" className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
+              <Link href="/inventory?condition=new" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-5 sm:px-6">
+                Autos 0 km
+                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              </Link>
+              <Link href="/inventory?condition=used" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-5 sm:px-6">
+                Autos usados
+                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              </Link>
+            </nav>
             <WhatsAppButton className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6" />
           </div>
         </Container>
@@ -146,6 +154,9 @@ export async function HomePage() {
               </div>
             </div>
           )}
+          <div className="mt-10 flex justify-center">
+            <WhatsAppChannelButton />
+          </div>
         </Container>
       </section>
 

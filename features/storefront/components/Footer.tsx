@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
 import { WhatsAppButton } from './WhatsAppButton'
+import { WhatsAppChannelButton } from './WhatsAppChannelButton'
 import { ELVIS_ABOUT, ELVIS_INFO, ELVIS_LINKS } from '../lib/elvisContent'
 import { BrandMark } from './BrandMark'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 
 const SHOP = [
   { href: '/inventory', label: 'Inventario' },
-  { href: '/ofertas', label: 'Ofertas progresivas' },
+  { href: '/ofertas', label: 'Ofertas' },
   { href: '/compare', label: 'Comparar' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vende tu auto' },
@@ -23,7 +24,7 @@ const VISIT = [
   { href: '/account', label: 'Mi cuenta' },
 ]
 
-export function Footer({ branding = true }: { branding?: boolean }) {
+export function Footer(_props: { branding?: boolean } = {}) {
   const year = new Date().getFullYear()
   const business = useStorefrontBusiness()
   const hours = [
@@ -61,11 +62,11 @@ export function Footer({ branding = true }: { branding?: boolean }) {
               </div>
             )}
             <WhatsAppButton className="sf-btn sf-btn-outline sf-btn-sm mt-3 min-h-11" />
+            <WhatsAppChannelButton compact className="mt-3" />
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--sf-text-xs)]" aria-label="Redes sociales">
               {ELVIS_LINKS.social.map((link) => (
                 <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center hover:text-[var(--sf-accent)]">{link.label}</a></li>
               ))}
-              <li><a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center hover:text-[var(--sf-accent)]">Canal de WhatsApp</a></li>
             </ul>
           </div>
 
@@ -118,7 +119,6 @@ export function Footer({ branding = true }: { branding?: boolean }) {
           <p>© {year} {business.fullName.replace(/\.$/, '')}. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link href="/photo-credits" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Créditos de fotos</Link>
-            {branding && <a href="https://github.com/openshiporg/openfront-dealership" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Basado en Openfront (MIT)</a>}
           </div>
         </div>
       </Container>

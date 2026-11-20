@@ -33,12 +33,20 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
   const model = requiredText(data.model, 'Modelo', 100)
   const trim = optionalText(data.trim, 100, 'Trim')
   const vin = optionalText(data.vin, 17, 'VIN').toUpperCase()
+  const licensePlate = normalizePlate(requiredText(data.licensePlate, 'Patente', 12))
+  const engineNumber = optionalText(data.engineNumber, 30, 'Número de motor').toUpperCase().replace(/\s+/g, '')
   const condition = requiredText(data.condition, 'Estado', 30)
   const ownership = requiredText(data.ownership, 'Titularidad', 30)
   const notes = optionalText(data.notes, 2000, 'Información adicional')
   const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Saldo del crédito', { min: 0, max: 10_000_000_000 })
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError('El estado o la titularidad no son válidos.')
+  }
+  if (!/^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/.test(licensePlate)) {
+    throw new SubmissionError('La patente debe tener el formato ABC123 o AB123CD.')
+  }
+  if (engineNumber && !/^[A-Z0-9-]{5,30}$/.test(engineNumber)) {
+    throw new SubmissionError('El número de motor solo puede tener letras y números.')
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
     throw new SubmissionError('Si cargas el número de chasis, debe tener 17 caracteres.')
@@ -63,6 +71,8 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
       model,
       trim,
       vin,
+      licensePlate,
+      engineNumber,
       condition,
       ownership,
       payoffAmount,
@@ -88,6 +98,8 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
         data: {
           rooftop,
           vin,
+          licensePlate,
+          engineNumber,
           year: String(year),
           make,
           model,
@@ -134,4 +146,9 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
   // El código para adjuntar fotos se emite fuera de la transacción y no queda en la auditoría.
   const photoToken = !outcome.reused && outcome.tradeInId ? await issueTradeInPhotoToken(context, String(outcome.tradeInId)) : null
   return { ...outcome, photoToken }
+}
+
+/** "ab 123 cd" / "abc-123" -> "AB123CD" / "ABC123". */
+export function normalizePlate(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }

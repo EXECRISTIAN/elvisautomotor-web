@@ -26,7 +26,9 @@ test('sistema alemán: primera cuota mayor que la última', () => {
 
 test('respeta porcentaje financiable, montos y plazos', () => {
   assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 1_000_000_00, termMonths: 12 }).ok, false) // 90 % > 80 %
-  assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 5_000_000_00, termMonths: 18 }).ok, false) // plazo no ofrecido
+  assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 5_000_000_00, termMonths: 18 }).ok, true) // cantidad personalizada dentro del rango 12–36
+  assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 5_000_000_00, termMonths: 48 }).ok, false) // fuera del rango
+  assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 5_000_000_00, termMonths: 6 }).ok, false) // fuera del rango
   assert.equal(simulate(plan, { priceCents: 10_000_000_00, downPaymentCents: 10_000_000_00, termMonths: 12 }).ok, false) // nada que financiar
   assert.equal(simulate({ ...plan, tnaBps: 0 }, { priceCents: 1_200_000_00, downPaymentCents: 600_000_00, termMonths: 12 }).ok, true)
 })

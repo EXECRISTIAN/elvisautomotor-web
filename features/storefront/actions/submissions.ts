@@ -57,6 +57,7 @@ export async function submitStorefrontInquiry(input: CommonSubmissionInput & {
   email: string
   phone?: string
   preferredContact: string
+  contactTimes?: string[]
   intent: string
   message?: string
   vehicleId?: string
@@ -123,6 +124,8 @@ export async function submitStorefrontTradeIn(input: CommonSubmissionInput & {
   model: string
   trim?: string
   vin?: string
+  licensePlate: string
+  engineNumber?: string
   mileage: number
   condition: string
   ownership: string

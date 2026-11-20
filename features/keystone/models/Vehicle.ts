@@ -1,13 +1,14 @@
 import { list } from '@keystone-6/core'
 import { denyAll } from '@keystone-6/core/access'
 import { relationship, text, select, integer, checkbox, image, json, timestamp, virtual, float } from '@keystone-6/core/fields'
+import { group } from '@keystone-6/core'
 import { graphql } from '@graphql-ts/schema'
 
 import { permissions, rules } from '../access'
 import { domainEventRequestHash, recordDomainEventInTransaction } from '../lifecycle/domainEvents'
 import { rooftopField, validateRooftopRecord } from '../tenantRecords'
 import { trackingFields } from './trackingFields'
-import { FUEL_OPTIONS, TRANSMISSION_OPTIONS } from '../../lib/vehicleSpecs'
+import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS } from '../../lib/vehicleSpecs'
 
 export const Vehicle = list({
   access: {
@@ -174,6 +175,34 @@ export const Vehicle = list({
       access: { update: () => false },
       ui: { description: 'Ej.: 1.6, 2.0 TSI' },
     }),
+    ...group({
+      label: 'Estado del usado',
+      description: 'Informe que ve el comprador en la ficha del usado. No se muestra en autos 0 km.',
+      fields: {
+        usedDebt: select({ type: 'string', options: [...DEBT_OPTIONS], label: 'Deuda (patentes, multas, prenda)' }),
+        usedDebtNotes: text({ label: 'Detalle de la deuda', ui: { displayMode: 'textarea' } }),
+        usedFines: select({ type: 'string', options: [...FINES_OPTIONS], label: 'Infracciones' }),
+        usedFinesNotes: text({ label: 'Detalle de infracciones', ui: { displayMode: 'textarea' } }),
+        usedGnc: select({ type: 'string', options: [...GNC_OPTIONS], label: 'Equipo de GNC' }),
+        usedGncNotes: text({ label: 'Detalle del GNC', ui: { description: 'Generación, cantidad de tubos, vencimiento de la oblea.' } }),
+        usedAc: select({ type: 'string', options: [...AC_OPTIONS], label: 'Aire acondicionado' }),
+        usedAcNotes: text({ label: 'Detalle del aire acondicionado' }),
+        usedEngine: text({ label: 'Motor', ui: { displayMode: 'textarea' } }),
+        usedMechanical: text({ label: 'Mecánica (tren delantero, frenos, embrague, caja)', ui: { displayMode: 'textarea' } }),
+        usedBody: text({ label: 'Chapa', ui: { displayMode: 'textarea' } }),
+        usedPaint: text({ label: 'Pintura', ui: { displayMode: 'textarea' } }),
+        usedPlastics: text({ label: 'Plásticos y ópticas', ui: { displayMode: 'textarea' } }),
+        usedInterior: text({ label: 'Interior', ui: { displayMode: 'textarea' } }),
+        usedFunctional: text({ label: 'Funcionamiento (levantavidrios, luces, tablero, etc.)', ui: { displayMode: 'textarea' } }),
+        usedWheels: text({ label: 'Llantas', ui: { displayMode: 'textarea' } }),
+        usedTireLifePct: integer({ label: 'Vida útil de las cubiertas (%)', validation: { min: 0, max: 100 }, ui: { description: '100 = nuevas. Estimación del desgaste.' } }),
+      },
+    }),
+    previousPriceCents: float({
+      label: 'Precio anterior (oferta express)',
+      validation: { min: 0 },
+      ui: { description: 'Si es mayor al precio actual, el auto aparece como oferta express con el precio anterior tachado. Dejar vacío si no está en oferta.' },
+    }),
     isFeatured: checkbox({
       label: 'Destacado en la página principal',
       defaultValue: false,
@@ -209,6 +238,10 @@ export const Vehicle = list({
     }),
     listPrice: virtual({
       field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.listPriceCents == null ? null : item.listPriceCents / 100 } }),
+      ui: { itemView: { fieldMode: 'read' } },
+    }),
+    previousPrice: virtual({
+      field: graphql.field({ type: graphql.Float, resolve(item: any) { return item.previousPriceCents == null ? null : item.previousPriceCents / 100 } }),
       ui: { itemView: { fieldMode: 'read' } },
     }),
     price: virtual({

@@ -17,6 +17,8 @@ export type TradeInDealRef = {
 
 export type TradeIn = {
   id: string
+  licensePlate?: string | null
+  engineNumber?: string | null
   photos?: Array<{ id: string; image: { url: string | null } | null }>
   createdAt: string | null
   updatedAt: string | null
@@ -56,7 +58,7 @@ type CommandResult = { id: string; status: string | null; updatedAt: string; reu
 const TRADE_INS_PATH = '/dashboard/platform/trade-ins'
 
 const TRADE_IN_FIELDS = `
-  id createdAt updatedAt vin year make model trim mileage condition exteriorCondition interiorCondition mechanicalIssues
+  id createdAt updatedAt vin licensePlate engineNumber year make model trim mileage condition exteriorCondition interiorCondition mechanicalIssues
   referenceValue offerAmount
   rooftop { id name }
   appraisedBy { id name }

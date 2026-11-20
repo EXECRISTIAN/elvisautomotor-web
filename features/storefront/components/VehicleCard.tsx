@@ -14,6 +14,7 @@ import { formatMileage, formatPrice } from '../lib/format'
 import { primaryVehicleImage, vehicleImageUrl, skipImageOptimizer } from '../lib/images'
 import { vehicleConditionLabel, vehicleStatus } from '../lib/vehicleStatus'
 import { PhotoAttribution } from './PhotoAttribution'
+import { PreviousPrice, isExpressOffer } from './PreviousPrice'
 import { isRepresentativePhoto } from '../lib/photoAttribution'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 import { VehiclePhotoPlaceholder } from './VehiclePhotoPlaceholder'
@@ -104,7 +105,10 @@ export function VehicleCard({
             <div><dt>Stock</dt><dd className="sf-figure">{vehicle.stockNumber}</dd></div>
           </dl>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <p className="sf-price text-[length:var(--sf-text-2xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
+            <div>
+              <p className="sf-price text-[length:var(--sf-text-2xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
+              <PreviousPrice previous={vehicle.previousPrice} price={vehicle.price} currencyCode={currencyCode} className="text-[length:var(--sf-text-sm)]" />
+            </div>
             <div className="flex flex-wrap gap-2">
               <Link href={href} className="sf-btn sf-btn-primary sf-btn-sm">Ver vehículo</Link>
               {compareButton}
@@ -134,7 +138,8 @@ export function VehicleCard({
           <VehiclePhotoPlaceholder />
         )}
         <span className="sf-chip sf-chip-dark absolute left-2.5 top-2.5">{vehicleConditionLabel(vehicle.condition)}</span>
-        {vehicle.progressiveOffer && <span className="sf-chip absolute right-2.5 top-2.5" style={{ background: 'var(--sf-gold-gradient)', color: 'var(--sf-accent-ink)' }}>Oferta progresiva</span>}
+        {vehicle.progressiveOffer ? <span className="sf-chip absolute right-2.5 top-2.5" style={{ background: 'var(--sf-gold-gradient)', color: 'var(--sf-accent-ink)' }}>Oferta progresiva</span>
+          : isExpressOffer(vehicle) && <span className="sf-chip absolute right-2.5 top-2.5" style={{ background: 'var(--sf-gold-gradient)', color: 'var(--sf-accent-ink)' }}>Oferta express</span>}
         <span className="sf-stall absolute bottom-2.5 left-2.5">#{vehicle.stockNumber}</span>
         {representative && <span className="sf-chip sf-chip-dark absolute bottom-2.5 right-2.5">Foto ilustrativa</span>}
       </Link>
@@ -147,7 +152,10 @@ export function VehicleCard({
             </h3>
             <p className="sf-muted min-h-[1.5em] truncate text-[length:var(--sf-text-sm)]">{vehicle.trim}</p>
           </div>
-          <p className="sf-price shrink-0 pt-0.5 text-[length:var(--sf-text-xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
+          <div className="shrink-0 pt-0.5 text-right">
+            <p className="sf-price text-[length:var(--sf-text-xl)]">{formatPrice(vehicle.price, currencyCode)}</p>
+            <PreviousPrice previous={vehicle.previousPrice} price={vehicle.price} currencyCode={currencyCode} className="justify-end text-[length:var(--sf-text-xs)]" />
+          </div>
         </div>
 
         <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] border-y text-[length:var(--sf-text-xs)]" style={{ borderColor: 'var(--sf-rule)' }}>

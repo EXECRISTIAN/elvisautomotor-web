@@ -152,6 +152,24 @@ model Vehicle {
   fuelType                      String?
   transmission                  String?
   engine                        String                   @default("")
+  usedDebt                      String?
+  usedDebtNotes                 String                   @default("")
+  usedFines                     String?
+  usedFinesNotes                String                   @default("")
+  usedGnc                       String?
+  usedGncNotes                  String                   @default("")
+  usedAc                        String?
+  usedAcNotes                   String                   @default("")
+  usedEngine                    String                   @default("")
+  usedMechanical                String                   @default("")
+  usedBody                      String                   @default("")
+  usedPaint                     String                   @default("")
+  usedPlastics                  String                   @default("")
+  usedInterior                  String                   @default("")
+  usedFunctional                String                   @default("")
+  usedWheels                    String                   @default("")
+  usedTireLifePct               Int?
+  previousPriceCents            Float?
   isFeatured                    Boolean                  @default(false)
   mileage                       Int?
   purchasePriceCents            Float?
@@ -473,6 +491,8 @@ model TradeIn {
   rooftop             Rooftop        @relation("TradeIn_rooftop", fields: [rooftopId], references: [id])
   rooftopId           String         @map("rooftop")
   vin                 String         @default("")
+  licensePlate        String         @default("")
+  engineNumber        String         @default("")
   year                String         @default("")
   make                String         @default("")
   model               String         @default("")

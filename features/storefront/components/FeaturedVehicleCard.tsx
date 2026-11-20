@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { PreviousPrice } from './PreviousPrice'
 import { Cog, Fuel, Gauge } from 'lucide-react'
 import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 import type { Vehicle } from '../lib/types'
@@ -35,8 +36,9 @@ export function FeaturedVehicleCard({ vehicle, currencyCode, priority = false }:
             <span className="inline-flex items-center gap-1"><Fuel className="size-3.5" aria-hidden="true" />{fuelLabel(vehicle.fuelType)}</span>
           )}
         </span>
-        <span className="mt-auto pt-2 text-right text-[1.15rem] font-bold tabular-nums">
-          {vehicle.price > 0 ? formatPrice(vehicle.price, currencyCode) : 'Consultar precio'}
+        <span className="mt-auto flex flex-col items-end pt-2">
+          <span className="text-[1.15rem] font-bold tabular-nums">{vehicle.price > 0 ? formatPrice(vehicle.price, currencyCode) : 'Consultar precio'}</span>
+          <PreviousPrice previous={vehicle.previousPrice} price={vehicle.price} currencyCode={currencyCode} className="justify-end text-[0.75rem]" />
         </span>
       </span>
     </Link>

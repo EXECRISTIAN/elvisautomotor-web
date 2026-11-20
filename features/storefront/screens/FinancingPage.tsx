@@ -8,7 +8,7 @@ import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
 import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
-import { SIMULATION_DISCLAIMER, formatBpsPercent, simulate, type AmortizationSystem } from '@/features/lib/financing/simulate'
+import { SIMULATION_DISCLAIMER, formatBpsPercent, simulate, termRange, type AmortizationSystem } from '@/features/lib/financing/simulate'
 import { normalizeMoneyText } from '@/features/platform/deals/lib/moneyInput'
 import { submitStorefrontFinancing } from '../actions/submissions'
 import { PageHeader } from '../components/PageHeader'
@@ -69,6 +69,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
   const [downPayment, setDownPayment] = useState('')
   const [planId, setPlanId] = useState(plans[0]?.id || '')
   const [term, setTerm] = useState<number>(plans[0]?.termsMonths[0] || 0)
+  const [customTerm, setCustomTerm] = useState(false)
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', employmentStatus: '', monthlyIncome: '', creditTier: '', consent: false, privacyAcknowledged: false, website: '' })
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
   const [sending, setSending] = useState(false)
@@ -101,7 +102,10 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
   const choosePlan = (id: string) => {
     setPlanId(id)
     const next = plans.find((item) => item.id === id)
-    if (next && !next.termsMonths.includes(term)) setTerm(next.termsMonths[0])
+    if (next) {
+      const [minTerm, maxTerm] = termRange(next.termsMonths)
+      if (customTerm ? term < minTerm || term > maxTerm : !next.termsMonths.includes(term)) setTerm(next.termsMonths[0])
+    }
   }
 
   const send = async (event: React.FormEvent) => {
@@ -243,9 +247,26 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
                       <legend className="sf-label">Cantidad de cuotas</legend>
                       <div className="sf-track flex-wrap" role="group">
                         {plan.termsMonths.map((months) => (
-                          <button key={months} type="button" className="sf-pill" aria-pressed={term === months} onClick={() => setTerm(months)}>{months}</button>
+                          <button key={months} type="button" className="sf-pill min-h-11 min-w-11" aria-pressed={!customTerm && term === months} onClick={() => { setCustomTerm(false); setTerm(months) }}>{months}</button>
                         ))}
+                        <button type="button" className="sf-pill min-h-11" aria-pressed={customTerm} aria-expanded={customTerm} aria-controls="custom-term" onClick={() => setCustomTerm(true)}>Otra cantidad</button>
                       </div>
+                      {customTerm && (() => {
+                        const [minTerm, maxTerm] = termRange(plan.termsMonths)
+                        const clamp = (value: number) => Math.min(maxTerm, Math.max(minTerm, Math.round(value) || minTerm))
+                        return (
+                          <div id="custom-term" className="mt-3">
+                            <div className="flex items-stretch gap-2">
+                              <button type="button" className="sf-btn sf-btn-ghost min-h-12 min-w-12 rounded-[8px] px-0 text-[1.25rem]" aria-label="Una cuota menos" disabled={term <= minTerm} onClick={() => setTerm(clamp(term - 1))}>−</button>
+                              <label className="sr-only" htmlFor="custom-term-input">Cantidad de cuotas</label>
+                              <input id="custom-term-input" type="number" inputMode="numeric" min={minTerm} max={maxTerm} step={1} value={term || ''} onChange={(e) => setTerm(Number(e.target.value))} onBlur={() => setTerm(clamp(term))} className="sf-input sf-figure min-h-12 w-24 text-center text-[1.1rem]" />
+                              <button type="button" className="sf-btn sf-btn-ghost min-h-12 min-w-12 rounded-[8px] px-0 text-[1.25rem]" aria-label="Una cuota más" disabled={term >= maxTerm} onClick={() => setTerm(clamp(term + 1))}>+</button>
+                            </div>
+                            <input type="range" min={minTerm} max={maxTerm} step={1} value={Math.min(maxTerm, Math.max(minTerm, term || minTerm))} onChange={(e) => setTerm(Number(e.target.value))} className="mt-3 w-full max-w-sm accent-[var(--sf-accent)]" aria-label="Cantidad de cuotas" />
+                            <p className="sf-faint mt-1 text-[length:var(--sf-text-xs)]">Entre {minTerm} y {maxTerm} cuotas. El banco confirma los plazos disponibles.</p>
+                          </div>
+                        )
+                      })()}
                     </fieldset>
                   )}
                   {result && !result.ok && <Notice tone="warn">{result.reason}</Notice>}

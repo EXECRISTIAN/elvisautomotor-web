@@ -43,6 +43,8 @@ function readWhere(where: PublicInventoryOptions['where']) {
         if (option) filters[key] = option
       } else if (key === 'progressiveOffer') {
         if (value?.equals === true) filters.progressiveOffer = true
+      } else if (key === 'expressOffer') {
+        if (value?.equals === true) filters.expressOffer = true
       } else if (key === 'isFeatured') {
         if (value?.equals === true) filters.isFeatured = true
       } else if (key === 'condition') {
@@ -69,6 +71,24 @@ function inRange(value: unknown, range: Record<string, number> | undefined) {
   return Number.isFinite(number) && (range.gte == null || number >= range.gte) && (range.lte == null || number <= range.lte)
 }
 
+/** Oferta express: el precio anterior cargado es mayor al precio actual. */
+export function isExpressOffer(vehicle: any) {
+  return vehicle.previousPriceCents != null && vehicle.priceCents != null && Number(vehicle.previousPriceCents) > Number(vehicle.priceCents)
+}
+
+const USED_REPORT_KEYS = ['usedDebt', 'usedDebtNotes', 'usedFines', 'usedFinesNotes', 'usedGnc', 'usedGncNotes', 'usedAc', 'usedAcNotes', 'usedEngine', 'usedMechanical', 'usedBody', 'usedPaint', 'usedPlastics', 'usedInterior', 'usedFunctional', 'usedWheels', 'usedTireLifePct'] as const
+
+/** Informe del usado para la ficha pública: solo autos no 0 km y solo con datos cargados. */
+export function publicUsedReport(vehicle: any) {
+  if (String(vehicle.condition || '') === 'new') return null
+  const report: Record<string, string | number> = {}
+  for (const key of USED_REPORT_KEYS) {
+    const value = vehicle[key]
+    if (value !== null && value !== undefined && value !== '') report[key] = value
+  }
+  return Object.keys(report).length ? report : null
+}
+
 function matches(vehicle: any, filters: Record<string, any>) {
   if (filters.status === 'unavailable') return false
   if (filters.make && !String(vehicle.make || '').toLocaleLowerCase().includes(filters.make)) return false
@@ -77,6 +97,7 @@ function matches(vehicle: any, filters: Record<string, any>) {
   if (filters.fuelType && String(vehicle.fuelType || '') !== filters.fuelType) return false
   if (filters.transmission && String(vehicle.transmission || '') !== filters.transmission) return false
   if (filters.isFeatured && !vehicle.isFeatured) return false
+  if (filters.expressOffer && !isExpressOffer(vehicle)) return false
   if (filters.anyOf?.some((group: Array<{ field: string; search: string }>) =>
     !group.some(({ field, search }) => String(vehicle[field] || '').toLocaleLowerCase().includes(search)))) return false
   return inRange(vehicle.year, filters.year) && inRange(vehicle.priceCents, filters.priceCents) && inRange(vehicle.mileage, filters.mileage)
@@ -192,6 +213,8 @@ async function queryPublicInventory(context: any, options: PublicInventoryOption
         progressiveOffer: offerIds.has(vehicle.id),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
+        previousPrice: isExpressOffer(vehicle) ? vehicle.previousPriceCents / 100 : null,
+        usedReport: publicUsedReport(vehicle),
         status: reserved.has(vehicle.id) ? 'reserved' : vehicle.status,
         condition: vehicle.condition,
         features: vehicle.features,
@@ -292,6 +315,8 @@ export async function publicInventoryVehicleRecord(_root: unknown, { id }: { id:
     progressiveOffer: false,
     mileage: vehicle.mileage,
     price: null,
+    previousPrice: null,
+    usedReport: publicUsedReport(vehicle),
     status: vehicle.status,
     condition: vehicle.condition,
     features: vehicle.features,

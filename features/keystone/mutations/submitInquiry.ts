@@ -4,14 +4,15 @@ import { SubmissionError } from './submissionErrors'
 import { optionalText, requiredText, resolveAvailableVehicle, validEmail, validPhone } from './submissionUtils'
 
 const INTENTS: Record<string, string> = {
-  'general-contact': 'General contact request',
-  'vehicle-question': 'Vehicle question',
-  'get-quote': 'Price quote request',
+  'general-contact': 'Consulta general',
+  'vehicle-question': 'Consulta por un vehículo',
+  'get-quote': 'Pedido de cotización',
   // Reserve this vehicle: a hold request for staff. It does not change the vehicle's status;
   // only a deal moves inventory to pending, so an anonymous request cannot pull a car offline.
-  'reserve-vehicle': 'Vehicle reservation request',
+  'reserve-vehicle': 'Pedido de reserva',
 }
-const CONTACTS = new Set(['email', 'phone', 'text'])
+const CONTACTS = new Set(['email', 'phone', 'whatsapp', 'text'])
+const CONTACT_LABELS: Record<string, string> = { email: 'email', phone: 'teléfono', whatsapp: 'WhatsApp', text: 'mensaje de texto' }
 
 export async function submitInquiry(_root: unknown, { data }: { data: any }, context: any) {
   const firstName = requiredText(data.firstName, 'Nombre', 100)
@@ -21,6 +22,8 @@ export async function submitInquiry(_root: unknown, { data }: { data: any }, con
   const message = optionalText(data.message, 4000, 'Message')
   const intent = requiredText(data.intent, 'Inquiry type', 50)
   const preferredContact = optionalText(data.preferredContact || 'email', 20, 'Preferred contact')
+  const contactTimes = [...new Set((Array.isArray(data.contactTimes) ? data.contactTimes : []).map(String))].filter((time) => time === 'morning' || time === 'afternoon')
+  const contactTimesLabel = contactTimes.length === 2 ? 'por la mañana o por la tarde' : contactTimes[0] === 'morning' ? 'por la mañana' : contactTimes[0] === 'afternoon' ? 'por la tarde' : ''
   const intentLabel = INTENTS[intent]
   if (!intentLabel || !CONTACTS.has(preferredContact)) {
     throw new SubmissionError('El tipo de consulta o el medio de contacto no es válido.')
@@ -49,6 +52,7 @@ export async function submitInquiry(_root: unknown, { data }: { data: any }, con
       message,
       intent,
       preferredContact,
+      contactTimes,
       vehicleId: optionalText(data.vehicleId, 100, 'Vehicle'),
     },
     aggregateType: 'Lead',
@@ -58,7 +62,7 @@ export async function submitInquiry(_root: unknown, { data }: { data: any }, con
       const rooftop = { connect: { id: rooftopId } }
       const vehicleSummary = vehicle
         ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})`
-        : 'No inventory vehicle selected'
+        : 'ninguno'
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
         firstName,
@@ -78,10 +82,10 @@ export async function submitInquiry(_root: unknown, { data }: { data: any }, con
           status: 'new',
           ...(intent === 'get-quote' || intent === 'reserve-vehicle' ? { timeframe: 'immediately' } : {}),
           notes: [
-            `${intentLabel} submitted from storefront.`,
-            `Preferred contact: ${preferredContact}.`,
-            `Selected inventory: ${vehicleSummary}.`,
-            message ? `Customer message: ${message}` : 'Customer did not include an additional message.',
+            `${intentLabel} enviada desde la web.`,
+            `Prefiere que lo contacten por ${CONTACT_LABELS[preferredContact] ?? preferredContact}${contactTimesLabel ? `, ${contactTimesLabel}` : ''}.`,
+            `Vehículo elegido: ${vehicleSummary}.`,
+            message ? `Mensaje del cliente: ${message}` : 'El cliente no dejó un mensaje adicional.',
           ].join('\n'),
           ...(vehicle ? { interestedVehicle: { connect: { id: vehicle.id } } } : {}),
         },

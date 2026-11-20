@@ -1,24 +1,33 @@
-# Correr Elvis Automotores completo en tu PC (sitio + panel + base de datos)
+# Elvis Automotores en tu PC
 
-## Opción rápida: solo mirar (sin instalar nada)
-Descomprime `docs/elvis/elvis-muestra-offline.zip` y abre `ABRIR-AQUI.html`.
-Es una copia fija: se navega, pero los formularios y el panel no funcionan.
+Hay dos formas de verlo en tu computadora, sin internet.
 
-## Opción completa con Docker (Windows, Mac o Linux)
-1. Instala **Docker Desktop** (docker.com) y ábrelo.
-2. Descarga este repositorio (rama `claude/gifted-thompson-hp4ggn`) y abre una terminal en la carpeta.
-3. Ejecuta:
-   ```
-   docker compose up --build
-   ```
-   La primera vez tarda varios minutos (descarga e instala todo). La base se crea sola con los
-   datos de ejemplo de Elvis (14 vehículos, bancos Nación y Provincia, un plan de ejemplo y una oferta progresiva de ejemplo).
-4. Abre http://localhost:3000 (sitio) y http://localhost:3000/dashboard (panel).
-   - Usuario: `admin@elvis.local` — Contraseña: `ElvisDemo-2026` → **cámbiala** al entrar.
-5. Para apagar: `Ctrl+C` o `docker compose down`. Los datos quedan guardados.
-   Para empezar de cero: `docker compose down -v`.
+## 1. Versión completa (recomendada): todo funciona y se guarda en tu PC
 
-## Qué funciona localmente
-- Todo el sitio, formularios (quedan guardados en el panel), simulador de financiación, ofertas progresivas y panel.
-- **No** funciona subir fotos nuevas (requiere un almacenamiento S3; se configura al publicar).
-- Nada se envía por email ni por WhatsApp desde el sistema: las consultas se ven en el panel.
+Sitio + panel de administración + base de datos. Las consultas, solicitudes de crédito,
+usados ofrecidos, usuarios, autos, ofertas y bancos que cargues **quedan guardados en tu PC**.
+
+1. Instala **Docker Desktop** (una sola vez): https://www.docker.com/products/docker-desktop/
+   y ábrelo hasta que diga *Engine running*.
+2. Descarga el proyecto (rama `claude/gifted-thompson-hp4ggn`) y descomprímelo.
+3. Doble clic en **`INICIAR-ELVIS.bat`**. La primera vez tarda varios minutos.
+   Se abren solos el sitio (http://localhost:3000) y el panel (http://localhost:3000/dashboard).
+4. Panel: usuario **`123`**, contraseña **`123`** (administrador).
+   Desde **Administración → Personal** creas vendedores y otros usuarios con su rol.
+5. Para apagar: **`DETENER-ELVIS.bat`**. Los datos quedan guardados para la próxima vez.
+
+Empezar de cero (borra todo lo cargado): en una terminal dentro de la carpeta,
+`docker compose down -v` y luego `INICIAR-ELVIS.bat`.
+
+**Importante:** la contraseña `123` es solo para uso local. Antes de publicar el sitio en
+internet hay que cambiarla por una segura.
+
+Limitación: subir fotos nuevas (de autos o de usados) necesita un almacenamiento de fotos
+que se configura al publicar; en la PC el resto funciona.
+
+## 2. Muestra rápida (sin instalar nada): para mirar, no guarda datos
+
+Descomprime `elvis-muestra-offline.zip` y haz doble clic en **`INICIAR-MUESTRA.bat`**.
+Menús, filtros, simulador de cuotas y botones funcionan; los formularios no se envían y no
+hay panel (no hay base de datos). `ABRIR-AQUI.html` sirve solo para mirar: abierto como
+archivo, el navegador no ejecuta los menús.

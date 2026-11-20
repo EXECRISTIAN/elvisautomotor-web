@@ -1035,6 +1035,24 @@ type Vehicle {
   fuelType: String
   transmission: String
   engine: String
+  usedDebt: String
+  usedDebtNotes: String
+  usedFines: String
+  usedFinesNotes: String
+  usedGnc: String
+  usedGncNotes: String
+  usedAc: String
+  usedAcNotes: String
+  usedEngine: String
+  usedMechanical: String
+  usedBody: String
+  usedPaint: String
+  usedPlastics: String
+  usedInterior: String
+  usedFunctional: String
+  usedWheels: String
+  usedTireLifePct: Int
+  previousPriceCents: Float
   isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Float
@@ -1042,6 +1060,7 @@ type Vehicle {
   priceCents: Float
   purchasePrice: Float
   listPrice: Float
+  previousPrice: Float
   price: Float
   condition: String
   status: String
@@ -1097,6 +1116,24 @@ input VehicleWhereInput {
   fuelType: StringNullableFilter
   transmission: StringNullableFilter
   engine: StringFilter
+  usedDebt: StringNullableFilter
+  usedDebtNotes: StringFilter
+  usedFines: StringNullableFilter
+  usedFinesNotes: StringFilter
+  usedGnc: StringNullableFilter
+  usedGncNotes: StringFilter
+  usedAc: StringNullableFilter
+  usedAcNotes: StringFilter
+  usedEngine: StringFilter
+  usedMechanical: StringFilter
+  usedBody: StringFilter
+  usedPaint: StringFilter
+  usedPlastics: StringFilter
+  usedInterior: StringFilter
+  usedFunctional: StringFilter
+  usedWheels: StringFilter
+  usedTireLifePct: IntNullableFilter
+  previousPriceCents: FloatNullableFilter
   isFeatured: BooleanFilter
   mileage: IntNullableFilter
   purchasePriceCents: FloatNullableFilter
@@ -1168,6 +1205,24 @@ input VehicleOrderByInput {
   fuelType: OrderDirection
   transmission: OrderDirection
   engine: OrderDirection
+  usedDebt: OrderDirection
+  usedDebtNotes: OrderDirection
+  usedFines: OrderDirection
+  usedFinesNotes: OrderDirection
+  usedGnc: OrderDirection
+  usedGncNotes: OrderDirection
+  usedAc: OrderDirection
+  usedAcNotes: OrderDirection
+  usedEngine: OrderDirection
+  usedMechanical: OrderDirection
+  usedBody: OrderDirection
+  usedPaint: OrderDirection
+  usedPlastics: OrderDirection
+  usedInterior: OrderDirection
+  usedFunctional: OrderDirection
+  usedWheels: OrderDirection
+  usedTireLifePct: OrderDirection
+  previousPriceCents: OrderDirection
   isFeatured: OrderDirection
   mileage: OrderDirection
   purchasePriceCents: OrderDirection
@@ -1193,6 +1248,24 @@ input VehicleUpdateInput {
   fuelType: String
   transmission: String
   engine: String
+  usedDebt: String
+  usedDebtNotes: String
+  usedFines: String
+  usedFinesNotes: String
+  usedGnc: String
+  usedGncNotes: String
+  usedAc: String
+  usedAcNotes: String
+  usedEngine: String
+  usedMechanical: String
+  usedBody: String
+  usedPaint: String
+  usedPlastics: String
+  usedInterior: String
+  usedFunctional: String
+  usedWheels: String
+  usedTireLifePct: Int
+  previousPriceCents: Float
   isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Float
@@ -1288,6 +1361,24 @@ input VehicleCreateInput {
   fuelType: String
   transmission: String
   engine: String
+  usedDebt: String
+  usedDebtNotes: String
+  usedFines: String
+  usedFinesNotes: String
+  usedGnc: String
+  usedGncNotes: String
+  usedAc: String
+  usedAcNotes: String
+  usedEngine: String
+  usedMechanical: String
+  usedBody: String
+  usedPaint: String
+  usedPlastics: String
+  usedInterior: String
+  usedFunctional: String
+  usedWheels: String
+  usedTireLifePct: Int
+  previousPriceCents: Float
   isFeatured: Boolean
   mileage: Int
   purchasePriceCents: Float
@@ -2716,6 +2807,8 @@ type TradeIn {
   updatedAt: DateTime
   rooftop: Rooftop
   vin: String
+  licensePlate: String
+  engineNumber: String
   year: String
   make: String
   model: String
@@ -2754,6 +2847,8 @@ input TradeInWhereInput {
   updatedAt: DateTimeFilter
   rooftop: RooftopWhereInput
   vin: StringFilter
+  licensePlate: StringFilter
+  engineNumber: StringFilter
   year: StringFilter
   make: StringFilter
   model: StringFilter
@@ -2784,6 +2879,8 @@ input TradeInOrderByInput {
   createdAt: OrderDirection
   updatedAt: OrderDirection
   vin: OrderDirection
+  licensePlate: OrderDirection
+  engineNumber: OrderDirection
   year: OrderDirection
   make: OrderDirection
   model: OrderDirection
@@ -2804,6 +2901,8 @@ input TradeInUpdateInput {
   updatedAt: DateTime
   rooftop: RooftopRelateToOneForUpdateInput
   vin: String
+  licensePlate: String
+  engineNumber: String
   year: String
   make: String
   model: String
@@ -2841,6 +2940,8 @@ input TradeInCreateInput {
   updatedAt: DateTime
   rooftop: RooftopRelateToOneForCreateInput
   vin: String
+  licensePlate: String
+  engineNumber: String
   year: String
   make: String
   model: String
@@ -9807,6 +9908,8 @@ type PublicInventoryVehicle {
   progressiveOffer: Boolean
   mileage: Int
   price: Float
+  previousPrice: Float
+  usedReport: JSON
   status: String
   condition: String
   description: String
@@ -9825,6 +9928,7 @@ input SubmitInquiryInput {
   email: String!
   phone: String
   preferredContact: String!
+  contactTimes: [String!]
   intent: String!
   message: String
   vehicleId: ID
@@ -9902,6 +10006,8 @@ input SubmitTradeInInput {
   model: String!
   trim: String
   vin: String
+  licensePlate: String!
+  engineNumber: String
   mileage: Int!
   condition: String!
   ownership: String!

@@ -40,10 +40,18 @@ export const TradeIn = list({
     rooftop: rooftopField(),
     // Vehicle Identification
     vin: text({
-      label: 'VIN',
+      label: 'Número de chasis (VIN)',
       ui: {
-        description: 'Vehicle Identification Number',
+        description: '17 caracteres, opcional.',
       },
+    }),
+    licensePlate: text({
+      label: 'Patente',
+      ui: { description: 'Formato AA123BB o ABC123.' },
+    }),
+    engineNumber: text({
+      label: 'Número de motor',
+      ui: { description: 'Opcional.' },
     }),
 
     // Vehicle Details

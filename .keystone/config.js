@@ -466,7 +466,7 @@ module.exports = __toCommonJS(keystone_exports);
 
 // features/keystone/index.ts
 var import_auth = require("@keystone-6/auth");
-var import_core75 = require("@keystone-6/core");
+var import_core76 = require("@keystone-6/core");
 var import_config = require("dotenv/config");
 
 // features/keystone/models/User.ts
@@ -1186,7 +1186,7 @@ var User = (0, import_core.list)({
       }
     }),
     email: (0, import_fields5.text)({
-      label: "Email",
+      label: "Usuario o email",
       isFilterable: false,
       isOrderable: false,
       isIndexed: "unique",
@@ -1200,7 +1200,9 @@ var User = (0, import_core.list)({
         read: import_access2.denyAll,
         update: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id
       },
-      validation: { isRequired: true }
+      // Uso local: se admiten contraseñas cortas (el administrador de fábrica es 123 / 123).
+      // Antes de publicar en internet, cambia esa contraseña por una segura.
+      validation: { isRequired: true, length: { min: 3 } }
     }),
     role: (0, import_fields5.relationship)({
       label: "Rol",
@@ -1524,6 +1526,7 @@ var Model = (0, import_core4.list)({
 var import_core5 = require("@keystone-6/core");
 var import_access9 = require("@keystone-6/core/access");
 var import_fields10 = require("@keystone-6/core/fields");
+var import_core6 = require("@keystone-6/core");
 var import_schema = require("@graphql-ts/schema");
 
 // features/keystone/lifecycle/domainEvents.ts
@@ -1636,6 +1639,25 @@ function normalizeVehicleSpecs(data) {
   if (engine.length > 40) throw new Error("La cilindrada/motor debe tener como m\xE1ximo 40 caracteres");
   return { fuelType, transmission, engine };
 }
+var DEBT_OPTIONS = [
+  { label: "Sin deuda", value: "sin_deuda" },
+  { label: "Con deuda (se informa abajo)", value: "con_deuda" },
+  { label: "A verificar", value: "a_verificar" }
+];
+var FINES_OPTIONS = [
+  { label: "Sin infracciones", value: "sin_infracciones" },
+  { label: "Con infracciones (se informa abajo)", value: "con_infracciones" },
+  { label: "A verificar", value: "a_verificar" }
+];
+var GNC_OPTIONS = [
+  { label: "No tiene", value: "no" },
+  { label: "Tiene equipo de GNC", value: "si" }
+];
+var AC_OPTIONS = [
+  { label: "Funciona", value: "funciona" },
+  { label: "No funciona", value: "no_funciona" },
+  { label: "No tiene", value: "no_tiene" }
+];
 
 // features/keystone/models/Vehicle.ts
 var Vehicle = (0, import_core5.list)({
@@ -1796,6 +1818,34 @@ var Vehicle = (0, import_core5.list)({
       access: { update: () => false },
       ui: { description: "Ej.: 1.6, 2.0 TSI" }
     }),
+    ...(0, import_core6.group)({
+      label: "Estado del usado",
+      description: "Informe que ve el comprador en la ficha del usado. No se muestra en autos 0 km.",
+      fields: {
+        usedDebt: (0, import_fields10.select)({ type: "string", options: [...DEBT_OPTIONS], label: "Deuda (patentes, multas, prenda)" }),
+        usedDebtNotes: (0, import_fields10.text)({ label: "Detalle de la deuda", ui: { displayMode: "textarea" } }),
+        usedFines: (0, import_fields10.select)({ type: "string", options: [...FINES_OPTIONS], label: "Infracciones" }),
+        usedFinesNotes: (0, import_fields10.text)({ label: "Detalle de infracciones", ui: { displayMode: "textarea" } }),
+        usedGnc: (0, import_fields10.select)({ type: "string", options: [...GNC_OPTIONS], label: "Equipo de GNC" }),
+        usedGncNotes: (0, import_fields10.text)({ label: "Detalle del GNC", ui: { description: "Generaci\xF3n, cantidad de tubos, vencimiento de la oblea." } }),
+        usedAc: (0, import_fields10.select)({ type: "string", options: [...AC_OPTIONS], label: "Aire acondicionado" }),
+        usedAcNotes: (0, import_fields10.text)({ label: "Detalle del aire acondicionado" }),
+        usedEngine: (0, import_fields10.text)({ label: "Motor", ui: { displayMode: "textarea" } }),
+        usedMechanical: (0, import_fields10.text)({ label: "Mec\xE1nica (tren delantero, frenos, embrague, caja)", ui: { displayMode: "textarea" } }),
+        usedBody: (0, import_fields10.text)({ label: "Chapa", ui: { displayMode: "textarea" } }),
+        usedPaint: (0, import_fields10.text)({ label: "Pintura", ui: { displayMode: "textarea" } }),
+        usedPlastics: (0, import_fields10.text)({ label: "Pl\xE1sticos y \xF3pticas", ui: { displayMode: "textarea" } }),
+        usedInterior: (0, import_fields10.text)({ label: "Interior", ui: { displayMode: "textarea" } }),
+        usedFunctional: (0, import_fields10.text)({ label: "Funcionamiento (levantavidrios, luces, tablero, etc.)", ui: { displayMode: "textarea" } }),
+        usedWheels: (0, import_fields10.text)({ label: "Llantas", ui: { displayMode: "textarea" } }),
+        usedTireLifePct: (0, import_fields10.integer)({ label: "Vida \xFAtil de las cubiertas (%)", validation: { min: 0, max: 100 }, ui: { description: "100 = nuevas. Estimaci\xF3n del desgaste." } })
+      }
+    }),
+    previousPriceCents: (0, import_fields10.float)({
+      label: "Precio anterior (oferta express)",
+      validation: { min: 0 },
+      ui: { description: "Si es mayor al precio actual, el auto aparece como oferta express con el precio anterior tachado. Dejar vac\xEDo si no est\xE1 en oferta." }
+    }),
     isFeatured: (0, import_fields10.checkbox)({
       label: "Destacado en la p\xE1gina principal",
       defaultValue: false,
@@ -1833,6 +1883,12 @@ var Vehicle = (0, import_core5.list)({
     listPrice: (0, import_fields10.virtual)({
       field: import_schema.graphql.field({ type: import_schema.graphql.Float, resolve(item) {
         return item.listPriceCents == null ? null : item.listPriceCents / 100;
+      } }),
+      ui: { itemView: { fieldMode: "read" } }
+    }),
+    previousPrice: (0, import_fields10.virtual)({
+      field: import_schema.graphql.field({ type: import_schema.graphql.Float, resolve(item) {
+        return item.previousPriceCents == null ? null : item.previousPriceCents / 100;
       } }),
       ui: { itemView: { fieldMode: "read" } }
     }),
@@ -1998,9 +2054,9 @@ var Vehicle = (0, import_core5.list)({
 });
 
 // features/keystone/models/VehicleImage.ts
-var import_core6 = require("@keystone-6/core");
+var import_core7 = require("@keystone-6/core");
 var import_fields11 = require("@keystone-6/core/fields");
-var VehicleImage = (0, import_core6.list)({
+var VehicleImage = (0, import_core7.list)({
   access: {
     operation: {
       query: permissions.canViewInventory,
@@ -2089,9 +2145,9 @@ var VehicleImage = (0, import_core6.list)({
 });
 
 // features/keystone/models/VehicleConditionReport.ts
-var import_core7 = require("@keystone-6/core");
+var import_core8 = require("@keystone-6/core");
 var import_fields12 = require("@keystone-6/core/fields");
-var VehicleConditionReport = (0, import_core7.list)({
+var VehicleConditionReport = (0, import_core8.list)({
   access: {
     operation: {
       query: permissions.canViewInventory,
@@ -2215,9 +2271,9 @@ var VehicleConditionReport = (0, import_core7.list)({
 });
 
 // features/keystone/models/VehicleHistory.ts
-var import_core8 = require("@keystone-6/core");
+var import_core9 = require("@keystone-6/core");
 var import_fields13 = require("@keystone-6/core/fields");
-var VehicleHistory = (0, import_core8.list)({
+var VehicleHistory = (0, import_core9.list)({
   access: {
     operation: {
       query: permissions.canViewInventory,
@@ -2313,10 +2369,10 @@ var VehicleHistory = (0, import_core8.list)({
 });
 
 // features/keystone/models/PriceHistory.ts
-var import_core9 = require("@keystone-6/core");
+var import_core10 = require("@keystone-6/core");
 var import_fields14 = require("@keystone-6/core/fields");
 var import_schema2 = require("@graphql-ts/schema");
-var PriceHistory = (0, import_core9.list)({
+var PriceHistory = (0, import_core10.list)({
   access: {
     operation: {
       query: permissions.canViewDealerCost,
@@ -2405,10 +2461,10 @@ var PriceHistory = (0, import_core9.list)({
 });
 
 // features/keystone/models/Lead.ts
-var import_core10 = require("@keystone-6/core");
+var import_core11 = require("@keystone-6/core");
 var import_access15 = require("@keystone-6/core/access");
 var import_fields15 = require("@keystone-6/core/fields");
-var Lead = (0, import_core10.list)({
+var Lead = (0, import_core11.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -2682,9 +2738,9 @@ var Lead = (0, import_core10.list)({
 });
 
 // features/keystone/models/CustomerInteraction.ts
-var import_core11 = require("@keystone-6/core");
+var import_core12 = require("@keystone-6/core");
 var import_fields16 = require("@keystone-6/core/fields");
-var CustomerInteraction = (0, import_core11.list)({
+var CustomerInteraction = (0, import_core12.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -2795,10 +2851,10 @@ var CustomerInteraction = (0, import_core11.list)({
 });
 
 // features/keystone/models/Task.ts
-var import_core12 = require("@keystone-6/core");
+var import_core13 = require("@keystone-6/core");
 var import_access18 = require("@keystone-6/core/access");
 var import_fields17 = require("@keystone-6/core/fields");
-var Task = (0, import_core12.list)({
+var Task = (0, import_core13.list)({
   access: {
     operation: {
       query: permissions.canManageTasks,
@@ -2890,10 +2946,10 @@ var Task = (0, import_core12.list)({
 });
 
 // features/keystone/models/TestDrive.ts
-var import_core13 = require("@keystone-6/core");
+var import_core14 = require("@keystone-6/core");
 var import_access20 = require("@keystone-6/core/access");
 var import_fields18 = require("@keystone-6/core/fields");
-var TestDrive = (0, import_core13.list)({
+var TestDrive = (0, import_core14.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -3007,7 +3063,7 @@ var TestDrive = (0, import_core13.list)({
 });
 
 // features/keystone/models/Deal.ts
-var import_core14 = require("@keystone-6/core");
+var import_core15 = require("@keystone-6/core");
 var import_fields19 = require("@keystone-6/core/fields");
 var import_schema3 = require("@graphql-ts/schema");
 
@@ -3216,7 +3272,7 @@ function buildDealEvidenceSnapshot(deal) {
 }
 
 // features/keystone/models/Deal.ts
-var Deal = (0, import_core14.list)({
+var Deal = (0, import_core15.list)({
   access: {
     operation: {
       query: permissions.canAccessDeals,
@@ -3506,9 +3562,9 @@ var Deal = (0, import_core14.list)({
 });
 
 // features/keystone/models/DealApproval.ts
-var import_core15 = require("@keystone-6/core");
+var import_core16 = require("@keystone-6/core");
 var import_fields20 = require("@keystone-6/core/fields");
-var DealApproval = (0, import_core15.list)({
+var DealApproval = (0, import_core16.list)({
   access: {
     operation: {
       query: permissions.canAccessDeals,
@@ -3582,11 +3638,11 @@ var DealApproval = (0, import_core15.list)({
 });
 
 // features/keystone/models/TradeIn.ts
-var import_core16 = require("@keystone-6/core");
+var import_core17 = require("@keystone-6/core");
 var import_access24 = require("@keystone-6/core/access");
 var import_fields21 = require("@keystone-6/core/fields");
 var import_schema4 = require("@graphql-ts/schema");
-var TradeIn = (0, import_core16.list)({
+var TradeIn = (0, import_core17.list)({
   access: {
     operation: {
       query: permissions.canAccessTradeIns,
@@ -3619,10 +3675,18 @@ var TradeIn = (0, import_core16.list)({
     rooftop: rooftopField(),
     // Vehicle Identification
     vin: (0, import_fields21.text)({
-      label: "VIN",
+      label: "N\xFAmero de chasis (VIN)",
       ui: {
-        description: "Vehicle Identification Number"
+        description: "17 caracteres, opcional."
       }
+    }),
+    licensePlate: (0, import_fields21.text)({
+      label: "Patente",
+      ui: { description: "Formato AA123BB o ABC123." }
+    }),
+    engineNumber: (0, import_fields21.text)({
+      label: "N\xFAmero de motor",
+      ui: { description: "Opcional." }
     }),
     // Vehicle Details
     year: (0, import_fields21.text)({
@@ -3751,14 +3815,14 @@ var TradeIn = (0, import_core16.list)({
 });
 
 // features/keystone/models/TradeInPhoto.ts
-var import_core17 = require("@keystone-6/core");
+var import_core18 = require("@keystone-6/core");
 var import_fields22 = require("@keystone-6/core/fields");
 var readFilter = ({ session }) => {
   const filter = rules.canReadTradeIns({ session });
   if (typeof filter === "boolean") return filter;
   return { tradeIn: filter };
 };
-var TradeInPhoto = (0, import_core17.list)({
+var TradeInPhoto = (0, import_core18.list)({
   access: {
     operation: {
       query: permissions.canAccessTradeIns,
@@ -3782,9 +3846,9 @@ var TradeInPhoto = (0, import_core17.list)({
 });
 
 // features/keystone/models/Bank.ts
-var import_core18 = require("@keystone-6/core");
+var import_core19 = require("@keystone-6/core");
 var import_fields23 = require("@keystone-6/core/fields");
-var Bank = (0, import_core18.list)({
+var Bank = (0, import_core19.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -3807,17 +3871,21 @@ var Bank = (0, import_core18.list)({
 });
 
 // features/keystone/models/FinancingPlan.ts
-var import_core19 = require("@keystone-6/core");
+var import_core20 = require("@keystone-6/core");
 var import_fields24 = require("@keystone-6/core/fields");
 
 // features/lib/financing/simulate.ts
 function parseTerms(value) {
   return [...new Set(String(value || "").split(/[^\d]+/).map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 120))].sort((a, b) => a - b);
 }
+function termRange(terms) {
+  return terms.length ? [Math.min(...terms), Math.max(...terms)] : [0, 0];
+}
 function formatBpsPercent(bps2) {
   if (bps2 == null || !Number.isFinite(bps2)) return "-";
   return `${(bps2 / 100).toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} %`;
 }
+var IVA_ON_INTEREST = 0.21;
 function simulate(plan, input2) {
   const price = Math.round(input2.priceCents);
   const down = Math.round(input2.downPaymentCents);
@@ -3825,7 +3893,10 @@ function simulate(plan, input2) {
   if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: "Indica el precio del veh\xEDculo." };
   if (!Number.isFinite(down) || down < 0) return { ok: false, reason: "El anticipo no es v\xE1lido." };
   if (down >= price) return { ok: false, reason: "El anticipo cubre el precio total: no hace falta financiar." };
-  if (!plan.termsMonths.includes(n)) return { ok: false, reason: "Elige un plazo disponible para este plan." };
+  const [minTerm, maxTerm] = termRange(plan.termsMonths);
+  if (!Number.isInteger(n) || !(plan.termsMonths.includes(n) || n >= minTerm && n <= maxTerm)) {
+    return { ok: false, reason: `Elige entre ${minTerm} y ${maxTerm} cuotas para este plan.` };
+  }
   const financed = price - down;
   if (plan.maxFinancedBps != null && financed > Math.floor(price * plan.maxFinancedBps / 1e4)) {
     const minDown = price - Math.floor(price * plan.maxFinancedBps / 1e4);
@@ -3834,20 +3905,31 @@ function simulate(plan, input2) {
   if (plan.minAmountCents != null && financed < plan.minAmountCents) return { ok: false, reason: "El monto a financiar es menor al m\xEDnimo de este plan." };
   if (plan.maxAmountCents != null && financed > plan.maxAmountCents) return { ok: false, reason: "El monto a financiar supera el m\xE1ximo de este plan." };
   const i = plan.tnaBps / 1e4 / 12;
+  const vat = 1 + IVA_ON_INTEREST;
   if (plan.amortization === "aleman") {
     const principal = financed / n;
-    const first = principal + financed * i;
-    const last = principal + principal * i;
-    const total = financed + financed * i * (n + 1) / 2;
+    const first = principal + financed * i * vat;
+    const last = principal + principal * i * vat;
+    const total = financed + financed * i * (n + 1) / 2 * vat;
     return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(first), lastInstallmentCents: Math.round(last), totalPaidCents: Math.round(total), termMonths: n };
   }
   const installment = i === 0 ? financed / n : financed * i / (1 - Math.pow(1 + i, -n));
-  return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(installment), lastInstallmentCents: Math.round(installment), totalPaidCents: Math.round(installment * n), termMonths: n };
+  const firstInterest = financed * i;
+  const lastInterest = installment - installment / (1 + i);
+  const totalInterest = installment * n - financed;
+  return {
+    ok: true,
+    financedCents: financed,
+    firstInstallmentCents: Math.round(installment + firstInterest * IVA_ON_INTEREST),
+    lastInstallmentCents: Math.round(installment + lastInterest * IVA_ON_INTEREST),
+    totalPaidCents: Math.round(installment * n + totalInterest * IVA_ON_INTEREST),
+    termMonths: n
+  };
 }
 
 // features/keystone/models/FinancingPlan.ts
 var bps = (label2, description, isRequired = false) => (0, import_fields24.integer)({ label: label2, validation: { isRequired, min: 0, max: 1e5 }, ui: { description } });
-var FinancingPlan = (0, import_core19.list)({
+var FinancingPlan = (0, import_core20.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -3910,9 +3992,9 @@ var FinancingPlan = (0, import_core19.list)({
 });
 
 // features/keystone/models/ProgressiveOffer.ts
-var import_core20 = require("@keystone-6/core");
+var import_core21 = require("@keystone-6/core");
 var import_fields25 = require("@keystone-6/core/fields");
-var ProgressiveOffer = (0, import_core20.list)({
+var ProgressiveOffer = (0, import_core21.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -3986,10 +4068,10 @@ var ProgressiveOffer = (0, import_core20.list)({
 });
 
 // features/keystone/models/ServiceAppointment.ts
-var import_core21 = require("@keystone-6/core");
+var import_core22 = require("@keystone-6/core");
 var import_access30 = require("@keystone-6/core/access");
 var import_fields26 = require("@keystone-6/core/fields");
-var ServiceAppointment = (0, import_core21.list)({
+var ServiceAppointment = (0, import_core22.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4142,7 +4224,7 @@ var ServiceAppointment = (0, import_core21.list)({
 });
 
 // features/keystone/models/ServiceOrder.ts
-var import_core22 = require("@keystone-6/core");
+var import_core23 = require("@keystone-6/core");
 var import_fields27 = require("@keystone-6/core/fields");
 var import_schema5 = require("@graphql-ts/schema");
 
@@ -4216,7 +4298,7 @@ function buildServiceOrderEvidenceSnapshot(order2) {
 }
 
 // features/keystone/models/ServiceOrder.ts
-var ServiceOrder = (0, import_core22.list)({
+var ServiceOrder = (0, import_core23.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4411,10 +4493,10 @@ var ServiceOrder = (0, import_core22.list)({
 });
 
 // features/keystone/models/RepairOrderLineItem.ts
-var import_core23 = require("@keystone-6/core");
+var import_core24 = require("@keystone-6/core");
 var import_fields28 = require("@keystone-6/core/fields");
 var import_schema6 = require("@graphql-ts/schema");
-var RepairOrderLineItem = (0, import_core23.list)({
+var RepairOrderLineItem = (0, import_core24.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -4522,10 +4604,10 @@ var RepairOrderLineItem = (0, import_core23.list)({
 });
 
 // features/keystone/models/ServicePackage.ts
-var import_core24 = require("@keystone-6/core");
+var import_core25 = require("@keystone-6/core");
 var import_fields29 = require("@keystone-6/core/fields");
 var import_schema7 = require("@graphql-ts/schema");
-var ServicePackage = (0, import_core24.list)({
+var ServicePackage = (0, import_core25.list)({
   access: {
     operation: {
       query: () => true,
@@ -4592,7 +4674,7 @@ var ServicePackage = (0, import_core24.list)({
 });
 
 // features/keystone/models/PartsInventory.ts
-var import_core25 = require("@keystone-6/core");
+var import_core26 = require("@keystone-6/core");
 var import_fields30 = require("@keystone-6/core/fields");
 var import_schema8 = require("@graphql-ts/schema");
 
@@ -4619,7 +4701,7 @@ function prismaModelDirectives(...directives) {
 }
 
 // features/keystone/models/PartsInventory.ts
-var PartsInventory = (0, import_core25.list)({
+var PartsInventory = (0, import_core26.list)({
   db: prismaModelDirectives('@@unique([rooftopId, partNumber], map: "PartsInventory_rooftop_partNumber_key")'),
   access: {
     operation: {
@@ -4705,7 +4787,7 @@ var PartsInventory = (0, import_core25.list)({
 });
 
 // features/keystone/models/DealershipProfile.ts
-var import_core26 = require("@keystone-6/core");
+var import_core27 = require("@keystone-6/core");
 var import_fields31 = require("@keystone-6/core/fields");
 
 // features/platform/store-settings/lib/icon-registry.ts
@@ -5071,7 +5153,7 @@ function sanitizeStoreLogoSvg(svg) {
 
 // features/keystone/models/DealershipProfile.ts
 var canManageStoreSettings = (args) => permissions.canManageSettings(args) || permissions.canManageOnboarding(args) || permissions.canManageDealerships(args);
-var DealershipProfile = (0, import_core26.list)({
+var DealershipProfile = (0, import_core27.list)({
   isSingleton: true,
   access: {
     operation: {
@@ -5158,11 +5240,11 @@ var DealershipProfile = (0, import_core26.list)({
 });
 
 // features/keystone/models/FinancingApplication.ts
-var import_core27 = require("@keystone-6/core");
+var import_core28 = require("@keystone-6/core");
 var import_access37 = require("@keystone-6/core/access");
 var import_fields32 = require("@keystone-6/core/fields");
 var privateRead = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var FinancingApplication = (0, import_core27.list)({
+var FinancingApplication = (0, import_core28.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5235,11 +5317,11 @@ var FinancingApplication = (0, import_core27.list)({
 });
 
 // features/keystone/models/LenderSubmission.ts
-var import_core28 = require("@keystone-6/core");
+var import_core29 = require("@keystone-6/core");
 var import_access39 = require("@keystone-6/core/access");
 var import_fields33 = require("@keystone-6/core/fields");
 var restricted = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderSubmission = (0, import_core28.list)({
+var LenderSubmission = (0, import_core29.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5288,11 +5370,11 @@ var LenderSubmission = (0, import_core28.list)({
 });
 
 // features/keystone/models/LenderDecision.ts
-var import_core29 = require("@keystone-6/core");
+var import_core30 = require("@keystone-6/core");
 var import_access41 = require("@keystone-6/core/access");
 var import_fields34 = require("@keystone-6/core/fields");
 var restricted2 = { read: permissions.canManageFinancing, create: () => false, update: () => false };
-var LenderDecision = (0, import_core29.list)({
+var LenderDecision = (0, import_core30.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -5351,10 +5433,10 @@ var LenderDecision = (0, import_core29.list)({
 });
 
 // features/keystone/models/DealerGroup.ts
-var import_core30 = require("@keystone-6/core");
+var import_core31 = require("@keystone-6/core");
 var import_access43 = require("@keystone-6/core/access");
 var import_fields35 = require("@keystone-6/core/fields");
-var DealerGroup = (0, import_core30.list)({
+var DealerGroup = (0, import_core31.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5393,10 +5475,10 @@ var DealerGroup = (0, import_core30.list)({
 });
 
 // features/keystone/models/Rooftop.ts
-var import_core31 = require("@keystone-6/core");
+var import_core32 = require("@keystone-6/core");
 var import_access45 = require("@keystone-6/core/access");
 var import_fields36 = require("@keystone-6/core/fields");
-var Rooftop = (0, import_core31.list)({
+var Rooftop = (0, import_core32.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5459,10 +5541,10 @@ var Rooftop = (0, import_core31.list)({
 });
 
 // features/keystone/models/DealerGroupMembership.ts
-var import_core32 = require("@keystone-6/core");
+var import_core33 = require("@keystone-6/core");
 var import_access47 = require("@keystone-6/core/access");
 var import_fields37 = require("@keystone-6/core/fields");
-var DealerGroupMembership = (0, import_core32.list)({
+var DealerGroupMembership = (0, import_core33.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5522,10 +5604,10 @@ var DealerGroupMembership = (0, import_core32.list)({
 });
 
 // features/keystone/models/RooftopMembership.ts
-var import_core33 = require("@keystone-6/core");
+var import_core34 = require("@keystone-6/core");
 var import_access49 = require("@keystone-6/core/access");
 var import_fields38 = require("@keystone-6/core/fields");
-var RooftopMembership = (0, import_core33.list)({
+var RooftopMembership = (0, import_core34.list)({
   access: {
     operation: {
       query: isSignedIn,
@@ -5587,9 +5669,9 @@ var RooftopMembership = (0, import_core33.list)({
 });
 
 // features/keystone/models/MembershipAuditEvent.ts
-var import_core34 = require("@keystone-6/core");
+var import_core35 = require("@keystone-6/core");
 var import_fields39 = require("@keystone-6/core/fields");
-var MembershipAuditEvent = (0, import_core34.list)({
+var MembershipAuditEvent = (0, import_core35.list)({
   access: {
     operation: {
       query: permissions.canManageDealerships,
@@ -5635,10 +5717,10 @@ var MembershipAuditEvent = (0, import_core34.list)({
 });
 
 // features/keystone/models/InventoryAcquisition.ts
-var import_core35 = require("@keystone-6/core");
+var import_core36 = require("@keystone-6/core");
 var import_access52 = require("@keystone-6/core/access");
 var import_fields40 = require("@keystone-6/core/fields");
-var InventoryAcquisition = (0, import_core35.list)({
+var InventoryAcquisition = (0, import_core36.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5712,9 +5794,9 @@ var InventoryAcquisition = (0, import_core35.list)({
 });
 
 // features/keystone/models/InventoryAcquisitionEvent.ts
-var import_core36 = require("@keystone-6/core");
+var import_core37 = require("@keystone-6/core");
 var import_fields41 = require("@keystone-6/core/fields");
-var InventoryAcquisitionEvent = (0, import_core36.list)({
+var InventoryAcquisitionEvent = (0, import_core37.list)({
   access: {
     operation: {
       query: permissions.canManageInventory,
@@ -5748,9 +5830,9 @@ var InventoryAcquisitionEvent = (0, import_core36.list)({
 });
 
 // features/keystone/models/DomainAuditEvent.ts
-var import_core37 = require("@keystone-6/core");
+var import_core38 = require("@keystone-6/core");
 var import_fields42 = require("@keystone-6/core/fields");
-var DomainAuditEvent = (0, import_core37.list)({
+var DomainAuditEvent = (0, import_core38.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -5782,10 +5864,10 @@ var DomainAuditEvent = (0, import_core37.list)({
 });
 
 // features/keystone/models/InventoryStock.ts
-var import_core38 = require("@keystone-6/core");
+var import_core39 = require("@keystone-6/core");
 var import_access56 = require("@keystone-6/core/access");
 var import_fields43 = require("@keystone-6/core/fields");
-var InventoryStock = (0, import_core38.list)({
+var InventoryStock = (0, import_core39.list)({
   access: {
     operation: { query: permissions.canViewInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5821,9 +5903,9 @@ var InventoryStock = (0, import_core38.list)({
 });
 
 // features/keystone/models/InventoryStockEvent.ts
-var import_core39 = require("@keystone-6/core");
+var import_core40 = require("@keystone-6/core");
 var import_fields44 = require("@keystone-6/core/fields");
-var InventoryStockEvent = (0, import_core39.list)({
+var InventoryStockEvent = (0, import_core40.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewInventory", "canManageInventory"]) }
@@ -5844,9 +5926,9 @@ var InventoryStockEvent = (0, import_core39.list)({
 });
 
 // features/keystone/models/InventoryReconWorkItem.ts
-var import_core40 = require("@keystone-6/core");
+var import_core41 = require("@keystone-6/core");
 var import_fields45 = require("@keystone-6/core/fields");
-var InventoryReconWorkItem = (0, import_core40.list)({
+var InventoryReconWorkItem = (0, import_core41.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5869,9 +5951,9 @@ var InventoryReconWorkItem = (0, import_core40.list)({
 });
 
 // features/keystone/models/InventoryMerchandisingVersion.ts
-var import_core41 = require("@keystone-6/core");
+var import_core42 = require("@keystone-6/core");
 var import_fields46 = require("@keystone-6/core/fields");
-var InventoryMerchandisingVersion = (0, import_core41.list)({
+var InventoryMerchandisingVersion = (0, import_core42.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5894,9 +5976,9 @@ var InventoryMerchandisingVersion = (0, import_core41.list)({
 });
 
 // features/keystone/models/InventoryFeedRun.ts
-var import_core42 = require("@keystone-6/core");
+var import_core43 = require("@keystone-6/core");
 var import_fields47 = require("@keystone-6/core/fields");
-var InventoryFeedRun = (0, import_core42.list)({
+var InventoryFeedRun = (0, import_core43.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5921,9 +6003,9 @@ var InventoryFeedRun = (0, import_core42.list)({
 });
 
 // features/keystone/models/InventoryFeedError.ts
-var import_core43 = require("@keystone-6/core");
+var import_core44 = require("@keystone-6/core");
 var import_fields48 = require("@keystone-6/core/fields");
-var InventoryFeedError = (0, import_core43.list)({
+var InventoryFeedError = (0, import_core44.list)({
   access: {
     operation: { query: permissions.canManageInventory, create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, "canManageInventory") }
@@ -5942,10 +6024,10 @@ var InventoryFeedError = (0, import_core43.list)({
 });
 
 // features/keystone/models/Customer.ts
-var import_core44 = require("@keystone-6/core");
+var import_core45 = require("@keystone-6/core");
 var import_access63 = require("@keystone-6/core/access");
 var import_fields49 = require("@keystone-6/core/fields");
-var Customer = (0, import_core44.list)({
+var Customer = (0, import_core45.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6020,9 +6102,9 @@ var Customer = (0, import_core44.list)({
 });
 
 // features/keystone/models/CustomerMergeEvent.ts
-var import_core45 = require("@keystone-6/core");
+var import_core46 = require("@keystone-6/core");
 var import_fields50 = require("@keystone-6/core/fields");
-var CustomerMergeEvent = (0, import_core45.list)({
+var CustomerMergeEvent = (0, import_core46.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -6051,9 +6133,9 @@ var CustomerMergeEvent = (0, import_core45.list)({
 });
 
 // features/keystone/models/LeadAssignmentEvent.ts
-var import_core46 = require("@keystone-6/core");
+var import_core47 = require("@keystone-6/core");
 var import_fields51 = require("@keystone-6/core/fields");
-var LeadAssignmentEvent = (0, import_core46.list)({
+var LeadAssignmentEvent = (0, import_core47.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6083,9 +6165,9 @@ var LeadAssignmentEvent = (0, import_core46.list)({
 });
 
 // features/keystone/models/LeadRoutingRule.ts
-var import_core47 = require("@keystone-6/core");
+var import_core48 = require("@keystone-6/core");
 var import_fields52 = require("@keystone-6/core/fields");
-var LeadRoutingRule = (0, import_core47.list)({
+var LeadRoutingRule = (0, import_core48.list)({
   access: {
     operation: {
       query: permissions.canManageLeads,
@@ -6148,9 +6230,9 @@ var LeadRoutingRule = (0, import_core47.list)({
 });
 
 // features/keystone/models/CustomerContactPreferenceEvent.ts
-var import_core48 = require("@keystone-6/core");
+var import_core49 = require("@keystone-6/core");
 var import_fields53 = require("@keystone-6/core/fields");
-var CustomerContactPreferenceEvent = (0, import_core48.list)({
+var CustomerContactPreferenceEvent = (0, import_core49.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6180,9 +6262,9 @@ var CustomerContactPreferenceEvent = (0, import_core48.list)({
 });
 
 // features/keystone/models/CustomerHousehold.ts
-var import_core49 = require("@keystone-6/core");
+var import_core50 = require("@keystone-6/core");
 var import_fields54 = require("@keystone-6/core/fields");
-var CustomerHousehold = (0, import_core49.list)({
+var CustomerHousehold = (0, import_core50.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6203,9 +6285,9 @@ var CustomerHousehold = (0, import_core49.list)({
 });
 
 // features/keystone/models/SalesVisit.ts
-var import_core50 = require("@keystone-6/core");
+var import_core51 = require("@keystone-6/core");
 var import_fields55 = require("@keystone-6/core/fields");
-var SalesVisit = (0, import_core50.list)({
+var SalesVisit = (0, import_core51.list)({
   access: {
     operation: {
       query: permissions.canAccessLeads,
@@ -6263,9 +6345,9 @@ var SalesVisit = (0, import_core50.list)({
 });
 
 // features/keystone/models/FinanceProduct.ts
-var import_core51 = require("@keystone-6/core");
+var import_core52 = require("@keystone-6/core");
 var import_fields56 = require("@keystone-6/core/fields");
-var FinanceProduct = (0, import_core51.list)({
+var FinanceProduct = (0, import_core52.list)({
   db: prismaModelDirectives('@@unique([rooftopId, code], map: "FinanceProduct_rooftop_code_key")'),
   access: {
     operation: {
@@ -6298,9 +6380,9 @@ var FinanceProduct = (0, import_core51.list)({
 });
 
 // features/keystone/models/FinanceMenuVersion.ts
-var import_core52 = require("@keystone-6/core");
+var import_core53 = require("@keystone-6/core");
 var import_fields57 = require("@keystone-6/core/fields");
-var FinanceMenuVersion = (0, import_core52.list)({
+var FinanceMenuVersion = (0, import_core53.list)({
   db: prismaModelDirectives('@@unique([dealId, version], map: "FinanceMenuVersion_deal_version_key")'),
   access: { operation: { query: permissions.canManageFinancing, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageFinancing") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "deal", listKey: "Deal" }]) },
@@ -6323,9 +6405,9 @@ var FinanceMenuVersion = (0, import_core52.list)({
 });
 
 // features/keystone/models/FinanceComplianceCheck.ts
-var import_core53 = require("@keystone-6/core");
+var import_core54 = require("@keystone-6/core");
 var import_fields58 = require("@keystone-6/core/fields");
-var FinanceComplianceCheck = (0, import_core53.list)({
+var FinanceComplianceCheck = (0, import_core54.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6381,9 +6463,9 @@ var FinanceComplianceCheck = (0, import_core53.list)({
 });
 
 // features/keystone/models/FinanceContractPackage.ts
-var import_core54 = require("@keystone-6/core");
+var import_core55 = require("@keystone-6/core");
 var import_fields59 = require("@keystone-6/core/fields");
-var FinanceContractPackage = (0, import_core54.list)({
+var FinanceContractPackage = (0, import_core55.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceContractPackage_deal_key")'),
   access: {
     operation: {
@@ -6434,9 +6516,9 @@ var FinanceContractPackage = (0, import_core54.list)({
 });
 
 // features/keystone/models/FinanceFundingCase.ts
-var import_core55 = require("@keystone-6/core");
+var import_core56 = require("@keystone-6/core");
 var import_fields60 = require("@keystone-6/core/fields");
-var FinanceFundingCase = (0, import_core55.list)({
+var FinanceFundingCase = (0, import_core56.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "FinanceFundingCase_deal_key")'),
   access: {
     operation: {
@@ -6484,9 +6566,9 @@ var FinanceFundingCase = (0, import_core55.list)({
 });
 
 // features/keystone/models/FinanceProductQuote.ts
-var import_core56 = require("@keystone-6/core");
+var import_core57 = require("@keystone-6/core");
 var import_fields61 = require("@keystone-6/core/fields");
-var FinanceProductQuote = (0, import_core56.list)({
+var FinanceProductQuote = (0, import_core57.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6549,9 +6631,9 @@ var FinanceProductQuote = (0, import_core56.list)({
 });
 
 // features/keystone/models/FinanceProductCancellation.ts
-var import_core57 = require("@keystone-6/core");
+var import_core58 = require("@keystone-6/core");
 var import_fields62 = require("@keystone-6/core/fields");
-var FinanceProductCancellation = (0, import_core57.list)({
+var FinanceProductCancellation = (0, import_core58.list)({
   access: {
     operation: {
       query: permissions.canManageFinancing,
@@ -6605,9 +6687,9 @@ var FinanceProductCancellation = (0, import_core57.list)({
 });
 
 // features/keystone/models/DeliveryCase.ts
-var import_core58 = require("@keystone-6/core");
+var import_core59 = require("@keystone-6/core");
 var import_fields63 = require("@keystone-6/core/fields");
-var DeliveryCase = (0, import_core58.list)({
+var DeliveryCase = (0, import_core59.list)({
   db: prismaModelDirectives('@@unique([dealId], map: "DeliveryCase_deal_key")'),
   access: {
     operation: {
@@ -6659,9 +6741,9 @@ var DeliveryCase = (0, import_core58.list)({
 });
 
 // features/keystone/models/WeOweItem.ts
-var import_core59 = require("@keystone-6/core");
+var import_core60 = require("@keystone-6/core");
 var import_fields64 = require("@keystone-6/core/fields");
-var WeOweItem = (0, import_core59.list)({
+var WeOweItem = (0, import_core60.list)({
   access: {
     operation: {
       query: permissions.canAccessDeals,
@@ -6723,9 +6805,9 @@ var WeOweItem = (0, import_core59.list)({
 });
 
 // features/keystone/models/ServiceLaborOperation.ts
-var import_core60 = require("@keystone-6/core");
+var import_core61 = require("@keystone-6/core");
 var import_fields65 = require("@keystone-6/core/fields");
-var ServiceLaborOperation = (0, import_core60.list)({
+var ServiceLaborOperation = (0, import_core61.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6778,9 +6860,9 @@ var ServiceLaborOperation = (0, import_core60.list)({
 });
 
 // features/keystone/models/PartsMovement.ts
-var import_core61 = require("@keystone-6/core");
+var import_core62 = require("@keystone-6/core");
 var import_fields66 = require("@keystone-6/core/fields");
-var PartsMovement = (0, import_core61.list)({
+var PartsMovement = (0, import_core62.list)({
   access: {
     operation: {
       query: permissions.canManageService,
@@ -6833,9 +6915,9 @@ var PartsMovement = (0, import_core61.list)({
 });
 
 // features/keystone/models/PartsPurchaseOrder.ts
-var import_core62 = require("@keystone-6/core");
+var import_core63 = require("@keystone-6/core");
 var import_fields67 = require("@keystone-6/core/fields");
-var PartsPurchaseOrder = (0, import_core62.list)({
+var PartsPurchaseOrder = (0, import_core63.list)({
   db: prismaModelDirectives('@@unique([rooftopId, reference], map: "PartsPurchaseOrder_rooftop_reference_key")'),
   access: {
     operation: {
@@ -6874,10 +6956,10 @@ var PartsPurchaseOrder = (0, import_core62.list)({
 });
 
 // features/keystone/models/AccountingMapping.ts
-var import_core63 = require("@keystone-6/core");
+var import_core64 = require("@keystone-6/core");
 var import_fields68 = require("@keystone-6/core/fields");
 var canManageAccounting = (args) => permissions.canManageDealerships(args) && permissions.canViewReports(args);
-var AccountingMapping = (0, import_core63.list)({
+var AccountingMapping = (0, import_core64.list)({
   db: prismaModelDirectives('@@unique([rooftopId, sourceType, sourceCode, providerKey], map: "AccountingMapping_rooftop_source_provider_key")'),
   access: {
     operation: {
@@ -6916,9 +6998,9 @@ var AccountingMapping = (0, import_core63.list)({
 });
 
 // features/keystone/models/AccountingBatch.ts
-var import_core64 = require("@keystone-6/core");
+var import_core65 = require("@keystone-6/core");
 var import_fields69 = require("@keystone-6/core/fields");
-var AccountingBatch = (0, import_core64.list)({
+var AccountingBatch = (0, import_core65.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -6982,9 +7064,9 @@ var AccountingBatch = (0, import_core64.list)({
 });
 
 // features/keystone/models/AccountingProviderResponse.ts
-var import_core65 = require("@keystone-6/core");
+var import_core66 = require("@keystone-6/core");
 var import_fields70 = require("@keystone-6/core/fields");
-var AccountingProviderResponse = (0, import_core65.list)({
+var AccountingProviderResponse = (0, import_core66.list)({
   access: {
     operation: {
       query: permissions.canViewReports,
@@ -7023,9 +7105,9 @@ var AccountingProviderResponse = (0, import_core65.list)({
 });
 
 // features/keystone/models/PaymentTransaction.ts
-var import_core66 = require("@keystone-6/core");
+var import_core67 = require("@keystone-6/core");
 var import_fields71 = require("@keystone-6/core/fields");
-var PaymentTransaction = (0, import_core66.list)({
+var PaymentTransaction = (0, import_core67.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -7067,9 +7149,9 @@ var PaymentTransaction = (0, import_core66.list)({
 });
 
 // features/keystone/models/PaymentRefund.ts
-var import_core67 = require("@keystone-6/core");
+var import_core68 = require("@keystone-6/core");
 var import_fields72 = require("@keystone-6/core/fields");
-var PaymentRefund = (0, import_core67.list)({
+var PaymentRefund = (0, import_core68.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -7090,9 +7172,9 @@ var PaymentRefund = (0, import_core67.list)({
 });
 
 // features/keystone/models/PaymentProviderEvent.ts
-var import_core68 = require("@keystone-6/core");
+var import_core69 = require("@keystone-6/core");
 var import_fields73 = require("@keystone-6/core/fields");
-var PaymentProviderEvent = (0, import_core68.list)({
+var PaymentProviderEvent = (0, import_core69.list)({
   access: {
     operation: { query: ({ session }) => permissions.canViewReports({ session }) || permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }), create: () => false, update: () => false, delete: () => false },
     filter: { query: ({ session }) => withRooftopScope(true, session, ["canViewReports", "canReadPayments", "canManagePayments"]) }
@@ -7114,9 +7196,9 @@ var PaymentProviderEvent = (0, import_core68.list)({
 });
 
 // features/keystone/models/PaymentProvider.ts
-var import_core69 = require("@keystone-6/core");
+var import_core70 = require("@keystone-6/core");
 var import_fields74 = require("@keystone-6/core/fields");
-var PaymentProvider = (0, import_core69.list)({
+var PaymentProvider = (0, import_core70.list)({
   access: {
     operation: {
       query: ({ session }) => permissions.canReadPayments({ session }) || permissions.canManagePayments({ session }),
@@ -7194,9 +7276,9 @@ var PaymentProvider = (0, import_core69.list)({
 });
 
 // features/keystone/models/SavedReport.ts
-var import_core70 = require("@keystone-6/core");
+var import_core71 = require("@keystone-6/core");
 var import_fields75 = require("@keystone-6/core/fields");
-var SavedReport = (0, import_core70.list)({
+var SavedReport = (0, import_core71.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "owner", listKey: "User", kind: "user" }]) },
   ui: { hideCreate: true, hideDelete: true },
@@ -7216,9 +7298,9 @@ var SavedReport = (0, import_core70.list)({
 });
 
 // features/keystone/models/ReportRun.ts
-var import_core71 = require("@keystone-6/core");
+var import_core72 = require("@keystone-6/core");
 var import_fields76 = require("@keystone-6/core/fields");
-var ReportRun = (0, import_core71.list)({
+var ReportRun = (0, import_core72.list)({
   access: { operation: { query: permissions.canViewReports, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canViewReports") } },
   hooks: { validate: (args) => validateRooftopRecord(args, [{ field: "savedReport", listKey: "SavedReport" }]) },
   ui: { hideCreate: true, hideDelete: true },
@@ -7239,9 +7321,9 @@ var ReportRun = (0, import_core71.list)({
 });
 
 // features/keystone/models/RetentionPolicy.ts
-var import_core72 = require("@keystone-6/core");
+var import_core73 = require("@keystone-6/core");
 var import_fields77 = require("@keystone-6/core/fields");
-var RetentionPolicy = (0, import_core72.list)({
+var RetentionPolicy = (0, import_core73.list)({
   db: prismaModelDirectives('@@unique([rooftopId, category], map: "RetentionPolicy_rooftop_category_key")'),
   access: { operation: { query: permissions.canManageDealerships, create: () => false, update: () => false, delete: () => false }, filter: { query: ({ session }) => withRooftopScope(true, session, "canManageDealerships") } },
   ui: { hideCreate: true, hideDelete: true },
@@ -7258,9 +7340,9 @@ var RetentionPolicy = (0, import_core72.list)({
 });
 
 // features/keystone/models/AuthenticationThrottle.ts
-var import_core73 = require("@keystone-6/core");
+var import_core74 = require("@keystone-6/core");
 var import_fields78 = require("@keystone-6/core/fields");
-var AuthenticationThrottle = (0, import_core73.list)({
+var AuthenticationThrottle = (0, import_core74.list)({
   access: { operation: { query: () => false, create: () => false, update: () => false, delete: () => false } },
   graphql: { omit: true },
   ui: { isHidden: true },
@@ -7283,9 +7365,9 @@ var AuthenticationThrottle = (0, import_core73.list)({
 
 // features/keystone/models/ApiKey.ts
 var import_fields79 = require("@keystone-6/core/fields");
-var import_core74 = require("@keystone-6/core");
+var import_core75 = require("@keystone-6/core");
 var isHumanSession = ({ session }) => isSignedIn({ session }) && !session?.apiKeyId && !session?.apiKeyScopes;
-var ApiKey = (0, import_core74.list)({
+var ApiKey = (0, import_core75.list)({
   access: {
     operation: {
       query: isHumanSession,
@@ -9019,14 +9101,15 @@ async function runPublicSubmission(options) {
 
 // features/keystone/mutations/submitInquiry.ts
 var INTENTS = {
-  "general-contact": "General contact request",
-  "vehicle-question": "Vehicle question",
-  "get-quote": "Price quote request",
+  "general-contact": "Consulta general",
+  "vehicle-question": "Consulta por un veh\xEDculo",
+  "get-quote": "Pedido de cotizaci\xF3n",
   // Reserve this vehicle: a hold request for staff. It does not change the vehicle's status;
   // only a deal moves inventory to pending, so an anonymous request cannot pull a car offline.
-  "reserve-vehicle": "Vehicle reservation request"
+  "reserve-vehicle": "Pedido de reserva"
 };
-var CONTACTS = /* @__PURE__ */ new Set(["email", "phone", "text"]);
+var CONTACTS = /* @__PURE__ */ new Set(["email", "phone", "whatsapp", "text"]);
+var CONTACT_LABELS = { email: "email", phone: "tel\xE9fono", whatsapp: "WhatsApp", text: "mensaje de texto" };
 async function submitInquiry(_root, { data }, context) {
   const firstName = requiredText(data.firstName, "Nombre", 100);
   const lastName = requiredText(data.lastName, "Apellido", 100);
@@ -9035,6 +9118,8 @@ async function submitInquiry(_root, { data }, context) {
   const message = optionalText(data.message, 4e3, "Message");
   const intent = requiredText(data.intent, "Inquiry type", 50);
   const preferredContact = optionalText(data.preferredContact || "email", 20, "Preferred contact");
+  const contactTimes = [...new Set((Array.isArray(data.contactTimes) ? data.contactTimes : []).map(String))].filter((time) => time === "morning" || time === "afternoon");
+  const contactTimesLabel = contactTimes.length === 2 ? "por la ma\xF1ana o por la tarde" : contactTimes[0] === "morning" ? "por la ma\xF1ana" : contactTimes[0] === "afternoon" ? "por la tarde" : "";
   const intentLabel = INTENTS[intent];
   if (!intentLabel || !CONTACTS.has(preferredContact)) {
     throw new SubmissionError("El tipo de consulta o el medio de contacto no es v\xE1lido.");
@@ -9062,6 +9147,7 @@ async function submitInquiry(_root, { data }, context) {
       message,
       intent,
       preferredContact,
+      contactTimes,
       vehicleId: optionalText(data.vehicleId, 100, "Vehicle")
     },
     aggregateType: "Lead",
@@ -9069,7 +9155,7 @@ async function submitInquiry(_root, { data }, context) {
     handler: async (transactionContext, { rooftopId }) => {
       const vehicle = await resolveAvailableVehicle(transactionContext, data.vehicleId, rooftopId);
       const rooftop = { connect: { id: rooftopId } };
-      const vehicleSummary = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "No inventory vehicle selected";
+      const vehicleSummary = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model} (stock ${vehicle.stockNumber}, VIN ${vehicle.vin})` : "ninguno";
       const { customer } = await resolveCustomerInTransaction(transactionContext, {
         rooftopId,
         firstName,
@@ -9089,10 +9175,10 @@ async function submitInquiry(_root, { data }, context) {
           status: "new",
           ...intent === "get-quote" || intent === "reserve-vehicle" ? { timeframe: "immediately" } : {},
           notes: [
-            `${intentLabel} submitted from storefront.`,
-            `Preferred contact: ${preferredContact}.`,
-            `Selected inventory: ${vehicleSummary}.`,
-            message ? `Customer message: ${message}` : "Customer did not include an additional message."
+            `${intentLabel} enviada desde la web.`,
+            `Prefiere que lo contacten por ${CONTACT_LABELS[preferredContact] ?? preferredContact}${contactTimesLabel ? `, ${contactTimesLabel}` : ""}.`,
+            `Veh\xEDculo elegido: ${vehicleSummary}.`,
+            message ? `Mensaje del cliente: ${message}` : "El cliente no dej\xF3 un mensaje adicional."
           ].join("\n"),
           ...vehicle ? { interestedVehicle: { connect: { id: vehicle.id } } } : {}
         },
@@ -9706,12 +9792,20 @@ async function submitTradeIn(_root, { data }, context) {
   const model = requiredText(data.model, "Modelo", 100);
   const trim = optionalText(data.trim, 100, "Trim");
   const vin = optionalText(data.vin, 17, "VIN").toUpperCase();
+  const licensePlate = normalizePlate(requiredText(data.licensePlate, "Patente", 12));
+  const engineNumber = optionalText(data.engineNumber, 30, "N\xFAmero de motor").toUpperCase().replace(/\s+/g, "");
   const condition = requiredText(data.condition, "Estado", 30);
   const ownership = requiredText(data.ownership, "Titularidad", 30);
   const notes = optionalText(data.notes, 2e3, "Informaci\xF3n adicional");
   const payoffAmount = finiteNumber(data.payoffAmount || 0, "Saldo del cr\xE9dito", { min: 0, max: 1e10 });
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError("El estado o la titularidad no son v\xE1lidos.");
+  }
+  if (!/^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/.test(licensePlate)) {
+    throw new SubmissionError("La patente debe tener el formato ABC123 o AB123CD.");
+  }
+  if (engineNumber && !/^[A-Z0-9-]{5,30}$/.test(engineNumber)) {
+    throw new SubmissionError("El n\xFAmero de motor solo puede tener letras y n\xFAmeros.");
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
     throw new SubmissionError("Si cargas el n\xFAmero de chasis, debe tener 17 caracteres.");
@@ -9734,6 +9828,8 @@ async function submitTradeIn(_root, { data }, context) {
       model,
       trim,
       vin,
+      licensePlate,
+      engineNumber,
       condition,
       ownership,
       payoffAmount,
@@ -9757,6 +9853,8 @@ async function submitTradeIn(_root, { data }, context) {
         data: {
           rooftop,
           vin,
+          licensePlate,
+          engineNumber,
           year: String(year),
           make,
           model,
@@ -9802,6 +9900,9 @@ async function submitTradeIn(_root, { data }, context) {
   });
   const photoToken = !outcome.reused && outcome.tradeInId ? await issueTradeInPhotoToken(context, String(outcome.tradeInId)) : null;
   return { ...outcome, photoToken };
+}
+function normalizePlate(value) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
 // features/keystone/mutations/publicFinancingPlans.ts
@@ -9985,7 +10086,6 @@ async function submitFinancing(_root, { data }, context) {
   if (financingPlanId) {
     plan = (await loadActiveFinancingPlans(context)).find((item) => item.id === financingPlanId) || null;
     if (!plan) throw new SubmissionError("El plan elegido ya no est\xE1 vigente. Vuelve a simular.");
-    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError("Elige un plazo disponible para el plan.");
     const price = finiteNumber(data.vehiclePrice, "Precio del veh\xEDculo", { min: 1, max: MAX_AMOUNT });
     const result2 = simulate(plan, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm });
     if (!result2.ok) throw new SubmissionError(result2.reason);
@@ -14195,9 +14295,9 @@ async function changeDealerMembership(_root, { data }, context) {
     let dealerGroupId;
     let rooftopId = null;
     if (scopeType === "dealer-group") {
-      const group = await sudo.query.DealerGroup.findOne({ where: { id: scopeId }, query: "id" });
-      if (!group) throw new Error("Dealer group was not found");
-      dealerGroupId = group.id;
+      const group2 = await sudo.query.DealerGroup.findOne({ where: { id: scopeId }, query: "id" });
+      if (!group2) throw new Error("Dealer group was not found");
+      dealerGroupId = group2.id;
     } else {
       const rooftop = await sudo.query.Rooftop.findOne({ where: { id: scopeId }, query: "id dealerGroup { id }" });
       if (!rooftop?.dealerGroup?.id) throw new Error("Rooftop was not found");
@@ -17694,12 +17794,12 @@ async function fallbackSalesperson(tx, rooftopId) {
     select: { userId: true }
   });
   if (direct?.userId) return String(direct.userId);
-  const group = await tx.prisma.dealerGroupMembership.findFirst({
+  const group2 = await tx.prisma.dealerGroupMembership.findFirst({
     where: { status: "active", accessAllRooftops: true, userId: { not: null }, dealerGroup: { rooftops: { some: { id: rooftopId } } }, OR: [{ role: { is: { canManageLeads: true } } }, { user: { is: { role: { is: { canManageLeads: true } } } } }] },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     select: { userId: true }
   });
-  return group?.userId ? String(group.userId) : null;
+  return group2?.userId ? String(group2.userId) : null;
 }
 async function applyPaidReservationInTransaction(tx, transaction, now = /* @__PURE__ */ new Date()) {
   if (!transaction.leadId) return null;
@@ -19197,21 +19297,23 @@ function readWhere(where) {
         if (search) filters[key7] = search;
       } else if (key7 === "OR") {
         if (!Array.isArray(value)) throw new Error("Invalid public inventory filter");
-        const group = [];
+        const group2 = [];
         for (const option of value) {
           if (!option || typeof option !== "object" || Array.isArray(option)) throw new Error("Invalid public inventory filter");
           for (const [field, condition] of Object.entries(option)) {
             if (!["make", "model", "trim"].includes(field)) throw new Error("Invalid public inventory filter");
             const search = String(condition?.contains || "").trim().toLocaleLowerCase();
-            if (search) group.push({ field, search });
+            if (search) group2.push({ field, search });
           }
         }
-        if (group.length) filters.anyOf = [...filters.anyOf || [], group];
+        if (group2.length) filters.anyOf = [...filters.anyOf || [], group2];
       } else if (key7 === "fuelType" || key7 === "transmission") {
         const option = String(value?.equals || "").trim().toLocaleLowerCase();
         if (option) filters[key7] = option;
       } else if (key7 === "progressiveOffer") {
         if (value?.equals === true) filters.progressiveOffer = true;
+      } else if (key7 === "expressOffer") {
+        if (value?.equals === true) filters.expressOffer = true;
       } else if (key7 === "isFeatured") {
         if (value?.equals === true) filters.isFeatured = true;
       } else if (key7 === "condition") {
@@ -19236,6 +19338,19 @@ function inRange(value, range) {
   const number = Number(value);
   return Number.isFinite(number) && (range.gte == null || number >= range.gte) && (range.lte == null || number <= range.lte);
 }
+function isExpressOffer(vehicle) {
+  return vehicle.previousPriceCents != null && vehicle.priceCents != null && Number(vehicle.previousPriceCents) > Number(vehicle.priceCents);
+}
+var USED_REPORT_KEYS = ["usedDebt", "usedDebtNotes", "usedFines", "usedFinesNotes", "usedGnc", "usedGncNotes", "usedAc", "usedAcNotes", "usedEngine", "usedMechanical", "usedBody", "usedPaint", "usedPlastics", "usedInterior", "usedFunctional", "usedWheels", "usedTireLifePct"];
+function publicUsedReport(vehicle) {
+  if (String(vehicle.condition || "") === "new") return null;
+  const report = {};
+  for (const key7 of USED_REPORT_KEYS) {
+    const value = vehicle[key7];
+    if (value !== null && value !== void 0 && value !== "") report[key7] = value;
+  }
+  return Object.keys(report).length ? report : null;
+}
 function matches(vehicle, filters) {
   if (filters.status === "unavailable") return false;
   if (filters.make && !String(vehicle.make || "").toLocaleLowerCase().includes(filters.make)) return false;
@@ -19244,7 +19359,8 @@ function matches(vehicle, filters) {
   if (filters.fuelType && String(vehicle.fuelType || "") !== filters.fuelType) return false;
   if (filters.transmission && String(vehicle.transmission || "") !== filters.transmission) return false;
   if (filters.isFeatured && !vehicle.isFeatured) return false;
-  if (filters.anyOf?.some((group) => !group.some(({ field, search }) => String(vehicle[field] || "").toLocaleLowerCase().includes(search)))) return false;
+  if (filters.expressOffer && !isExpressOffer(vehicle)) return false;
+  if (filters.anyOf?.some((group2) => !group2.some(({ field, search }) => String(vehicle[field] || "").toLocaleLowerCase().includes(search)))) return false;
   return inRange(vehicle.year, filters.year) && inRange(vehicle.priceCents, filters.priceCents) && inRange(vehicle.mileage, filters.mileage);
 }
 function compare(a, b, orderBy) {
@@ -19347,6 +19463,8 @@ async function queryPublicInventory(context, options = {}) {
         progressiveOffer: offerIds.has(vehicle.id),
         mileage: vehicle.mileage,
         price: vehicle.priceCents == null ? null : vehicle.priceCents / 100,
+        previousPrice: isExpressOffer(vehicle) ? vehicle.previousPriceCents / 100 : null,
+        usedReport: publicUsedReport(vehicle),
         status: reserved.has(vehicle.id) ? "reserved" : vehicle.status,
         condition: vehicle.condition,
         features: vehicle.features,
@@ -19429,6 +19547,8 @@ async function publicInventoryVehicleRecord(_root, { id }, context) {
     progressiveOffer: false,
     mileage: vehicle.mileage,
     price: null,
+    previousPrice: null,
+    usedReport: publicUsedReport(vehicle),
     status: vehicle.status,
     condition: vehicle.condition,
     features: vehicle.features,
@@ -19700,6 +19820,8 @@ function extendGraphqlSchema(baseSchema) {
         progressiveOffer: Boolean
         mileage: Int
         price: Float
+        previousPrice: Float
+        usedReport: JSON
         status: String
         condition: String
         description: String
@@ -19714,6 +19836,7 @@ function extendGraphqlSchema(baseSchema) {
         email: String!
         phone: String
         preferredContact: String!
+        contactTimes: [String!]
         intent: String!
         message: String
         vehicleId: ID
@@ -19791,6 +19914,8 @@ function extendGraphqlSchema(baseSchema) {
         model: String!
         trim: String
         vin: String
+        licensePlate: String!
+        engineNumber: String
         mileage: Int!
         condition: String!
         ownership: String!
@@ -20867,7 +20992,7 @@ var { withAuth } = (0, import_auth.createAuth)({
   sessionData: sessionDataFields
 });
 var keystone_default = withAuth(
-  (0, import_core75.config)({
+  (0, import_core76.config)({
     db: {
       provider: "postgresql",
       url: pooledDatabaseUrl(databaseURL),

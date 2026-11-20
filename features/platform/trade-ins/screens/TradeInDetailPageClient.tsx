@@ -445,7 +445,9 @@ export function TradeInDetailPageClient({
             <DeskSection title="Vehículo">
               <Facts items={[
                 { label: 'Vehículo', value: title },
-                { label: 'VIN / chasis', value: <Code className="break-all text-foreground">{tradeIn.vin || 'Not entered'}</Code> },
+                { label: 'Patente', value: <Code className="text-foreground">{tradeIn.licensePlate || 'No informada'}</Code> },
+                { label: 'N.º de motor', value: <Code className="break-all text-foreground">{tradeIn.engineNumber || 'No informado'}</Code> },
+                { label: 'VIN / chasis', value: <Code className="break-all text-foreground">{tradeIn.vin || 'No informado'}</Code> },
                 { label: 'Kilometraje', value: <span className="tabular-nums">{formatMileage(tradeIn.mileage)}</span> },
                 { label: 'Estado', value: conditionLabel(tradeIn.condition) },
                 { label: 'Creado', value: formatDateTime(tradeIn.createdAt) },

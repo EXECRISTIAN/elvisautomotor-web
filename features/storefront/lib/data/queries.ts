@@ -29,6 +29,7 @@ export const GET_VEHICLES = `
         progressiveOffer
         mileage
         price
+        previousPrice
         status
         condition
         description
@@ -63,6 +64,8 @@ export const GET_VEHICLE_BY_ID = `
       progressiveOffer
       mileage
       price
+      previousPrice
+      usedReport
       status
       condition
       features
@@ -98,6 +101,8 @@ export const GET_VEHICLE_RECORD_BY_ID = `
       progressiveOffer
       mileage
       price
+      previousPrice
+      usedReport
       status
       condition
       features

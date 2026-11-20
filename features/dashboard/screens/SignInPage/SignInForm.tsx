@@ -63,14 +63,16 @@ export function SignInForm({ from }: SignInFormProps) {
             htmlFor="email"
             className="text-sm font-medium text-foreground dark:text-foreground"
           >
-            Email
+            Usuario o email
           </Label>
           <Input
-            type="email"
+            type="text"
             id="email"
             name="email"
-            autoComplete="email"
-            placeholder="you@example.com"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="Usuario o email"
             className="mt-2 bg-muted/40"
             defaultValue={state.formData.email}
             required

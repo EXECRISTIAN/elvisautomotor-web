@@ -10,9 +10,15 @@ import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { customerRequestReference } from '../lib/customerRequests'
 import { Field, Notice, RequestReceived, Sticker } from '../components/forms/RequestForm'
 
+const CONTACT_TIMES = [
+  { value: 'morning', label: 'Por la mañana' },
+  { value: 'afternoon', label: 'Por la tarde' },
+]
+
 const PREFERRED_CONTACT = [
   { value: 'email', label: 'Email' },
   { value: 'phone', label: 'Teléfono' },
+  { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'text', label: 'Mensaje de texto' },
 ]
 
@@ -33,6 +39,7 @@ export function ContactPage() {
     email: '',
     phone: '',
     preferredContact: 'email',
+    contactTimes: [] as string[],
     message: '',
     website: '',
   })
@@ -222,7 +229,7 @@ export function ContactPage() {
               </Field>
               <div>
                 <p id="contact-preferred" className="sf-label">Prefieres que te contactemos por</p>
-                <div role="group" aria-labelledby="contact-preferred" className="sf-track">
+                <div role="group" aria-labelledby="contact-preferred" className="sf-track sf-track-choices">
                   {PREFERRED_CONTACT.map((option) => (
                     <button
                       key={option.value}
@@ -235,6 +242,26 @@ export function ContactPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+              <div>
+                <p id="contact-times" className="sf-label">¿En qué momento te queda mejor?</p>
+                <div role="group" aria-labelledby="contact-times" className="sf-track sf-track-choices">
+                  {CONTACT_TIMES.map((option) => {
+                    const on = formData.contactTimes.includes(option.value)
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className="sf-pill min-h-11 px-5"
+                        aria-pressed={on}
+                        onClick={() => setFormData((p) => ({ ...p, contactTimes: on ? p.contactTimes.filter((t) => t !== option.value) : [...p.contactTimes, option.value] }))}
+                      >
+                        {option.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="sf-faint mt-1 text-[length:var(--sf-text-xs)]">Puedes elegir una o las dos.</p>
               </div>
               <Field label="Mensaje" htmlFor="contact-message">
                 <textarea
@@ -260,7 +287,7 @@ export function ContactPage() {
             <div className="mt-6 space-y-4">
               {submissionError && <Notice tone="bad">{submissionError}</Notice>}
               <button type="submit" disabled={isSubmitting} className="sf-btn sf-btn-primary w-full sm:w-auto sm:min-w-56">
-                {isSubmitting ? 'Enviando…' : 'Enviar mensaje'}
+                {isSubmitting ? 'Enviando…' : 'Quiero que me contacten'}
               </button>
             </div>
           </form>

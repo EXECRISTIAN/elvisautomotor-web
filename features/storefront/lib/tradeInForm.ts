@@ -7,6 +7,8 @@ export type TradeInDraft = {
   model: string
   mileage: string
   vin: string
+  licensePlate?: string
+  engineNumber?: string
   condition: string
   ownership: string
   payoffAmount: string
@@ -36,6 +38,15 @@ export function validateTradeInStep(
     const mileage = Number(draft.mileage)
     if (!Number.isInteger(mileage) || mileage < 0 || mileage > 2_000_000) {
       return 'Ingresa un kilometraje válido para continuar.'
+    }
+
+    const plate = (draft.licensePlate ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+    if (!/^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/.test(plate)) {
+      return 'Ingresa la patente con el formato ABC123 o AB123CD.'
+    }
+    const engine = (draft.engineNumber ?? '').toUpperCase().replace(/\s+/g, '')
+    if (engine && !/^[A-Z0-9-]{5,30}$/.test(engine)) {
+      return 'El número de motor solo puede tener letras y números.'
     }
 
     const vin = draft.vin.trim().toUpperCase()

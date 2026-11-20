@@ -47,7 +47,7 @@ export const User = list({
       },
     }),
     email: text({
-      label: 'Email',
+      label: 'Usuario o email',
       isFilterable: false,
       isOrderable: false,
       isIndexed: 'unique',
@@ -62,7 +62,9 @@ export const User = list({
         update: ({ session, item }) =>
           permissions.canManagePeople({ session }) || session?.itemId === item.id,
       },
-      validation: { isRequired: true },
+      // Uso local: se admiten contraseñas cortas (el administrador de fábrica es 123 / 123).
+      // Antes de publicar en internet, cambia esa contraseña por una segura.
+      validation: { isRequired: true, length: { min: 3 } },
     }),
     role: relationship({
       label: 'Rol',

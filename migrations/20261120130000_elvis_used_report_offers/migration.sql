@@ -1,0 +1,20 @@
+-- AlterTable
+ALTER TABLE "Vehicle" ADD COLUMN     "previousPriceCents" DOUBLE PRECISION,
+ADD COLUMN     "usedAc" TEXT,
+ADD COLUMN     "usedAcNotes" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedBody" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedDebt" TEXT,
+ADD COLUMN     "usedDebtNotes" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedEngine" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedFines" TEXT,
+ADD COLUMN     "usedFinesNotes" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedFunctional" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedGnc" TEXT,
+ADD COLUMN     "usedGncNotes" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedInterior" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedMechanical" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedPaint" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedPlastics" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "usedTireLifePct" INTEGER,
+ADD COLUMN     "usedWheels" TEXT NOT NULL DEFAULT '';
+
