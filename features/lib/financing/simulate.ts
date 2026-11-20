@@ -28,6 +28,9 @@ export function formatBpsPercent(bps: number | null | undefined) {
   return `${(bps / 100).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} %`
 }
 
+/** IVA sobre intereses (21 %). */
+export const IVA_ON_INTEREST = 0.21
+
 export function simulate(plan: PlanTerms, input: SimulationInput): SimulationResult {
   const price = Math.round(input.priceCents)
   const down = Math.round(input.downPaymentCents)
@@ -45,16 +48,29 @@ export function simulate(plan: PlanTerms, input: SimulationInput): SimulationRes
   if (plan.maxAmountCents != null && financed > plan.maxAmountCents) return { ok: false, reason: 'El monto a financiar supera el máximo de este plan.' }
 
   const i = plan.tnaBps / 10_000 / 12
+  // En Argentina los bancos cobran IVA (21 %) sobre los intereses de los préstamos personales:
+  // se suma a cada cuota para que la estimación se parezca a la que informa el banco.
+  const vat = 1 + IVA_ON_INTEREST
   if (plan.amortization === 'aleman') {
     const principal = financed / n
-    const first = principal + financed * i
-    const last = principal + principal * i
-    const total = financed + (financed * i * (n + 1)) / 2
+    const first = principal + financed * i * vat
+    const last = principal + principal * i * vat
+    const total = financed + ((financed * i * (n + 1)) / 2) * vat
     return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(first), lastInstallmentCents: Math.round(last), totalPaidCents: Math.round(total), termMonths: n }
   }
   const installment = i === 0 ? financed / n : (financed * i) / (1 - Math.pow(1 + i, -n))
-  return { ok: true, financedCents: financed, firstInstallmentCents: Math.round(installment), lastInstallmentCents: Math.round(installment), totalPaidCents: Math.round(installment * n), termMonths: n }
+  const firstInterest = financed * i
+  const lastInterest = installment - installment / (1 + i)
+  const totalInterest = installment * n - financed
+  return {
+    ok: true,
+    financedCents: financed,
+    firstInstallmentCents: Math.round(installment + firstInterest * IVA_ON_INTEREST),
+    lastInstallmentCents: Math.round(installment + lastInterest * IVA_ON_INTEREST),
+    totalPaidCents: Math.round(installment * n + totalInterest * IVA_ON_INTEREST),
+    termMonths: n,
+  }
 }
 
 export const SIMULATION_DISCLAIMER =
-  'Simulación estimativa y no vinculante. Las condiciones finales (tasa, cuota, CFT, seguros, IVA sobre intereses y gastos) las define la entidad y están sujetas a calificación y aprobación crediticia.'
+  'Simulación estimativa y no vinculante; incluye IVA sobre intereses. Las condiciones finales (tasa, cuota, CFT, seguros y gastos) las define la entidad y están sujetas a calificación y aprobación crediticia.'

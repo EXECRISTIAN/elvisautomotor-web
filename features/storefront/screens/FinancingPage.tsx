@@ -200,7 +200,7 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
                   className="sf-input sf-trigger"
                   placeholder={vehicles === null ? 'Cargando inventario…' : 'Elige un vehículo'}
                   searchable
-                  options={[{ value: '', label: 'Otro / todavía no elige' }, ...(vehicles ?? []).map((item) => ({ value: item.id, label: `${vehicleTitle(item)} — ${item.price > 0 ? money(item.price) : 'consultar'}` }))]}
+                  options={[{ value: '', label: 'Otro / todavía no lo elegí' }, ...(vehicles ?? []).map((item) => ({ value: item.id, label: `${vehicleTitle(item)} — ${item.price > 0 ? money(item.price) : 'consultar'}` }))]}
                 />
               </Field>
               {!vehicle && (

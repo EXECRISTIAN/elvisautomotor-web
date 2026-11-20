@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict fHDeEyQUU592fkjGnDNGbKDZFN2zzdr1O0BnxnxEUqFnDPXH5dThxDkTdQAqyw6
+\restrict cT1XysYs8g7lCJea5gBT4N4HQ2VXJQNkIGNuFR6W69hcaAI8NFYLv5RkWqcfu3P
 
 -- Dumped from database version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
@@ -1952,7 +1952,6 @@ COPY public."AuthenticationThrottle" (id, "keyHash", purpose, "failureCount", "w
 COPY public."Bank" (id, "createdAt", "updatedAt", name, active, website, notes, "providerKey") FROM stdin;
 bank_nacion	2026-11-19 06:16:08.405	2026-11-19 06:16:08.405	Banco Nación	t	https://www.bna.com.ar	Cargar planes reales en Tablas → Planes de financiación.	manual
 bank_provincia	2026-11-19 06:16:08.405	2026-11-19 06:16:08.405	Banco Provincia	t	https://www.bancoprovincia.com.ar	Cargar planes reales en Tablas → Planes de financiación.	manual
-bank_ejemplo	2026-11-19 06:16:08.405	2026-11-19 06:16:08.405	Banco de ejemplo	t		Solo para la demostración. Desactivar al cargar los planes reales.	manual
 \.
 
 
@@ -2035,7 +2034,7 @@ cmwn5n7xz00027ds3ib76358j	2026-11-19 06:14:08.359	2026-11-19 06:14:08.359	dealer
 --
 
 COPY public."DealershipProfile" (id, "createdAt", "updatedAt", name, "shortName", "salesEmail", "serviceEmail", phone, "addressLine1", "addressLine2", city, state, "postalCode", "hoursMonFri", "hoursSaturday", "hoursSunday", "websiteUrl", "currencyCode", "homepageTitle", "homepageDescription", "logoIcon", "logoColor", "docFeeCents", "salesTaxRateBps", "whatsappNumber") FROM stdin;
-1	2026-11-19 06:14:08.329	2026-11-19 06:14:08.329	Elvis Automotores S.R.L.	Elvis Automotores	elvisautomotores@gmail.com		(011) 4259-1365	Andrés Baranda 2134		Quilmes	Buenos Aires		9 a 13 h sin cita (por la tarde, solo con cita asignada)	Cerrado	Cerrado	https://www.elvisautomotores.com	ARS	Tu próximo auto, más cerca.	Compra y venta de usados y 0 km desde 2009. Venta a crédito con financiación de hasta el 100% (sujeto a calificación y aprobación crediticia).	<svg fill="none" height="100%" viewBox="0 0 48 48" width="100%" xmlns="http://www.w3.org/2000/svg"><path d="m0 24c0 6.6274 5.37258 12 12 12v-12c0 6.6274 5.3726 12 12 12v-12c0 6.6274 5.3726 12 12 12s12-5.3726 12-12-5.3726-12-12-12-12 5.3726-12 12v-12c-6.6274 0-12 5.3726-12 12v-12c-6.62742 0-12 5.3726-12 12z" fill="#155eef"/></svg>	180	0	0	5491127235886
+1	2026-11-19 06:14:08.329	2026-11-19 06:14:08.329	Elvis Automotores S.R.L.	Elvis Automotores	elvisautomotores@gmail.com		(011) 4259-1365	Andrés Baranda 2134	Quilmes, Provincia de Buenos Aires, Argentina	Quilmes	Buenos Aires		9 a 13 h sin cita (por la tarde, solo con cita asignada)	Cerrado	Cerrado	https://www.elvisautomotores.com	ARS	Tu próximo auto, más cerca.	Compra y venta de usados y 0 km desde 2009. Venta a crédito con financiación de hasta el 100% (sujeto a calificación y aprobación crediticia).	<svg fill="none" height="100%" viewBox="0 0 48 48" width="100%" xmlns="http://www.w3.org/2000/svg"><path d="m0 24c0 6.6274 5.37258 12 12 12v-12c0 6.6274 5.3726 12 12 12v-12c0 6.6274 5.3726 12 12 12s12-5.3726 12-12-5.3726-12-12-12-12 5.3726-12 12v-12c-6.6274 0-12 5.3726-12 12v-12c-6.62742 0-12 5.3726-12 12z" fill="#155eef"/></svg>	180	0	0	5491127235886
 \.
 
 
@@ -2180,7 +2179,10 @@ COPY public."FinancingApplication" (id, "createdAt", "updatedAt", reference, "id
 --
 
 COPY public."FinancingPlan" (id, "createdAt", "updatedAt", bank, name, active, "tnaBps", "teaBps", "cftBps", "termsMonths", "minAmountCents", "maxAmountCents", "maxFinancedBps", amortization, "validFrom", "validUntil", "extraCosts", requirements, "sortOrder") FROM stdin;
-plan_ejemplo	2026-11-19 06:16:08.406	2026-11-19 06:16:08.406	bank_ejemplo	Plan de ejemplo (tasas ilustrativas)	t	6000	\N	\N	12, 24, 36, 48	\N	\N	10000	frances	\N	\N	Valores ilustrativos para la demostración: reemplazar por los planes reales del banco.	DNI y recibo de sueldo o constancia de ingresos.	0
+plan_bna_pref	2026-11-20 04:39:45.989	2026-11-20 04:39:45.989	bank_nacion	+Autos con BNA — tasa preferencial	t	2500	\N	\N	12, 24, 36, 48, 60, 72	\N	5000000000	10000	frances	2026-11-05 00:00:00	\N	El banco no publica gastos de otorgamiento ni CFT: consúltalos al pedir el crédito. Préstamo personal sin prenda, tasa fija en pesos. Para 0 km y usados de hasta 10 años. Condiciones publicadas por el banco el 05/11/2026; el banco puede modificarlas.	Acreditar sueldo o jubilación en Banco Nación, tener tarjeta de crédito del banco y contratar el seguro del auto con Nación Seguros (mínimo Terceros Completos, débito en la tarjeta). Sujeto a calificación crediticia.	1
+plan_bna_gral	2026-11-20 04:39:45.989	2026-11-20 04:39:45.989	bank_nacion	+Autos con BNA — tasa general	t	4600	\N	\N	12, 24, 36, 48, 60, 72	\N	5000000000	10000	frances	2026-11-05 00:00:00	\N	El banco no publica gastos de otorgamiento ni CFT: consúltalos al pedir el crédito. Préstamo personal sin prenda, tasa fija en pesos. Para 0 km y usados de hasta 10 años. Condiciones publicadas por el banco el 05/11/2026; el banco puede modificarlas.	Para quienes no cumplen las condiciones de la tasa preferencial. Sujeto a calificación crediticia.	2
+plan_bpba_general	2026-11-20 04:39:45.989	2026-11-20 04:39:45.989	bank_provincia	Acá Tu Auto — tasa fija en pesos (resto de los clientes)	t	6500	\N	\N	12, 24, 36, 48, 60, 72	\N	5000000000	10000	frances	2026-09-14 00:00:00	\N	El banco no publica gastos de otorgamiento ni CFT: consúltalos al pedir el crédito. Tasa fija desde 65% TNA (según el perfil puede llegar a 75%). También existe una opción UVA desde UVA + 10% que este simulador no calcula. Condiciones publicadas por el banco en 2026; el banco puede modificarlas.	Ser cliente de Banco Provincia. Se gestiona en concesionarias adheridas. Sujeto a calificación crediticia.	4
+plan_bpba_haberes	2026-11-20 04:39:45.989	2026-11-20 04:39:45.989	bank_provincia	Acá Tu Auto — tasa fija en pesos (cobras tu sueldo en el banco)	t	5500	\N	\N	12, 24, 36, 48, 60, 72	\N	5000000000	10000	frances	2026-09-14 00:00:00	\N	El banco no publica gastos de otorgamiento ni CFT: consúltalos al pedir el crédito. Tasa fija desde 55% TNA. También existe una opción UVA desde UVA + 6% (12 a 48 meses) que este simulador no calcula. Condiciones publicadas por el banco en 2026; el banco puede modificarlas.	Ser cliente de Banco Provincia y cobrar haberes en el banco. Se gestiona en concesionarias adheridas. Sujeto a calificación crediticia.	3
 \.
 
 
@@ -6584,5 +6586,5 @@ ALTER TABLE ONLY public."WeOweItem"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict fHDeEyQUU592fkjGnDNGbKDZFN2zzdr1O0BnxnxEUqFnDPXH5dThxDkTdQAqyw6
+\unrestrict cT1XysYs8g7lCJea5gBT4N4HQ2VXJQNkIGNuFR6W69hcaAI8NFYLv5RkWqcfu3P
 

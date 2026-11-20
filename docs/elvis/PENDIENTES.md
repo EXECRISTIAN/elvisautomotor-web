@@ -36,9 +36,8 @@
 7. Usuarios y roles — HECHO: roles en español (Administrador, Gerente de ventas, Vendedor, Responsable de créditos, Administración…), alta de vendedores probada de punta a punta.
 
 ## Lo único que falta (depende de Elvis o de publicar)
-- Tasas y condiciones reales de Banco Nación y Banco Provincia.
+- Confirmar con Elvis cuáles de estos planes ofrece en el salón y si hay gastos de otorgamiento/CFT (los bancos no los publican).
 - Fotos reales de autos y del salón.
-- Confirmar dirección: Andrés Baranda 2134 (Quilmes) vs. Av. Los Quilmes 735 (Bernal) que figura en Google Maps.
 - Publicar: dominio/hosting, almacenamiento de fotos (S3 o similar), Google Search Console y Perfil de Empresa.
 
 ## Actualización (19/11/2026)
@@ -65,3 +64,15 @@
 - Zona horaria por defecto: Buenos Aires (antes Nueva York; afectaba horarios de citas y ofertas).
 - Ficha del usado en el panel: galería con las fotos que mandó el cliente.
 - Sitio: enlace "X (Twitter)" del pie más fácil de tocar; página Comparar explica cómo usarla.
+
+## Tasas reales cargadas (20/11/2026)
+Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iProfesional, El Cronista (nov. y sep. 2026).
+- Banco Nación "+Autos con BNA" (05/11/2026): préstamo personal sin prenda, tasa fija en pesos, hasta $50 M, hasta 100 %, hasta 72 meses, 0 km y usados de hasta 10 años.
+  - 25 % TNA con sueldo/jubilación en el banco + tarjeta BNA + seguro con Nación Seguros.
+  - 46 % TNA general.
+- Banco Provincia "Acá Tu Auto": hasta $50 M, hasta 100 %, en concesionarias adheridas.
+  - Tasa fija en pesos desde 55 % TNA (cobro de haberes en el banco) y desde 65 % (resto, hasta 75 %), 12 a 72 meses.
+  - Opción UVA desde UVA + 6 % (12 a 48 meses): el simulador no la calcula; se informa en el texto del plan.
+- El simulador ahora suma IVA (21 %) sobre los intereses: reproduce exacto el ejemplo de BNA ($15 M a 36 meses → $662.022 al 25 % y $895.841 al 46 %).
+- Se quitó el "Banco de ejemplo".
+- Dirección definida: Andrés Baranda 2134, Quilmes, Provincia de Buenos Aires, Argentina.

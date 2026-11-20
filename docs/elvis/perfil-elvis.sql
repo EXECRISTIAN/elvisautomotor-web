@@ -8,7 +8,7 @@ UPDATE "DealershipProfile" SET
   "whatsappNumber" = '5491127235886',
   "salesEmail" = 'elvisautomotores@gmail.com',
   "addressLine1" = 'Andrés Baranda 2134',
-  "addressLine2" = '',
+  "addressLine2" = 'Quilmes, Provincia de Buenos Aires, Argentina',
   city = 'Quilmes',
   state = 'Buenos Aires',
   "postalCode" = '',

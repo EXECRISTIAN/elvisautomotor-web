@@ -34,7 +34,8 @@ export function dealerJsonLd(business: StorefrontBusiness, baseUrl: string | nul
       ? clean({
           '@type': 'PostalAddress',
           streetAddress: business.addressLine1,
-          addressLocality: business.addressLine2 || undefined,
+          addressLocality: business.addressLine2.split(',')[0]?.trim() || undefined,
+          addressRegion: business.addressLine2.split(',')[1]?.trim() || undefined,
           addressCountry: 'AR',
         })
       : undefined,
