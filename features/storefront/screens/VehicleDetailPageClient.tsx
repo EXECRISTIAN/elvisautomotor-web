@@ -494,17 +494,21 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
         inert={actionsVisible || undefined}
       >
         <div
-          className="mx-auto grid max-w-md grid-cols-4 gap-1.5 rounded-[var(--sf-radius-md)] border p-1.5"
+          className={`mx-auto grid max-w-md gap-1.5 ${business.whatsappNumber ? 'grid-cols-[auto_1fr_1fr_1fr]' : 'grid-cols-4'} rounded-[var(--sf-radius-md)] border p-1.5`}
           style={{ background: 'var(--sf-paper)', borderColor: 'var(--sf-rule)', boxShadow: 'var(--sf-shadow-float)' }}
         >
-          <button
-            ref={barContactOpenerRef}
-            type="button"
-            onClick={() => openLead('contact', barContactOpenerRef)}
-            className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1"
-          >
-            Consultar
-          </button>
+          {business.whatsappNumber ? (
+            <WhatsAppButton iconOnly label="Consultar este vehículo por WhatsApp" message={whatsappMessage} className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-3 text-[var(--sf-accent)]" />
+          ) : (
+            <button
+              ref={barContactOpenerRef}
+              type="button"
+              onClick={() => openLead('contact', barContactOpenerRef)}
+              className="sf-btn sf-btn-ghost sf-bar-btn min-w-0 px-1"
+            >
+              Consultar
+            </button>
+          )}
           <button
             ref={barTestDriveOpenerRef}
             type="button"

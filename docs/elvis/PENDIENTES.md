@@ -43,3 +43,6 @@
 - **Por confirmar con Elvis:** la ficha de Google Maps del Linktree dice *Av. Los Quilmes 735, Bernal*; el sitio usa *Andrés Baranda 2134, Quilmes*. ¿Son dos sedes o cambió la dirección?
 - Pendiente: probar la imagen Docker completa (Docker Hub limitó las descargas en el entorno de prueba).
 - Siguen pendientes: panel de administración (traducción final, pantallas propias) y usuarios/roles.
+
+## Ronda automática 1 (20/11/2026)
+- Ficha del vehículo en celular: la barra fija ahora tiene botón de WhatsApp con el auto y el precio ya escritos en el mensaje (antes solo había un formulario). Si no hay número cargado, vuelve a mostrar "Consultar". Probado en iPhone SE y iPhone 13, sin desbordes. Captura: `muestra/ficha-barra-whatsapp-celular.png`.
