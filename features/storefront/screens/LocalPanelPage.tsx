@@ -45,6 +45,8 @@ export function LocalPanelPage() {
   const [items, setItems] = useState<LocalSubmission[]>([])
   const [users, setUsers] = useState<LocalUser[]>([])
   const [kind, setKind] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [search, setSearch] = useState('')
   const [open, setOpen] = useState<string | null>(null)
   const [login, setLogin] = useState({ username: '', password: '', error: '' })
   const [editing, setEditing] = useState<LocalUser | null>(null)
@@ -61,7 +63,13 @@ export function LocalPanelPage() {
   }, [])
 
   const refresh = () => { setItems(listSubmissions()); setUsers(listUsers()) }
-  const filtered = useMemo(() => items.filter((i) => !kind || i.kind === kind), [items, kind])
+  const filtered = items.filter((i) => {
+    if (kind && i.kind !== kind) return false
+    if (statusFilter && i.status !== statusFilter) return false
+    if (!search.trim()) return true
+    const haystack = `${who(i)} ${Object.values(i.data).map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''))).join(' ')}`.toLowerCase()
+    return search.toLowerCase().split(/\s+/).every((word) => haystack.includes(word))
+  })
   const counts = useMemo(() => items.reduce<Record<string, number>>((acc, i) => ({ ...acc, [i.kind]: (acc[i.kind] ?? 0) + 1 }), {}), [items])
 
   function doLogin(event: React.FormEvent) {
@@ -156,8 +164,17 @@ export function LocalPanelPage() {
                 <label htmlFor="lp-kind" className="sf-label">Tipo</label>
                 <div className="mt-2"><ComboField id="lp-kind" value={kind ? KINDS[kind] : ''} onChange={(v) => setKind(Object.keys(KINDS).find((k) => KINDS[k] === v) ?? '')} options={Object.keys(KINDS).map((k) => KINDS[k])} allowCustom={false} placeholder="Todas" /></div>
               </div>
+              <div className="w-full sm:w-48">
+                <label htmlFor="lp-status" className="sf-label">Estado</label>
+                <div className="mt-2"><ComboField id="lp-status" value={statusFilter} onChange={setStatusFilter} options={STATUSES} allowCustom={false} placeholder="Todos" /></div>
+              </div>
+              <div className="w-full min-w-0 sm:flex-1">
+                <label htmlFor="lp-search" className="sf-label">Buscar</label>
+                <input id="lp-search" type="search" value={search} onChange={(e) => setSearch(e.target.value)} className="sf-input mt-2 w-full" placeholder="Nombre, teléfono, email, patente, auto…" />
+              </div>
               <button type="button" onClick={exportCsv} disabled={!filtered.length} className="sf-btn sf-btn-outline min-h-12 rounded-[10px]"><Download className="size-4" aria-hidden="true" />Exportar a Excel</button>
             </div>
+            {(kind || statusFilter || search) && <p className="sf-muted mt-2 text-[0.85rem]" role="status">{filtered.length} de {items.length} consultas · <button type="button" className="sf-link min-h-11" onClick={() => { setKind(''); setStatusFilter(''); setSearch('') }}>Quitar filtros</button></p>}
             <p className="sf-faint mt-3 text-[0.8rem]">{Object.entries(counts).map(([k, n]) => `${KINDS[k] ?? k}: ${n}`).join(' · ') || 'Todavía no llegaron consultas.'}</p>
             <ul className="mt-4 grid gap-3">
               {filtered.map((item) => (
