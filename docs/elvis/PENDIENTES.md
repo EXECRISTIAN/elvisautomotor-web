@@ -126,3 +126,9 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 20/11 17:30 — catálogo ampliado
 - Catálogo: 55+ marcas (se sumaron Abarth, Changan, DFSK, Foton, GAC, Geely, Great Wall, GWM, JAC, Lexus, MG, Maxus, Smart, etc.) y modelos Ford faltantes (F-100, Focus II, S-Max…).
 - Listas de marca con grupo "Más populares" arriba (Vende tu auto, Precalificador, panel Autos).
+
+### Ronda 20/11 18:30 — catálogo completo
+- Catálogo con CSV del usuario: 59 marcas, 1106 modelos, ~10.900 versiones (docs/elvis/*.csv).
+- Años 1900 → año actual+1; marca/modelo/versión filtrados por año de fabricación (los que siguen en producción quedan abiertos a futuro).
+- Opción "Aquí no aparece el mío" en marca, modelo y versión.
+- Pendiente: hacer lo mismo en el filtro del inventario si se quiere.
