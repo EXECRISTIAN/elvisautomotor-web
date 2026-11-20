@@ -154,7 +154,7 @@ export function VehicleDetailPageClient({
 
   if (!detail) {
     return (
-      <PageContainer title="Vehículo" breadcrumbs={breadcrumbs} header={<DeskHeader title="Vehículo" tone="bad" status="Unavailable" />}>
+      <PageContainer title="Vehículo" breadcrumbs={breadcrumbs} header={<DeskHeader title="Vehículo" tone="bad" status="No disponible" />}>
         <div className="space-y-4 px-4 pb-24 md:px-6">
           <Notice tone="bad">{error || 'Vehicle not found'}</Notice>
           <Track>

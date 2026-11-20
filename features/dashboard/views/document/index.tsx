@@ -371,7 +371,7 @@ export function getFilterTypes() {
       initialValue: '',
     },
     is_empty: {
-      label: 'Is empty',
+      label: 'Está vacío',
       initialValue: 'true',
     },
   }

@@ -187,7 +187,7 @@ export function controller(
               const inputValue = e.target.value === '' ? null : e.target.value
               onChange(inputValue)
             }}
-            placeholder="Enter number..."
+            placeholder="Ingresa un número…"
           />
         )
       },
@@ -222,14 +222,14 @@ export function controller(
         return `${operator} ${value}`
       },
       types: {
-        equals: { label: 'Is exactly', initialValue: '' },
-        not: { label: 'Is not exactly', initialValue: '' },
-        gt: { label: 'Is greater than', initialValue: '' },
-        lt: { label: 'Is less than', initialValue: '' },
-        gte: { label: 'Is greater than or equal to', initialValue: '' },
-        lte: { label: 'Is less than or equal to', initialValue: '' },
-        empty: { label: 'Is empty', initialValue: '' },
-        not_empty: { label: 'Is not empty', initialValue: '' },
+        equals: { label: 'Es exactamente', initialValue: '' },
+        not: { label: 'No es exactamente', initialValue: '' },
+        gt: { label: 'Es mayor que', initialValue: '' },
+        lt: { label: 'Es menor que', initialValue: '' },
+        gte: { label: 'Es mayor o igual que', initialValue: '' },
+        lte: { label: 'Es menor o igual que', initialValue: '' },
+        empty: { label: 'Está vacío', initialValue: '' },
+        not_empty: { label: 'No está vacío', initialValue: '' },
       } as any,
     } as any,
   }

@@ -50,7 +50,7 @@ export function CreateItemDrawerClient({
       }
     } catch (error) {
       console.error('Error creating item:', error)
-      toast.error('Failed to create item')
+      toast.error('No se pudo crear el registro')
     }
   }, [createItem, onCreate, onClose, list.singular])
 
@@ -71,9 +71,9 @@ export function CreateItemDrawerClient({
   return (
     <>
       <DrawerHeader className="flex-shrink-0">
-        <DrawerTitle>Create {list.singular}</DrawerTitle>
+        <DrawerTitle>Crear {list.singular}</DrawerTitle>
         <DrawerDescription>
-          Create a new {list.singular.toLowerCase()}
+          Completa los datos para crear el registro
         </DrawerDescription>
       </DrawerHeader>
 
@@ -94,7 +94,7 @@ export function CreateItemDrawerClient({
               onClick={onClose}
               disabled={createItem.state === 'loading'}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button 
               type="submit" 
@@ -104,10 +104,10 @@ export function CreateItemDrawerClient({
               {createItem.state === 'loading' ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Creando…
                 </>
               ) : (
-                `Create ${list.singular}`
+                `Crear ${list.singular}`
               )}
             </Button>
           </div>

@@ -218,7 +218,7 @@ export function ChatEmptyState({ userName, variant = "default" }: ChatEmptyState
             {greeting}
           </h2>
           <h3 className={`font-medium tracking-[-0.006em] ${isCompact ? "text-sm" : "text-lg"}`}>
-            Welcome back! How can I help?
+            ¡Hola! ¿En qué te ayudo?
           </h3>
         </div>
       </div>

@@ -92,11 +92,11 @@ export function Field({ field, value, onChange, autoFocus }: MultiSelectFieldPro
         value={selectorValue}
         options={selectorOptions}
         onChange={handleChange}
-        placeholder="Select options..."
+        placeholder="Elige opciones…"
         disabled={isReadOnly}
         emptyIndicator={
           <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-            No results found.
+            Sin resultados.
           </p>
         }
         hideClearAllButton={false}
@@ -287,11 +287,11 @@ export const controller = (
       },
       types: {
         matches: {
-          label: 'Matches',
+          label: 'Coincide',
           initialValue: [] as string[],
         },
         not_matches: {
-          label: 'Does not match',
+          label: 'No coincide',
           initialValue: [] as string[],
         },
       },

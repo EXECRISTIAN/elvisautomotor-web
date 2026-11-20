@@ -59,15 +59,15 @@ export function SignUpForm() {
           <Logo aria-hidden="true" />
         </div>
         <h1 className="mt-6 text-lg font-semibold text-foreground dark:text-foreground">
-          Create your account
+          Crea tu cuenta
         </h1>
         <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
-          Already have an account?
+          ¿Ya tienes una cuenta?
           <Link
             href="/dashboard/signin"
             className="ml-1 font-medium text-primary hover:text-primary/90 dark:text-primary hover:dark:text-primary/90"
           >
-            Sign in
+            Iniciar sesión
           </Link>
         </p>
 
@@ -95,7 +95,7 @@ export function SignUpForm() {
               htmlFor="password"
               className="text-sm font-medium text-foreground dark:text-foreground"
             >
-              Password
+              Contraseña
             </Label>
             <div className="relative mt-2">
               <Input

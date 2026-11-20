@@ -103,28 +103,28 @@ export function RolesSection({
     <div className="space-y-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Segmented<Filter>
-          label="Filter roles"
+          label="Filtrar roles"
           value={filter}
           onChange={setFilter}
           size="sm"
           options={[
-            { value: 'all', label: 'All', count: counts.all },
-            { value: 'staff', label: 'Assignable', count: counts.staff },
-            { value: 'admin', label: 'Admin', count: counts.admin },
-            { value: 'unused', label: 'Unused', count: counts.unused },
+            { value: 'all', label: 'Todos', count: counts.all },
+            { value: 'staff', label: 'Asignable', count: counts.staff },
+            { value: 'admin', label: 'Administrador', count: counts.admin },
+            { value: 'unused', label: 'Sin usar', count: counts.unused },
           ]}
         />
         <Track>
           <Pill variant="primary" className="h-11 sm:h-8" disabled={!canManage} title={lockedReason} onClick={() => openForm(null)}>
             <Plus />
-            New role
+            Nuevo rol
           </Pill>
         </Track>
       </div>
       {!canManage && <p className="text-xs text-muted-foreground">{lockedReason}</p>}
       <div className="relative min-w-0 sm:max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Role name" aria-label="Search roles" />
+        <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Nombre del rol" aria-label="Buscar roles" />
       </div>
 
       {loadError ? (
@@ -132,18 +132,18 @@ export function RolesSection({
       ) : visible.length === 0 ? (
         <Panel className="flex flex-col items-center gap-3 px-4 py-12 text-center">
           <p className="text-sm text-muted-foreground">{roles.length ? 'No matching roles' : 'No roles'}</p>
-          {roles.length > 0 && <Track><Pill size="sm" onClick={() => { setSearch(''); setFilter('all') }}>Reset filters</Pill></Track>}
+          {roles.length > 0 && <Track><Pill size="sm" onClick={() => { setSearch(''); setFilter('all') }}>Restablecer filtros</Pill></Track>}
         </Panel>
       ) : (
         <DeskTable aria-label="Roles">
           <thead>
             <tr>
-              <Th>Role</Th>
-              <Th>Type</Th>
-              <Th align="right" priority={2}>Permissions</Th>
-              <Th align="right" priority={2}>Users</Th>
-              <Th align="right" priority={3}>Memberships</Th>
-              <Th align="right"><span className="sr-only">Actions</span></Th>
+              <Th>Rol</Th>
+              <Th>Tipo</Th>
+              <Th align="right" priority={2}>Permisos</Th>
+              <Th align="right" priority={2}>Usuarios</Th>
+              <Th align="right" priority={3}>Integrantes</Th>
+              <Th align="right"><span className="sr-only">Acciones</span></Th>
             </tr>
           </thead>
           <tbody>
@@ -160,17 +160,17 @@ export function RolesSection({
                     </span>
                   </Td>
                   <Td>
-                    <Status tone={assignable ? 'info' : 'accent'}>{assignable ? 'Assignable' : 'Admin'}</Status>
-                    {used === 0 && <span className="block text-xs text-muted-foreground">Unused</span>}
+                    <Status tone={assignable ? 'info' : 'accent'}>{assignable ? 'Asignable' : 'Administrador'}</Status>
+                    {used === 0 && <span className="block text-xs text-muted-foreground">Sin usar</span>}
                   </Td>
                   <Td align="right" priority={2}>{rolePermissionCount(role)} of {PERMISSION_KEYS.length}</Td>
                   <Td align="right" priority={2}>{role.assignedToCount ?? 0}</Td>
                   <Td align="right" priority={3}>{(role.dealerGroupMembershipsCount ?? 0) + (role.rooftopMembershipsCount ?? 0)}</Td>
                   <Td align="right" className="w-px whitespace-nowrap">
                     <div className="inline-flex justify-end gap-1">
-                      <Pill size="sm" variant="plain" className="h-11 sm:h-7" disabled={Boolean(deleteBlocked)} title={deleteBlocked} onClick={() => { setError(null); setRemoving(role) }} aria-label={`Delete ${role.name}`}>
+                      <Pill size="sm" variant="plain" className="h-11 sm:h-7" disabled={Boolean(deleteBlocked)} title={deleteBlocked} onClick={() => { setError(null); setRemoving(role) }} aria-label={`Eliminar ${role.name}`}>
                         <Trash2 />
-                        <span className="max-sm:sr-only">Delete</span>
+                        <span className="max-sm:sr-only">Eliminar</span>
                       </Pill>
                       <Pill size="sm" className="h-11 sm:h-7" onClick={() => openForm(role)} aria-label={`${canManage ? 'Edit' : 'View'} ${role.name}`}>
                         <Pencil />
@@ -198,7 +198,7 @@ export function RolesSection({
       >
         {form && (
           <div className="grid gap-4">
-            <Field id="role-name" label="Name" error={fieldErrors.name}>
+            <Field id="role-name" label="Nombre" error={fieldErrors.name}>
               <Input {...fieldA11y('role-name', fieldErrors.name)} className="h-11 sm:h-9" value={form.name} maxLength={200} disabled={!canManage} onChange={event => setForm({ ...form, name: event.target.value })} />
             </Field>
             {PERMISSION_GROUPS.map(group => (
@@ -218,7 +218,7 @@ export function RolesSection({
                 </div>
               </fieldset>
             ))}
-            {!roleIsTenantAssignable(form.flags) && <Notice tone="info">Admin permissions: not assignable to memberships</Notice>}
+            {!roleIsTenantAssignable(form.flags) && <Notice tone="info">Permisos de administrador: no se asignan a integrantes</Notice>}
             {losesAccess && <Notice tone="warn">This is your role; saving removes your own dashboard or role access</Notice>}
           </div>
         )}
@@ -226,7 +226,7 @@ export function RolesSection({
 
       <FormDialog
         open={Boolean(removing)}
-        title={removing ? `Delete ${removing.name}` : ''}
+        title={removing ? `Eliminar ${removing.name}` : ''}
         error={error}
         busy={busy}
         submitLabel="Delete"
@@ -234,7 +234,7 @@ export function RolesSection({
         onSubmit={submitRemove}
         onOpenChange={open => { if (!open) setRemoving(null) }}
       >
-        <span className="sr-only">Confirm</span>
+        <span className="sr-only">Confirmar</span>
       </FormDialog>
     </div>
   )

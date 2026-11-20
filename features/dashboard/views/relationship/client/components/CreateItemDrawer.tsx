@@ -57,10 +57,10 @@ function CreateItemForm({
       <DrawerFooter className="flex-shrink-0">
         <div className="flex gap-2 justify-end">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" disabled={createItem.state === 'loading'}>
-            {createItem.state === 'loading' ? 'Creating...' : `Add ${list.singular}`}
+            {createItem.state === 'loading' ? 'Creando…' : `Agregar ${list.singular}`}
           </Button>
         </div>
       </DrawerFooter>
@@ -95,10 +95,10 @@ export function CreateItemDrawer({ listKey, isOpen, onClose, onCreate }: CreateI
       <Drawer open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>Loading...</DrawerTitle>
+            <DrawerTitle>Cargando…</DrawerTitle>
           </DrawerHeader>
           <div className="px-4 py-8 text-center">
-            Loading form...
+            Cargando formulario…
           </div>
         </DrawerContent>
       </Drawer>
@@ -117,7 +117,7 @@ export function CreateItemDrawer({ listKey, isOpen, onClose, onCreate }: CreateI
             {`Could not load form for ${listKey}. Please try again.`}
           </div>
           <DrawerFooter>
-            <Button onClick={handleCancel}>Close</Button>
+            <Button onClick={handleCancel}>Cerrar</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -130,9 +130,9 @@ export function CreateItemDrawer({ listKey, isOpen, onClose, onCreate }: CreateI
     <Drawer open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
       <DrawerContent className="flex flex-col">
         <DrawerHeader className="flex-shrink-0">
-          <DrawerTitle>Add {list.singular}</DrawerTitle>
+          <DrawerTitle>Agregar {list.singular}</DrawerTitle>
           <DrawerDescription>
-            Create a new {list.singular.toLowerCase()}
+            Completa los datos para crear el registro
           </DrawerDescription>
         </DrawerHeader>
 

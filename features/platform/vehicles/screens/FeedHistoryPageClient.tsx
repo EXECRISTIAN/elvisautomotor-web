@@ -195,7 +195,7 @@ export function FeedHistoryPageClient({
   const statusOptions = [
     { value: 'all' as StatusFilter, label: 'All', count: counts?.all },
     { value: 'succeeded' as StatusFilter, label: 'Succeeded', count: counts?.succeeded, tone: 'ok' as DeskTone },
-    { value: 'partial' as StatusFilter, label: 'Partial', count: counts?.partial, tone: 'warn' as DeskTone },
+    { value: 'partial' as StatusFilter, label: 'Parcial', count: counts?.partial, tone: 'warn' as DeskTone },
     { value: 'failed' as StatusFilter, label: 'Failed', count: counts?.failed, tone: 'bad' as DeskTone },
   ]
 
@@ -392,7 +392,7 @@ export function FeedHistoryPageClient({
               {exportError && <Notice tone="bad">{exportError}</Notice>}
               <DialogFooter className="sm:justify-end">
                 <Track>
-                  <Pill variant="plain" className="max-sm:h-11" disabled={busy === 'export'} onClick={() => setExportOpen(false)}>Cancel</Pill>
+                  <Pill variant="plain" className="max-sm:h-11" disabled={busy === 'export'} onClick={() => setExportOpen(false)}>Cancelar</Pill>
                   <Pill type="submit" variant="primary" className="max-sm:h-11" disabled={busy === 'export'}>{busy === 'export' ? 'Saving…' : 'Record export'}</Pill>
                 </Track>
               </DialogFooter>

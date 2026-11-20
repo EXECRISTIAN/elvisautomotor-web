@@ -43,8 +43,8 @@ interface ListPageClientProps {
 function EmptyStateDefault({ list }: { list: any }) {
   return (
     <EmptyState
-      title={`No ${list.label} Created`}
-      description={`You can create a new ${list.singular.toLowerCase()} to get started.`}
+      title={`Todavía no hay ${list.label.toLowerCase()}`}
+      description={`Crea el primer registro (${list.singular.toLowerCase()}) para empezar.`}
       icons={[Triangle, Square, Circle]}
     />
   )
@@ -53,8 +53,8 @@ function EmptyStateDefault({ list }: { list: any }) {
 function EmptyStateSearch({ onResetFilters }: { onResetFilters: () => void }) {
   return (
     <EmptyState
-      title="No Results Found"
-      description="Try adjusting your search filters."
+      title="Sin resultados"
+      description="Prueba cambiando los filtros de búsqueda."
       icons={[Search]}
       action={{
         label: "Reset Filters",
@@ -181,10 +181,10 @@ export function ListPageClient({
 
   if (!list) {
     return (
-      <PageContainer title="List not found">
+      <PageContainer title="Tabla no encontrada">
         <Alert variant="destructive">
           <AlertDescription>
-            The requested list was not found.
+            No se encontró la tabla.
           </AlertDescription>
         </Alert>
       </PageContainer>
@@ -202,7 +202,7 @@ export function ListPageClient({
         {list.label}
       </h1>
       <p className="text-muted-foreground">
-        {list.description || `Create and manage ${list.label.toLowerCase()}`}
+        {list.description || `Administra ${list.label.toLowerCase()}`}
       </p>
     </div>
   )

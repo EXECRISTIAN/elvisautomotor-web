@@ -267,10 +267,10 @@ function EditDialog({ filter, field, onClose }: EditDialogProps) {
       <Separator />
       <div className="flex justify-between gap-2 px-2 pb-2">
         <Button variant="outline" size="sm" onClick={onClose}>
-          Cancel
+          Cancelar
         </Button>
         <Button size="sm" type="submit">
-          Save
+          Guardar
         </Button>
       </div>
     </form>

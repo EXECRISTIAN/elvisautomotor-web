@@ -185,7 +185,7 @@ export function SimpleSettingsPopover({ disabled = false }: SimpleSettingsPopove
             onClick={handleSave}
             disabled={!apiKey && !config.localKeys?.apiKey}
           >
-            Save
+            Guardar
           </Button>
         </div>
       </PopoverContent>

@@ -197,7 +197,7 @@ export function Pagination({
             className="font-semibold rounded-l-[20px] rounded-r-md"
           >
             <X className="size-2.5 sm:size-3.5 shrink-0" />
-            <span className="uppercase tracking-wide">Cancel</span>
+            <span className="uppercase tracking-wide">Cancelar</span>
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -215,7 +215,7 @@ export function Pagination({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Confirmation</AlertDialogTitle>
+                <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
                 <AlertDialogDescription>
                   Are you sure you want to delete {selectedItems.size}{" "}
                   {selectedItems.size === 1 ? list.singular : list.plural}?
@@ -223,7 +223,7 @@ export function Pagination({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setIsOpen(false)}>
-                  Cancel
+                  Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
@@ -232,7 +232,7 @@ export function Pagination({
                   }}
                   disabled={isDeleteLoading}
                 >
-                  Delete
+                  Eliminar
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -292,14 +292,14 @@ export function Pagination({
               <button className="flex gap-2 items-center whitespace-nowrap rounded-md bg-background py-1.5 sm:py-2 px-3 sm:px-4 font-semibold dark:text-zinc-50 ring-1 ring-inset ring-zinc-300 dark:ring-input h-8 sm:h-9 text-xs sm:text-sm">
                 {pageSize}
                 <span className="text-muted-foreground/70 uppercase tracking-wide hidden sm:inline">
-                  per page
+                  por página
                 </span>
                 <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 ml-0.5 sm:ml-1 opacity-50" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
               <DropdownMenuLabel className="text-xs sm:text-sm">
-                Page Size
+                Registros por página
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <ScrollArea className="max-h-72">
@@ -311,7 +311,7 @@ export function Pagination({
                   >
                     <span className="font-medium">{size}</span>
                     <span className="text-muted-foreground/70 uppercase tracking-wide text-xs">
-                      per page
+                      por página
                     </span>
                   </DropdownMenuItem>
                 ))}

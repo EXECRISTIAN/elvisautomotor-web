@@ -94,10 +94,10 @@ export function InitPage() {
           <Logo aria-hidden="true" />
         </div>
         <h1 className="mt-6 text-lg font-semibold text-foreground dark:text-foreground">
-          Create admin account
+          Crear cuenta de administrador
         </h1>
         <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
-          Set up your admin account to get started.
+          Crea tu cuenta de administrador para empezar.
         </p>
 
         <form action={formAction} className="mt-8 space-y-4">
@@ -106,14 +106,14 @@ export function InitPage() {
               htmlFor="name"
               className="text-sm font-medium text-foreground dark:text-foreground"
             >
-              Name
+              Nombre
             </Label>
             <Input
               type="text"
               id="name"
               name="name"
               autoComplete="name"
-              placeholder="Enter your name"
+              placeholder="Ingresa tu nombre"
               className="mt-2 bg-muted/40"
               defaultValue={state.formData.name}
               required
@@ -142,7 +142,7 @@ export function InitPage() {
               htmlFor="password"
               className="text-sm font-medium text-foreground dark:text-foreground"
             >
-              Password
+              Contraseña
             </Label>
             <div className="relative mt-2">
               <Input

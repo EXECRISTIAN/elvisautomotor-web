@@ -126,7 +126,7 @@ export function UserProfileClient({ user }: UserProfileClientProps) {
               >
                 <div className="flex items-center gap-3">
                   <Palette className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Theme</span>
+                  <span className="text-sm">Tema</span>
                 </div>
                 <ThemeSwitcher className="h-6" />
               </DropdownMenuItem>
@@ -135,7 +135,7 @@ export function UserProfileClient({ user }: UserProfileClientProps) {
             <form action={signOut}>
               <button type="submit" className="flex items-center gap-3 w-full px-2 py-1.5 text-sm hover:bg-accent rounded-sm">
                 <LogOut className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Log out</span>
+                <span className="text-sm">Cerrar sesión</span>
               </button>
             </form>
           </DropdownMenuContent>

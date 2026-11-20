@@ -50,7 +50,7 @@ function DefaultToolbarWithoutChrome({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          <p>Remove</p>
+          <p>Quitar</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

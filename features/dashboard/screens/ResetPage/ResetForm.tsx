@@ -107,7 +107,7 @@ export function ResetForm({ mode, token }: ResetFormProps) {
               htmlFor="password"
               className="text-sm font-medium text-foreground dark:text-foreground"
             >
-              New Password
+              Nueva contraseña
             </Label>
             <div className="relative mt-2">
               <Input
@@ -148,7 +148,7 @@ export function ResetForm({ mode, token }: ResetFormProps) {
       {state.success && (
         <Badge color="emerald" className="flex text-base items-start gap-2 p-4 rounded-sm mt-4">
           <div className="flex flex-col gap-1">
-            <h2 className="uppercase tracking-wider font-semibold text-sm">Success</h2>
+            <h2 className="uppercase tracking-wider font-semibold text-sm">Listo</h2>
             <span className="break-all text-sm opacity-75 font-normal">{state.success}</span>
           </div>
         </Badge>

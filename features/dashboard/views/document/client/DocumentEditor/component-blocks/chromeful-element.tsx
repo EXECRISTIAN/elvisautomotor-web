@@ -137,7 +137,7 @@ function DefaultToolbarWithChrome({
     <NotEditable>
       <div className="flex flex-col gap-3"> {/* Replaced Flex */}
         <div className="flex items-center gap-2 select-none"> {/* Replaced Flex */}
-          <Button variant="outline" size="sm" onClick={() => onShowEditMode()}>Edit</Button>
+          <Button variant="outline" size="sm" onClick={() => onShowEditMode()}>Editar</Button>
           <TooltipProvider>
             <ShadTooltip>
               <ShadTooltipTrigger asChild>
@@ -146,7 +146,7 @@ function DefaultToolbarWithChrome({
                 </Button>
               </ShadTooltipTrigger>
               <ShadTooltipContent side="bottom">
-                <p>Delete</p>
+                <p>Eliminar</p>
               </ShadTooltipContent>
             </ShadTooltip>
           </TooltipProvider>
@@ -193,7 +193,7 @@ function FormValue({
         <FormValueContentFromPreviewProps {...previewProps} forceValidation={forceValidation} />
       </form>
       <DialogFooter> {/* Replaced ButtonGroup */}
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
         <Button form={formId} type="submit">
           Done
         </Button>

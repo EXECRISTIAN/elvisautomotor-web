@@ -106,7 +106,7 @@ export function LayoutContainer({ attributes, children, element }: RenderElement
                 </ToolbarButton>
               </TooltipTrigger>
               <TooltipContent>
-                <span>Remove</span>
+                <span>Quitar</span>
               </TooltipContent>
             </Tooltip>
           </ToolbarGroup>

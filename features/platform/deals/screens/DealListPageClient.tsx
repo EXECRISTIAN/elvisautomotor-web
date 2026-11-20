@@ -176,25 +176,25 @@ export function DealListPageClient({
   ]
 
   const metaParts = [
-    deskQueue.length ? `${deskQueue.length} on the desk` : 'Desk clear',
+    deskQueue.length ? `${deskQueue.length} en curso` : 'Nada en curso',
     staleCount ? `${staleCount} stale` : null,
-    `${statusCounts.all ?? boardDeals.length} ${(statusCounts.all ?? boardDeals.length) === 1 ? 'deal' : 'deals'}`,
+    `${statusCounts.all ?? boardDeals.length} ${(statusCounts.all ?? boardDeals.length) === 1 ? 'operación' : 'operaciones'}`,
   ].filter(Boolean)
 
   const header = (
     <DeskHeader
-      title="Deals"
+      title="Operaciones"
       meta={metaParts.join(' · ')}
       actions={
         <>
-          <Pill variant="plain" onClick={() => loadDeals(statusFilter)} disabled={loading} aria-label="Refresh deals">
+          <Pill variant="plain" onClick={() => loadDeals(statusFilter)} disabled={loading} aria-label="Actualizar operaciones">
             <RefreshCw className={loading ? 'animate-spin' : undefined} />
-            Refresh
+            Actualizar
           </Pill>
           <Pill asChild variant="primary">
             <Link href={`${basePath}/platform/deals/create`}>
               <Plus />
-              New deal
+              Nueva operación
             </Link>
           </Pill>
         </>
@@ -203,22 +203,22 @@ export function DealListPageClient({
   )
 
   const boardOptions = [
-    { value: 'all', label: 'All', count: statusCounts.all },
+    { value: 'all', label: 'Todos', count: statusCounts.all },
     ...DEAL_STATUSES.map(status => ({ value: status, label: labelForDeal(status), tone: toneForDeal(status), count: statusCounts[status] })),
   ]
 
   return (
-    <PageContainer title="Deals" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Operaciones" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-8 px-4 pb-24 md:px-6">
         <DeskSection
           id="deal-desk-queue"
-          title="On the desk"
+          title="En curso"
           count={deskQueue.length}
           actions={staleCount ? <Attention>{staleCount} waiting {DESK_STALE_DAYS}+ days</Attention> : undefined}
         >
           {deskQueue.length === 0 ? (
             <p className="py-4 text-[13px] text-muted-foreground">
-              {error ? 'Desk queue unavailable until deals load.' : 'No deals waiting on pencil or a decision.'}
+              {error ? 'La cola no está disponible hasta que carguen las operaciones.' : 'No hay operaciones esperando negociación ni decisión.'}
             </p>
           ) : (
             <ul className="divide-y rounded-md border bg-card">
@@ -259,52 +259,52 @@ export function DealListPageClient({
 
         <DeskSection
           id="deal-board"
-          title="All deals"
+          title="Todas las operaciones"
           count={filteredDeals.length}
-          actions={loading ? <span role="status" className="text-xs text-muted-foreground">Loading deals</span> : undefined}
+          actions={loading ? <span role="status" className="text-xs text-muted-foreground">Cargando operaciones</span> : undefined}
         >
           <div className="space-y-3">
-            <Segmented label="Filter by status" value={statusFilter} onChange={changeStatus} options={boardOptions} size="sm" className="w-full" />
+            <Segmented label="Filtrar por estado" value={statusFilter} onChange={changeStatus} options={boardOptions} size="sm" className="w-full" />
             <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
               <div className="relative min-w-0 flex-1 sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Vehicle, customer or stock #"
-                  aria-label="Search deals"
+                  placeholder="Vehículo, cliente o stock n.º"
+                  aria-label="Buscar operaciones"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="h-10 rounded-[4px] pl-9 text-[13px] shadow-none"
                 />
               </div>
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="h-10 w-full rounded-[4px] text-[13px] sm:w-[180px]" aria-label="Sort deals">
+                <SelectTrigger className="h-10 w-full rounded-[4px] text-[13px] sm:w-[180px]" aria-label="Ordenar operaciones">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="recent">Recently active</SelectItem>
-                  <SelectItem value="oldest">Oldest first</SelectItem>
-                  <SelectItem value="value-desc">Value high to low</SelectItem>
-                  <SelectItem value="value-asc">Value low to high</SelectItem>
+                  <SelectItem value="recent">Actividad reciente</SelectItem>
+                  <SelectItem value="oldest">Más antiguos primero</SelectItem>
+                  <SelectItem value="value-desc">Valor de mayor a menor</SelectItem>
+                  <SelectItem value="value-asc">Valor de menor a mayor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {error ? (
               <Notice tone="bad">
-                <p className="font-medium">Unable to load deals</p>
+                <p className="font-medium">No se pudieron cargar las operaciones</p>
                 <p className="mt-0.5 text-muted-foreground">{error}</p>
                 <Track className="mt-2">
-                  <Pill size="sm" onClick={() => loadDeals(statusFilter)}>Retry</Pill>
+                  <Pill size="sm" onClick={() => loadDeals(statusFilter)}>Reintentar</Pill>
                 </Track>
               </Notice>
             ) : loading && filteredDeals.length === 0 ? (
-              <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading deals</p>
+              <p role="status" className="py-10 text-center text-sm text-muted-foreground">Cargando operaciones</p>
             ) : filteredDeals.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-10 text-center text-sm text-muted-foreground">
-                <p>{isFiltered ? 'No matching deals' : 'No deals'}</p>
+                <p>{isFiltered ? 'No hay operaciones que coincidan' : 'Sin operaciones'}</p>
                 {isFiltered && (
                   <Track>
-                    <Pill size="sm" onClick={resetFilters}>Reset filters</Pill>
+                    <Pill size="sm" onClick={resetFilters}>Restablecer filtros</Pill>
                   </Track>
                 )}
               </div>
@@ -313,14 +313,14 @@ export function DealListPageClient({
                 <DeskTable>
                   <thead>
                     <tr>
-                      <Th>Status</Th>
-                      <Th>Vehicle</Th>
-                      <Th priority={2}>Stock #</Th>
-                      <Th priority={2}>Customer</Th>
-                      <Th priority={3}>Salesperson</Th>
+                      <Th>Estado</Th>
+                      <Th>Vehículo</Th>
+                      <Th priority={2}>Stock n.º</Th>
+                      <Th priority={2}>Cliente</Th>
+                      <Th priority={3}>Vendedor</Th>
                       <Th align="right">Total</Th>
-                      <Th align="right" priority={3}>Price</Th>
-                      <Th align="right" priority={2}>Date</Th>
+                      <Th align="right" priority={3}>Precio</Th>
+                      <Th align="right" priority={2}>Fecha</Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -358,9 +358,9 @@ export function DealListPageClient({
 
         {boardDeals.length > 0 && (
           <ReadoutStrip>
-            <Readout label="On the desk" value={deskQueue.length} />
-            <Readout label="Delivered" value={deliveredCount} />
-            <Readout label="Delivered revenue" value={formatCurrency(totalRevenue)} />
+            <Readout label="En curso" value={deskQueue.length} />
+            <Readout label="Entregado" value={deliveredCount} />
+            <Readout label="Facturación entregada" value={formatCurrency(totalRevenue)} />
           </ReadoutStrip>
         )}
       </div>

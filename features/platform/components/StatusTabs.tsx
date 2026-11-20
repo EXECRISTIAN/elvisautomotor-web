@@ -35,7 +35,7 @@ export function StatusTabs({ statusCounts, entityName = "Items" }: StatusTabsPro
     { value: "requires_action", label: "Requires action", count: statusCounts.requires_action },
     { value: "completed", label: "Completed", count: statusCounts.completed },
     { value: "archived", label: "Archived", count: statusCounts.archived },
-    { value: "canceled", label: "Canceled", count: statusCounts.canceled },
+    { value: "canceled", label: "Cancelado", count: statusCounts.canceled },
   ] as const;
 
   // Get current status from URL

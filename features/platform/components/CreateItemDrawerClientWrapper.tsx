@@ -67,7 +67,7 @@ export function CreateItemDrawerClientWrapper({
       } catch (err) {
         console.error('Error fetching data:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
-        toast.error('Failed to load list data')
+        toast.error('No se pudieron cargar los datos')
       } finally {
         setIsLoading(false)
       }
@@ -91,7 +91,7 @@ export function CreateItemDrawerClientWrapper({
         {isLoading ? (
           <>
             <DrawerHeader className="flex-shrink-0">
-              <DrawerTitle>Loading...</DrawerTitle>
+              <DrawerTitle>Cargando…</DrawerTitle>
             </DrawerHeader>
             <LoadingSkeleton />
           </>

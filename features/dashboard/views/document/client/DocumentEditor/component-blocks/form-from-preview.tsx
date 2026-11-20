@@ -229,7 +229,7 @@ function ArrayFieldPreview(props: DefaultFieldProps<'array'>) {
                       setModalState('closed')
                     }}
                   >
-                    Cancel
+                    Cancelar
                   </Button>
                   <Button
                     onClick={() => {
@@ -454,7 +454,7 @@ function ArrayFieldListView<Element extends ComponentSchema>(
                   </Button>
                 </ShadTooltipTrigger>
                 <ShadTooltipContent side="left">
-                  <p>Delete</p>
+                  <p>Eliminar</p>
                 </ShadTooltipContent>
               </ShadTooltip>
             </TooltipProvider>

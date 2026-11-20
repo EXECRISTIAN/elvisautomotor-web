@@ -59,7 +59,7 @@ function LinkToRelatedItems({ itemId, value, list, refFieldKey }: any) {
     const query = constructQuery({ refFieldKey, value, itemId });
     return (
       <Button variant="ghost" className="h-auto min-h-9 max-w-full whitespace-normal text-left">
-        <Link href={`/dashboard/${list?.path ?? ''}?${query}`} className="break-words">View related {list?.plural ?? 'items'}</Link>
+        <Link href={`/dashboard/${list?.path ?? ''}?${query}`} className="break-words">Ver relacionados ({list?.label ?? 'registros'})</Link>
       </Button>
     );
   }
@@ -67,7 +67,7 @@ function LinkToRelatedItems({ itemId, value, list, refFieldKey }: any) {
   return (
     <Button variant="ghost">
       <Link href={`/dashboard/${list?.path ?? ''}/${value?.value?.id ?? ''}`}>
-        View {list?.singular ?? 'item'} details
+        Ver detalle de {list?.singular ?? 'registro'}
       </Link>
     </Button>
   );
@@ -161,7 +161,7 @@ export function ClientField({
             {value.count === 1
               ? `There is 1 ${foreignList?.singular ?? 'item'} `
               : `There are ${value.count} ${foreignList?.plural ?? 'items'} `}
-            linked to this {localList?.singular ?? 'item'}
+            vinculados a este {localList?.singular ?? 'registro'}
           </Fragment>
         )}
       </div>
@@ -214,7 +214,7 @@ export function ClientField({
                     className="h-auto min-h-9 max-w-full whitespace-normal text-left"
                     onClick={() => setIsDrawerOpen(true)}
                   >
-                    Create related {foreignList.singular}
+                    Crear {foreignList.singular} relacionado
                   </Button>
                   <CreateItemDrawer
                     listKey={foreignList.key}

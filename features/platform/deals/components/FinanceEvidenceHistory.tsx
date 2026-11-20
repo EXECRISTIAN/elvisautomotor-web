@@ -40,7 +40,7 @@ export function FinanceEvidenceHistory({ dealId, aggregateType, label, timeZone 
       <summary className="flex cursor-pointer list-none items-center gap-2 py-1.5 text-foreground [&::-webkit-details-marker]:hidden">
         <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
         <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
-        <span className="shrink-0 text-[12px] text-muted-foreground">Latest 20</span>
+        <span className="shrink-0 text-[12px] text-muted-foreground">Últimos 20</span>
       </summary>
       <div className="space-y-2 pb-2 pl-5 pt-1">
         <Track>
@@ -50,7 +50,7 @@ export function FinanceEvidenceHistory({ dealId, aggregateType, label, timeZone 
           </Pill>
         </Track>
         {error && <Notice tone="warn" role="status">{error}</Notice>}
-        {entries?.length === 0 && <p className="text-xs text-muted-foreground">No history</p>}
+        {entries?.length === 0 && <p className="text-xs text-muted-foreground">Sin historial</p>}
         {entries && entries.length > 0 && (
           <ol className="divide-y rounded-md border">
             {entries.map(entry => (

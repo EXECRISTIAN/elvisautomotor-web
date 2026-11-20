@@ -77,7 +77,7 @@ function FieldSelectionContent({
 
   return (
     <>
-      <DropdownMenuLabel>Display columns</DropdownMenuLabel>
+      <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
       <DropdownMenuSeparator />
       <div className="max-h-72 overflow-y-auto">
         {fields.map((field) => (
@@ -116,7 +116,7 @@ export function FieldSelection({ listMeta, selectedFields, children }: FieldSele
       className="flex gap-1.5 px-3 text-xs font-medium"
     >
       <Columns3 className="h-3 w-3" />
-      COLUMNS
+      COLUMNAS
     </Button>
   )
 

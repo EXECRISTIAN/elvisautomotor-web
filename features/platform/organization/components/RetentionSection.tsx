@@ -16,9 +16,9 @@ type Row = { rooftop: Rooftop; category: { value: string; label: string }; polic
 type FormState = { row: Row; retentionDays: string; legalHold: boolean; rationale: string; idempotencyKey: string }
 
 function rowState(row: Row): { tone: DeskTone; label: string } {
-  if (!row.policy) return { tone: 'idle', label: 'Not set' }
-  if (row.policy.legalHold) return { tone: 'warn', label: 'Legal hold' }
-  return { tone: 'ok', label: 'Set' }
+  if (!row.policy) return { tone: 'idle', label: 'Sin definir' }
+  if (row.policy.legalHold) return { tone: 'warn', label: 'Retención legal' }
+  return { tone: 'ok', label: 'Definir' }
 }
 
 function formatDays(days: number) {
@@ -114,38 +114,38 @@ export function RetentionSection({
   return (
     <div className="space-y-4">
       <Segmented<Filter>
-        label="Filter retention policies"
+        label="Filtrar políticas de retención"
         value={filter}
         onChange={setFilter}
         size="sm"
         options={[
-          { value: 'all', label: 'All', count: counts.all },
-          { value: 'set', label: 'Set', count: counts.set, tone: 'ok' },
-          { value: 'unset', label: 'Not set', count: counts.unset, tone: 'idle' },
-          { value: 'hold', label: 'Legal hold', count: counts.hold, tone: 'warn' },
+          { value: 'all', label: 'Todos', count: counts.all },
+          { value: 'set', label: 'Definir', count: counts.set, tone: 'ok' },
+          { value: 'unset', label: 'Sin definir', count: counts.unset, tone: 'idle' },
+          { value: 'hold', label: 'Retención legal', count: counts.hold, tone: 'warn' },
         ]}
       />
-      {!canManage && <p className="text-xs text-muted-foreground">Requires dealership administration permission</p>}
+      {!canManage && <p className="text-xs text-muted-foreground">Requiere permiso de administración</p>}
 
       {rooftops.length === 0 ? (
-        <Panel className="px-4 py-12 text-center"><p className="text-sm text-muted-foreground">No rooftops</p></Panel>
+        <Panel className="px-4 py-12 text-center"><p className="text-sm text-muted-foreground">Sin sucursales</p></Panel>
       ) : (
         rooftops.map(rooftop => {
           const rooftopRows = rows.filter(row => row.rooftop.id === rooftop.id && matches(row))
           return (
             <DeskSection key={rooftop.id} title={<>{rooftop.name} <Code>{rooftop.code}</Code></>} count={rooftopRows.length}>
               {rooftopRows.length === 0 ? (
-                <p className="py-4 text-sm text-muted-foreground">No matching policies</p>
+                <p className="py-4 text-sm text-muted-foreground">Sin políticas que coincidan</p>
               ) : (
                 <DeskTable aria-label={`Retention policies for ${rooftop.name}`}>
                   <thead>
                     <tr>
-                      <Th>Category</Th>
-                      <Th>Status</Th>
-                      <Th align="right" priority={2}>Keep for</Th>
-                      <Th priority={3}>Last swept</Th>
-                      <Th priority={3}>Rationale</Th>
-                      <Th align="right"><span className="sr-only">Action</span></Th>
+                      <Th>Categoría</Th>
+                      <Th>Estado</Th>
+                      <Th align="right" priority={2}>Conservar durante</Th>
+                      <Th priority={3}>Última limpieza</Th>
+                      <Th priority={3}>Fundamento</Th>
+                      <Th align="right"><span className="sr-only">Acción</span></Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -163,7 +163,7 @@ export function RetentionSection({
                           </Td>
                           <Td><Status tone={state.tone}>{state.label}</Status></Td>
                           <Td align="right" priority={2} className="whitespace-nowrap">
-                            {row.policy ? formatDays(row.policy.retentionDays) : <span className="text-muted-foreground">Not set</span>}
+                            {row.policy ? formatDays(row.policy.retentionDays) : <span className="text-muted-foreground">Sin definir</span>}
                           </Td>
                           <Td priority={3} className="whitespace-nowrap text-muted-foreground">
                             {row.policy ? (row.policy.lastSweptAt ? formatDate(row.policy.lastSweptAt, timeZone) : 'Never') : ''}
@@ -197,15 +197,15 @@ export function RetentionSection({
       >
         {form && (
           <div className="grid gap-4">
-            <Field id="retention-days" label="Retention days" error={fieldErrors.retentionDays}>
+            <Field id="retention-days" label="Días de retención" error={fieldErrors.retentionDays}>
               <Input {...fieldA11y('retention-days', fieldErrors.retentionDays)} className="h-11 sm:h-9" inputMode="numeric" value={form.retentionDays} onChange={event => setForm({ ...form, retentionDays: event.target.value })} />
             </Field>
             <label className="flex min-h-11 items-center gap-2 text-sm">
               <Checkbox checked={form.legalHold} onCheckedChange={value => setForm({ ...form, legalHold: value === true })} />
-              Legal hold
+              Retención legal
             </label>
-            {form.row.policy?.legalHold && !form.legalHold && <Notice tone="warn">Releasing the legal hold</Notice>}
-            <Field id="retention-rationale" label="Rationale" error={fieldErrors.rationale}>
+            {form.row.policy?.legalHold && !form.legalHold && <Notice tone="warn">Liberando la retención legal</Notice>}
+            <Field id="retention-rationale" label="Fundamento" error={fieldErrors.rationale}>
               <Textarea {...fieldA11y('retention-rationale', fieldErrors.rationale)} rows={3} maxLength={1000} value={form.rationale} onChange={event => setForm({ ...form, rationale: event.target.value })} />
             </Field>
           </div>

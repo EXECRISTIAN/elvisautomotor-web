@@ -93,7 +93,7 @@ export function ServicePackagesPanel({
     const response = await saveServicePackage({ id: draft.id, rooftopId: draft.rooftopId, name, description: draft.description, priceCents: priceCents as number, estimatedDuration: duration, includedServices: textToIncluded(draft.included) })
     setBusy(false)
     if (!response.success) { setFormError(response.error); return }
-    setNotice(draft.id ? `Saved ${name}` : `Added ${name}`)
+    setNotice(draft.id ? `Saved ${name}` : `Se agregaron ${name}`)
     setDraft(null)
     await onReload()
   }
@@ -116,38 +116,38 @@ export function ServicePackagesPanel({
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {rooftops.length > 1 && (
           <Segmented
-            label="Filter by rooftop"
+            label="Filtrar por sucursal"
             value={rooftopFilter}
             onChange={setRooftopFilter}
             size="sm"
-            options={[{ value: 'all', label: 'All', count: packages.length }, ...rooftops.map(rooftop => ({ value: rooftop.id, label: rooftop.name, count: packages.filter(item => item.rooftop?.id === rooftop.id).length }))]}
+            options={[{ value: 'all', label: 'Todos', count: packages.length }, ...rooftops.map(rooftop => ({ value: rooftop.id, label: rooftop.name, count: packages.filter(item => item.rooftop?.id === rooftop.id).length }))]}
           />
         )}
         <div className="relative min-w-0 sm:max-w-xs sm:flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className={cn('pl-9', TAP_INPUT)} value={search} onChange={event => setSearch(event.target.value)} placeholder="Package or included service" aria-label="Search service packages" />
+          <Input className={cn('pl-9', TAP_INPUT)} value={search} onChange={event => setSearch(event.target.value)} placeholder="Paquete o servicio incluido" aria-label="Buscar paquetes de servicio" />
         </div>
         <Track className="sm:ml-auto">
           <Pill variant="primary" className={TAP} disabled={rooftops.length === 0} onClick={() => open()}>
             <Plus />
-            Add package
+            Agregar paquete
           </Pill>
         </Track>
       </div>
-      {rooftops.length === 0 && <Notice tone="warn">No rooftop available for new packages</Notice>}
+      {rooftops.length === 0 && <Notice tone="warn">No hay sucursal disponible para nuevos paquetes</Notice>}
 
       {visible.length === 0 ? (
         <Panel><EmptyRow>{packages.length === 0 ? 'No service packages yet' : 'No packages match'}</EmptyRow></Panel>
       ) : (
-        <DeskTable aria-label="Service packages">
+        <DeskTable aria-label="Paquetes de servicio">
           <thead>
             <tr>
-              <Th>Package</Th>
-              {rooftops.length > 1 && <Th priority={2}>Rooftop</Th>}
-              <Th priority={3}>Included</Th>
-              <Th align="right" priority={2}>Duration</Th>
-              <Th align="right">Price</Th>
-              <Th align="right"><span className="sr-only">Actions</span></Th>
+              <Th>Paquete</Th>
+              {rooftops.length > 1 && <Th priority={2}>Sucursal</Th>}
+              <Th priority={3}>Incluido</Th>
+              <Th align="right" priority={2}>Duración</Th>
+              <Th align="right">Precio</Th>
+              <Th align="right"><span className="sr-only">Acciones</span></Th>
             </tr>
           </thead>
           <tbody>
@@ -162,9 +162,9 @@ export function ServicePackagesPanel({
                       {[formatDuration(item.estimatedDuration), rooftops.length > 1 ? item.rooftop?.name : null].filter(Boolean).join(' · ')}
                     </span>
                   </Td>
-                  {rooftops.length > 1 && <Td priority={2} className="text-muted-foreground">{item.rooftop?.name || 'None'}</Td>}
+                  {rooftops.length > 1 && <Td priority={2} className="text-muted-foreground">{item.rooftop?.name || 'Ninguno'}</Td>}
                   <Td priority={3} className="max-w-[16rem] text-muted-foreground">
-                    <span className="line-clamp-2">{included.length ? included.map(service => service.service).join(', ') : 'None'}</span>
+                    <span className="line-clamp-2">{included.length ? included.map(service => service.service).join(', ') : 'Ninguno'}</span>
                   </Td>
                   <Td align="right" priority={2} className="whitespace-nowrap text-muted-foreground">{formatDuration(item.estimatedDuration) || ''}</Td>
                   <Td align="right"><Figure size="sm">{money.format(item.priceCents / 100)}</Figure></Td>
@@ -172,9 +172,9 @@ export function ServicePackagesPanel({
                     <div className="inline-flex gap-1">
                       <Pill size="sm" className={TAP_SM} onClick={() => open(item)}>
                         <Pencil />
-                        Edit
+                        Editar
                       </Pill>
-                      <Pill size="sm" variant="plain" className={cn(TAP_SM, 'max-sm:w-11')} aria-label={`Delete ${item.name}`} onClick={() => { setFormError(null); setPending(item) }}>
+                      <Pill size="sm" variant="plain" className={cn(TAP_SM, 'max-sm:w-11')} aria-label={`Eliminar ${item.name}`} onClick={() => { setFormError(null); setPending(item) }}>
                         <Trash2 />
                       </Pill>
                     </div>
@@ -197,26 +197,26 @@ export function ServicePackagesPanel({
       >
         <div className="grid gap-4 sm:grid-cols-2">
           {!draft?.id && rooftops.length > 1 && (
-            <Field id="package-rooftop" label="Rooftop" error={fieldErrors.rooftopId} className="sm:col-span-2">
+            <Field id="package-rooftop" label="Sucursal" error={fieldErrors.rooftopId} className="sm:col-span-2">
               <Select value={draft?.rooftopId || ''} onValueChange={value => setDraft(current => current && { ...current, rooftopId: value })}>
-                <SelectTrigger id="package-rooftop" className={TAP_INPUT}><SelectValue placeholder="Select rooftop" /></SelectTrigger>
+                <SelectTrigger id="package-rooftop" className={TAP_INPUT}><SelectValue placeholder="Elige una sucursal" /></SelectTrigger>
                 <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
           )}
-          <Field id="package-name" label="Name" error={fieldErrors.name} className="sm:col-span-2">
+          <Field id="package-name" label="Nombre" error={fieldErrors.name} className="sm:col-span-2">
             <Input id="package-name" className={TAP_INPUT} maxLength={200} value={draft?.name || ''} aria-invalid={Boolean(fieldErrors.name)} onChange={event => setDraft(current => current && { ...current, name: event.target.value })} />
           </Field>
-          <Field id="package-price" label="Price" error={fieldErrors.price}>
+          <Field id="package-price" label="Precio" error={fieldErrors.price}>
             <Input id="package-price" className={TAP_INPUT} inputMode="decimal" placeholder="$89.95" value={draft?.price || ''} aria-invalid={Boolean(fieldErrors.price)} onChange={event => setDraft(current => current && { ...current, price: event.target.value })} />
           </Field>
-          <Field id="package-duration" label="Duration (minutes)" error={fieldErrors.duration}>
+          <Field id="package-duration" label="Duración (minutos)" error={fieldErrors.duration}>
             <Input id="package-duration" className={TAP_INPUT} inputMode="numeric" value={draft?.duration || ''} aria-invalid={Boolean(fieldErrors.duration)} onChange={event => setDraft(current => current && { ...current, duration: event.target.value })} />
           </Field>
-          <Field id="package-description" label="Description" error={fieldErrors.description} className="sm:col-span-2">
+          <Field id="package-description" label="Descripción" error={fieldErrors.description} className="sm:col-span-2">
             <Textarea id="package-description" rows={3} maxLength={2000} value={draft?.description || ''} onChange={event => setDraft(current => current && { ...current, description: event.target.value })} />
           </Field>
-          <Field id="package-included" label="Included services" hint="One per line. Service: detail" className="sm:col-span-2">
+          <Field id="package-included" label="Servicios incluidos" hint="One per line. Service: detail" className="sm:col-span-2">
             <Textarea id="package-included" rows={4} value={draft?.included || ''} onChange={event => setDraft(current => current && { ...current, included: event.target.value })} />
           </Field>
         </div>
@@ -224,9 +224,9 @@ export function ServicePackagesPanel({
 
       <ConfirmDialog
         open={pending !== null}
-        title={`Delete ${pending?.name || 'package'}?`}
-        description="It is removed from the storefront service menu."
-        confirmLabel="Delete"
+        title={`Eliminar ${pending?.name || 'package'}?`}
+        description="Se quita del menú de servicios del sitio."
+        confirmLabel="Eliminar"
         busy={busy}
         error={formError}
         onConfirm={confirmDelete}

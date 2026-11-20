@@ -29,11 +29,11 @@ type Option = { label: string; value: string }
 
 const FILTER_TYPES = {
   matches: {
-    label: 'Matches',
+    label: 'Coincide',
     initialValue: [] as string[],
   },
   not_matches: {
-    label: 'Does not match',
+    label: 'No coincide',
     initialValue: [] as string[],
   },
 }
@@ -108,7 +108,7 @@ function NullableFieldWrapper({
           autoFocus={autoFocus}
         />
         <Label htmlFor={nullId} className="text-sm text-muted-foreground">
-          Set field as null
+          Dejar vacío
         </Label>
       </div>
     </div>
@@ -199,7 +199,7 @@ export function Field({
               value={selectedKey || ''}
             >
               <SelectTrigger id={`field-${field.path}`} className={errorMessage ? 'border-red-500 shadow-xs' : 'shadow-xs'}>
-                <SelectValue placeholder="Select an option..." />
+                <SelectValue placeholder="Elige una opción…" />
               </SelectTrigger>
               <SelectContent>
                 {field.options.map(item => (

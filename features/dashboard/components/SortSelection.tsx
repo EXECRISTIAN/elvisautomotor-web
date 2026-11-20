@@ -69,7 +69,7 @@ export function SortSelection({ listMeta, children }: SortSelectionProps) {
       className="flex gap-1.5 px-3 text-xs font-medium"
     >
       <ArrowUpDown className="h-3 w-3" />
-      SORT
+      ORDEN
     </Button>
   )
 
@@ -81,7 +81,7 @@ export function SortSelection({ listMeta, children }: SortSelectionProps) {
           {children || <DefaultTrigger />}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
-          <DropdownMenuLabel className="py-1.5">Sort by</DropdownMenuLabel>
+          <DropdownMenuLabel className="py-1.5">Ordenar por</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <div className="max-h-72 overflow-y-auto">
             {Object.entries(listMeta.fields)
@@ -120,13 +120,13 @@ export function SortSelection({ listMeta, children }: SortSelectionProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
           <div className="flex items-center justify-between py-1.5">
-            <DropdownMenuLabel className="py-0">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="py-0">Ordenar por</DropdownMenuLabel>
             <Badge
               variant="destructive"
               onClick={resetSort}
               className="rounded-sm mr-2 text-[10px] uppercase border tracking-wide font-medium py-0 px-1.5 cursor-pointer"
             >
-              Clear
+              Limpiar
             </Badge>
           </div>
           <DropdownMenuSeparator />

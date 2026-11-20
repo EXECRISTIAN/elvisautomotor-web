@@ -81,7 +81,7 @@ export function SignInForm({ from }: SignInFormProps) {
             htmlFor="password"
             className="text-sm font-medium text-foreground dark:text-foreground"
           >
-            Password
+            Contraseña
           </Label>
           <div className="relative mt-2">
             <Input

@@ -110,12 +110,8 @@ export function PlatformFilterBar({
               className="pl-9 w-full h-10 rounded-[4px] text-[13px] placeholder:text-muted-foreground/80"
               value={searchString}
               onChange={(e) => setSearchString(e.target.value)}
-              placeholder={`Search by ${
-                searchLabels.length
-                  ? searchLabels.filter((label: string) => !/^(id|created at|updated at)$/i.test(label)).slice(0, 3).join(", ").toLowerCase()
-                  : "ID"
-              }`}
-              aria-label={`Search ${list.plural ?? "records"}`}
+              placeholder="Buscar…"
+              aria-label="Buscar"
             />
           </form>
         </div>
@@ -129,7 +125,7 @@ export function PlatformFilterBar({
               className="h-10 w-10 lg:px-4 lg:py-2 lg:w-auto rounded-[4px]"
             >
               <SlidersHorizontal className="stroke-muted-foreground" />
-              <span className="hidden lg:inline">Filter</span>
+              <span className="hidden lg:inline">Filtrar</span>
             </Button>
           </FilterAdd>
 
@@ -140,7 +136,7 @@ export function PlatformFilterBar({
               className="h-10 w-10 lg:px-4 lg:py-2 lg:w-auto rounded-[4px]"
             >
               <ArrowUpDown className="stroke-muted-foreground" />
-              <span className="hidden lg:inline">Sort</span>
+              <span className="hidden lg:inline">Ordenar</span>
             </Button>
           </SortSelection>
 
@@ -152,7 +148,7 @@ export function PlatformFilterBar({
                 className="h-10 w-10 lg:px-4 lg:py-2 lg:w-auto rounded-[4px]"
               >
                 <Columns3 className="stroke-muted-foreground" />
-                <span className="hidden lg:inline">Display</span>
+                <span className="hidden lg:inline">Mostrar</span>
               </Button>
             </FieldSelection>
           )}
@@ -165,7 +161,7 @@ export function PlatformFilterBar({
                   className="h-10 w-10 lg:px-4 lg:py-2 lg:w-auto rounded-[4px]"
                 >
                   <CirclePlus />
-                  <span className="hidden lg:inline">{createLabel || `Create ${list.singular}`}</span>
+                  <span className="hidden lg:inline">{createLabel || `Crear ${list.singular}`}</span>
                 </Button>
               ) : (
                 <Link
@@ -176,7 +172,7 @@ export function PlatformFilterBar({
                   )}
                 >
                   <CirclePlus />
-                  <span className="hidden lg:inline">Create {list.singular}</span>
+                  <span className="hidden lg:inline">Crear {list.singular}</span>
                 </Link>
               )
             )

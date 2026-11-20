@@ -59,11 +59,11 @@ function validateDecimal(input: string): { isValid: boolean; number?: number; er
   try {
     const num = parseFloat(input)
     if (isNaN(num) || !isFinite(num)) {
-      return { isValid: false, error: 'Not a valid decimal number' }
+      return { isValid: false, error: 'No es un número decimal válido' }
     }
     return { isValid: true, number: num }
   } catch (e) {
-    return { isValid: false, error: 'Invalid decimal format' }
+    return { isValid: false, error: 'Formato decimal inválido' }
   }
 }
 
@@ -127,7 +127,7 @@ export function Field({
         }}
         value={value.value ?? ''}
         className={errorMessage ? 'border-red-500 shadow-xs' : 'shadow-xs'}
-        placeholder="Enter decimal number..."
+        placeholder="Ingresa un número decimal…"
       />
       {errorMessage && (
         <p className="text-sm text-red-600" role="alert">{errorMessage}</p>
@@ -200,7 +200,7 @@ export function controller(
               const inputValue = e.target.value === '' ? null : e.target.value
               onChange(inputValue)
             }}
-            placeholder="Enter decimal number..."
+            placeholder="Ingresa un número decimal…"
           />
         )
       },
@@ -236,21 +236,21 @@ export function controller(
       },
       types: {
         // @ts-ignore
-        equals: { label: 'Is exactly', initialValue: null },
+        equals: { label: 'Es exactamente', initialValue: null },
         // @ts-ignore
-        not: { label: 'Is not exactly', initialValue: null },
+        not: { label: 'No es exactamente', initialValue: null },
         // @ts-ignore
-        gt: { label: 'Is greater than', initialValue: null },
+        gt: { label: 'Es mayor que', initialValue: null },
         // @ts-ignore
-        lt: { label: 'Is less than', initialValue: null },
+        lt: { label: 'Es menor que', initialValue: null },
         // @ts-ignore
-        gte: { label: 'Is greater than or equal to', initialValue: null },
+        gte: { label: 'Es mayor o igual que', initialValue: null },
         // @ts-ignore
-        lte: { label: 'Is less than or equal to', initialValue: null },
+        lte: { label: 'Es menor o igual que', initialValue: null },
         // @ts-ignore
-        empty: { label: 'Is empty', initialValue: null },
+        empty: { label: 'Está vacío', initialValue: null },
         // @ts-ignore
-        not_empty: { label: 'Is not empty', initialValue: null },
+        not_empty: { label: 'No está vacío', initialValue: null },
       },
     },
   }

@@ -47,7 +47,7 @@ export function FormDialog({
           {error && <Notice tone="bad">{error}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
+              <Pill variant="plain" className="h-11 sm:h-8" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
               <Pill type="submit" variant={submitVariant} className="h-11 sm:h-8" disabled={busy || submitDisabled}>
                 {busy ? 'Saving…' : submitLabel}
               </Pill>

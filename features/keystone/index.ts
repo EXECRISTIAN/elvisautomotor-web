@@ -188,7 +188,7 @@ const { withAuth } = createAuth({
     itemData: {
       role: {
         create: {
-          name: "Admin",
+          name: "Administrador",
           canSeeOtherPeople: true,
           canEditOtherPeople: true,
           canManagePeople: true,

@@ -69,7 +69,7 @@ function FloatingChatButton() {
     <Button
       onClick={toggleSidebar}
       size="icon"
-      aria-label={showChevron ? 'Close assistant' : 'Open assistant'}
+      aria-label={showChevron ? 'Cerrar asistente' : 'Abrir asistente'}
       data-assistant-floating=""
       className={cn(
         // Phones: hidden when the page header carries the assistant button, so it never covers row ends.

@@ -42,13 +42,13 @@ export function WorksheetLines({ title, category, lines, onChange, disabled, sho
               return (
               <li key={`${category}-${index}`} className="grid min-w-0 gap-2 p-2.5 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)_8rem_auto] sm:items-end">
                 <label htmlFor={`${category}-${index}-code`} className="grid min-w-0 gap-1">
-                  <span className={fieldLabel}>Code</span>
+                  <span className={fieldLabel}>Código</span>
                   <Input id={`${category}-${index}-code`} className="h-10 rounded-[4px] font-mono text-xs shadow-none sm:h-8" value={line.code || `legacy-${index + 1}`} maxLength={80} onChange={event => update(index, { code: event.target.value })} />
                 </label>
                 <label htmlFor={`${category}-${index}-name`} className="grid min-w-0 gap-1">
-                  <span className={fieldLabel}>Description</span>
+                  <span className={fieldLabel}>Descripción</span>
                   <Input id={`${category}-${index}-name`} className="h-10 rounded-[4px] text-[13px] shadow-none sm:h-8" value={line.name || ''} maxLength={160} required aria-invalid={nameMissing || undefined} aria-describedby={nameMissing ? `${category}-${index}-name-error` : undefined} onChange={event => update(index, { name: event.target.value })} />
-                  {nameMissing && <span id={`${category}-${index}-name-error`} className="text-xs text-destructive">Description is required</span>}
+                  {nameMissing && <span id={`${category}-${index}-name-error`} className="text-xs text-destructive">La descripción es obligatoria</span>}
                 </label>
                 <label htmlFor={`${category}-${index}-amount`} className="grid min-w-0 gap-1">
                   <span className={fieldLabel}>Amount (USD)</span>
@@ -58,7 +58,7 @@ export function WorksheetLines({ title, category, lines, onChange, disabled, sho
                 <Track className="justify-self-end">
                   <Pill size="sm" variant="plain" aria-label={`Remove ${line.name || title} line ${index + 1}`} onClick={() => onChange(lines.filter((_, position) => position !== index))}>
                     <X />
-                    Remove
+                    Quitar
                   </Pill>
                 </Track>
               </li>

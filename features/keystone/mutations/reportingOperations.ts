@@ -17,7 +17,7 @@ async function accessibleRooftops(context: any) {
   })
 }
 
-const DEFAULT_REPORT_TIME_ZONE = 'America/New_York'
+const DEFAULT_REPORT_TIME_ZONE = 'America/Argentina/Buenos_Aires'
 function validTimeZone(value: unknown) {
   const timeZone = String(value || '').trim()
   if (!timeZone) return DEFAULT_REPORT_TIME_ZONE

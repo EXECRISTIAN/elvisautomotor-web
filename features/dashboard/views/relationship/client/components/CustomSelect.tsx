@@ -136,7 +136,7 @@ export function CustomSelect({
         <Command>
           <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
             <input
-              placeholder="Search..."
+              placeholder="Buscar…"
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
@@ -154,7 +154,7 @@ export function CustomSelect({
                     {inputValue.length > 0 ? (
                       <>No results found for "{inputValue}"</>
                     ) : (
-                      <>No options available</>
+                      <>No hay opciones</>
                     )}
                   </CommandEmpty>
                 ) : (

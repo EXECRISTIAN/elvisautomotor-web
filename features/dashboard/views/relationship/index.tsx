@@ -492,21 +492,21 @@ export const controller = (config: {
         if (type === 'empty' || type === 'not_empty') return label.toLowerCase()
         if (type === 'is' || type === 'not_is') return `${label.toLowerCase()} ${value}`
         if (Array.isArray(value)) {
-          return `${label.toLowerCase()} (${value.length} selected)`
+          return `${label.toLowerCase()} (${value.length} elegidos)`
         }
         return `${label.toLowerCase()} ${value}`
       },
       types: {
-        empty: { label: 'Is empty', initialValue: null },
-        not_empty: { label: 'Is not empty', initialValue: null },
+        empty: { label: 'Está vacío', initialValue: null },
+        not_empty: { label: 'No está vacío', initialValue: null },
         ...(config.fieldMeta.many
           ? {
-              some: { label: 'Is one of', initialValue: [] },
-              not_some: { label: 'Is not one of', initialValue: [] },
+              some: { label: 'Es uno de', initialValue: [] },
+              not_some: { label: 'No es ninguno de', initialValue: [] },
             }
           : {
-              is: { label: 'Is', initialValue: null },
-              not_is: { label: 'Is not', initialValue: null },
+              is: { label: 'Es', initialValue: null },
+              not_is: { label: 'No es', initialValue: null },
             }),
       },
     },

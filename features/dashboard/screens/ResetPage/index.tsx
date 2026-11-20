@@ -40,7 +40,7 @@ export async function ResetPage({ searchParams }: ResetPageProps) {
             href="/dashboard/signin"
             className="font-medium text-primary hover:text-primary/90 dark:text-primary hover:dark:text-primary/90"
           >
-            Back to sign in
+            Volver a iniciar sesión
           </Link>
         </p>
       </div>

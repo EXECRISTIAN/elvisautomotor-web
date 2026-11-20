@@ -18,7 +18,7 @@ export function NoAccessPage() {
         </div>
 
         <div className="text-center gap-0 mt-4">
-          <h1 className="text-center text-lg font-semibold">Access Denied</h1>
+          <h1 className="text-center text-lg font-semibold">Acceso denegado</h1>
           <p className="mt-2 text-center mx-auto sm:max-w-[90%] text-sm text-muted-foreground">
             You don't have permission to access this page. If you believe this is an error, please contact your administrator for assistance.
           </p>
@@ -31,7 +31,7 @@ export function NoAccessPage() {
             onClick={() => router.back()}
           >
             <ArrowLeft className="size-3" />
-            Go Back
+            Volver
           </Button>
           <Button
             variant="default"
@@ -39,13 +39,13 @@ export function NoAccessPage() {
             onClick={() => router.push('/')}
           >
             <Store className="size-3" />
-            Home
+            Inicio
           </Button>
         </div>
         <form action={signOut} className="w-full mt-2">
           <Button type="submit" variant="ghost" className="w-full">
             <LogOut className="size-3" />
-            Sign out
+            Cerrar sesión
           </Button>
         </form>
       </div>

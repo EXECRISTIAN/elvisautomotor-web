@@ -176,7 +176,7 @@ export function SavedReportsPanel({
               <Track>
                 <Pill size="sm" className={TAP_SM} onClick={() => download(notice.runId as string)}>
                   <Download />
-                  Download
+                  Descargar
                 </Pill>
               </Track>
             )}
@@ -185,49 +185,49 @@ export function SavedReportsPanel({
       )}
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Segmented<StateFilter>
-          label="Filter saved reports"
+          label="Filtrar reportes guardados"
           value={stateFilter}
           onChange={setStateFilter}
           size="sm"
           options={[
-            { value: 'active', label: 'Active', count: counts.active, tone: 'ok' },
-            { value: 'inactive', label: 'Paused', count: counts.inactive, tone: 'idle' },
-            { value: 'all', label: 'All', count: counts.all },
+            { value: 'active', label: 'Activo', count: counts.active, tone: 'ok' },
+            { value: 'inactive', label: 'Pausado', count: counts.inactive, tone: 'idle' },
+            { value: 'all', label: 'Todos', count: counts.all },
           ]}
         />
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-56`} aria-label="Report type"><SelectValue /></SelectTrigger>
+          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-56`} aria-label="Tipo de reporte"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All report types</SelectItem>
+            <SelectItem value="all">Todos los tipos de reporte</SelectItem>
             {REPORT_TYPES.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="relative min-w-0 sm:max-w-xs sm:flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className={cn('pl-9', TAP_INPUT)} value={search} onChange={event => setSearch(event.target.value)} placeholder="Report name" aria-label="Search saved reports" />
+          <Input className={cn('pl-9', TAP_INPUT)} value={search} onChange={event => setSearch(event.target.value)} placeholder="Nombre del reporte" aria-label="Buscar reportes guardados" />
         </div>
         <Track className="sm:ml-auto">
           <Pill variant="primary" className={TAP} disabled={rooftops.length === 0} onClick={() => open()}>
             <Plus />
-            New report
+            Nuevo reporte
           </Pill>
         </Track>
       </div>
 
       {visible.length === 0 ? (
         <Panel>
-          <EmptyRow>{reports.length === 0 ? 'No saved reports yet' : 'No reports match'}</EmptyRow>
+          <EmptyRow>{reports.length === 0 ? 'Todavía no hay reportes guardados' : 'No hay reportes que coincidan'}</EmptyRow>
         </Panel>
       ) : (
         <DeskTable>
           <thead>
             <tr>
-              <Th>Status</Th>
-              <Th>Report</Th>
-              <Th priority={3}>Type</Th>
-              <Th priority={2}>Schedule</Th>
-              <Th priority={2}>Last run</Th>
-              <Th align="right" priority={3}><span className="sr-only">Actions</span></Th>
+              <Th>Estado</Th>
+              <Th>Reporte</Th>
+              <Th priority={3}>Tipo</Th>
+              <Th priority={2}>Programación</Th>
+              <Th priority={2}>Última ejecución</Th>
+              <Th align="right" priority={3}><span className="sr-only">Acciones</span></Th>
             </tr>
           </thead>
           <tbody>
@@ -252,7 +252,7 @@ export function SavedReportsPanel({
                   </Pill>
                   <Pill size="sm" variant="plain" className={TAP_SM} onClick={() => open(report)}>
                     <Pencil />
-                    Edit
+                    Editar
                   </Pill>
                   <Pill size="sm" variant="plain" className={TAP_SM} disabled={workingId === report.id} onClick={() => toggle(report)}>
                     <Power />
@@ -290,7 +290,7 @@ export function SavedReportsPanel({
                         <span className="block text-[12px] text-muted-foreground">{formatDateTime(latest.completedAt || latest.createdAt, timeZone)}</span>
                       </>
                     ) : (
-                      <span className="text-[12px] text-muted-foreground">Never run</span>
+                      <span className="text-[12px] text-muted-foreground">Nunca ejecutado</span>
                     )}
                   </Td>
                   <Td align="right" priority={3} className="w-[1%] whitespace-nowrap">{actions}</Td>
@@ -312,29 +312,29 @@ export function SavedReportsPanel({
       >
         <div className="grid gap-4 sm:grid-cols-2">
           {!draft?.reportId && rooftops.length > 1 && (
-            <Field id="report-rooftop" label="Rooftop" error={fieldErrors.rooftopId} className="sm:col-span-2">
+            <Field id="report-rooftop" label="Sucursal" error={fieldErrors.rooftopId} className="sm:col-span-2">
               <Select value={draft?.rooftopId || ''} onValueChange={value => setDraft(current => current && { ...current, rooftopId: value })}>
-                <SelectTrigger id="report-rooftop" className={TAP_INPUT}><SelectValue placeholder="Select rooftop" /></SelectTrigger>
+                <SelectTrigger id="report-rooftop" className={TAP_INPUT}><SelectValue placeholder="Elige una sucursal" /></SelectTrigger>
                 <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
           )}
-          <Field id="report-name" label="Name" error={fieldErrors.name} className="sm:col-span-2">
+          <Field id="report-name" label="Nombre" error={fieldErrors.name} className="sm:col-span-2">
             <Input id="report-name" className={TAP_INPUT} maxLength={100} value={draft?.name || ''} aria-invalid={Boolean(fieldErrors.name)} onChange={event => setDraft(current => current && { ...current, name: event.target.value })} />
           </Field>
-          <Field id="report-type" label="Report type">
+          <Field id="report-type" label="Tipo de reporte">
             <Select value={draft?.reportType || 'operations'} onValueChange={value => setDraft(current => current && { ...current, reportType: value, filters: {} })}>
               <SelectTrigger id="report-type" className={TAP_INPUT}><SelectValue /></SelectTrigger>
               <SelectContent>{REPORT_TYPES.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
-          <Field id="report-format" label="Export format">
+          <Field id="report-format" label="Formato de exportación">
             <Select value={draft?.exportFormat || 'csv'} onValueChange={value => setDraft(current => current && { ...current, exportFormat: value })}>
               <SelectTrigger id="report-format" className={TAP_INPUT}><SelectValue /></SelectTrigger>
               <SelectContent>{EXPORT_FORMATS.map(format => <SelectItem key={format.value} value={format.value}>{format.label}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
-          <Field id="report-schedule" label="Schedule">
+          <Field id="report-schedule" label="Programación">
             <Select value={draft?.schedule || 'manual'} onValueChange={value => setDraft(current => current && { ...current, schedule: value })}>
               <SelectTrigger id="report-schedule" className={TAP_INPUT}><SelectValue /></SelectTrigger>
               <SelectContent>{SCHEDULES.map(schedule => <SelectItem key={schedule.value} value={schedule.value}>{schedule.label}</SelectItem>)}</SelectContent>
@@ -343,10 +343,10 @@ export function SavedReportsPanel({
           {draft?.reportId && (
             <label htmlFor="report-active" className="flex min-h-11 items-center gap-3 self-end text-sm">
               <Switch id="report-active" checked={draft.active} onCheckedChange={checked => setDraft(current => current && { ...current, active: checked })} />
-              Active
+              Activo
             </label>
           )}
-          {filterFields.length > 0 && <p className="text-[12px] font-medium text-muted-foreground sm:col-span-2">Filters</p>}
+          {filterFields.length > 0 && <p className="text-[12px] font-medium text-muted-foreground sm:col-span-2">Filtros</p>}
           {filterFields.map(field => {
             const id = `report-filter-${field.key}`
             const value = draft?.filters[field.key] || ''
@@ -357,7 +357,7 @@ export function SavedReportsPanel({
                   <Select value={value || 'any'} onValueChange={set}>
                     <SelectTrigger id={id} className={TAP_INPUT}><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="any">Cualquiera</SelectItem>
                       {field.options.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                     </SelectContent>
                   </Select>

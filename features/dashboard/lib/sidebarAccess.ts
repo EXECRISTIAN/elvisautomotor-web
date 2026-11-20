@@ -1,3 +1,4 @@
+import { isElvisVisibleList } from './elvisLists'
 /**
  * Sidebar filtering from capabilities the session already has: the role's
  * canAccessDashboard flag and Keystone's per-session list `isHidden` from admin meta.
@@ -14,7 +15,7 @@ export function canUseDashboardNav(user: SidebarUser) {
 
 export function visibleSidebarLists<T extends SidebarList>(lists: T[], user: SidebarUser): T[] {
   if (!canUseDashboardNav(user)) return []
-  return lists.filter((list) => !list.isHidden)
+  return lists.filter((list) => !list.isHidden && isElvisVisibleList(list as any))
 }
 
 /** Platform pages whose data lives in a list with a different path; the page follows that list's visibility. */

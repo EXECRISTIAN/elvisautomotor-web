@@ -309,7 +309,7 @@ export function InsertMenu({ children, text }: { children: ReactNode; text: Text
           {/* CommandInput could be added here if live filtering of the already filtered `options` is desired */}
           {/* <CommandInput placeholder="Type a command or search..." /> */}
           <CommandList ref={scrollableRef} className="max-h-[300px] overflow-y-auto">
-            {options.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
+            {options.length === 0 && <CommandEmpty>Sin resultados.</CommandEmpty>}
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem

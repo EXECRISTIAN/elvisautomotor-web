@@ -44,15 +44,15 @@ interface UserListPageClientProps {
 }
 
 function EmptyStateDefault() {
-  return <p className="py-12 text-center text-sm text-muted-foreground">No staff</p>
+  return <p className="py-12 text-center text-sm text-muted-foreground">Sin personal</p>
 }
 
 function EmptyStateSearch({ onResetFilters }: { onResetFilters: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <p className="text-sm text-muted-foreground">No matches</p>
+      <p className="text-sm text-muted-foreground">Sin coincidencias</p>
       <Track>
-        <Pill size="sm" onClick={onResetFilters}>Reset filters</Pill>
+        <Pill size="sm" onClick={onResetFilters}>Restablecer filtros</Pill>
       </Track>
     </div>
   )
@@ -119,7 +119,7 @@ export function UserListPageClient({
     queryKey: ['platform', 'staff', variables],
     queryFn: async () => {
       const response = await getUsers(variables.where, variables.take, variables.skip, variables.orderBy)
-      if (!response.success) throw new Error(response.error || 'Failed to fetch users')
+      if (!response.success) throw new Error(response.error || 'No se pudieron cargar los usuarios')
       return response.data
     },
     initialData: initialError ? undefined : initialData,
@@ -151,9 +151,9 @@ export function UserListPageClient({
 
   if (!list) {
     return (
-      <PageContainer title="List not found">
+      <PageContainer title="Lista no encontrada">
         <div className="px-4 md:px-6">
-          <Notice tone="bad">List not found</Notice>
+          <Notice tone="bad">Lista no encontrada</Notice>
         </div>
       </PageContainer>
     )
@@ -167,12 +167,12 @@ export function UserListPageClient({
 
   const header = (
     <DeskHeader
-      title="Staff"
-      meta={statusCounts ? `${statusCounts.all} ${statusCounts.all === 1 ? 'member' : 'members'} · ${statusCounts.sales} sales · ${statusCounts.service} service · ${statusCounts.finance} finance` : undefined}
+      title="Personal"
+      meta={statusCounts ? `${statusCounts.all} ${statusCounts.all === 1 ? 'integrante' : 'integrantes'} · ${statusCounts.sales} en ventas · ${statusCounts.service} en servicio · ${statusCounts.finance} en financiación` : undefined}
       actions={list?.hideCreate ? undefined : (
-        <Pill variant="primary" onClick={() => setIsCreateDrawerOpen(true)} aria-label="Add staff member">
+        <Pill variant="primary" onClick={() => setIsCreateDrawerOpen(true)} aria-label="Agregar integrante">
           <CirclePlus />
-          Add staff member
+          Agregar integrante
         </Pill>
       )}
     />
@@ -189,19 +189,19 @@ export function UserListPageClient({
   const isEmpty = data?.count === 0 && !isFiltered
 
   return (
-    <PageContainer title="Staff" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Personal" header={header} breadcrumbs={breadcrumbs}>
       {/* Needs you: staff waiting on a role */}
       {!error && needsRole.length > 0 && (
         <div className="px-4 pb-6 md:px-6">
-          <DeskSection title="Needs a role" count={needsRole.length} id="staff-needs-role">
+          <DeskSection title="Necesita un rol" count={needsRole.length} id="staff-needs-role">
             <DeskTable aria-labelledby="staff-needs-role">
               <thead>
                 <tr>
-                  <Th>Member</Th>
-                  <Th priority={2}>Functions</Th>
-                  <Th>Status</Th>
-                  <Th align="right" priority={2}>Added</Th>
-                  <Th align="right"><span className="sr-only">Action</span></Th>
+                  <Th>Integrante</Th>
+                  <Th priority={2}>Funciones</Th>
+                  <Th>Estado</Th>
+                  <Th align="right" priority={2}>Agregado</Th>
+                  <Th align="right"><span className="sr-only">Acción</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -213,14 +213,14 @@ export function UserListPageClient({
                         <span className="block font-medium text-foreground [overflow-wrap:anywhere]">{user.name || user.email}</span>
                         <span className="block text-xs text-muted-foreground [overflow-wrap:anywhere]">{user.email}</span>
                       </Td>
-                      <Td priority={2} className="text-muted-foreground">{functions.length ? functions.map((item) => item.label).join(', ') : 'None'}</Td>
-                      <Td><Status tone="warn">No role</Status></Td>
+                      <Td priority={2} className="text-muted-foreground">{functions.length ? functions.map((item) => item.label).join(', ') : 'Ninguno'}</Td>
+                      <Td><Status tone="warn">Sin rol</Status></Td>
                       <Td align="right" priority={2} className="whitespace-nowrap text-muted-foreground">
                         {user.createdAt ? formatInZone(user.createdAt, undefined, "date") : 'Unknown'}
                       </Td>
                       <Td align="right" className="w-px">
                         <Pill size="sm" asChild className="max-sm:h-10">
-                          <Link href={`${basePath}/users/${user.id}`}>Assign role</Link>
+                          <Link href={`${basePath}/users/${user.id}`}>Asignar rol</Link>
                         </Pill>
                       </Td>
                     </Tr>
@@ -268,15 +268,15 @@ export function UserListPageClient({
       ) : (
         <>
           <div className="px-4 pb-2 md:px-6">
-            <DeskTable aria-label="Staff">
+            <DeskTable aria-label="Personal">
               <thead>
                 <tr>
-                  <Th>Member</Th>
-                  <Th priority={2}>Role</Th>
-                  <Th priority={3}>Functions</Th>
-                  <Th>Status</Th>
-                  <Th align="right" priority={2}>Workload</Th>
-                  <Th align="right"><span className="sr-only">Actions</span></Th>
+                  <Th>Integrante</Th>
+                  <Th priority={2}>Rol</Th>
+                  <Th priority={3}>Funciones</Th>
+                  <Th>Estado</Th>
+                  <Th align="right" priority={2}>Carga de trabajo</Th>
+                  <Th align="right"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>

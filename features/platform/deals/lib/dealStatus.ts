@@ -12,12 +12,12 @@ export const dealStatusTone: Record<string, DeskTone> = {
 }
 
 export const dealStatusLabel: Record<string, string> = {
-  pencil: 'Pencil',
-  submitted: 'Submitted',
-  approved: 'Approved',
-  financed: 'Financed',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
+  pencil: 'En negociación',
+  submitted: 'Enviada',
+  approved: 'Aprobada',
+  financed: 'Financiada',
+  delivered: 'Entregada',
+  cancelled: 'Cancelada',
 }
 
 export function toneForDeal(status: string): DeskTone {

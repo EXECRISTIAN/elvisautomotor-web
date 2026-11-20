@@ -10,9 +10,9 @@ import type { DealerGroup, RecordStatus, Viewer } from '../lib/types'
 import { Field, FormDialog, fieldA11y, formatDate, type FieldErrors } from './FormDialog'
 
 export const RECORD_STATUS: Record<RecordStatus, { label: string; tone: DeskTone }> = {
-  active: { label: 'Active', tone: 'ok' },
-  suspended: { label: 'Suspended', tone: 'warn' },
-  archived: { label: 'Archived', tone: 'idle' },
+  active: { label: 'Activo', tone: 'ok' },
+  suspended: { label: 'Suspendido', tone: 'warn' },
+  archived: { label: 'Archivado', tone: 'idle' },
 }
 
 type EditState = { group: DealerGroup; values: { name: string; slug: string; legalName: string } }
@@ -84,7 +84,7 @@ export function DealerGroupSection({
   if (!groups.length) {
     return (
       <Panel className="px-4 py-12 text-center">
-        <p className="text-sm text-muted-foreground">No dealer group</p>
+        <p className="text-sm text-muted-foreground">Sin grupo</p>
       </Panel>
     )
   }
@@ -95,10 +95,10 @@ export function DealerGroupSection({
         const state = RECORD_STATUS[group.status] || RECORD_STATUS.active
         const transitions: Array<{ status: RecordStatus; label: string }> =
           group.status === 'active'
-            ? [{ status: 'suspended', label: 'Suspend' }, { status: 'archived', label: 'Archive' }]
+            ? [{ status: 'suspended', label: 'Suspender' }, { status: 'archived', label: 'Archivar' }]
             : group.status === 'suspended'
-              ? [{ status: 'active', label: 'Reactivate' }, { status: 'archived', label: 'Archive' }]
-              : [{ status: 'active', label: 'Reactivate' }]
+              ? [{ status: 'active', label: 'Reactivar' }, { status: 'archived', label: 'Archivar' }]
+              : [{ status: 'active', label: 'Reactivar' }]
         return (
           <DeskSection
             key={group.id}
@@ -112,7 +112,7 @@ export function DealerGroupSection({
                 ))}
                 <Pill size="sm" variant="primary" className="h-11 sm:h-7" disabled={!canManage} title={lockedReason} onClick={() => openEdit(group)}>
                   <Pencil />
-                  Edit
+                  Editar
                 </Pill>
               </Track> : undefined
             }
@@ -121,12 +121,12 @@ export function DealerGroupSection({
               <Facts
                 className="md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0 md:[&>div]:border-b md:[&>div:nth-last-child(-n+2)]:border-b-0"
                 items={[
-                  { label: 'Status', value: state.label },
-                  { label: 'Slug', value: group.slug, mono: true },
-                  { label: 'Legal name', value: group.legalName || 'Not set' },
-                  { label: 'Rooftops', value: group.rooftopsCount ?? 0 },
-                  { label: 'Group members', value: group.membershipsCount ?? 0 },
-                  group.createdAt ? { label: 'Created', value: formatDate(group.createdAt, timeZone) } : null,
+                  { label: 'Estado', value: state.label },
+                  { label: 'Identificador', value: group.slug, mono: true },
+                  { label: 'Razón social', value: group.legalName || 'Not set' },
+                  { label: 'Sucursales', value: group.rooftopsCount ?? 0 },
+                  { label: 'Integrantes del grupo', value: group.membershipsCount ?? 0 },
+                  group.createdAt ? { label: 'Creado', value: formatDate(group.createdAt, timeZone) } : null,
                 ]}
               />
             </Panel>
@@ -137,7 +137,7 @@ export function DealerGroupSection({
 
       <FormDialog
         open={Boolean(edit)}
-        title="Edit dealer group"
+        title="Editar grupo"
         error={error}
         busy={busy}
         onSubmit={submitEdit}
@@ -145,13 +145,13 @@ export function DealerGroupSection({
       >
         {edit && (
           <div className="grid gap-4">
-            <Field id="group-name" label="Name" error={fieldErrors.name}>
+            <Field id="group-name" label="Nombre" error={fieldErrors.name}>
               <Input {...fieldA11y('group-name', fieldErrors.name)} value={edit.values.name} maxLength={200} onChange={event => setEdit({ ...edit, values: { ...edit.values, name: event.target.value } })} />
             </Field>
-            <Field id="group-slug" label="Slug" error={fieldErrors.slug}>
+            <Field id="group-slug" label="Identificador" error={fieldErrors.slug}>
               <Input {...fieldA11y('group-slug', fieldErrors.slug)} value={edit.values.slug} maxLength={120} onChange={event => setEdit({ ...edit, values: { ...edit.values, slug: event.target.value.toLowerCase() } })} />
             </Field>
-            <Field id="group-legal" label="Legal name" error={fieldErrors.legalName}>
+            <Field id="group-legal" label="Razón social" error={fieldErrors.legalName}>
               <Input {...fieldA11y('group-legal', fieldErrors.legalName)} value={edit.values.legalName} maxLength={240} onChange={event => setEdit({ ...edit, values: { ...edit.values, legalName: event.target.value } })} />
             </Field>
           </div>
@@ -169,7 +169,7 @@ export function DealerGroupSection({
         onOpenChange={open => { if (!open) setStatusChange(null) }}
       >
         {statusChange && statusChange.status !== 'active' && (
-          <Notice tone="warn">Every rooftop in this group stops accepting operating changes</Notice>
+          <Notice tone="warn">Todas las sucursales del grupo dejan de aceptar cambios</Notice>
         )}
       </FormDialog>
     </div>

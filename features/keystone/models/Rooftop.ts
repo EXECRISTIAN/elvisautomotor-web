@@ -60,7 +60,7 @@ export const Rooftop = list({
       defaultValue: 'active',
       validation: { isRequired: true },
     }),
-    timezone: text({ defaultValue: 'America/New_York', validation: { isRequired: true } }),
+    timezone: text({ defaultValue: 'America/Argentina/Buenos_Aires', validation: { isRequired: true } }),
     currencyCode: text({ defaultValue: 'USD', validation: { isRequired: true, length: { min: 3, max: 3 } } }),
     dealerGroup: relationship({ ref: 'DealerGroup.rooftops', access: { update: denyAll } }),
     memberships: relationship({ ref: 'RooftopMembership.rooftop', many: true, access: { update: denyAll } }),

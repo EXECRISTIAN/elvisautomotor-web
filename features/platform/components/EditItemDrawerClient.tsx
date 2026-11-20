@@ -157,7 +157,7 @@ export function EditItemDrawerClient({
       // Handle errors exactly like ItemPageClient
       const error = errors?.find(x => x.path === undefined || x.path?.length === 1)
       if (error) {
-        toast.error('Unable to save item', {
+        toast.error('No se pudo guardar el registro', {
           description: error.message
         })
         setSaveState('idle')
@@ -183,7 +183,7 @@ export function EditItemDrawerClient({
       
     } catch (error: any) {
       console.error('Save error:', error)
-      toast.error('Unable to save item', {
+      toast.error('No se pudo guardar el registro', {
         description: error.message
       })
       setSaveState('idle')
@@ -202,7 +202,7 @@ export function EditItemDrawerClient({
       setTimeout(() => setCopied(false), 2000)
       toast.success('ID copied to clipboard')
     } catch (err) {
-      toast.error('Failed to copy to clipboard')
+      toast.error('No se pudo copiar')
     }
   })
 
@@ -219,9 +219,9 @@ export function EditItemDrawerClient({
 
       const error = errors?.find(x => x.path === undefined || x.path?.length === 1)
       if (error) {
-        toast.error('Unable to delete item.', {
+        toast.error('No se pudo eliminar el registro.', {
           action: {
-            label: 'Details',
+            label: 'Detalles',
             onClick: () => console.error('Delete error:', error.message)
           }
         })
@@ -241,9 +241,9 @@ export function EditItemDrawerClient({
       // Don't redirect automatically - let the parent handle navigation
       // The drawer is used in platform context, not Keystone admin context
     } catch (err: any) {
-      toast.error("Unable to delete item.", {
+      toast.error("No se pudo eliminar el registro.", {
         action: {
-          label: "Details",
+          label: "Detalles",
           onClick: () => console.error('Delete error:', err.message)
         }
       })
@@ -326,15 +326,15 @@ export function EditItemDrawerClient({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Reset changes</AlertDialogTitle>
+                      <AlertDialogTitle>Descartar cambios</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure? Lost changes cannot be recovered.
+                        ¿Seguro? Los cambios no guardados se perderán.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction onClick={handleReset}>
-                        Yes, reset
+                        Sí, descartar
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -351,7 +351,7 @@ export function EditItemDrawerClient({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete item</AlertDialogTitle>
+                      <AlertDialogTitle>Eliminar registro</AlertDialogTitle>
                       <AlertDialogDescription>
                         Are you sure you want to delete{' '}
                         <strong>
@@ -362,9 +362,9 @@ export function EditItemDrawerClient({
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction onClick={handleDelete}>
-                        Yes, delete
+                        Sí, eliminar
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -375,7 +375,7 @@ export function EditItemDrawerClient({
             {/* Save and Cancel buttons on the right */}
             <div className="flex gap-3 ml-auto">
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                Cancelar
               </Button>
               <Button 
                 type="submit" 
@@ -385,12 +385,12 @@ export function EditItemDrawerClient({
                 {saveState === 'saving' ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Saving...
+                    Guardando…
                   </>
                 ) : saveState === 'saved' ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
-                    Saved
+                    Guardado
                   </>
                 ) : (
                   'Save Changes'

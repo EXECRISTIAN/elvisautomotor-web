@@ -91,11 +91,11 @@ export function InlineCreate({
       } else {
         // Handle errors
         const errorMessage =
-          result.errors[0]?.message || "Failed to create item";
+          result.errors[0]?.message || "No se pudo crear el registro";
         toast.error(errorMessage);
       }
     } catch (error) {
-      toast.error("Failed to create item");
+      toast.error("No se pudo crear el registro");
     } finally {
       setIsLoading(false);
     }
@@ -118,10 +118,10 @@ export function InlineCreate({
         </div>
         <div className="flex gap-2 bg-muted/40 border rounded-lg p-2 justify-end">
           <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" size="sm" disabled={isLoading}>
-            {isLoading ? "Creating..." : `Create ${list.singular}`}
+            {isLoading ? "Creando…" : `Crear ${list.singular}`}
           </Button>
         </div>
       </form>

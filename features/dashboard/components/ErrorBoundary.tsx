@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full">
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Something went wrong</AlertTitle>
+              <AlertTitle>Algo salió mal</AlertTitle>
               <AlertDescription className="mt-2">
                 An unexpected error occurred in the dashboard. Please try refreshing the page.
               </AlertDescription>
@@ -64,13 +64,13 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={() => window.location.reload()}
                 variant="outline"
               >
-                Refresh Page
+                Recargar página
               </Button>
               <Button 
                 onClick={() => this.setState({ hasError: false, error: undefined })}
                 variant="default"
               >
-                Try Again
+                Reintentar
               </Button>
             </div>
             

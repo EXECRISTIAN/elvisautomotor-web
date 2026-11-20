@@ -13,21 +13,21 @@ import type { DealerGroup, Membership, MembershipAuditEvent, MembershipStatus, R
 import { Field, FormDialog, fieldA11y, formatDate, formatWhen, type FieldErrors } from './FormDialog'
 
 export const MEMBERSHIP_STATUS: Record<MembershipStatus, { label: string; tone: DeskTone }> = {
-  active: { label: 'Active', tone: 'ok' },
-  invited: { label: 'Invited', tone: 'info' },
-  suspended: { label: 'Suspended', tone: 'warn' },
-  revoked: { label: 'Removed', tone: 'idle' },
+  active: { label: 'Activo', tone: 'ok' },
+  invited: { label: 'Invitado', tone: 'info' },
+  suspended: { label: 'Suspendido', tone: 'warn' },
+  revoked: { label: 'Quitado', tone: 'idle' },
 }
 
 type StatusFilter = MembershipStatus | 'all'
 type ChangeKind = 'activate' | 'suspend' | 'reactivate' | 'remove' | 'role'
 
 const CHANGE_COPY: Record<ChangeKind, { title: string; submit: string; done: string; status?: MembershipStatus; danger?: boolean }> = {
-  activate: { title: 'Activate access', submit: 'Activate', done: 'Access activated', status: 'active' },
-  suspend: { title: 'Suspend access', submit: 'Suspend', done: 'Access suspended', status: 'suspended', danger: true },
-  reactivate: { title: 'Reactivate access', submit: 'Reactivate', done: 'Access reactivated', status: 'active' },
-  remove: { title: 'Remove access', submit: 'Remove', done: 'Access removed', status: 'revoked', danger: true },
-  role: { title: 'Change role', submit: 'Save', done: 'Access updated' },
+  activate: { title: 'Activar acceso', submit: 'Activate', done: 'Access activated', status: 'active' },
+  suspend: { title: 'Suspender acceso', submit: 'Suspend', done: 'Access suspended', status: 'suspended', danger: true },
+  reactivate: { title: 'Reactivar acceso', submit: 'Reactivate', done: 'Access reactivated', status: 'active' },
+  remove: { title: 'Quitar acceso', submit: 'Remove', done: 'Access removed', status: 'revoked', danger: true },
+  role: { title: 'Cambiar rol', submit: 'Save', done: 'Access updated' },
 }
 
 type ChangeState = { kind: ChangeKind; membership: Membership; roleId: string; accessAllRooftops: boolean; reason: string }
@@ -247,7 +247,7 @@ export function AccessSection({
   const describeSnapshot = (event: MembershipAuditEvent) => {
     const before = event.previousSnapshot
     const after = event.nextSnapshot
-    const label = (status?: string) => (status && MEMBERSHIP_STATUS[status as MembershipStatus]?.label) || status || 'None'
+    const label = (status?: string) => (status && MEMBERSHIP_STATUS[status as MembershipStatus]?.label) || status || 'Ninguno'
     const parts: ReactNode[] = []
     if (!before) parts.push(<span key="s">{label(after?.status)}</span>)
     else if (before.status !== after?.status) parts.push(<span key="s" className="inline-flex items-center gap-1">{label(before.status)}<ArrowRight className="size-3" aria-label="to" />{label(after?.status)}</span>)
@@ -261,22 +261,22 @@ export function AccessSection({
       <div className="space-y-3">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Segmented<StatusFilter>
-            label="Filter access by status"
+            label="Filtrar accesos por estado"
             value={statusFilter}
             onChange={setStatusFilter}
             size="sm"
             options={[
-              { value: 'active', label: 'Active', count: counts.active, tone: 'ok' },
-              { value: 'invited', label: 'Invited', count: counts.invited, tone: 'info' },
-              { value: 'suspended', label: 'Suspended', count: counts.suspended, tone: 'warn' },
-              { value: 'revoked', label: 'Removed', count: counts.revoked, tone: 'idle' },
-              { value: 'all', label: 'All', count: counts.all },
+              { value: 'active', label: 'Activo', count: counts.active, tone: 'ok' },
+              { value: 'invited', label: 'Invitado', count: counts.invited, tone: 'info' },
+              { value: 'suspended', label: 'Suspendido', count: counts.suspended, tone: 'warn' },
+              { value: 'revoked', label: 'Quitado', count: counts.revoked, tone: 'idle' },
+              { value: 'all', label: 'Todos', count: counts.all },
             ]}
           />
           <Track>
             <Pill variant="primary" className="h-11 sm:h-8" disabled={!canManage || !scopeOptions.length} title={!scopeOptions.length ? 'No dealer group or rooftop' : lockedReason} onClick={openGrant}>
               <UserPlus />
-              Grant access
+              Dar acceso
             </Pill>
           </Track>
         </div>
@@ -284,38 +284,38 @@ export function AccessSection({
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative min-w-0 sm:max-w-sm sm:flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Name, email, role or reason" aria-label="Search access" />
+            <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Nombre, email, rol o motivo" aria-label="Buscar accesos" />
           </div>
           <Select value={scopeFilter} onValueChange={setScopeFilter}>
-            <SelectTrigger className="h-11 w-full sm:h-9 sm:w-[260px]" aria-label="Filter by scope"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-11 w-full sm:h-9 sm:w-[260px]" aria-label="Filtrar por alcance"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All groups and rooftops</SelectItem>
+              <SelectItem value="all">Todos los grupos y sucursales</SelectItem>
               {scopeOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <DeskSection title="Members" count={visible.length}>
+      <DeskSection title="Integrantes" count={visible.length}>
         {errors.access ? (
           <Notice tone="bad">Access unavailable: {errors.access}</Notice>
         ) : visible.length === 0 ? (
           <Panel className="flex flex-col items-center gap-3 px-4 py-12 text-center">
             <p className="text-sm text-muted-foreground">{memberships.length ? 'No matching members' : 'No memberships'}</p>
             {memberships.length > 0 && (
-              <Track><Pill size="sm" onClick={() => { setSearch(''); setStatusFilter('all'); setScopeFilter('all') }}>Reset filters</Pill></Track>
+              <Track><Pill size="sm" onClick={() => { setSearch(''); setStatusFilter('all'); setScopeFilter('all') }}>Restablecer filtros</Pill></Track>
             )}
           </Panel>
         ) : (
-          <DeskTable aria-label="Members">
+          <DeskTable aria-label="Integrantes">
             <thead>
               <tr>
-                <Th>Member</Th>
-                <Th priority={2}>Scope</Th>
-                <Th priority={2}>Role</Th>
-                <Th>Status</Th>
-                <Th priority={3}>Joined</Th>
-                <Th align="right"><span className="sr-only">Actions</span></Th>
+                <Th>Integrante</Th>
+                <Th priority={2}>Alcance</Th>
+                <Th priority={2}>Rol</Th>
+                <Th>Estado</Th>
+                <Th priority={3}>Ingresó</Th>
+                <Th align="right"><span className="sr-only">Acciones</span></Th>
               </tr>
             </thead>
             <tbody>
@@ -324,12 +324,12 @@ export function AccessSection({
                 const blocked = lockedReason || ownReason(membership)
                 const actions: Array<{ kind: ChangeKind; label: string }> =
                   membership.status === 'invited'
-                    ? [{ kind: 'activate', label: 'Activate' }, { kind: 'remove', label: 'Remove' }]
+                    ? [{ kind: 'activate', label: 'Activar' }, { kind: 'remove', label: 'Quitar' }]
                     : membership.status === 'active'
-                      ? [{ kind: 'suspend', label: 'Suspend' }, { kind: 'remove', label: 'Remove' }]
+                      ? [{ kind: 'suspend', label: 'Suspender' }, { kind: 'remove', label: 'Quitar' }]
                       : membership.status === 'suspended'
-                        ? [{ kind: 'reactivate', label: 'Reactivate' }, { kind: 'remove', label: 'Remove' }]
-                        : [{ kind: 'reactivate', label: 'Reactivate' }]
+                        ? [{ kind: 'reactivate', label: 'Reactivar' }, { kind: 'remove', label: 'Quitar' }]
+                        : [{ kind: 'reactivate', label: 'Reactivar' }]
                 return (
                   <Tr key={`${membership.scopeType}:${membership.id}`}>
                     <Td className="max-w-0 min-w-[9rem]">
@@ -344,7 +344,7 @@ export function AccessSection({
                       {membership.scopeType === 'dealer-group' ? 'Group' : 'Rooftop'}: {membership.scopeName}
                       {membership.scopeType === 'dealer-group' && membership.accessAllRooftops ? ' · All rooftops' : ''}
                     </Td>
-                    <Td priority={2}>{membership.role?.name || <span className="text-muted-foreground">No role</span>}</Td>
+                    <Td priority={2}>{membership.role?.name || <span className="text-muted-foreground">Sin rol</span>}</Td>
                     <Td><Status tone={state.tone}>{state.label}</Status></Td>
                     <Td priority={3} className="whitespace-nowrap text-muted-foreground">
                       {membership.joinedAt ? formatDate(membership.joinedAt, timeZone) : 'Not yet'}
@@ -358,7 +358,7 @@ export function AccessSection({
                           </Pill>
                         ))}
                         <Pill size="sm" className="h-11 sm:h-7" disabled={Boolean(blocked)} title={blocked} onClick={() => openChange('role', membership)}>
-                          Role
+                          Rol
                         </Pill>
                       </div>
                     </Td>
@@ -370,22 +370,22 @@ export function AccessSection({
         )}
       </DeskSection>
 
-      <DeskSection title="History" count={history.length}>
+      <DeskSection title="Historial" count={history.length}>
         {errors.audit ? (
           <Notice tone="bad">History unavailable: {errors.audit}</Notice>
         ) : !canManage ? (
           <Notice>{lockedReason}</Notice>
         ) : history.length === 0 ? (
-          <Panel className="px-4 py-10 text-center"><p className="text-sm text-muted-foreground">No access changes</p></Panel>
+          <Panel className="px-4 py-10 text-center"><p className="text-sm text-muted-foreground">Sin cambios de acceso</p></Panel>
         ) : (
-          <DeskTable aria-label="Access history">
+          <DeskTable aria-label="Historial de accesos">
             <thead>
               <tr>
-                <Th>Member</Th>
-                <Th>Change</Th>
-                <Th priority={2}>Reason</Th>
+                <Th>Integrante</Th>
+                <Th>Cambiar</Th>
+                <Th priority={2}>Motivo</Th>
                 <Th priority={3}>By</Th>
-                <Th align="right">When</Th>
+                <Th align="right">Cuándo</Th>
               </tr>
             </thead>
             <tbody>
@@ -430,9 +430,9 @@ export function AccessSection({
             <p className="text-sm text-muted-foreground">{change.membership.scopeType === 'dealer-group' ? 'Group' : 'Rooftop'}: {change.membership.scopeName}</p>
             {change.kind === 'role' && (
               <>
-                <Field id="change-role" label="Role" error={fieldErrors.role}>
+                <Field id="change-role" label="Rol" error={fieldErrors.role}>
                   <Select value={change.roleId} onValueChange={value => setChange({ ...change, roleId: value })}>
-                    <SelectTrigger {...fieldA11y('change-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder="Select role" /></SelectTrigger>
+                    <SelectTrigger {...fieldA11y('change-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder="Elige un rol" /></SelectTrigger>
                     <SelectContent>
                       {roles.map(role => (
                         <SelectItem key={role.id} value={role.id} disabled={!roleIsTenantAssignable(role)}>
@@ -445,20 +445,20 @@ export function AccessSection({
                 {change.membership.scopeType === 'dealer-group' && (
                   <label className="flex min-h-11 items-center gap-2 text-sm">
                     <Checkbox checked={change.accessAllRooftops} onCheckedChange={value => setChange({ ...change, accessAllRooftops: value === true })} />
-                    Access to all rooftops
+                    Acceso a todas las sucursales
                   </label>
                 )}
               </>
             )}
             {change.kind !== 'role' && !assignableRoles.some(role => role.id === change.roleId) && (
-              <Field id="change-role" label="Role" error={fieldErrors.role}>
+              <Field id="change-role" label="Rol" error={fieldErrors.role}>
                 <Select value={change.roleId} onValueChange={value => setChange({ ...change, roleId: value })}>
-                  <SelectTrigger {...fieldA11y('change-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectTrigger {...fieldA11y('change-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder="Elige un rol" /></SelectTrigger>
                   <SelectContent>{assignableRoles.map(role => <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
             )}
-            <Field id="change-reason" label="Reason" error={fieldErrors.reason}>
+            <Field id="change-reason" label="Motivo" error={fieldErrors.reason}>
               <Textarea {...fieldA11y('change-reason', fieldErrors.reason)} rows={3} maxLength={500} value={change.reason} onChange={event => setChange({ ...change, reason: event.target.value })} />
             </Field>
           </div>
@@ -467,7 +467,7 @@ export function AccessSection({
 
       <FormDialog
         open={Boolean(grant)}
-        title="Grant access"
+        title="Dar acceso"
         error={error}
         busy={busy}
         submitLabel={grant?.status === 'invited' ? 'Invite' : 'Grant'}
@@ -479,19 +479,19 @@ export function AccessSection({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Segmented<'existing' | 'invite'>
-                label="Who"
+                label="Quién"
                 value={grant.mode}
                 onChange={mode => { setFieldErrors({}); setGrant({ ...grant, mode }) }}
                 size="sm"
                 options={[
-                  { value: 'existing', label: 'Existing staff' },
-                  { value: 'invite', label: 'New staff login', disabled: !viewer?.canManagePeople },
+                  { value: 'existing', label: 'Personal existente' },
+                  { value: 'invite', label: 'Nuevo acceso de personal', disabled: !viewer?.canManagePeople },
                 ]}
               />
-              {!viewer?.canManagePeople && <p className="mt-1 text-xs text-muted-foreground">New logins require people management permission</p>}
+              {!viewer?.canManagePeople && <p className="mt-1 text-xs text-muted-foreground">Crear accesos requiere permiso de gestión de personal</p>}
             </div>
             {grant.mode === 'existing' ? (
-              <Field id="grant-user" label="Staff member" error={fieldErrors.user || errors.staff} className="sm:col-span-2">
+              <Field id="grant-user" label="Integrante" error={fieldErrors.user || errors.staff} className="sm:col-span-2">
                 <Select value={grant.userId} onValueChange={value => setGrant({ ...grant, userId: value })}>
                   <SelectTrigger {...fieldA11y('grant-user', fieldErrors.user)} className="h-11 sm:h-9"><SelectValue placeholder={staff.length ? 'Select staff member' : 'No staff'} /></SelectTrigger>
                   <SelectContent>
@@ -505,24 +505,24 @@ export function AccessSection({
               </Field>
             ) : (
               <>
-                <Field id="grant-name" label="Name" error={fieldErrors.name}>
+                <Field id="grant-name" label="Nombre" error={fieldErrors.name}>
                   <Input {...fieldA11y('grant-name', fieldErrors.name)} className="h-11 sm:h-9" value={grant.name} maxLength={200} onChange={event => setGrant({ ...grant, name: event.target.value })} />
                 </Field>
                 <Field id="grant-email" label="Email" error={fieldErrors.email}>
                   <Input {...fieldA11y('grant-email', fieldErrors.email)} className="h-11 sm:h-9" type="email" value={grant.email} maxLength={320} onChange={event => setGrant({ ...grant, email: event.target.value })} />
                 </Field>
-                <Field id="grant-password" label="Temporary password" error={fieldErrors.password} className="sm:col-span-2">
+                <Field id="grant-password" label="Contraseña temporal" error={fieldErrors.password} className="sm:col-span-2">
                   <Input {...fieldA11y('grant-password', fieldErrors.password)} className="h-11 sm:h-9" type="password" autoComplete="new-password" value={grant.password} onChange={event => setGrant({ ...grant, password: event.target.value })} />
                 </Field>
               </>
             )}
-            <Field id="grant-scope" label="Dealer group or rooftop" error={fieldErrors.scope} className="sm:col-span-2">
+            <Field id="grant-scope" label="Grupo o sucursal" error={fieldErrors.scope} className="sm:col-span-2">
               <Select value={grant.scope} onValueChange={value => setGrant({ ...grant, scope: value, accessAllRooftops: value.startsWith('dealer-group:') ? grant.accessAllRooftops : false })}>
-                <SelectTrigger {...fieldA11y('grant-scope', fieldErrors.scope)} className="h-11 sm:h-9"><SelectValue placeholder="Select scope" /></SelectTrigger>
+                <SelectTrigger {...fieldA11y('grant-scope', fieldErrors.scope)} className="h-11 sm:h-9"><SelectValue placeholder="Elige el alcance" /></SelectTrigger>
                 <SelectContent>{scopeOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
-            <Field id="grant-role" label="Role" error={fieldErrors.role}>
+            <Field id="grant-role" label="Rol" error={fieldErrors.role}>
               <Select value={grant.roleId} onValueChange={value => setGrant({ ...grant, roleId: value })}>
                 <SelectTrigger {...fieldA11y('grant-role', fieldErrors.role)} className="h-11 sm:h-9"><SelectValue placeholder={assignableRoles.length ? 'Select role' : 'No assignable roles'} /></SelectTrigger>
                 <SelectContent>
@@ -534,19 +534,19 @@ export function AccessSection({
                 </SelectContent>
               </Select>
             </Field>
-            <Field id="grant-status" label="Status">
+            <Field id="grant-status" label="Estado">
               <Select value={grant.status} onValueChange={value => setGrant({ ...grant, status: value as GrantState['status'] })}>
                 <SelectTrigger id="grant-status" className="h-11 sm:h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active now</SelectItem>
-                  <SelectItem value="invited">Invited</SelectItem>
+                  <SelectItem value="active">Activos ahora</SelectItem>
+                  <SelectItem value="invited">Invitado</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
             {grantScope?.scopeType === 'dealer-group' && (
               <label className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
                 <Checkbox checked={grant.accessAllRooftops} onCheckedChange={value => setGrant({ ...grant, accessAllRooftops: value === true })} />
-                Access to all rooftops
+                Acceso a todas las sucursales
               </label>
             )}
             {grantExisting && (
@@ -554,7 +554,7 @@ export function AccessSection({
                 Already {MEMBERSHIP_STATUS[grantExisting.status]?.label.toLowerCase()} here as {grantExisting.role?.name || 'no role'}; saving replaces it
               </Notice>
             )}
-            <Field id="grant-reason" label="Reason" error={fieldErrors.reason} className="sm:col-span-2">
+            <Field id="grant-reason" label="Motivo" error={fieldErrors.reason} className="sm:col-span-2">
               <Textarea {...fieldA11y('grant-reason', fieldErrors.reason)} rows={3} maxLength={500} value={grant.reason} onChange={event => setGrant({ ...grant, reason: event.target.value })} />
             </Field>
           </div>

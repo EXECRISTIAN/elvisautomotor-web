@@ -134,7 +134,7 @@ function NullableFieldWrapper({
             disabled={isReadOnly}
           />
           <Label htmlFor={nullId} className="text-sm text-gray-600">
-            Set field as null
+            Dejar vacío
           </Label>
         </div>
       )}
@@ -282,7 +282,7 @@ export const controller = (config: {
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Search..."
+          placeholder="Buscar…"
         />
       ),
       Label: ({ label, value }: { label: string; value: string }) => {
@@ -326,35 +326,35 @@ export const controller = (config: {
       },
       types: {
         contains_i: {
-          label: 'Contains',
+          label: 'Contiene',
           initialValue: '',
         },
         not_contains_i: {
-          label: 'Does not contain',
+          label: 'No contiene',
           initialValue: '',
         },
         is_i: {
-          label: 'Is exactly',
+          label: 'Es exactamente',
           initialValue: '',
         },
         not_i: {
-          label: 'Is not exactly',
+          label: 'No es exactamente',
           initialValue: '',
         },
         starts_with_i: {
-          label: 'Starts with',
+          label: 'Empieza con',
           initialValue: '',
         },
         not_starts_with_i: {
-          label: 'Does not start with',
+          label: 'No empieza con',
           initialValue: '',
         },
         ends_with_i: {
-          label: 'Ends with',
+          label: 'Termina con',
           initialValue: '',
         },
         not_ends_with_i: {
-          label: 'Does not end with',
+          label: 'No termina con',
           initialValue: '',
         },
       },

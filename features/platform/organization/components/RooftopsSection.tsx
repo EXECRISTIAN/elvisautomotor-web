@@ -33,7 +33,7 @@ export function RooftopsSection({
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
   const [form, setForm] = useState<FormState | null>(null)
-  const [values, setValues] = useState<FormValues>({ dealerGroupId: '', code: '', name: '', publicSlug: '', timezone: 'America/New_York' })
+  const [values, setValues] = useState<FormValues>({ dealerGroupId: '', code: '', name: '', publicSlug: '', timezone: 'America/Argentina/Buenos_Aires' })
   const [statusChange, setStatusChange] = useState<{ rooftop: Rooftop; status: RecordStatus } | null>(null)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [error, setError] = useState<string | null>(null)
@@ -60,7 +60,7 @@ export function RooftopsSection({
   const openCreate = () => {
     setFieldErrors({})
     setError(null)
-    setValues({ dealerGroupId: groups.length === 1 ? groups[0].id : '', code: '', name: '', publicSlug: '', timezone: 'America/New_York' })
+    setValues({ dealerGroupId: groups.length === 1 ? groups[0].id : '', code: '', name: '', publicSlug: '', timezone: 'America/Argentina/Buenos_Aires' })
     setForm({ mode: 'create' })
   }
 
@@ -126,48 +126,48 @@ export function RooftopsSection({
     <div className="space-y-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Segmented<Filter>
-          label="Filter rooftops"
+          label="Filtrar sucursales"
           value={filter}
           onChange={setFilter}
           size="sm"
           options={[
-            { value: 'all', label: 'All', count: counts.all },
-            { value: 'active', label: 'Active', count: counts.active, tone: 'ok' },
-            { value: 'suspended', label: 'Suspended', count: counts.suspended, tone: 'warn' },
-            { value: 'archived', label: 'Archived', count: counts.archived, tone: 'idle' },
+            { value: 'all', label: 'Todos', count: counts.all },
+            { value: 'active', label: 'Activo', count: counts.active, tone: 'ok' },
+            { value: 'suspended', label: 'Suspendido', count: counts.suspended, tone: 'warn' },
+            { value: 'archived', label: 'Archivado', count: counts.archived, tone: 'idle' },
           ]}
         />
         {canManage && <Track>
           <Pill variant="primary" className="h-11 sm:h-8" disabled={!groups.length} title={!groups.length ? 'No dealer group' : lockedReason} onClick={openCreate}>
             <Plus />
-            New rooftop
+            Nueva sucursal
           </Pill>
         </Track>}
       </div>
       {!canManage && <p className="text-xs text-muted-foreground">{lockedReason}</p>}
       <div className="relative min-w-0 sm:max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Name, code or slug" aria-label="Search rooftops" />
+        <Input className="h-11 pl-9 sm:h-9" value={search} onChange={event => setSearch(event.target.value)} placeholder="Nombre, código o identificador" aria-label="Buscar sucursales" />
       </div>
 
       {visible.length === 0 ? (
         <Panel className="flex flex-col items-center gap-3 px-4 py-12 text-center">
           <p className="text-sm text-muted-foreground">{rooftops.length ? 'No matching rooftops' : 'No rooftops'}</p>
           {rooftops.length > 0 && (
-            <Track><Pill size="sm" onClick={() => { setSearch(''); setFilter('all') }}>Reset filters</Pill></Track>
+            <Track><Pill size="sm" onClick={() => { setSearch(''); setFilter('all') }}>Restablecer filtros</Pill></Track>
           )}
         </Panel>
       ) : (
-        <DeskTable aria-label="Rooftops">
+        <DeskTable aria-label="Sucursales">
           <thead>
             <tr>
-              <Th>Rooftop</Th>
-              <Th priority={2}>Group</Th>
-              <Th priority={3}>Storefront</Th>
-              <Th priority={3}>Time zone</Th>
-              <Th>Status</Th>
-              <Th align="right" priority={2}>Members</Th>
-              <Th align="right"><span className="sr-only">Actions</span></Th>
+              <Th>Sucursal</Th>
+              <Th priority={2}>Grupo</Th>
+              <Th priority={3}>Sitio web</Th>
+              <Th priority={3}>Zona horaria</Th>
+              <Th>Estado</Th>
+              <Th align="right" priority={2}>Integrantes</Th>
+              <Th align="right"><span className="sr-only">Acciones</span></Th>
             </tr>
           </thead>
           <tbody>
@@ -192,9 +192,9 @@ export function RooftopsSection({
                           {verb(status)}
                         </Pill>
                       ))}
-                      <Pill size="sm" className="h-11 sm:h-7" disabled={!canManage} title={lockedReason} onClick={() => openEdit(rooftop)} aria-label={`Edit ${rooftop.name}`}>
+                      <Pill size="sm" className="h-11 sm:h-7" disabled={!canManage} title={lockedReason} onClick={() => openEdit(rooftop)} aria-label={`Editar ${rooftop.name}`}>
                         <Pencil />
-                        Edit
+                        Editar
                       </Pill>
                     </div>}
                   </Td>
@@ -217,29 +217,29 @@ export function RooftopsSection({
         {form && (
           <div className="grid gap-4 sm:grid-cols-2">
             {form.mode === 'create' ? (
-              <Field id="rooftop-group" label="Dealer group" error={fieldErrors.dealerGroup} className="sm:col-span-2">
+              <Field id="rooftop-group" label="Grupo" error={fieldErrors.dealerGroup} className="sm:col-span-2">
                 <Select value={values.dealerGroupId} onValueChange={value => setValues({ ...values, dealerGroupId: value })}>
-                  <SelectTrigger {...fieldA11y('rooftop-group', fieldErrors.dealerGroup)} className="h-11 sm:h-9"><SelectValue placeholder="Select dealer group" /></SelectTrigger>
+                  <SelectTrigger {...fieldA11y('rooftop-group', fieldErrors.dealerGroup)} className="h-11 sm:h-9"><SelectValue placeholder="Elige un grupo" /></SelectTrigger>
                   <SelectContent>{groups.map(group => <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
             ) : null}
-            <Field id="rooftop-code" label="Code" error={fieldErrors.code} hint={form.mode === 'edit' ? 'Fixed after creation' : undefined}>
+            <Field id="rooftop-code" label="Código" error={fieldErrors.code} hint={form.mode === 'edit' ? 'Fixed after creation' : undefined}>
               <Input {...fieldA11y('rooftop-code', fieldErrors.code)} className="h-11 font-mono uppercase sm:h-9" value={values.code} maxLength={40} disabled={form.mode === 'edit'} onChange={event => setValues({ ...values, code: event.target.value.toUpperCase() })} />
             </Field>
-            <Field id="rooftop-name" label="Name" error={fieldErrors.name}>
+            <Field id="rooftop-name" label="Nombre" error={fieldErrors.name}>
               <Input {...fieldA11y('rooftop-name', fieldErrors.name)} className="h-11 sm:h-9" value={values.name} maxLength={200} onChange={event => setValues({ ...values, name: event.target.value })} />
             </Field>
-            <Field id="rooftop-slug" label="Storefront slug" error={fieldErrors.publicSlug}>
+            <Field id="rooftop-slug" label="Identificador del sitio" error={fieldErrors.publicSlug}>
               <Input {...fieldA11y('rooftop-slug', fieldErrors.publicSlug)} className="h-11 sm:h-9" value={values.publicSlug} maxLength={120} onChange={event => setValues({ ...values, publicSlug: event.target.value.toLowerCase() })} />
             </Field>
-            <Field id="rooftop-timezone" label="Time zone" error={fieldErrors.timezone}>
+            <Field id="rooftop-timezone" label="Zona horaria" error={fieldErrors.timezone}>
               <Select value={values.timezone} onValueChange={value => setValues({ ...values, timezone: value })}>
-                <SelectTrigger {...fieldA11y('rooftop-timezone', fieldErrors.timezone)} className="h-11 sm:h-9"><SelectValue placeholder="Select time zone" /></SelectTrigger>
+                <SelectTrigger {...fieldA11y('rooftop-timezone', fieldErrors.timezone)} className="h-11 sm:h-9"><SelectValue placeholder="Elige la zona horaria" /></SelectTrigger>
                 <SelectContent>{zones(values.timezone).map(zone => <SelectItem key={zone} value={zone}>{timeZoneLabel(zone)}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
-            <Field id="rooftop-currency" label="Currency" hint="USD only">
+            <Field id="rooftop-currency" label="Moneda" hint="USD only">
               <Input id="rooftop-currency" className="h-11 font-mono sm:h-9" value={form.mode === 'edit' ? form.rooftop.currencyCode : 'USD'} disabled readOnly />
             </Field>
           </div>
@@ -257,7 +257,7 @@ export function RooftopsSection({
         onOpenChange={open => { if (!open) setStatusChange(null) }}
       >
         {statusChange && statusChange.status !== 'active' && (
-          <Notice tone="warn">Inventory and operating changes stop at this rooftop</Notice>
+          <Notice tone="warn">Se detienen el inventario y los cambios en esta sucursal</Notice>
         )}
       </FormDialog>
     </div>

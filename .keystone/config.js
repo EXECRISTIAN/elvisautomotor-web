@@ -1180,11 +1180,13 @@ var User = (0, import_core.list)({
     ...trackingFields,
     // Basic Info
     name: (0, import_fields5.text)({
+      label: "Nombre y apellido",
       validation: {
         isRequired: true
       }
     }),
     email: (0, import_fields5.text)({
+      label: "Email",
       isFilterable: false,
       isOrderable: false,
       isIndexed: "unique",
@@ -1193,6 +1195,7 @@ var User = (0, import_core.list)({
       }
     }),
     password: (0, import_fields5.password)({
+      label: "Contrase\xF1a",
       access: {
         read: import_access2.denyAll,
         update: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id
@@ -1200,12 +1203,14 @@ var User = (0, import_core.list)({
       validation: { isRequired: true }
     }),
     role: (0, import_fields5.relationship)({
+      label: "Rol",
       ref: "Role.assignedTo",
       access: {
         create: permissions.canManageRoles,
         update: ({ session, item }) => permissions.canManageRoles({ session }) && session?.itemId !== item.id
       },
       ui: {
+        description: 'Necesario para que aparezca en Personal. Para un vendedor, elige "Vendedor".',
         createView: { fieldMode: (args) => permissions.canManageRoles(args) ? "edit" : "hidden" },
         itemView: {
           fieldMode: ({ session, item }) => permissions.canManageRoles({ session }) && rules.canUpdatePeople({ session }) === true && session?.itemId !== item?.id ? "edit" : "read"
@@ -1216,37 +1221,38 @@ var User = (0, import_core.list)({
       ref: "DealerGroupMembership.user",
       many: true,
       access: { update: import_access2.denyAll },
-      ui: { displayMode: "count" }
+      ui: { displayMode: "count", createView: { fieldMode: "hidden" } }
     }),
     rooftopMemberships: (0, import_fields5.relationship)({
       ref: "RooftopMembership.user",
       many: true,
       access: { update: import_access2.denyAll },
-      ui: { displayMode: "count" }
+      ui: { displayMode: "count", createView: { fieldMode: "hidden" } }
     }),
     membershipAuditEvents: (0, import_fields5.relationship)({
       ref: "MembershipAuditEvent.targetUser",
       many: true,
       access: { update: import_access2.denyAll },
-      ui: { displayMode: "count" }
+      ui: { displayMode: "count", createView: { fieldMode: "hidden" } }
     }),
     performedMembershipAuditEvents: (0, import_fields5.relationship)({
       ref: "MembershipAuditEvent.actor",
       many: true,
       access: { update: import_access2.denyAll },
-      ui: { displayMode: "count" }
+      ui: { displayMode: "count", createView: { fieldMode: "hidden" } }
     }),
     domainAuditEvents: (0, import_fields5.relationship)({
       ref: "DomainAuditEvent.actor",
       many: true,
       access: { update: import_access2.denyAll },
-      ui: { displayMode: "count" }
+      ui: { displayMode: "count", createView: { fieldMode: "hidden" } }
     }),
     apiKeys: (0, import_fields5.relationship)({
       access: { create: () => false, update: () => false },
       ref: "ApiKey.user",
       many: true,
       ui: {
+        createView: { fieldMode: "hidden" },
         itemView: { fieldMode: "read" }
       }
     }),
@@ -1259,7 +1265,7 @@ var User = (0, import_core.list)({
         { label: "Dismissed", value: "dismissed" }
       ],
       defaultValue: "not_started",
-      label: "Onboarding Status",
+      label: "Estado de la configuraci\xF3n inicial",
       ui: {
         createView: { fieldMode: "hidden" },
         itemView: { fieldMode: "read" },
@@ -1268,73 +1274,76 @@ var User = (0, import_core.list)({
     }),
     // Dealership-specific fields
     phone: (0, import_fields5.text)({
-      label: "Phone Number",
+      label: "Tel\xE9fono",
       ui: {
-        description: "Contact phone number"
+        description: "Tel\xE9fono de contacto (opcional)"
       }
     }),
     employeeId: (0, import_fields5.text)({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople, read: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id },
-      label: "Employee ID",
+      label: "Legajo",
       ui: {
-        description: "Internal employee identifier",
+        createView: { fieldMode: "hidden" },
+        description: "N\xFAmero interno del empleado (opcional)",
         itemView: { fieldMode: ({ session, item }) => permissions.canManagePeople({ session }) ? "edit" : session?.itemId === item?.id ? "read" : "hidden" }
       }
     }),
     commissionRate: (0, import_fields5.float)({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople, read: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id },
-      label: "Commission Rate (%)",
+      label: "Comisi\xF3n (%)",
       defaultValue: 0,
       validation: { min: 0, max: 100 },
       ui: {
-        description: "Sales commission percentage (e.g., 10 for 10%)",
+        createView: { fieldMode: "hidden" },
+        description: "Porcentaje de comisi\xF3n por venta (por ejemplo, 10 para 10%)",
         itemView: { fieldMode: ({ session, item }) => permissions.canManagePeople({ session }) ? "edit" : session?.itemId === item?.id ? "read" : "hidden" }
       }
     }),
     isSalesperson: (0, import_fields5.checkbox)({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: "Is Salesperson",
+      label: "Es vendedor",
       ui: {
-        description: "Whether this user is a salesperson",
+        description: "Marca si atiende consultas y operaciones de venta.",
         itemView: { fieldMode: (args) => permissions.canManagePeople(args) ? "edit" : "read" }
       }
     }),
     isServiceAdvisor: (0, import_fields5.checkbox)({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: "Is Service Advisor",
+      label: "Es asesor de servicio",
       ui: {
-        description: "Whether this user is a service advisor",
+        createView: { fieldMode: "hidden" },
+        description: "Atiende el taller (no se usa en Elvis por ahora).",
         itemView: { fieldMode: (args) => permissions.canManagePeople(args) ? "edit" : "read" }
       }
     }),
     isFinanceManager: (0, import_fields5.checkbox)({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: "Is Finance Manager",
+      label: "Gestiona cr\xE9ditos",
       ui: {
-        description: "Whether this user handles financing",
+        description: "Marca si gestiona solicitudes de cr\xE9dito con los bancos.",
         itemView: { fieldMode: (args) => permissions.canManagePeople(args) ? "edit" : "read" }
       }
     }),
     // Reverse relationships are read-only. Their owning domain commands control linkage.
-    assignedLeads: (0, import_fields5.relationship)({ ref: "Lead.assignedSalesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Assigned Leads" }),
-    deals: (0, import_fields5.relationship)({ ref: "Deal.salesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Deals" }),
-    customerAppointments: (0, import_fields5.relationship)({ ref: "ServiceAppointment.customer", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Service Appointments (Customer)" }),
-    techAppointments: (0, import_fields5.relationship)({ ref: "ServiceAppointment.assignedTech", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Service Appointments (Technician)" }),
-    priceChanges: (0, import_fields5.relationship)({ ref: "PriceHistory.changedBy", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Price Changes" }),
-    customerMergeEvents: (0, import_fields5.relationship)({ ref: "CustomerMergeEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    leadAssignmentsFrom: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.fromUser", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    leadAssignmentsTo: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.toUser", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    performedLeadAssignments: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    leadRoutingRules: (0, import_fields5.relationship)({ ref: "LeadRoutingRule.assignee", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    customerContactPreferenceEvents: (0, import_fields5.relationship)({ ref: "CustomerContactPreferenceEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    assignedSalesVisits: (0, import_fields5.relationship)({ ref: "SalesVisit.assignedSalesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    managedSalesVisits: (0, import_fields5.relationship)({ ref: "SalesVisit.manager", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" } }),
-    interactions: (0, import_fields5.relationship)({ ref: "CustomerInteraction.performedBy", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Customer Interactions" }),
-    tasks: (0, import_fields5.relationship)({ ref: "Task.assignedTo", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Tasks" }),
-    dealApprovals: (0, import_fields5.relationship)({ ref: "DealApproval.approver", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count" }, label: "Deal Approvals" })
+    assignedLeads: (0, import_fields5.relationship)({ ref: "Lead.assignedSalesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Consultas asignadas" }),
+    deals: (0, import_fields5.relationship)({ ref: "Deal.salesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Operaciones" }),
+    customerAppointments: (0, import_fields5.relationship)({ ref: "ServiceAppointment.customer", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Citas de taller (como cliente)" }),
+    techAppointments: (0, import_fields5.relationship)({ ref: "ServiceAppointment.assignedTech", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Citas de taller (como t\xE9cnico)" }),
+    priceChanges: (0, import_fields5.relationship)({ ref: "PriceHistory.changedBy", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Cambios de precio" }),
+    customerMergeEvents: (0, import_fields5.relationship)({ ref: "CustomerMergeEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    leadAssignmentsFrom: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.fromUser", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    leadAssignmentsTo: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.toUser", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    performedLeadAssignments: (0, import_fields5.relationship)({ ref: "LeadAssignmentEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    leadRoutingRules: (0, import_fields5.relationship)({ ref: "LeadRoutingRule.assignee", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    customerContactPreferenceEvents: (0, import_fields5.relationship)({ ref: "CustomerContactPreferenceEvent.actor", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    assignedSalesVisits: (0, import_fields5.relationship)({ ref: "SalesVisit.assignedSalesperson", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    managedSalesVisits: (0, import_fields5.relationship)({ ref: "SalesVisit.manager", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } } }),
+    interactions: (0, import_fields5.relationship)({ ref: "CustomerInteraction.performedBy", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Interacciones con clientes" }),
+    tasks: (0, import_fields5.relationship)({ ref: "Task.assignedTo", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Tareas" }),
+    dealApprovals: (0, import_fields5.relationship)({ ref: "DealApproval.approver", many: true, access: { update: import_access2.denyAll }, ui: { displayMode: "count", createView: { fieldMode: "hidden" } }, label: "Aprobaciones" })
   }
 });
 
@@ -1605,10 +1614,10 @@ async function recordDomainEvent(context, input2) {
 
 // features/lib/vehicleSpecs.ts
 var FUEL_OPTIONS = [
-  { value: "nafta", label: "Nafta" },
+  { value: "nafta", label: "Gasolina" },
   { value: "diesel", label: "Di\xE9sel" },
   { value: "gnc", label: "GNC" },
-  { value: "nafta-gnc", label: "Nafta / GNC" },
+  { value: "nafta-gnc", label: "Gasolina / GNC" },
   { value: "hibrido", label: "H\xEDbrido" },
   { value: "electrico", label: "El\xE9ctrico" }
 ];
@@ -3792,7 +3801,7 @@ var Bank = (0, import_core18.list)({
     website: (0, import_fields23.text)({ label: "Sitio web", validation: { match: { regex: /^$|^https?:\/\//, explanation: "Debe empezar con http:// o https://" } } }),
     notes: (0, import_fields23.text)({ label: "Notas internas", ui: { displayMode: "textarea" } }),
     // Integración futura: clave del proveedor (ver features/lib/financing/providers.ts). "manual" = sin API.
-    providerKey: (0, import_fields23.text)({ label: "Integraci\xF3n", defaultValue: "manual", ui: { description: 'Dej\xE1 "manual" hasta que exista una integraci\xF3n con la API del banco.' } }),
+    providerKey: (0, import_fields23.text)({ label: "Integraci\xF3n", defaultValue: "manual", ui: { description: 'Deja "manual" hasta que exista una integraci\xF3n con la API del banco.' } }),
     plans: (0, import_fields23.relationship)({ ref: "FinancingPlan.bank", many: true, label: "Planes" })
   }
 });
@@ -3813,10 +3822,10 @@ function simulate(plan, input2) {
   const price = Math.round(input2.priceCents);
   const down = Math.round(input2.downPaymentCents);
   const n = input2.termMonths;
-  if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: "Indic\xE1 el precio del veh\xEDculo." };
+  if (!Number.isFinite(price) || price <= 0) return { ok: false, reason: "Indica el precio del veh\xEDculo." };
   if (!Number.isFinite(down) || down < 0) return { ok: false, reason: "El anticipo no es v\xE1lido." };
   if (down >= price) return { ok: false, reason: "El anticipo cubre el precio total: no hace falta financiar." };
-  if (!plan.termsMonths.includes(n)) return { ok: false, reason: "Eleg\xED un plazo disponible para este plan." };
+  if (!plan.termsMonths.includes(n)) return { ok: false, reason: "Elige un plazo disponible para este plan." };
   const financed = price - down;
   if (plan.maxFinancedBps != null && financed > Math.floor(price * plan.maxFinancedBps / 1e4)) {
     const minDown = price - Math.floor(price * plan.maxFinancedBps / 1e4);
@@ -3851,7 +3860,7 @@ var FinancingPlan = (0, import_core19.list)({
     validate: ({ resolvedData, item, addValidationError, operation }) => {
       if (operation === "delete") return;
       const terms = resolvedData.termsMonths ?? item?.termsMonths;
-      if (!parseTerms(terms).length) addValidationError("Carg\xE1 al menos un plazo en meses (por ejemplo: 12, 24, 36).");
+      if (!parseTerms(terms).length) addValidationError("Carga al menos un plazo en meses (por ejemplo: 12, 24, 36).");
       const min = resolvedData.minAmountCents ?? item?.minAmountCents;
       const max = resolvedData.maxAmountCents ?? item?.maxAmountCents;
       if (min != null && max != null && min > max) addValidationError("El monto m\xEDnimo no puede superar al m\xE1ximo.");
@@ -3935,7 +3944,7 @@ var ProgressiveOffer = (0, import_core20.list)({
   fields: {
     ...trackingFields,
     number: (0, import_fields25.integer)({ label: "N\xFAmero de oferta", ui: { description: 'Ej.: 7 para "Oferta progresiva N7"' } }),
-    title: (0, import_fields25.text)({ label: "Veh\xEDculo (t\xEDtulo)", validation: { isRequired: true }, ui: { description: "Ej.: Chevrolet Meriva 2010 nafta" } }),
+    title: (0, import_fields25.text)({ label: "Veh\xEDculo (t\xEDtulo)", validation: { isRequired: true }, ui: { description: "Ej.: Chevrolet Meriva 2010 gasolina" } }),
     vehicle: (0, import_fields25.relationship)({ ref: "Vehicle", label: "Veh\xEDculo del inventario (opcional)", ui: { displayMode: "select", labelField: "stockNumber" } }),
     photo: (0, import_fields25.image)({ storage: "my_images", label: "Foto" }),
     photoUrl: (0, import_fields25.text)({ label: "Foto (URL)", ui: { description: "Alternativa a subir la foto: una URL https o una ruta /images/..." } }),
@@ -3972,7 +3981,7 @@ var ProgressiveOffer = (0, import_core20.list)({
     financing: (0, import_fields25.text)({ label: "Financiaci\xF3n", ui: { displayMode: "textarea", description: "Ej.: Contado o hasta 90% financiado con Banco Provincia aprobado. Anticipo m\xEDnimo $500.000." } }),
     conditions: (0, import_fields25.text)({ label: "Condiciones y aclaraciones", ui: { displayMode: "textarea", description: "Ej.: Tomado en Plan Canje, sin inspecci\xF3n y sin garant\xEDa. Precio con transferencia incluida." } }),
     includesTransfer: (0, import_fields25.select)({ label: "Transferencia", type: "string", defaultValue: "included", options: [{ label: "Incluida (se entrega transferido)", value: "included" }, { label: "No incluida", value: "excluded" }] }),
-    noAppointment: (0, import_fields25.select)({ label: "Turno", type: "string", defaultValue: "walk-in", options: [{ label: "Se puede venir sin turno", value: "walk-in" }, { label: "Con turno", value: "appointment" }] })
+    noAppointment: (0, import_fields25.select)({ label: "Cita", type: "string", defaultValue: "walk-in", options: [{ label: "Se puede venir sin cita", value: "walk-in" }, { label: "Con cita", value: "appointment" }] })
   }
 });
 
@@ -5086,7 +5095,7 @@ var DealershipProfile = (0, import_core26.list)({
       defaultValue: "",
       label: "WhatsApp",
       ui: { description: "N\xFAmero con c\xF3digo de pa\xEDs, sin espacios ni signos. Ej.: 5491122334455" },
-      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: "Us\xE1 solo d\xEDgitos, con c\xF3digo de pa\xEDs (8 a 15 d\xEDgitos)." } }
+      validation: { match: { regex: /^$|^\d{8,15}$/, explanation: "Usa solo d\xEDgitos, con c\xF3digo de pa\xEDs (8 a 15 d\xEDgitos)." } }
     }),
     addressLine1: (0, import_fields31.text)({ defaultValue: "" }),
     addressLine2: (0, import_fields31.text)({ defaultValue: "" }),
@@ -5441,7 +5450,7 @@ var Rooftop = (0, import_core31.list)({
       defaultValue: "active",
       validation: { isRequired: true }
     }),
-    timezone: (0, import_fields36.text)({ defaultValue: "America/New_York", validation: { isRequired: true } }),
+    timezone: (0, import_fields36.text)({ defaultValue: "America/Argentina/Buenos_Aires", validation: { isRequired: true } }),
     currencyCode: (0, import_fields36.text)({ defaultValue: "USD", validation: { isRequired: true, length: { min: 3, max: 3 } } }),
     dealerGroup: (0, import_fields36.relationship)({ ref: "DealerGroup.rooftops", access: { update: import_access45.denyAll } }),
     memberships: (0, import_fields36.relationship)({ ref: "RooftopMembership.rooftop", many: true, access: { update: import_access45.denyAll } }),
@@ -7795,19 +7804,19 @@ function inventoryPublicListingState(stock) {
 // features/keystone/mutations/submissionUtils.ts
 function requiredText(value, label2, maxLength = 500) {
   const text80 = String(value || "").trim();
-  if (!text80) throw new SubmissionError(`${label2} is required.`);
-  if (text80.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
+  if (!text80) throw new SubmissionError(`${label2}: es obligatorio.`);
+  if (text80.length > maxLength) throw new SubmissionError(`${label2}: m\xE1ximo ${maxLength} caracteres.`);
   return text80;
 }
 function optionalText(value, maxLength = 4e3, label2 = "Value") {
   const text80 = String(value || "").trim();
-  if (text80.length > maxLength) throw new SubmissionError(`${label2} must be ${maxLength} characters or fewer.`);
+  if (text80.length > maxLength) throw new SubmissionError(`${label2}: m\xE1ximo ${maxLength} caracteres.`);
   return text80;
 }
 function validEmail(value) {
   const email = requiredText(value, "Email", 320).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new SubmissionError("A valid email is required.");
+    throw new SubmissionError("Ingresa un email v\xE1lido.");
   }
   return email;
 }
@@ -7815,19 +7824,19 @@ function validPhone(value, required11 = true) {
   const phone = optionalText(value, 50, "Phone");
   if (!phone && !required11) return "";
   const digits = phone.replace(/\D/g, "");
-  if (digits.length < 7 || digits.length > 15) throw new SubmissionError("A valid phone number is required.");
+  if (digits.length < 7 || digits.length > 15) throw new SubmissionError("Ingresa un tel\xE9fono v\xE1lido.");
   return phone;
 }
 function finiteNumber(value, label2, options = {}) {
   const number = Number(value);
-  if (!Number.isFinite(number)) throw new SubmissionError(`${label2} must be a finite number.`);
-  if (options.integer && !Number.isInteger(number)) throw new SubmissionError(`${label2} must be a whole number.`);
-  if (options.min != null && number < options.min) throw new SubmissionError(`${label2} must be at least ${options.min}.`);
-  if (options.max != null && number > options.max) throw new SubmissionError(`${label2} must be at most ${options.max}.`);
+  if (!Number.isFinite(number)) throw new SubmissionError(`${label2}: ingresa un n\xFAmero v\xE1lido.`);
+  if (options.integer && !Number.isInteger(number)) throw new SubmissionError(`${label2}: ingresa un n\xFAmero entero.`);
+  if (options.min != null && number < options.min) throw new SubmissionError(`${label2}: el m\xEDnimo es ${options.min}.`);
+  if (options.max != null && number > options.max) throw new SubmissionError(`${label2}: el m\xE1ximo es ${options.max}.`);
   return number;
 }
 function splitCustomerName(value, fallbackFirst = "Website", fallbackLast = "Customer") {
-  const parts = requiredText(value, "Customer name", 200).split(/\s+/).filter(Boolean);
+  const parts = requiredText(value, "Nombre", 200).split(/\s+/).filter(Boolean);
   const firstName = parts.shift() || fallbackFirst;
   const lastName = parts.length ? parts.join(" ") : fallbackLast;
   return { firstName, lastName };
@@ -7837,24 +7846,24 @@ function parseScheduledTime(dateValue, timeValue, label2 = "Appointment", timezo
   const time = requiredText(timeValue, `${label2} time`, 20);
   const match = time.match(/^(\d{1,2}):(\d{2})(?:\s*([ap]m))?$/i);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date4) || !match) {
-    throw new SubmissionError(`${label2} date or time is invalid.`);
+    throw new SubmissionError(`${label2}: la fecha u hora no es v\xE1lida.`);
   }
   let hours = Number(match[1]);
   const minutes = Number(match[2]);
   const meridiem = match[3]?.toLowerCase();
-  if (meridiem && (hours < 1 || hours > 12)) throw new SubmissionError(`${label2} date or time is invalid.`);
+  if (meridiem && (hours < 1 || hours > 12)) throw new SubmissionError(`${label2}: la fecha u hora no es v\xE1lida.`);
   if (meridiem === "pm" && hours < 12) hours += 12;
   if (meridiem === "am" && hours === 12) hours = 0;
-  if (hours > 23 || minutes > 59) throw new SubmissionError(`${label2} date or time is invalid.`);
+  if (hours > 23 || minutes > 59) throw new SubmissionError(`${label2}: la fecha u hora no es v\xE1lida.`);
   let scheduled;
   try {
     scheduled = new Date(localScheduleIso(date4, hours, minutes, timezone));
   } catch {
-    throw new SubmissionError(`${label2} date or time is invalid or ambiguous in the dealership timezone.`);
+    throw new SubmissionError(`${label2}: la fecha u hora no es v\xE1lida.`);
   }
   const now = Date.now();
   if (scheduled.getTime() < now - 5 * 60 * 1e3 || scheduled.getTime() > now + 366 * 24 * 60 * 60 * 1e3) {
-    throw new SubmissionError(`${label2} must be within the next year.`);
+    throw new SubmissionError(`${label2}: debe ser dentro del pr\xF3ximo a\xF1o.`);
   }
   return { iso: scheduled.toISOString(), date: date4, time };
 }
@@ -7870,7 +7879,7 @@ var PUBLIC_SUBMISSION_VEHICLE_QUERY = `
 `;
 function unavailableVehicle() {
   throw new SubmissionError(
-    "The selected vehicle is no longer available. Please choose another vehicle.",
+    "El veh\xEDculo elegido ya no est\xE1 disponible. Elige otro.",
     404,
     "VEHICLE_NOT_AVAILABLE"
   );
@@ -8908,19 +8917,19 @@ async function updateActiveUser(_root, { data }, context) {
 function publicSubmissionIdempotencyKey(value) {
   const key7 = String(value || "").trim();
   if (key7.length < 8 || key7.length > 180 || !/^[a-zA-Z0-9:_-]+$/.test(key7)) {
-    throw new SubmissionError("A valid idempotency key is required.", 400, "INVALID_IDEMPOTENCY_KEY");
+    throw new SubmissionError("La solicitud no es v\xE1lida. Recarga la p\xE1gina e intenta de nuevo.", 400, "INVALID_IDEMPOTENCY_KEY");
   }
   return key7;
 }
 async function publicSubmissionRooftopSlug(context, value) {
   const slug2 = String(value ?? "").trim().toLowerCase();
   if (slug2 && (slug2.length < 2 || slug2.length > 120 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug2))) {
-    throw new SubmissionError("A valid dealership location is required.", 400, "INVALID_ROOFTOP");
+    throw new SubmissionError("No pudimos identificar la agencia.", 400, "INVALID_ROOFTOP");
   }
   try {
     return await assertStorefrontRooftopSlug(context, slug2);
   } catch {
-    throw new SubmissionError("This dealership location is unavailable.", 404, "INVALID_ROOFTOP");
+    throw new SubmissionError("La agencia no est\xE1 disponible en este momento.", 404, "INVALID_ROOFTOP");
   }
 }
 function jsonSafe(value) {
@@ -8933,7 +8942,7 @@ async function lockCurrentPublicRooftop(context, publicSlug, expectedRooftopId) 
     take: 2
   });
   if (candidates.length !== 1 || candidates[0].id !== expectedRooftopId || !candidates[0].dealerGroupId) {
-    throw new SubmissionError("This dealership location is unavailable.", 404, "INVALID_ROOFTOP");
+    throw new SubmissionError("La agencia no est\xE1 disponible en este momento.", 404, "INVALID_ROOFTOP");
   }
   const candidate = candidates[0];
   await context.prisma.$queryRaw`SELECT "id" FROM "Rooftop" WHERE "id" = ${candidate.id} FOR SHARE`;
@@ -8943,14 +8952,14 @@ async function lockCurrentPublicRooftop(context, publicSlug, expectedRooftopId) 
     select: { id: true, publicSlug: true, status: true, dealerGroupId: true, dealerGroup: { select: { id: true, status: true } } }
   });
   if (current?.id !== expectedRooftopId || current.publicSlug !== publicSlug || current.status !== "active" || current.dealerGroupId !== candidate.dealerGroupId || current.dealerGroup?.id !== candidate.dealerGroupId || current.dealerGroup?.status !== "active") {
-    throw new SubmissionError("This dealership location is unavailable.", 404, "INVALID_ROOFTOP");
+    throw new SubmissionError("La agencia no est\xE1 disponible en este momento.", 404, "INVALID_ROOFTOP");
   }
 }
 async function runPublicSubmission(options) {
   const rooftopSlug = await publicSubmissionRooftopSlug(options.context, options.rooftopSlug);
   const idempotencyKey6 = publicSubmissionIdempotencyKey(options.idempotencyKey);
   if (String(options.honeypot || "").trim()) {
-    throw new SubmissionError("Unable to process this request.", 400, "INVALID_SUBMISSION");
+    throw new SubmissionError("No pudimos procesar la solicitud.", 400, "INVALID_SUBMISSION");
   }
   const rooftopId = await resolvePublicRooftopId(options.context, rooftopSlug);
   const eventKey = `public-submission:${options.workflow}:${idempotencyKey6}`;
@@ -8971,7 +8980,7 @@ async function runPublicSubmission(options) {
       const metadata = existing.metadata;
       if (metadata?.submissionRequestHash !== submissionRequestHash) {
         throw new SubmissionError(
-          "The idempotency key was already used for a different request.",
+          "La solicitud no es v\xE1lida. Recarga la p\xE1gina e intenta de nuevo.",
           409,
           "IDEMPOTENCY_CONFLICT"
         );
@@ -9019,8 +9028,8 @@ var INTENTS = {
 };
 var CONTACTS = /* @__PURE__ */ new Set(["email", "phone", "text"]);
 async function submitInquiry(_root, { data }, context) {
-  const firstName = requiredText(data.firstName, "First name", 100);
-  const lastName = requiredText(data.lastName, "Last name", 100);
+  const firstName = requiredText(data.firstName, "Nombre", 100);
+  const lastName = requiredText(data.lastName, "Apellido", 100);
   const email = validEmail(data.email);
   const phone = validPhone(data.phone, false);
   const message = optionalText(data.message, 4e3, "Message");
@@ -9028,16 +9037,16 @@ async function submitInquiry(_root, { data }, context) {
   const preferredContact = optionalText(data.preferredContact || "email", 20, "Preferred contact");
   const intentLabel = INTENTS[intent];
   if (!intentLabel || !CONTACTS.has(preferredContact)) {
-    throw new SubmissionError("Inquiry type or preferred contact method is invalid.");
+    throw new SubmissionError("El tipo de consulta o el medio de contacto no es v\xE1lido.");
   }
   if ((preferredContact !== "email" || intent !== "general-contact") && !phone) {
-    throw new SubmissionError("A phone number is required for this request.");
+    throw new SubmissionError("Ingresa un tel\xE9fono para esta consulta.");
   }
   if ((intent === "general-contact" || intent === "vehicle-question") && !message) {
-    throw new SubmissionError("A message is required for this request.");
+    throw new SubmissionError("Escribe tu consulta.");
   }
   if (intent !== "general-contact" && !data.vehicleId) {
-    throw new SubmissionError("A selected vehicle is required for this request.");
+    throw new SubmissionError("Elige un veh\xEDculo para esta consulta.");
   }
   return runPublicSubmission({
     context,
@@ -9526,12 +9535,12 @@ async function deliverRequestReceipt(context, receipt) {
 
 // features/keystone/mutations/submitTestDrive.ts
 async function submitTestDrive(_root, { data }, context) {
-  const customerName = requiredText(data.customerName, "Customer name", 200);
+  const customerName = requiredText(data.customerName, "Nombre", 200);
   const email = validEmail(data.customerEmail);
   const phone = validPhone(data.customerPhone);
   const message = optionalText(data.message, 4e3, "Message");
-  const requestedDate = requiredText(data.preferredDate, "Preferred date", 10);
-  const requestedTime = requiredText(data.preferredTime, "Preferred time", 20);
+  const requestedDate = requiredText(data.preferredDate, "Fecha", 10);
+  const requestedTime = requiredText(data.preferredTime, "Hora", 20);
   const { firstName, lastName } = splitCustomerName(customerName, "Website", "Lead");
   return runPublicSubmission({
     context,
@@ -9642,13 +9651,13 @@ async function attachTradeInPhoto(_root, { tradeInId, photoToken, photo }, conte
   const actual = Buffer.from(hashToken(token), "hex");
   const valid = Boolean(tradeIn) && expected.length === actual.length && (0, import_node_crypto5.timingSafeEqual)(expected, actual);
   if (!valid || !tradeIn?.photoTokenExpiresAt || tradeIn.photoTokenExpiresAt.getTime() < Date.now()) {
-    throw new SubmissionError("El plazo para adjuntar fotos venci\xF3. Envialas por WhatsApp.", 403, "PHOTO_TOKEN_INVALID");
+    throw new SubmissionError("El plazo para adjuntar fotos venci\xF3. Env\xEDalas por WhatsApp.", 403, "PHOTO_TOKEN_INVALID");
   }
   if (tradeIn._count.photos >= MAX_TRADE_IN_PHOTOS) {
-    throw new SubmissionError(`Pod\xE9s adjuntar hasta ${MAX_TRADE_IN_PHOTOS} fotos.`, 400, "PHOTO_LIMIT");
+    throw new SubmissionError(`Puedes adjuntar hasta ${MAX_TRADE_IN_PHOTOS} fotos.`, 400, "PHOTO_LIMIT");
   }
   const upload = await photo?.upload;
-  if (!upload?.createReadStream) throw new SubmissionError("Eleg\xED una foto.", 400, "PHOTO_MISSING");
+  if (!upload?.createReadStream) throw new SubmissionError("Elige una foto.", 400, "PHOTO_MISSING");
   const extension = String(upload.filename || "").split(".").pop()?.toLowerCase() || "";
   if (!ALLOWED_EXTENSIONS.has(extension) || !/^image\/(jpeg|png|webp)$/.test(String(upload.mimetype || ""))) {
     throw new SubmissionError("Las fotos deben ser JPG, PNG o WebP.", 400, "PHOTO_TYPE");
@@ -9657,7 +9666,7 @@ async function attachTradeInPhoto(_root, { tradeInId, photoToken, photo }, conte
   try {
     stored = await context.images(PHOTO_STORAGE).getDataFromStream(upload.createReadStream(), String(upload.filename || "foto"));
   } catch {
-    throw new SubmissionError("No pudimos procesar la foto. Prob\xE1 con otra imagen.", 400, "PHOTO_UNREADABLE");
+    throw new SubmissionError("No pudimos procesar la foto. Prueba con otra imagen.", 400, "PHOTO_UNREADABLE");
   }
   if (!stored || stored.filesize > MAX_PHOTO_BYTES) {
     if (stored) await context.images(PHOTO_STORAGE).deleteAtSource(stored.id, stored.extension).catch(() => {
@@ -9683,29 +9692,29 @@ async function attachTradeInPhoto(_root, { tradeInId, photoToken, photo }, conte
 var CONDITIONS = /* @__PURE__ */ new Set(["excellent", "good", "fair", "poor"]);
 var OWNERSHIP = /* @__PURE__ */ new Set(["own", "financing", "lease"]);
 async function submitTradeIn(_root, { data }, context) {
-  const firstName = requiredText(data.firstName, "First name", 100);
-  const lastName = requiredText(data.lastName, "Last name", 100);
+  const firstName = requiredText(data.firstName, "Nombre", 100);
+  const lastName = requiredText(data.lastName, "Apellido", 100);
   const email = validEmail(data.email);
   const phone = validPhone(data.phone);
-  const year = finiteNumber(data.year, "Vehicle year", {
+  const year = finiteNumber(data.year, "A\xF1o", {
     min: 1980,
     max: (/* @__PURE__ */ new Date()).getFullYear() + 1,
     integer: true
   });
-  const mileage = finiteNumber(data.mileage, "Mileage", { min: 0, max: 2e6, integer: true });
-  const make = requiredText(data.make, "Make", 100);
-  const model = requiredText(data.model, "Model", 100);
+  const mileage = finiteNumber(data.mileage, "Kilometraje", { min: 0, max: 2e6, integer: true });
+  const make = requiredText(data.make, "Marca", 100);
+  const model = requiredText(data.model, "Modelo", 100);
   const trim = optionalText(data.trim, 100, "Trim");
   const vin = optionalText(data.vin, 17, "VIN").toUpperCase();
-  const condition = requiredText(data.condition, "Condition", 30);
-  const ownership = requiredText(data.ownership, "Ownership", 30);
+  const condition = requiredText(data.condition, "Estado", 30);
+  const ownership = requiredText(data.ownership, "Titularidad", 30);
   const notes = optionalText(data.notes, 2e3, "Informaci\xF3n adicional");
-  const payoffAmount = finiteNumber(data.payoffAmount || 0, "Saldo de prenda", { min: 0, max: 1e10 });
+  const payoffAmount = finiteNumber(data.payoffAmount || 0, "Saldo del cr\xE9dito", { min: 0, max: 1e10 });
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError("El estado o la titularidad no son v\xE1lidos.");
   }
   if (vin && (vin.length !== 17 || /[IOQ]/.test(vin))) {
-    throw new SubmissionError("Si carg\xE1s el n\xFAmero de chasis, debe tener 17 caracteres.");
+    throw new SubmissionError("Si cargas el n\xFAmero de chasis, debe tener 17 caracteres.");
   }
   const summary = `${year} ${make} ${model}${trim ? ` ${trim}` : ""}`;
   const outcome = await runPublicSubmission({
@@ -9770,7 +9779,7 @@ async function submitTradeIn(_root, { data }, context) {
               tradeInVehicle: summary,
               notes: [
                 `Usado ofrecido desde la web: ${summary}, ${mileage} km.`,
-                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo de prenda informado: ${formatCurrency(payoffAmount)}` : ""}.`,
+                `Titularidad: ${ownership}${payoffAmount > 0 ? `; saldo del cr\xE9dito informado: ${formatCurrency(payoffAmount)}` : ""}.`,
                 ...notes ? [`Informaci\xF3n del cliente: ${notes}`] : [],
                 `Veh\xEDculo de inter\xE9s: ${interested}.`
               ].join("\n"),
@@ -9877,7 +9886,7 @@ async function loadPublicProgressiveOffers(context, now = /* @__PURE__ */ new Da
       title: offer.title,
       imageUrl: offer.photo?.url || offer.photoUrl || null,
       vehicleId: offer.vehicle?.id || null,
-      startsAt: offer.startsAt,
+      startsAt: new Date(offer.startsAt),
       startPriceCents: offer.startPriceCents,
       stepCents: offer.stepCents,
       stepMinutes: offer.stepMinutes,
@@ -9966,17 +9975,17 @@ async function submitFinancing(_root, { data }, context) {
   let apr = finiteNumber(data.apr || 0, "Tasa", { min: 0, max: 1e3 });
   const loanTerm = finiteNumber(data.loanTerm || 0, "Plazo", { min: 0, max: 120, integer: true });
   if (data.consent !== true) {
-    throw new SubmissionError("Ten\xE9s que aceptar que te contactemos.");
+    throw new SubmissionError("Tienes que aceptar que te contactemos.");
   }
   if (data.privacyAcknowledged !== true) {
-    throw new SubmissionError("Ten\xE9s que aceptar el aviso de privacidad.");
+    throw new SubmissionError("Tienes que aceptar el aviso de privacidad.");
   }
   const financingPlanId = data.financingPlanId ? String(data.financingPlanId) : "";
   let plan = null;
   if (financingPlanId) {
     plan = (await loadActiveFinancingPlans(context)).find((item) => item.id === financingPlanId) || null;
-    if (!plan) throw new SubmissionError("El plan elegido ya no est\xE1 vigente. Volv\xE9 a simular.");
-    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError("Eleg\xED un plazo disponible para el plan.");
+    if (!plan) throw new SubmissionError("El plan elegido ya no est\xE1 vigente. Vuelve a simular.");
+    if (!plan.termsMonths.includes(loanTerm)) throw new SubmissionError("Elige un plazo disponible para el plan.");
     const price = finiteNumber(data.vehiclePrice, "Precio del veh\xEDculo", { min: 1, max: MAX_AMOUNT });
     const result2 = simulate(plan, { priceCents: Math.round(price * 100), downPaymentCents: Math.round(downPayment * 100), termMonths: loanTerm });
     if (!result2.ok) throw new SubmissionError(result2.reason);
@@ -10035,7 +10044,7 @@ async function submitFinancing(_root, { data }, context) {
       });
       if (existing.length) {
         const application2 = existing[0];
-        if (application2.rooftop?.id !== rooftopId) throw new SubmissionError("The idempotency key conflicts with another location.", 409, "IDEMPOTENCY_CONFLICT");
+        if (application2.rooftop?.id !== rooftopId) throw new SubmissionError("La solicitud no es v\xE1lida. Recarga la p\xE1gina e intenta de nuevo.", 409, "IDEMPOTENCY_CONFLICT");
         const task2 = application2.lead?.tasks?.[0];
         return {
           applicationId: application2.id,
@@ -10204,10 +10213,10 @@ function packageServiceType(name) {
   return PACKAGE_CATEGORIES.find(([pattern]) => pattern.test(name))?.[1] ?? "maintenance";
 }
 async function submitServiceBooking(_root, { data }, context) {
-  const customerName = requiredText(data.customerName, "Customer name", 200);
+  const customerName = requiredText(data.customerName, "Nombre", 200);
   const email = validEmail(data.customerEmail);
   const phone = validPhone(data.customerPhone);
-  const year = finiteNumber(data.vehicleYear, "Vehicle year", {
+  const year = finiteNumber(data.vehicleYear, "A\xF1o", {
     min: 1900,
     max: (/* @__PURE__ */ new Date()).getFullYear() + 1,
     integer: true
@@ -10351,7 +10360,7 @@ function publicSubmissionResolver(service) {
       return {
         ok: false,
         errorCode: "SUBMISSION_FAILED",
-        errorMessage: "No pudimos procesar la solicitud. Intent\xE1 de nuevo o comunicate con nosotros."
+        errorMessage: "No pudimos procesar la solicitud. Intenta de nuevo o comun\xEDcate con nosotros."
       };
     }
   };
@@ -10362,7 +10371,8 @@ function text74(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 function phoneHref(phone) {
-  const digits = phone.replace(/[^\d+]/g, "");
+  let digits = phone.replace(/[^\d+]/g, "");
+  if (/^0\d{9,10}$/.test(digits)) digits = `+54${digits.slice(1)}`;
   return digits ? `tel:${digits}` : "";
 }
 async function storefrontProfile(_root, { rooftopSlug }, context) {
@@ -13483,8 +13493,8 @@ var ROLE_PERMISSION_KEYS = [
 ];
 function profileData(input2) {
   const name = required4(input2.name, "Dealership name");
-  const currencyCode = text76(input2.currencyCode, "USD", 3).toUpperCase();
-  if (currencyCode !== "USD") throw new Error("Currency must be USD");
+  const currencyCode = text76(input2.currencyCode, "ARS", 3).toUpperCase();
+  if (!["ARS", "USD"].includes(currencyCode)) throw new Error("La moneda debe ser ARS o USD");
   const websiteUrl = text76(input2.websiteUrl, "", 500);
   if (websiteUrl && !/^https?:\/\//.test(websiteUrl)) throw new Error("Website URL must start with http:// or https://");
   return {
@@ -13493,6 +13503,7 @@ function profileData(input2) {
     salesEmail: optionalEmail(input2.salesEmail, "Sales email"),
     serviceEmail: optionalEmail(input2.serviceEmail, "Service email"),
     phone: text76(input2.phone, "", 50),
+    whatsappNumber: text76(input2.whatsappNumber, "", 20).replace(/\D/g, ""),
     addressLine1: text76(input2.addressLine1, "", 200),
     addressLine2: text76(input2.addressLine2, "", 200),
     city: text76(input2.city, "", 100),
@@ -13563,7 +13574,7 @@ async function ensureDealership(input2, context) {
         name: profile.name,
         publicSlug: rooftopSlug,
         status: "active",
-        timezone: text76(input2.timezone, "America/New_York", 100),
+        timezone: text76(input2.timezone, "America/Argentina/Buenos_Aires", 100),
         currencyCode: profile.currencyCode,
         dealerGroup: { connect: { id: dealerGroupId } }
       }
@@ -13667,6 +13678,9 @@ async function ensureVehicle(input2, context) {
       description: text76(input2.description, "", 4e3),
       features,
       imagePath: text76(input2.imagePath, "", 500),
+      fuelType: text76(input2.fuelType, "", 20) || null,
+      transmission: text76(input2.transmission, "", 20) || null,
+      engine: text76(input2.engine, "", 40),
       locationCode: text76(input2.locationCode, "FRONTLINE", 80),
       locationLabel: text76(input2.locationLabel, "Front line", 200)
     }, {
@@ -13676,6 +13690,7 @@ async function ensureVehicle(input2, context) {
     }),
     { timeout: 3e4 }
   );
+  if (input2.isFeatured === true) await context.sudo().prisma.vehicle.update({ where: { id: intake.vehicleId }, data: { isFeatured: true } });
   return { id: intake.vehicleId, name, reused: !intake.vehicleCreated };
 }
 async function ensureServicePackage(input2, context) {
@@ -18167,7 +18182,7 @@ async function accessibleRooftops(context) {
     query: "id name timezone"
   });
 }
-var DEFAULT_REPORT_TIME_ZONE = "America/New_York";
+var DEFAULT_REPORT_TIME_ZONE = "America/Argentina/Buenos_Aires";
 function validTimeZone(value) {
   const timeZone = String(value || "").trim();
   if (!timeZone) return DEFAULT_REPORT_TIME_ZONE;
@@ -20811,7 +20826,7 @@ var { withAuth } = (0, import_auth.createAuth)({
     itemData: {
       role: {
         create: {
-          name: "Admin",
+          name: "Administrador",
           canSeeOtherPeople: true,
           canEditOtherPeople: true,
           canManagePeople: true,

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict VsAFHLX03nbDFuazHcRqbaJogC0febmTxvzojTdNNahcmkMvWTsWmq9GobcVt9T
+\restrict fHDeEyQUU592fkjGnDNGbKDZFN2zzdr1O0BnxnxEUqFnDPXH5dThxDkTdQAqyw6
 
 -- Dumped from database version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
@@ -1453,7 +1453,7 @@ CREATE TABLE public."Rooftop" (
     name text DEFAULT ''::text NOT NULL,
     "publicSlug" text DEFAULT ''::text NOT NULL,
     status text DEFAULT 'active'::text NOT NULL,
-    timezone text DEFAULT 'America/New_York'::text NOT NULL,
+    timezone text DEFAULT 'America/Argentina/Buenos_Aires'::text NOT NULL,
     "currencyCode" text DEFAULT 'USD'::text NOT NULL,
     "dealerGroup" text
 );
@@ -2561,15 +2561,15 @@ COPY public."RetentionPolicy" (id, "createdAt", "updatedAt", rooftop, category, 
 --
 
 COPY public."Role" (id, name, "canSeeOtherPeople", "canEditOtherPeople", "canManagePeople", "canManageRoles", "canAccessDashboard", "canApproveDeals", "canManageDeals", "canManageFinancing", "canManageInventory", "canManageLeads", "canManageService", "canManageTradeIns", "canViewAllLeads", "canViewInventory", "canViewReports", "canManageOnboarding", "createdAt", "updatedAt", "canManageDealerships", "canManageKeys", "canManagePayments", "canManageSettings", "canManageUsers", "canReadPayments", "canReadRoles", "canReadUsers") FROM stdin;
-cmwn5mdut00007ds3cvywmlzd	Admin	t	t	t	t	t	t	t	t	t	t	t	t	t	t	t	t	2026-11-19 06:13:29.379	2026-11-19 06:13:29.379	t	t	t	t	t	t	t	t
-cmwn5n9yf00cq7ds3ww7gsnm2	Sales Manager	f	f	f	f	t	t	t	f	t	t	f	t	t	t	t	f	2026-11-19 06:14:10.982	2026-11-19 06:14:10.982	f	f	f	f	f	f	f	f
-cmwn5n9ys00cr7ds35ziuwbh1	Sales Associate	f	f	f	f	t	f	t	f	f	t	f	t	f	t	f	f	2026-11-19 06:14:10.996	2026-11-19 06:14:10.996	f	f	f	f	f	f	f	f
-cmwn5n9z500cs7ds36p9nfbin	Finance Manager	f	f	f	f	t	t	t	t	f	f	f	f	t	t	t	f	2026-11-19 06:14:11.009	2026-11-19 06:14:11.009	f	f	f	f	f	t	f	f
-cmwn5n9zi00ct7ds3ryn8gwis	Service Manager	f	f	f	f	t	f	f	f	f	f	t	f	f	t	t	f	2026-11-19 06:14:11.021	2026-11-19 06:14:11.021	f	f	f	f	f	f	f	f
-cmwn5n9zw00cu7ds3vf5ph150	Service Advisor	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.035	2026-11-19 06:14:11.035	f	f	f	f	f	f	f	f
-cmwn5na0900cv7ds3y6t14j6m	Technician	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.048	2026-11-19 06:14:11.048	f	f	f	f	f	f	f	f
-cmwn5na0n00cw7ds37pb2cdan	Parts Specialist	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.062	2026-11-19 06:14:11.062	f	f	f	f	f	f	f	f
-cmwn5na1000cx7ds3yfuvwra4	Office Manager	f	f	f	f	t	f	f	f	f	f	f	f	f	t	t	f	2026-11-19 06:14:11.075	2026-11-19 06:14:11.075	f	f	t	f	f	t	f	f
+cmwn5mdut00007ds3cvywmlzd	Administrador	t	t	t	t	t	t	t	t	t	t	t	t	t	t	t	t	2026-11-19 06:13:29.379	2026-11-19 06:13:29.379	t	t	t	t	t	t	t	t
+cmwn5n9z500cs7ds36p9nfbin	Responsable de créditos	f	f	f	f	t	t	t	t	f	f	f	f	t	t	t	f	2026-11-19 06:14:11.009	2026-11-19 06:14:11.009	f	f	f	f	f	t	f	f
+cmwn5na1000cx7ds3yfuvwra4	Administración	f	f	f	f	t	f	f	f	f	f	f	f	f	t	t	f	2026-11-19 06:14:11.075	2026-11-19 06:14:11.075	f	f	t	f	f	t	f	f
+cmwn5na0n00cw7ds37pb2cdan	Repuestos	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.062	2026-11-19 06:14:11.062	f	f	f	f	f	f	f	f
+cmwn5n9ys00cr7ds35ziuwbh1	Vendedor	f	f	f	f	t	f	t	f	f	t	f	t	f	t	f	f	2026-11-19 06:14:10.996	2026-11-19 06:14:10.996	f	f	f	f	f	f	f	f
+cmwn5n9yf00cq7ds3ww7gsnm2	Gerente de ventas	f	f	f	f	t	t	t	f	t	t	f	t	t	t	t	f	2026-11-19 06:14:10.982	2026-11-19 06:14:10.982	f	f	f	f	f	f	f	f
+cmwn5n9zw00cu7ds3vf5ph150	Asesor de servicio	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.035	2026-11-19 06:14:11.035	f	f	f	f	f	f	f	f
+cmwn5n9zi00ct7ds3ryn8gwis	Jefe de taller	f	f	f	f	t	f	f	f	f	f	t	f	f	t	t	f	2026-11-19 06:14:11.021	2026-11-19 06:14:11.021	f	f	f	f	f	f	f	f
+cmwn5na0900cv7ds3y6t14j6m	Técnico	f	f	f	f	t	f	f	f	f	f	t	f	f	t	f	f	2026-11-19 06:14:11.048	2026-11-19 06:14:11.048	f	f	f	f	f	f	f	f
 \.
 
 
@@ -2578,7 +2578,7 @@ cmwn5na1000cx7ds3yfuvwra4	Office Manager	f	f	f	f	t	f	f	f	f	f	f	f	f	t	t	f	2026-11
 --
 
 COPY public."Rooftop" (id, "createdAt", "updatedAt", "rooftopKey", code, name, "publicSlug", status, timezone, "currencyCode", "dealerGroup") FROM stdin;
-rooftop-default-main	2026-11-19 06:13:07.046	2026-11-19 06:14:08.35	dealer-group-default:SAM-MAIN	SAM-MAIN	Elvis Automotores S.R.L.	main	active	America/New_York	USD	dealer-group-default
+rooftop-default-main	2026-11-19 06:13:07.046	2026-11-19 06:14:08.35	dealer-group-default:SAM-MAIN	SAM-MAIN	Elvis Automotores S.R.L.	main	active	America/Argentina/Buenos_Aires	USD	dealer-group-default
 \.
 
 
@@ -2798,6 +2798,7 @@ b073dbf6-0dea-4f38-b0a3-24db76338223	8d2307e6d6720405ab5c40257ede9fc5b6f3acc33d2
 2ba9eb91-f3d2-406f-9eb9-20cda936ec4b	dcfb757da249d1f6907d78fc131bc78e3f6936d6ad6422a14ee0854f7f53cf4d	2026-11-19 06:13:07.299634+00	20260730024500_authentication_throttle_cleanup_index	\N	\N	2026-11-19 06:13:07.297914+00	1
 bb5c655a-aa75-4d04-9b6f-5213f9dfef5a	f7a83a640f380e64851c5aab69c04d89f68d630a27b166de7e792dcecd58c191	2026-11-19 06:13:07.304712+00	20260804031117_batch3_dealersocket_remediation	\N	\N	2026-11-19 06:13:07.299932+00	1
 1bde607f-15dc-46d0-8743-0b6c0e7bf21d	da3c82fbe87c00caa772d4c08a8744978cfd72a0f1b61986f76f88a5fd3403d8	2026-11-19 06:13:07.306238+00	20260912131800_dealership_profile_settings_defaults	\N	\N	2026-11-19 06:13:07.305052+00	1
+1905d48e-be66-42ea-87dc-c491fde71d58	147e2ab9b4b52273e5ad98d8bff10c45e447e3ad69505bfff58ddaae3eddcfeb	2026-11-20 02:43:34.277863+00	20261120120000_elvis_timezone_ar	\N	\N	2026-11-20 02:43:33.784947+00	1
 7f75bb36-7240-4db5-8762-6f78989715e8	36ed8eb58c1240d5538660c1c4a696c3c4b1ce909dc3afdae4a5c7f22027ad59	2026-11-19 06:13:07.311227+00	20260923081657_dealership_inventory_publication_revision_gate16	\N	\N	2026-11-19 06:13:07.3069+00	1
 11200831-e02c-47b8-b0e6-38c53c0ac8f6	f56e5d7ff7020d15f087e3e3fae09f618f9987e2405879fefb6bab4a95bee6fb	2026-11-19 06:13:07.363421+00	20261107180000_dealership_record_invariants	\N	\N	2026-11-19 06:13:07.356358+00	1
 e7aac471-d7ef-43cb-9c4d-b3b255dbf64a	e0b7404d2b7f7780a9aad27781db53c55c4a1a46134d4a25fdf82527bec12a5a	2026-11-19 06:13:07.318653+00	20260923101500_dealership_publication_invalidation_triggers	\N	\N	2026-11-19 06:13:07.316323+00	1
@@ -6583,5 +6584,5 @@ ALTER TABLE ONLY public."WeOweItem"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict VsAFHLX03nbDFuazHcRqbaJogC0febmTxvzojTdNNahcmkMvWTsWmq9GobcVt9T
+\unrestrict fHDeEyQUU592fkjGnDNGbKDZFN2zzdr1O0BnxnxEUqFnDPXH5dThxDkTdQAqyw6
 

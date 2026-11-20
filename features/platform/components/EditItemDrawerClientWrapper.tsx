@@ -72,18 +72,18 @@ export function EditItemDrawerClientWrapper({
         // Fetch item data
         const itemResponse = await getItemAction(listData, itemId)
         if (!itemResponse.success) {
-          setError(itemResponse.error || 'Failed to load item')
+          setError(itemResponse.error || 'No se pudo cargar el registro')
           return
         }
         if (!itemResponse.data?.item) {
-          setError('Failed to load item')
+          setError('No se pudo cargar el registro')
           return
         }
         setItem(itemResponse.data.item)
       } catch (err) {
         console.error('Error fetching data:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
-        toast.error('Failed to load item data')
+        toast.error('No se pudieron cargar los datos del registro')
       } finally {
         setIsLoading(false)
       }
@@ -107,7 +107,7 @@ export function EditItemDrawerClientWrapper({
         {isLoading ? (
           <>
             <DrawerHeader className="flex-shrink-0">
-              <DrawerTitle>Loading...</DrawerTitle>
+              <DrawerTitle>Cargando…</DrawerTitle>
             </DrawerHeader>
             <LoadingSkeleton />
           </>

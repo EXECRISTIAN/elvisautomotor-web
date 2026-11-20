@@ -39,12 +39,12 @@ const DESK_STALE_DAYS = 2
 const AGED_UNIT_DAYS = 60
 
 const leadStages: Array<{ value: string; label: string }> = [
-  { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'test-drive-scheduled', label: 'Test drive' },
-  { value: 'negotiating', label: 'Negotiating' },
-  { value: 'closed-won', label: 'Closed won' },
-  { value: 'closed-lost', label: 'Closed lost' },
+  { value: 'new', label: 'Nuevo' },
+  { value: 'contacted', label: 'Contactado' },
+  { value: 'test-drive-scheduled', label: 'Prueba de manejo' },
+  { value: 'negotiating', label: 'En negociación' },
+  { value: 'closed-won', label: 'Cerrada ganada' },
+  { value: 'closed-lost', label: 'Cerrada perdida' },
 ]
 
 const dealTone: Record<string, DeskTone> = {
@@ -57,12 +57,12 @@ const dealTone: Record<string, DeskTone> = {
 }
 
 const dealLabel: Record<string, string> = {
-  pencil: 'Pencil',
-  submitted: 'Submitted',
-  approved: 'Approved',
-  financed: 'Financed',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
+  pencil: 'En negociación',
+  submitted: 'Enviada',
+  approved: 'Aprobada',
+  financed: 'Financiada',
+  delivered: 'Entregada',
+  cancelled: 'Cancelada',
 }
 
 type QueueItem = {
@@ -84,7 +84,7 @@ function formatDate(value: string) {
 }
 
 function comparisonLabel(metric: PeriodMetric) {
-  if (metric.previous === 0) return metric.current === 0 ? 'No change' : 'No prior period'
+  if (metric.previous === 0) return metric.current === 0 ? 'Sin cambios' : 'Sin período anterior'
   const prefix = Number(metric.percentChange) > 0 ? '+' : ''
   return `${prefix}${metric.percentChange}% vs prior 30d`
 }
@@ -198,7 +198,7 @@ export function OverviewDashboardPageClient({
     ? [
         {
           key: 'today',
-          label: 'Appointments and test drives today',
+          label: 'Citas y pruebas de manejo de hoy',
           detail: 'Service appointments and scheduled test drives',
           count: metrics.todayAppointments,
           status: 'Today',
@@ -206,11 +206,11 @@ export function OverviewDashboardPageClient({
           attention: false,
           href: `${platform}/service`,
           place: 'Service',
-          also: { href: `${platform}/test-drives`, label: 'Test drives' },
+          also: { href: `${platform}/test-drives`, label: 'Pruebas de manejo' },
         },
         {
           key: 'desk',
-          label: 'Deals on the desk',
+          label: 'Operaciones en curso',
           detail: staleDesk ? `Pencil or submitted · some waiting ${DESK_STALE_DAYS}+ days` : 'Pencil or submitted',
           count: metrics.pendingDeals,
           status: 'Waiting',
@@ -221,7 +221,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'leads',
-          label: 'New leads not yet contacted',
+          label: 'Consultas nuevas sin contactar',
           detail: 'Lead status New',
           count: newLeads,
           status: 'New',
@@ -229,11 +229,11 @@ export function OverviewDashboardPageClient({
           attention: false,
           href: `${platform}/crm`,
           place: 'CRM',
-          also: { href: `${platform}/crm/tasks`, label: 'Tasks' },
+          also: { href: `${platform}/crm/tasks`, label: 'Tareas' },
         },
         {
           key: 'ro-estimate',
-          label: 'Estimates awaiting approval',
+          label: 'Presupuestos esperando aprobación',
           detail: 'Repair orders in Estimate',
           count: orderCount('estimate'),
           status: 'Estimate',
@@ -244,10 +244,10 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'ro-approved',
-          label: 'Approved repair orders not started',
+          label: 'Órdenes aprobadas sin comenzar',
           detail: 'Repair orders in Approved',
           count: orderCount('approved'),
-          status: 'Approved',
+          status: 'Aprobada',
           tone: 'info',
           attention: false,
           href: `${platform}/service`,
@@ -255,7 +255,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'ro-progress',
-          label: 'Repair orders in the shop',
+          label: 'Órdenes en el taller',
           detail: 'Repair orders in progress',
           count: orderCount('in-progress'),
           status: 'In progress',
@@ -266,7 +266,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'ro-completed',
-          label: 'Completed repair orders not invoiced',
+          label: 'Órdenes terminadas sin facturar',
           detail: 'Repair orders in Completed',
           count: orderCount('completed'),
           status: 'To invoice',
@@ -277,7 +277,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'funding',
-          label: 'Contracts with a funding exception',
+          label: 'Contratos con observaciones de fondeo',
           detail: 'Funding cases in Exception',
           count: report.exceptions.funding,
           status: 'Exception',
@@ -288,7 +288,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'payments',
-          label: 'Payments failed or stuck creating',
+          label: 'Pagos con error o trabados',
           detail: 'Payment transactions in Failed or Creating',
           count: report.exceptions.payments,
           status: 'Exception',
@@ -299,7 +299,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'accounting',
-          label: 'Accounting batches failed or posting',
+          label: 'Lotes contables con error o en proceso',
           detail: 'Journal batches in Failed or Posting',
           count: report.exceptions.accounting,
           status: 'Exception',
@@ -310,7 +310,7 @@ export function OverviewDashboardPageClient({
         },
         {
           key: 'parts',
-          label: 'Parts at or below minimum',
+          label: 'Repuestos en o bajo el mínimo',
           detail: 'On hand less committed, at or under the minimum',
           count: metrics.parts?.lowStockCount ?? 0,
           status: 'Low stock',
@@ -340,26 +340,26 @@ export function OverviewDashboardPageClient({
 
   const header = (
     <DeskHeader
-      title="Overview"
+      title="Resumen"
       tone={report ? (waiting.length > 0 ? 'warn' : 'ok') : 'bad'}
-      status={report ? (waiting.length > 0 ? `${waiting.length} waiting` : 'Nothing waiting') : 'Unavailable'}
+      status={report ? (waiting.length > 0 ? `${waiting.length} waiting` : 'Nothing waiting') : 'No disponible'}
       meta={
         report ? (
           <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="font-medium text-foreground">{waiting.length > 0 ? `${waiting.length} ${plural(waiting.length, 'item')} need you` : 'Nothing waiting'}</span>
-            {hydrated && <span>Updated <ViewerTime value={report.generatedAt} style="datetime" /></span>}
+            {hydrated && <span>Actualizado <ViewerTime value={report.generatedAt} style="datetime" /></span>}
           </span>
-        ) : 'Unavailable'
+        ) : 'No disponible'
       }
       actions={
         <>
-          <Pill variant="plain" onClick={loadDashboardData} disabled={loading} aria-label="Refresh" className="h-10 sm:h-8">
+          <Pill variant="plain" onClick={loadDashboardData} disabled={loading} aria-label="Actualizar" className="h-10 sm:h-8">
             <RefreshCw className={loading ? 'animate-spin' : undefined} />
-            Refresh
+            Actualizar
           </Pill>
           <Pill asChild variant="primary" className="h-10 sm:h-8">
             <Link href={`${platform}/analytics`}>
-              Analytics
+              Estadísticas
               <ArrowRight />
             </Link>
           </Pill>
@@ -370,10 +370,10 @@ export function OverviewDashboardPageClient({
 
   if (!report || !metrics) {
     return (
-      <PageContainer title="Overview" header={header} breadcrumbs={breadcrumbs}>
+      <PageContainer title="Resumen" header={header} breadcrumbs={breadcrumbs}>
         <div className="px-4 pb-24 md:px-6">
           <Notice tone="bad">
-            <p className="font-medium">Unable to load the overview</p>
+            <p className="font-medium">No se pudo cargar el resumen</p>
             {error && <p className="mt-0.5 text-muted-foreground">{error}</p>}
           </Notice>
         </div>
@@ -392,17 +392,17 @@ export function OverviewDashboardPageClient({
   const pc = metrics.periodComparison
 
   return (
-    <PageContainer title="Overview" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Resumen" header={header} breadcrumbs={breadcrumbs}>
       <div className="min-w-0 max-w-full space-y-8 px-4 pb-24 md:px-6">
         {error && <Notice tone="bad">{error}</Notice>}
 
-        <DeskSection id="overview-needs-you" title="Needs you today" count={waiting.length}>
+        <DeskSection id="overview-needs-you" title="Pendiente para hoy" count={waiting.length}>
           {waiting.length > 0 ? (
             <ul className="divide-y rounded-md border bg-card">
               {waiting.map(item => <QueueRow key={item.key} item={item} />)}
             </ul>
           ) : (
-            <p className="py-3 text-[13px] text-muted-foreground">Nothing waiting</p>
+            <p className="py-3 text-[13px] text-muted-foreground">Nada pendiente</p>
           )}
           {waiting.length > 0 && clear.length > 0 && (
             <p className="mt-2 text-[12px] text-muted-foreground">{clear.length} other queues clear</p>
@@ -411,11 +411,11 @@ export function OverviewDashboardPageClient({
 
         <DeskSection
           id="overview-recent-deals"
-          title="Latest deals"
+          title="Últimas operaciones"
           count={metrics.recentDeals.length}
           actions={
             <Link href={`${platform}/deals`} className="inline-flex min-h-10 items-center gap-1 text-[12px] font-medium text-muted-foreground hover:text-foreground sm:min-h-0">
-              Desk log
+              Registro de operaciones
               <ArrowRight className="size-3.5" aria-hidden="true" />
             </Link>
           }
@@ -424,12 +424,12 @@ export function OverviewDashboardPageClient({
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Status</Th>
-                  <Th>Vehicle</Th>
-                  <Th priority={2}>Customer</Th>
-                  <Th align="right">Price</Th>
-                  <Th align="right" priority={3}>Gross</Th>
-                  <Th align="right" priority={2}>Age</Th>
+                  <Th>Estado</Th>
+                  <Th>Vehículo</Th>
+                  <Th priority={2}>Cliente</Th>
+                  <Th align="right">Precio</Th>
+                  <Th align="right" priority={3}>Margen</Th>
+                  <Th align="right" priority={2}>Antigüedad</Th>
                 </tr>
               </thead>
               <tbody>
@@ -452,7 +452,7 @@ export function OverviewDashboardPageClient({
                         </span>
                       </Td>
                       <Td priority={2} className="max-w-[12rem] truncate">
-                        {deal.lead ? `${deal.lead.firstName} ${deal.lead.lastName}` : <span className="text-muted-foreground">No customer</span>}
+                        {deal.lead ? `${deal.lead.firstName} ${deal.lead.lastName}` : <span className="text-muted-foreground">Sin cliente</span>}
                       </Td>
                       <Td align="right" className="whitespace-nowrap">
                         <Figure size="sm">{formatCurrencyCents(deal.vehiclePriceCents)}</Figure>
@@ -473,30 +473,30 @@ export function OverviewDashboardPageClient({
               </tbody>
             </DeskTable>
           ) : (
-            <p className="py-3 text-[13px] text-muted-foreground">No deals yet</p>
+            <p className="py-3 text-[13px] text-muted-foreground">Todavía no hay operaciones</p>
           )}
         </DeskSection>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <DeskSection id="overview-revenue" title="Delivered revenue by month">
+          <DeskSection id="overview-revenue" title="Facturación entregada por mes">
             {revenueChart.length > 0 ? (
               <HairlineChart
                 data={revenueChart}
                 xKey="label"
                 yKey="revenue"
-                label="Delivered revenue"
+                label="Facturación entregada"
                 yWidth={52}
                 format={value => compactCurrency.format(value)}
                 highlight={row => row.month === latestMonth}
               />
             ) : (
-              <p className="py-3 text-[13px] text-muted-foreground">No deliveries</p>
+              <p className="py-3 text-[13px] text-muted-foreground">Sin entregas</p>
             )}
           </DeskSection>
 
           <DeskSection
             id="overview-pipeline"
-            title="Lead pipeline"
+            title="Embudo de consultas"
             count={metrics.totalLeads}
             actions={
               <Link href={`${platform}/crm`} className="inline-flex min-h-10 items-center gap-1 text-[12px] font-medium text-muted-foreground hover:text-foreground sm:min-h-0">
@@ -509,9 +509,9 @@ export function OverviewDashboardPageClient({
               <DeskTable>
                 <thead>
                   <tr>
-                    <Th>Stage</Th>
-                    <Th align="right">Leads</Th>
-                    <Th align="right" priority={2}>Share</Th>
+                    <Th>Etapa</Th>
+                    <Th align="right">Consultas</Th>
+                    <Th align="right" priority={2}>Compartir</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -532,20 +532,20 @@ export function OverviewDashboardPageClient({
                 </tbody>
               </DeskTable>
             ) : (
-              <p className="py-3 text-[13px] text-muted-foreground">No leads</p>
+              <p className="py-3 text-[13px] text-muted-foreground">Sin consultas</p>
             )}
           </DeskSection>
         </div>
 
-        <DeskSection id="overview-salespeople" title="Salespeople by gross" count={metrics.topSalespeople.length}>
+        <DeskSection id="overview-salespeople" title="Vendedores por margen" count={metrics.topSalespeople.length}>
           {metrics.topSalespeople.length > 0 ? (
             <DeskTable>
               <thead>
                 <tr>
-                  <Th>Salesperson</Th>
-                  <Th align="right">Delivered</Th>
-                  <Th align="right">Gross</Th>
-                  <Th align="right" priority={2}>Revenue</Th>
+                  <Th>Vendedor</Th>
+                  <Th align="right">Entregado</Th>
+                  <Th align="right">Margen</Th>
+                  <Th align="right" priority={2}>Facturación</Th>
                 </tr>
               </thead>
               <tbody>
@@ -562,28 +562,28 @@ export function OverviewDashboardPageClient({
               </tbody>
             </DeskTable>
           ) : (
-            <p className="py-3 text-[13px] text-muted-foreground">No delivered deals</p>
+            <p className="py-3 text-[13px] text-muted-foreground">Sin operaciones entregadas</p>
           )}
         </DeskSection>
-        <DeskSection id="overview-30d" title="Last 30 days">
+        <DeskSection id="overview-30d" title="Últimos 30 días">
           <ReadoutStrip>
-            <Readout label="Units delivered" value={pc.deliveredCount.current} sub={comparisonLabel(pc.deliveredCount)} tone={comparisonTone(pc.deliveredCount)} />
-            <Readout label="Gross" value={formatCurrencyCents(pc.deliveredGrossCents.current)} sub={metrics.deliveredDeals ? `Avg ${formatCurrencyCents(metrics.averageDeliveredGrossCents)} all time` : comparisonLabel(pc.deliveredGrossCents)} tone={comparisonTone(pc.deliveredGrossCents)} />
-            <Readout label="Delivered revenue" value={formatCurrencyCents(pc.deliveredRevenueCents.current)} sub={comparisonLabel(pc.deliveredRevenueCents)} tone={comparisonTone(pc.deliveredRevenueCents)} />
-            <Readout label="New leads" value={pc.newLeads.current} sub={comparisonLabel(pc.newLeads)} tone={comparisonTone(pc.newLeads)} />
-            <Readout label="Lead conversion" value={`${metrics.leadConversionPercent.toFixed(1)}%`} sub={metrics.convertedLeads != null ? `${metrics.convertedLeads} of ${countLabel(metrics.totalLeads, 'lead')}` : countLabel(metrics.totalLeads, 'lead')} />
-            <Readout label="Service revenue" value={formatCurrencyCents(pc.settledServiceRevenueCents.current)} sub={comparisonLabel(pc.settledServiceRevenueCents)} tone={comparisonTone(pc.settledServiceRevenueCents)} />
+            <Readout label="Unidades entregadas" value={pc.deliveredCount.current} sub={comparisonLabel(pc.deliveredCount)} tone={comparisonTone(pc.deliveredCount)} />
+            <Readout label="Margen" value={formatCurrencyCents(pc.deliveredGrossCents.current)} sub={metrics.deliveredDeals ? `Avg ${formatCurrencyCents(metrics.averageDeliveredGrossCents)} all time` : comparisonLabel(pc.deliveredGrossCents)} tone={comparisonTone(pc.deliveredGrossCents)} />
+            <Readout label="Facturación entregada" value={formatCurrencyCents(pc.deliveredRevenueCents.current)} sub={comparisonLabel(pc.deliveredRevenueCents)} tone={comparisonTone(pc.deliveredRevenueCents)} />
+            <Readout label="Consultas nuevas" value={pc.newLeads.current} sub={comparisonLabel(pc.newLeads)} tone={comparisonTone(pc.newLeads)} />
+            <Readout label="Conversión de consultas" value={`${metrics.leadConversionPercent.toFixed(1)}%`} sub={metrics.convertedLeads != null ? `${metrics.convertedLeads} de ${countLabel(metrics.totalLeads, 'lead')}` : countLabel(metrics.totalLeads, 'lead')} />
+            <Readout label="Facturación de servicio" value={formatCurrencyCents(pc.settledServiceRevenueCents.current)} sub={comparisonLabel(pc.settledServiceRevenueCents)} tone={comparisonTone(pc.settledServiceRevenueCents)} />
           </ReadoutStrip>
         </DeskSection>
 
 
-        <DeskSection id="overview-stock-service" title="Stock and shop">
+        <DeskSection id="overview-stock-service" title="Stock y taller">
           <ReadoutStrip>
-            <Readout label="Units in stock" value={metrics.inventory.available} sub={metrics.inventory.available ? `Avg age ${countLabel(averageAge, 'day')}` : undefined} />
-            <Readout label="Retail" value={formatCurrencyCents(metrics.inventory.retailCents)} />
-            <Readout label="Cost" value={formatCurrencyCents(metrics.inventory.costCents)} sub={`Spread ${formatCurrencyCents(metrics.inventory.retailCents - metrics.inventory.costCents)}`} />
-            <Readout label="Sold hours" value={metrics.service.soldHours.toFixed(1)} sub={`Actual ${metrics.service.actualHours.toFixed(1)} · ELR ${formatCurrencyCents(metrics.service.effectiveLaborRateCents)}`} />
-            <Readout label="Open exceptions" value={exceptions} sub={`Acct ${report.exceptions.accounting} · Pay ${report.exceptions.payments} · Fund ${report.exceptions.funding}`} />
+            <Readout label="Unidades en stock" value={metrics.inventory.available} sub={metrics.inventory.available ? `Antigüedad promedio ${countLabel(averageAge, 'day')}` : undefined} />
+            <Readout label="Minorista" value={formatCurrencyCents(metrics.inventory.retailCents)} />
+            <Readout label="Costo" value={formatCurrencyCents(metrics.inventory.costCents)} sub={`Spread ${formatCurrencyCents(metrics.inventory.retailCents - metrics.inventory.costCents)}`} />
+            <Readout label="Horas vendidas" value={metrics.service.soldHours.toFixed(1)} sub={`Actual ${metrics.service.actualHours.toFixed(1)} · ELR ${formatCurrencyCents(metrics.service.effectiveLaborRateCents)}`} />
+            <Readout label="Excepciones abiertas" value={exceptions} sub={`Acct ${report.exceptions.accounting} · Pay ${report.exceptions.payments} · Fund ${report.exceptions.funding}`} />
           </ReadoutStrip>
         </DeskSection>
       </div>

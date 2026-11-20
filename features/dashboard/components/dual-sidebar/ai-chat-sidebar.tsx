@@ -148,7 +148,7 @@ export function AiChatSidebar() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex h-16 shrink-0 items-center justify-between px-4 border-b">
-        <h3 className="font-medium text-muted-foreground">AI Assistant</h3>
+        <h3 className="font-medium text-muted-foreground">Asistente</h3>
         <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8">
           <X className="h-4 w-4" />
         </Button>
@@ -191,7 +191,7 @@ export function AiChatSidebar() {
                     </ReactMarkdown>
                   ) : (
                     <div className="flex items-center gap-1 text-muted-foreground">
-                      <span className="animate-pulse">Thinking...</span>
+                      <span className="animate-pulse">Pensando…</span>
                     </div>
                   )}
                 </ChatMessage>
@@ -200,7 +200,7 @@ export function AiChatSidebar() {
           )}
 
           {error && (
-            <div className="text-sm text-destructive px-1">Unable to complete the chat request. Please try again.</div>
+            <div className="text-sm text-destructive px-1">No se pudo completar la consulta. Intenta de nuevo.</div>
           )}
 
           <ChatContainerScrollAnchor />
@@ -218,7 +218,7 @@ export function AiChatSidebar() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask me anything..."
+          placeholder="Pregúntame lo que necesites…"
           className="w-full text-base bg-transparent border-0 resize-none focus:outline-none placeholder:text-muted-foreground min-h-[40px] break-words"
           disabled={isLoading}
           rows={1}

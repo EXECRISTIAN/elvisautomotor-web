@@ -80,7 +80,7 @@ export function RelationshipSelect({
   "aria-describedby": ariaDescribedby,
   extraSelection = "",
   searchFields = [],
-  placeholder = "Search...",
+  placeholder = "Buscar…",
   controlShouldRenderValue = true,
 }: RelationshipSelectProps) {
   // Search state

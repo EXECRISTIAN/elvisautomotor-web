@@ -194,7 +194,7 @@ async function ensureDealership(input: SeedObject, context: any): Promise<Ensure
         name: profile.name,
         publicSlug: rooftopSlug,
         status: 'active',
-        timezone: text(input.timezone, 'America/New_York', 100),
+        timezone: text(input.timezone, 'America/Argentina/Buenos_Aires', 100),
         currencyCode: profile.currencyCode,
         dealerGroup: { connect: { id: dealerGroupId } },
       },

@@ -176,9 +176,9 @@ export function CustomMultiSelect({
                       {inputValue.length > 0 ? (
                         <>No results found for "{inputValue}"</>
                       ) : availableOptions.length === 0 ? (
-                        <>No options available</>
+                        <>No hay opciones</>
                       ) : (
-                        <>All options have been selected</>
+                        <>Ya elegiste todas las opciones</>
                       )}
                     </CommandEmpty>
                   ) : (

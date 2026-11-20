@@ -188,7 +188,7 @@ export function Field({
           />
           {dateValue && (
             <div className="p-3 border-t">
-              <Label className="text-sm">Time</Label>
+              <Label className="text-sm">Hora</Label>
               <Input
                 type="time"
                 step="1"
@@ -315,7 +315,7 @@ export function controller(config: FieldControllerConfig<TimestampFieldMeta>): F
               />
               {dateValue && (
                 <div className="p-3 border-t">
-                  <Label className="text-sm">Time</Label>
+                  <Label className="text-sm">Hora</Label>
                   <Input
                     type="time"
                     step="1"
@@ -371,27 +371,27 @@ export function controller(config: FieldControllerConfig<TimestampFieldMeta>): F
       },
       types: {
         equals: {
-          label: 'Is exactly',
+          label: 'Es exactamente',
           initialValue: null,
         },
         not: {
-          label: 'Is not exactly',
+          label: 'No es exactamente',
           initialValue: null,
         },
         lt: {
-          label: 'Is before',
+          label: 'Es anterior a',
           initialValue: null,
         },
         gt: {
-          label: 'Is after',
+          label: 'Es posterior a',
           initialValue: null,
         },
         empty: {
-          label: 'Is empty',
+          label: 'Está vacío',
           initialValue: null,
         },
         not_empty: {
-          label: 'Is not empty',
+          label: 'No está vacío',
           initialValue: null,
         },
       },

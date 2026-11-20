@@ -83,10 +83,10 @@ function DeleteButton({
       // Handle errors exactly like Keystone does
       const error = errors?.find((x: any) => x.path === undefined || x.path?.length === 1)
       if (error) {
-        toast.error('Unable to delete item.', {
+        toast.error('No se pudo eliminar el registro.', {
           description: error.message,
           action: {
-            label: 'Details',
+            label: 'Detalles',
             onClick: () => onError(new Error(error.message))
           }
         })
@@ -107,9 +107,9 @@ function DeleteButton({
       // Navigate to list page after delete
       router.push(list.isSingleton ? `${basePath}/` : `${basePath}/${list.path}`)
     } catch (err: any) {
-      toast.error("Unable to delete item.", {
+      toast.error("No se pudo eliminar el registro.", {
         action: {
-          label: "Details",
+          label: "Detalles",
           onClick: () => onError(err)
         }
       })
@@ -122,15 +122,15 @@ function DeleteButton({
         <Button variant="destructive" size="sm" className="sm:text-sm text-xs">
           <X className="size-3 shrink-0" />
           {isDesktop ? (
-            'Delete'
+            'Eliminar'
           ) : (
-            <span className="hidden sm:inline">Delete</span>
+            <span className="hidden sm:inline">Eliminar</span>
           )}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete item</AlertDialogTitle>
+          <AlertDialogTitle>Eliminar registro</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete{' '}
             <strong>
@@ -141,9 +141,9 @@ function DeleteButton({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete}>
-            Yes, delete
+            Sí, eliminar
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -161,21 +161,21 @@ function ResetButton(props: { onReset: () => void; hasChanges?: boolean; isDeskt
           {props.isDesktop ? (
             'Reset'
           ) : (
-            <span className="hidden sm:inline">Reset</span>
+            <span className="hidden sm:inline">Restablecer</span>
           )}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Reset changes</AlertDialogTitle>
+          <AlertDialogTitle>Descartar cambios</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure? Lost changes cannot be recovered.
+            ¿Seguro? Los cambios no guardados se perderán.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction onClick={props.onReset}>
-            Yes, reset
+            Sí, descartar
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -192,7 +192,7 @@ function ItemNotFound({ children }: { children: React.ReactNode }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
-      <h2 className="text-xl font-semibold">Not found</h2>
+      <h2 className="text-xl font-semibold">No encontrado</h2>
       <div className="text-center max-w-md text-muted-foreground">
         {children}
       </div>
@@ -206,14 +206,14 @@ function ErrorDialog({ error, onClose }: { error: Error; onClose: () => void }) 
     <AlertDialog open={true} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Error Details</AlertDialogTitle>
+          <AlertDialogTitle>Detalles del error</AlertDialogTitle>
           <AlertDialogDescription className="whitespace-pre-line break-words">
             {error.message || 'Unable to save the item. Please try again.'}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={onClose}>
-            Close
+            Cerrar
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -324,10 +324,10 @@ export function ItemPageClient({ list, item, itemId }: ItemPageClientProps) {
       // Handle errors exactly like Keystone does
       const error = errors?.find((x: any) => x.path === undefined || x.path?.length === 1)
       if (error) {
-        toast.error('Unable to save item', {
+        toast.error('No se pudo guardar el registro', {
           description: error.message,
           action: {
-            label: 'Details',
+            label: 'Detalles',
             onClick: () => setErrorDialogValue(new Error(error.message))
           }
         })
@@ -352,9 +352,9 @@ export function ItemPageClient({ list, item, itemId }: ItemPageClientProps) {
 
     } catch (error: any) {
       console.error("Dashboard operation failed (details redacted).")
-      toast.error("Unable to save item", {
+      toast.error("No se pudo guardar el registro", {
         action: {
-          label: "Details",
+          label: "Detalles",
           onClick: () => setErrorDialogValue(error)
         }
       })
@@ -410,7 +410,7 @@ export function ItemPageClient({ list, item, itemId }: ItemPageClientProps) {
                 <p>"{list.label}" doesn't exist, or you don't have access to it.</p>
                 {!list.hideCreate && (
                   <Button className="mt-4" onClick={() => router.push(`/${list.path}/create`)}>
-                    Create {list.singular}
+                    Crear {list.singular}
                   </Button>
                 )}
               </div>
@@ -456,7 +456,7 @@ export function ItemPageClient({ list, item, itemId }: ItemPageClientProps) {
               onClick={handleSave}
               disabled={!hasChanges || loading || saveState === 'saving'}
             >
-              Save Changes
+              Guardar cambios
               <Check className="ml-1 stroke-[1.5px]" width="8" height="8" />
             </Button>
           </div>
@@ -497,7 +497,7 @@ export function ItemPageClient({ list, item, itemId }: ItemPageClientProps) {
                         onClick={handleCopyId}
                       >
                         <Copy className="size-3" />
-                        <span className="sr-only">Copy ID</span>
+                        <span className="sr-only">Copiar ID</span>
                       </Button>
                     </div>
                   </div>

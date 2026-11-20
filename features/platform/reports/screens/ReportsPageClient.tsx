@@ -104,26 +104,26 @@ export function ReportsPageClient({ initialData, initialTab, timeZone }: { initi
   ]
 
   const stateWords = error
-    ? 'Unavailable'
+    ? 'No disponible'
     : queue.length
       ? `${queue.length} need${queue.length === 1 ? 's' : ''} you`
-      : 'Up to date'
+      : 'Al día'
 
   const header = (
     <DeskHeader
-      title="Reports"
+      title="Reportes"
       tone={error ? 'bad' : failedRuns ? 'bad' : queuedRuns.length ? 'info' : 'idle'}
       status={stateWords}
       meta={
         <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="font-medium text-foreground">{stateWords}</span>
-          <span>{countLabel(activeReports, 'active saved report')} · {countLabel(data.runs.data.length, 'run')} · {queuedRuns.length} queued</span>
+          <span>{countLabel(activeReports, 'active saved report')} · {countLabel(data.runs.data.length, 'run')} · {queuedRuns.length} en cola</span>
         </span>
       }
       actions={
         <Pill variant="plain" className={TAP} onClick={reload} disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : undefined} />
-          Refresh
+          Actualizar
         </Pill>
       }
     />
@@ -131,7 +131,7 @@ export function ReportsPageClient({ initialData, initialTab, timeZone }: { initi
 
   return (
     <PageContainer
-      title="Reports"
+      title="Reportes"
       header={header}
       breadcrumbs={[
         { type: 'link', label: 'Inicio', href: basePath },
@@ -141,7 +141,7 @@ export function ReportsPageClient({ initialData, initialTab, timeZone }: { initi
     >
       <div className="min-w-0 max-w-full space-y-6 px-4 pb-24 md:px-6">
         {queue.length > 0 && (
-          <DeskSection id="reports-needs-you" title="Needs you" count={queue.length}>
+          <DeskSection id="reports-needs-you" title="Pendiente" count={queue.length}>
             <ul className="divide-y rounded-md border bg-card">
               {queue.map(item => (
                 <li key={item.key}>
@@ -172,13 +172,13 @@ export function ReportsPageClient({ initialData, initialTab, timeZone }: { initi
 
         <div className="space-y-4">
           <Segmented<ReportsTab>
-            label="Reports section"
+            label="Sección de reportes"
             value={tab}
             onChange={changeTab}
             options={[
-              { value: 'saved', label: 'Saved reports', count: data.savedReports.data.length },
-              { value: 'runs', label: 'Runs', count: data.runs.data.length, tone: failedRuns ? 'bad' : queuedRuns.length ? 'info' : undefined },
-              { value: 'audit', label: 'Audit' },
+              { value: 'saved', label: 'Reportes guardados', count: data.savedReports.data.length },
+              { value: 'runs', label: 'Ejecuciones', count: data.runs.data.length, tone: failedRuns ? 'bad' : queuedRuns.length ? 'info' : undefined },
+              { value: 'audit', label: 'Auditoría' },
             ]}
           />
           {tab === 'saved' && (

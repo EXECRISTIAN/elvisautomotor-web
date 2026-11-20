@@ -125,7 +125,7 @@ export function makeMultiselectFieldInput({
             autoFocus={autoFocus}
           />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>Sin resultados.</CommandEmpty>
             <CommandGroup heading="Suggestions">
               {filteredItems.map(item => (
                 <CommandItem

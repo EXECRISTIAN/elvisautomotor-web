@@ -1,4 +1,6 @@
 import {
+  Tag,
+  Percent,
   BarChart3,
   CalendarClock,
   Car,
@@ -55,10 +57,13 @@ const allPlatformNavItems: PlatformNavItem[] = [
   { title: 'Consultas',      href: '/platform/crm',            color: 'purple',  description: 'Consultas, seguimiento y oportunidades de venta.',             icon: Users,         group: 'sales' },
   { title: 'Pruebas de manejo', href: '/platform/test-drives', color: 'cyan',    description: 'Citas de prueba de manejo.',                                   icon: CalendarClock, group: 'sales' },
   { title: 'Usados ofrecidos', href: '/platform/trade-ins',    color: 'amber',   description: 'Autos que ofrecen los clientes (Véndelo en Elvis).',            icon: CarFront,      group: 'sales' },
+  { title: 'Ofertas progresivas', href: '/progressive-offers', color: 'amber', description: 'Precios que bajan por hora o por día (se ven en /ofertas).', icon: Tag, group: 'sales' },
   { title: 'Clientes',       href: '/platform/customers',      color: 'pink',    description: 'Fichas de clientes e historial.',                                icon: Contact,       group: 'sales' },
 
   // Financiación
   { title: 'Solicitudes de crédito', href: '/platform/finance', color: 'indigo', description: 'Solicitudes de financiación y envío a entidades.',             icon: CreditCard,    group: 'finance' },
+  { title: 'Bancos',         href: '/banks',                   color: 'indigo',  description: 'Entidades con las que trabaja la agencia.',                      icon: Landmark,      group: 'finance' },
+  { title: 'Planes de financiación', href: '/financing-plans', color: 'indigo', description: 'Tasas, plazos y montos que usa el simulador del sitio.',      icon: Percent,       group: 'finance' },
   { title: 'Entregas',       href: '/platform/delivery',       color: 'teal',    description: 'Entregas y checklist.',                                          icon: PackageCheck,  group: 'finance' },
   { title: 'Pagos',          href: '/platform/payments',       color: 'green',   description: 'Transacciones y devoluciones.',                                  icon: Receipt,       group: 'finance' },
   { title: 'Contabilidad',   href: '/platform/accounting',     color: 'sky',     description: 'Asientos y cuentas contables.',                                  icon: Landmark,      group: 'finance' },

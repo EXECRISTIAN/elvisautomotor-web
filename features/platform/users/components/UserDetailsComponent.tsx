@@ -33,9 +33,9 @@ interface UserDetailsComponentProps {
 
 export function staffFunctions(user: UserDetailsComponentProps["user"]) {
   const functions: Array<{ label: string; tone: DeskTone }> = [];
-  if (user.isSalesperson) functions.push({ label: "Sales", tone: "info" });
-  if (user.isServiceAdvisor) functions.push({ label: "Service", tone: "warn" });
-  if (user.isFinanceManager) functions.push({ label: "Finance", tone: "accent" });
+  if (user.isSalesperson) functions.push({ label: "Ventas", tone: "info" });
+  if (user.isServiceAdvisor) functions.push({ label: "Servicio", tone: "warn" });
+  if (user.isFinanceManager) functions.push({ label: "Financiación", tone: "accent" });
   return functions;
 }
 
@@ -68,13 +68,13 @@ export function UserDetailsComponent({ user }: UserDetailsComponentProps) {
           </span>
         </Td>
         <Td priority={2}>
-          {user.role ? <span className="text-foreground">{user.role.name}</span> : <span className="text-muted-foreground">None</span>}
+          {user.role ? <span className="text-foreground">{user.role.name}</span> : <span className="text-muted-foreground">Ninguno</span>}
         </Td>
         <Td priority={3} className="text-muted-foreground">
-          {functions.length ? functions.map((item) => item.label).join(", ") : "None"}
+          {functions.length ? functions.map((item) => item.label).join(", ") : "Ninguno"}
         </Td>
         <Td>
-          {user.role ? <Status tone="ok">Active</Status> : <Status tone="warn">No role</Status>}
+          {user.role ? <Status tone="ok">Activo</Status> : <Status tone="warn">Sin rol</Status>}
         </Td>
         <Td align="right" priority={2} className="whitespace-nowrap text-muted-foreground">
           {leads} {leads === 1 ? "lead" : "leads"} · {deals} {deals === 1 ? "deal" : "deals"}
@@ -88,20 +88,20 @@ export function UserDetailsComponent({ user }: UserDetailsComponentProps) {
               onClick={() => setIsOpen((open) => !open)}
               className="max-sm:h-10"
             >
-              Details
+              Detalles
             </Pill>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Pill size="sm" variant="plain" aria-label={`Actions for ${displayName}`} className="max-sm:h-10 max-sm:w-10">
+                <Pill size="sm" variant="plain" aria-label={`Acciones para ${displayName}`} className="max-sm:h-10 max-sm:w-10">
                   <MoreHorizontal />
                 </Pill>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setIsEditDrawerOpen(true)}>
-                  Edit staff member
+                  Editar integrante
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`${basePath}/users/${user.id}`}>Open full record</Link>
+                  <Link href={`${basePath}/users/${user.id}`}>Abrir registro completo</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -124,13 +124,13 @@ export function UserDetailsComponent({ user }: UserDetailsComponentProps) {
             <Facts
               className="grid gap-x-8 divide-y-0 md:grid-cols-2 [&>div]:border-b [&>div]:border-border/60"
               items={[
-                { label: "Email", value: user.email || "None" },
-                { label: "Phone", value: user.phone || "None" },
-                { label: "Role", value: user.role?.name || "None" },
-                { label: "Functions", value: functions.length ? functions.map((item) => item.label).join(", ") : "None" },
-                { label: "Assigned leads", value: leads },
-                { label: "Deals", value: deals },
-                joined ? { label: "Joined", value: joined } : null,
+                { label: "Email", value: user.email || "Ninguno" },
+                { label: "Teléfono", value: user.phone || "Ninguno" },
+                { label: "Rol", value: user.role?.name || "Ninguno" },
+                { label: "Funciones", value: functions.length ? functions.map((item) => item.label).join(", ") : "Ninguno" },
+                { label: "Consultas asignadas", value: leads },
+                { label: "Operaciones", value: deals },
+                joined ? { label: "Ingresó", value: joined } : null,
               ]}
             />
           </td>

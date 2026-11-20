@@ -106,22 +106,22 @@ export function RunsPanel({
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Segmented<StatusFilter>
-          label="Filter runs"
+          label="Filtrar ejecuciones"
           value={statusFilter}
           onChange={setStatusFilter}
           size="sm"
           options={[
-            { value: 'all', label: 'All', count: counts.all },
-            { value: 'queued', label: 'Queued', count: counts.queued, tone: counts.queued ? 'info' : undefined },
-            { value: 'completed', label: 'Completed', count: counts.completed },
-            { value: 'expired', label: 'Expired', count: counts.expired },
-            { value: 'failed', label: 'Failed', count: counts.failed, tone: counts.failed ? 'bad' : undefined },
+            { value: 'all', label: 'Todos', count: counts.all },
+            { value: 'queued', label: 'En cola', count: counts.queued, tone: counts.queued ? 'info' : undefined },
+            { value: 'completed', label: 'Completado', count: counts.completed },
+            { value: 'expired', label: 'Vencido', count: counts.expired },
+            { value: 'failed', label: 'Con error', count: counts.failed, tone: counts.failed ? 'bad' : undefined },
           ]}
         />
         <Select value={reportFilter} onValueChange={onReportFilterChange}>
-          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-56`} aria-label="Saved report"><SelectValue /></SelectTrigger>
+          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-56`} aria-label="Reporte guardado"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All reports</SelectItem>
+            <SelectItem value="all">Todos los reportes</SelectItem>
             {reports.map(report => <SelectItem key={report.id} value={report.id}>{report.name}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -145,13 +145,13 @@ export function RunsPanel({
         <DeskTable>
           <thead>
             <tr>
-              <Th>Status</Th>
-              <Th>Report</Th>
-              <Th priority={3}>Type</Th>
-              <Th priority={3}>Format</Th>
-              <Th priority={2}>Queued or completed</Th>
-              <Th priority={3}>Expires</Th>
-              <Th align="right"><span className="sr-only">Actions</span></Th>
+              <Th>Estado</Th>
+              <Th>Reporte</Th>
+              <Th priority={3}>Tipo</Th>
+              <Th priority={3}>Formato</Th>
+              <Th priority={2}>En cola o completado</Th>
+              <Th priority={3}>Vence</Th>
+              <Th align="right"><span className="sr-only">Acciones</span></Th>
             </tr>
           </thead>
           <tbody>
@@ -186,10 +186,10 @@ export function RunsPanel({
                       {status === 'completed' && (
                         <Pill size="sm" className={TAP_SM} aria-label={`Download ${run.savedReport?.name || 'report'} run`} onClick={() => download(run)}>
                           <Download />
-                          <span className="max-sm:sr-only">Download</span>
+                          <span className="max-sm:sr-only">Descargar</span>
                         </Pill>
                       )}
-                      <Pill size="sm" variant="plain" className={TAP_SM} aria-label="View run" onClick={() => view(run)}>
+                      <Pill size="sm" variant="plain" className={TAP_SM} aria-label="Ver ejecución" onClick={() => view(run)}>
                         <Eye />
                       </Pill>
                     </Track>
@@ -212,12 +212,12 @@ export function RunsPanel({
               <div className="space-y-4 px-4 pb-24">
                 <Facts
                   items={[
-                    { label: 'Report type', value: viewing.savedReport ? reportTypeLabel(viewing.savedReport.reportType) : '-' },
-                    { label: 'Format', value: viewing.exportFormat.toUpperCase() },
-                    { label: 'Created', value: formatDateTime(viewing.createdAt, timeZone) },
-                    { label: 'Completed', value: formatDateTime(viewing.completedAt, timeZone) },
-                    { label: 'Expires', value: formatDateTime(viewing.expiresAt, timeZone) },
-                    viewing.resultDigest ? { label: 'Digest', value: <Code>{viewing.resultDigest.slice(0, 16)}</Code> } : null,
+                    { label: 'Tipo de reporte', value: viewing.savedReport ? reportTypeLabel(viewing.savedReport.reportType) : '-' },
+                    { label: 'Formato', value: viewing.exportFormat.toUpperCase() },
+                    { label: 'Creado', value: formatDateTime(viewing.createdAt, timeZone) },
+                    { label: 'Completado', value: formatDateTime(viewing.completedAt, timeZone) },
+                    { label: 'Vence', value: formatDateTime(viewing.expiresAt, timeZone) },
+                    viewing.resultDigest ? { label: 'Resumen', value: <Code>{viewing.resultDigest.slice(0, 16)}</Code> } : null,
                     viewing.errorCode ? { label: 'Error', value: viewing.errorCode } : null,
                   ]}
                 />
@@ -225,7 +225,7 @@ export function RunsPanel({
                   <Track>
                     <Pill size="sm" className={TAP_SM} onClick={() => download(viewing)}>
                       <Download />
-                      Download
+                      Descargar
                     </Pill>
                   </Track>
                 )}

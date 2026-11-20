@@ -101,7 +101,7 @@ function ImageView(props: {
           {onChange && (
             <div className="flex gap-2 items-center mt-auto">
               <Button type="button" size="sm" variant="outline" onClick={onFileTrigger}>
-                Change
+                Cambiar
               </Button>
               {value.kind === 'from-server' && (
                 <Button
@@ -112,7 +112,7 @@ function ImageView(props: {
                     onChange({ kind: 'remove', previous: value })
                   }}
                 >
-                  Remove
+                  Quitar
                 </Button>
               )}
               {value.kind === 'upload' && (
@@ -124,7 +124,7 @@ function ImageView(props: {
                     onChange(value.previous)
                   }}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
               )}
             </div>
@@ -135,7 +135,7 @@ function ImageView(props: {
       {!imageData && (
         <div className="flex gap-2 items-center">
           <Button type="button" disabled={onChange === undefined} onClick={onFileTrigger}>
-            Upload
+            Subir
           </Button>
           {value.kind === 'remove' && value.previous && (
             <Button
@@ -147,7 +147,7 @@ function ImageView(props: {
                 }
               }}
             >
-              Undo removal
+              Deshacer
             </Button>
           )}
         </div>

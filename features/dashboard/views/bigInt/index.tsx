@@ -126,7 +126,7 @@ export function controller(
             />
             {(forceValidation || isDirty) &&
               !validate({ kind: 'update', initial: null, value }, { isRequired: true }) && (
-                <p className="text-sm text-destructive">Required</p>
+                <p className="text-sm text-destructive">Obligatorio</p>
               )}
           </div>
         )
@@ -162,35 +162,35 @@ export function controller(
       },
       types: {
         equals: {
-          label: 'Is exactly',
+          label: 'Es exactamente',
           initialValue: null,
         },
         not: {
-          label: 'Is not exactly',
+          label: 'No es exactamente',
           initialValue: null,
         },
         gt: {
-          label: 'Is greater than',
+          label: 'Es mayor que',
           initialValue: null,
         },
         lt: {
-          label: 'Is less than',
+          label: 'Es menor que',
           initialValue: null,
         },
         gte: {
-          label: 'Is greater than or equal to',
+          label: 'Es mayor o igual que',
           initialValue: null,
         },
         lte: {
-          label: 'Is less than or equal to',
+          label: 'Es menor o igual que',
           initialValue: null,
         },
         empty: {
-          label: 'Is empty',
+          label: 'Está vacío',
           initialValue: null,
         },
         not_empty: {
-          label: 'Is not empty',
+          label: 'No está vacío',
           initialValue: null,
         },
       },

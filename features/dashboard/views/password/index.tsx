@@ -169,7 +169,7 @@ export function Field({
             className="opacity-50"
           />
           <Label className="text-sm text-muted-foreground">
-            {isIndeterminate ? 'Access denied' : 'Value is set'}
+            {isIndeterminate ? 'Acceso denegado' : 'Tiene valor'}
           </Label>
         </div>
       </FieldContainer>
@@ -197,7 +197,7 @@ export function Field({
               })
             }}
           >
-            {value.isSet ? `Change ` : `Set `}
+            {value.isSet ? `Cambiar ` : `Definir `}
             {field.label.toLowerCase()}
           </Button>
         </div>
@@ -217,7 +217,7 @@ export function Field({
           <Input
             id={`field-${field.path}`}
             autoFocus
-            placeholder="New password"
+            placeholder="Nueva contraseña"
             type={secureTextEntry ? 'password' : 'text'}
             value={value.value}
             required={isRequired}
@@ -229,8 +229,8 @@ export function Field({
         </div>
         <div className="flex-1">
           <Input
-            aria-label={`Confirm ${field.label.toLowerCase()}`}
-            placeholder="Confirm password"
+            aria-label={`Confirmar ${field.label.toLowerCase()}`}
+            placeholder="Confirma la contraseña"
             type={secureTextEntry ? 'password' : 'text'}
             value={value.confirm}
             className={validationMessage ? 'border-red-500 shadow-xs' : 'shadow-xs'}
@@ -246,7 +246,7 @@ export function Field({
             variant="outline"
             className="size-10.5"
             onClick={() => setSecureTextEntry(bool => !bool)}
-            title={secureTextEntry ? 'Show password' : 'Hide password'}
+            title={secureTextEntry ? 'Mostrar contraseña' : 'Ocultar contraseña'}
           >
             {secureTextEntry ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
           </Button>
@@ -256,7 +256,7 @@ export function Field({
             className="h-10.5"
             onClick={cancelEditing}
           >
-            Cancel
+            Cancelar
           </Button>
         </div>
       </div>
@@ -271,7 +271,7 @@ export function Field({
 export function Cell({ item, field, value }: CellProps) {
   const fieldValue = value ?? item[field.path]?.isSet
   return fieldValue ? (
-    <div className="flex items-center" aria-label="is set">
+    <div className="flex items-center" aria-label="definida">
       <Asterisk className="h-3 w-3" />
       <Asterisk className="h-3 w-3" />
       <Asterisk className="h-3 w-3" />
@@ -292,10 +292,10 @@ export function CardValue({ item, field }: CellProps) {
             <Asterisk className="h-3 w-3" />
             <Asterisk className="h-3 w-3" />
             <Asterisk className="h-3 w-3" />
-            <span className="ml-1">Set</span>
+            <span className="ml-1">Definida</span>
           </div>
         ) : (
-          'Not set'
+          'Sin definir'
         )}
       </div>
     </div>

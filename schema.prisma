@@ -864,7 +864,7 @@ model Rooftop {
   name                                        String                           @default("")
   publicSlug                                  String                           @unique @default("")
   status                                      String                           @default("active")
-  timezone                                    String                           @default("America/New_York")
+  timezone                                    String                           @default("America/Argentina/Buenos_Aires")
   currencyCode                                String                           @default("USD")
   dealerGroup                                 DealerGroup?                     @relation("Rooftop_dealerGroup", fields: [dealerGroupId], references: [id])
   dealerGroupId                               String?                          @map("dealerGroup")

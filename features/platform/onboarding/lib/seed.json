@@ -872,35 +872,35 @@
   ],
   "staff": [
     {
-      "role": "Sales Manager",
+      "role": "Gerente de ventas",
       "code": "sales-manager"
     },
     {
-      "role": "Sales Associate",
+      "role": "Vendedor",
       "code": "sales-associate"
     },
     {
-      "role": "Finance Manager",
+      "role": "Responsable de créditos",
       "code": "finance-manager"
     },
     {
-      "role": "Service Manager",
+      "role": "Jefe de taller",
       "code": "service-manager"
     },
     {
-      "role": "Service Advisor",
+      "role": "Asesor de servicio",
       "code": "service-advisor"
     },
     {
-      "role": "Technician",
+      "role": "Técnico",
       "code": "technician"
     },
     {
-      "role": "Parts Specialist",
+      "role": "Repuestos",
       "code": "parts-specialist"
     },
     {
-      "role": "Office Manager",
+      "role": "Administración",
       "code": "office-manager"
     }
   ]

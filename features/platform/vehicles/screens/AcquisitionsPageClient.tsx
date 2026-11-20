@@ -300,8 +300,8 @@ export function AcquisitionsPageClient({
           ? <Pill size={inSheet ? 'md' : 'sm'} variant={inSheet ? 'primary' : undefined} className="max-md:h-10" asChild><Link href={`${VEHICLES_HREF}/${row.vehicle.id}`}>{action.label}</Link></Pill>
           : <Pill size={inSheet ? 'md' : 'sm'} variant={inSheet ? 'primary' : undefined} className="max-md:h-10" disabled={Boolean(busy)} onClick={() => runNext(row)}>{action.label}</Pill>)}
         {row.vehicle && action?.kind !== 'open' && <Pill size={inSheet ? 'md' : 'sm'} variant={inSheet ? undefined : 'plain'} className="max-md:h-10" asChild><Link href={`${VEHICLES_HREF}/${row.vehicle.id}`}>Vehicle</Link></Pill>}
-        {!inSheet && <Pill size="sm" variant="plain" className="max-md:h-10" onClick={() => setSelectedId(row.id)}>Details</Pill>}
-        {inSheet && !terminal && <Pill variant="danger" disabled={Boolean(busy)} onClick={() => openDialog('cancel', row, { reason: '' })}>Cancel</Pill>}
+        {!inSheet && <Pill size="sm" variant="plain" className="max-md:h-10" onClick={() => setSelectedId(row.id)}>Detalles</Pill>}
+        {inSheet && !terminal && <Pill variant="danger" disabled={Boolean(busy)} onClick={() => openDialog('cancel', row, { reason: '' })}>Cancelar</Pill>}
       </Track>
     )
   }
@@ -379,7 +379,7 @@ export function AcquisitionsPageClient({
                   <Th align="right" priority={2}>Appraisal</Th>
                   <Th align="right">Purchase</Th>
                   <Th priority={3}>Updated</Th>
-                  <Th align="right" priority={2}><span className="sr-only">Actions</span></Th>
+                  <Th align="right" priority={2}><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>

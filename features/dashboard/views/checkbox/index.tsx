@@ -139,12 +139,12 @@ export function controller(
       },
       types: {
         is: {
-          label: 'Is',
+          label: 'Es',
           // @ts-ignore
           initialValue: true,
         },
         not: {
-          label: 'Is not',
+          label: 'No es',
           // @ts-ignore
           initialValue: true,
         },

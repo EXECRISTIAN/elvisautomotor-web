@@ -58,7 +58,7 @@ export function Field({
         <p className="text-sm text-muted-foreground">{field.description}</p>
       )}
       <p className="text-xs text-muted-foreground">
-        This field is automatically managed and cannot be edited.
+        Este campo se completa solo y no se puede editar.
       </p>
     </div>
   )
@@ -166,14 +166,14 @@ export function controller(
         })
       },
       types: {
-        is: { label: 'Is exactly', initialValue: '' },
-        not: { label: 'Is not exactly', initialValue: '' },
-        gt: { label: 'Is greater than', initialValue: '' },
-        lt: { label: 'Is less than', initialValue: '' },
-        gte: { label: 'Is greater than or equal to', initialValue: '' },
-        lte: { label: 'Is less than or equal to', initialValue: '' },
-        in: { label: 'Is one of', initialValue: '' },
-        not_in: { label: 'Is not one of', initialValue: '' },
+        is: { label: 'Es exactamente', initialValue: '' },
+        not: { label: 'No es exactamente', initialValue: '' },
+        gt: { label: 'Es mayor que', initialValue: '' },
+        lt: { label: 'Es menor que', initialValue: '' },
+        gte: { label: 'Es mayor o igual que', initialValue: '' },
+        lte: { label: 'Es menor o igual que', initialValue: '' },
+        in: { label: 'Es uno de', initialValue: '' },
+        not_in: { label: 'No es ninguno de', initialValue: '' },
       },
     } as any,
   }

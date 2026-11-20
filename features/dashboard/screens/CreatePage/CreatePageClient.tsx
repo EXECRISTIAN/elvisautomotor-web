@@ -38,7 +38,7 @@ function CancelButton({
       {isDesktop ? (
         'Cancel'
       ) : (
-        <span className="hidden sm:inline">Cancel</span>
+        <span className="hidden sm:inline">Cancelar</span>
       )}
     </Button>
   )
@@ -104,7 +104,7 @@ export function CreatePageClient({ listKey, list }: CreatePageClientProps) {
   const breadcrumbItems = [
     { type: 'link' as const, label: 'Inicio', href: '/' },
     { type: 'link' as const, label: list.label, href: `/${list.path}` },
-    { type: 'page' as const, label: 'Create' }
+    { type: 'page' as const, label: 'Crear' }
   ]
 
   // Split fields by position for sidebar/main layout (same pattern as ItemPage)
@@ -131,9 +131,9 @@ export function CreatePageClient({ listKey, list }: CreatePageClientProps) {
             className="min-w-0 max-w-full shrink sm:text-sm text-xs"
             onClick={handleSave}
             disabled={createItem.state === 'loading'}
-            title={`Create ${list.singular}`}
+            title={`Crear ${list.singular}`}
           >
-            <span className="truncate">Create {list.singular}</span>
+            <span className="truncate">Crear {list.singular}</span>
             <Check className="ml-1 shrink-0 stroke-[1.5px]" width="8" height="8" />
           </Button>
         }
@@ -147,12 +147,12 @@ export function CreatePageClient({ listKey, list }: CreatePageClientProps) {
               <div>
                 <h1
                   className="text-lg font-semibold md:text-2xl"
-                  title={`Create ${list.singular}`}
+                  title={`Crear ${list.singular}`}
                 >
-                  Create {list.singular}
+                  Crear {list.singular}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Add a new {list.singular.toLowerCase()} to {list.label.toLowerCase()}
+                  Carga un nuevo registro en {list.label}
                 </p>
               </div>
 

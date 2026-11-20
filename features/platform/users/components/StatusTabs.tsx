@@ -5,17 +5,17 @@ import { Segmented, type DeskTone } from "@/features/platform/components/desk";
 
 const statusConfig = {
   sales: {
-    label: "Sales",
+    label: "Ventas",
     filterKey: "!isSalesperson_is",
     tone: "info",
   },
   service: {
-    label: "Service",
+    label: "Servicio",
     filterKey: "!isServiceAdvisor_is",
     tone: "warn",
   },
   finance: {
-    label: "Finance",
+    label: "Financiación",
     filterKey: "!isFinanceManager_is",
     tone: "accent",
   },
@@ -60,7 +60,7 @@ export function StatusTabs({ statusCounts }: StatusTabsProps) {
   };
 
   const options = [
-    { value: "all", label: "All staff", count: statusCounts.all },
+    { value: "all", label: "Todo el personal", count: statusCounts.all },
     ...(Object.keys(statusConfig) as StaffStatus[]).map((status) => ({
       value: status,
       label: statusConfig[status].label,
@@ -71,7 +71,7 @@ export function StatusTabs({ statusCounts }: StatusTabsProps) {
 
   return (
     <Segmented
-      label="Filter staff by role"
+      label="Filtrar personal por rol"
       value={currentStatus as string}
       onChange={handleStatusChange}
       options={options}

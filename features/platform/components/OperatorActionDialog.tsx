@@ -70,7 +70,7 @@ export function OperatorActionDialog({
         {error && <Notice tone="bad">{error}</Notice>}
         <DialogFooter className="sm:justify-end">
           <Track>
-            <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
+            <Pill variant="plain" disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
             <Pill type="submit" variant="primary" disabled={busy}>{busy ? 'Saving…' : submitLabel}</Pill>
           </Track>
         </DialogFooter>

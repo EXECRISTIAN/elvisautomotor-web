@@ -124,11 +124,11 @@ export function InlineEdit({
       } else {
         // Handle errors
         const errorMessage =
-          result.errors[0]?.message || "Failed to update item";
+          result.errors[0]?.message || "No se pudo actualizar el registro";
         toast.error(errorMessage);
       }
     } catch (error) {
-      toast.error("Failed to update item");
+      toast.error("No se pudo actualizar el registro");
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +152,7 @@ export function InlineEdit({
 
         <div className="flex gap-2 bg-muted/40 border rounded-lg p-2 justify-end">
           <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" size="sm" disabled={isLoading}>
             {isLoading ? "Saving..." : "Save"}

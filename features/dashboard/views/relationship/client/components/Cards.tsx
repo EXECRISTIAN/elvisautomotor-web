@@ -340,7 +340,7 @@ export function Cards({
                           <Button size="sm" variant="ghost" asChild>
                             <Link href={`/${foreignList.path}/${id}`}>
                               <ExternalLink className="h-3 w-3 mr-1" />
-                              View {foreignList.singular} details
+                              Ver detalle de {foreignList.singular}
                             </Link>
                           </Button>
                         )}
@@ -351,10 +351,10 @@ export function Cards({
                               size="sm"
                               variant="destructive"
                               onClick={() => handleRemoveItem(id)}
-                              title="This item will not be deleted. It will only be removed from this field."
+                              title="El registro no se elimina; solo se quita de este campo."
                             >
                               <Trash2 className="h-3 w-3 mr-1" />
-                              Remove
+                              Quitar
                             </Button>
                           )}
 
@@ -365,7 +365,7 @@ export function Cards({
                             onClick={() => handleEditItem(id)}
                           >
                             <Edit className="h-3 w-3 mr-1" />
-                            Edit
+                            Editar
                           </Button>
                         )}
                       </div>
@@ -447,7 +447,7 @@ export function Cards({
                 }}
               >
                 <Plus className="h-3 w-3 mr-1" />
-                Create {foreignList.singular}
+                Crear {foreignList.singular}
               </Button>
             )}
 
@@ -460,7 +460,7 @@ export function Cards({
                   setHideConnectItemsLabel("Cancel");
                 }}
               >
-                Link existing {foreignList.singular}
+                Vincular {foreignList.singular} existente
               </Button>
             )}
           </div>

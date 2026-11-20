@@ -70,7 +70,7 @@ export function FormDialog({
           {error && <Notice tone="bad">{error}</Notice>}
           <DialogFooter className="sm:justify-end">
             <Track>
-              <Pill variant="plain" className={TAP} disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
+              <Pill variant="plain" className={TAP} disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
               <Pill type="submit" variant="primary" className={TAP} disabled={busy}>{busy ? 'Saving…' : submitLabel}</Pill>
             </Track>
           </DialogFooter>
@@ -109,7 +109,7 @@ export function ConfirmDialog({
         {error && <Notice tone="bad">{error}</Notice>}
         <DialogFooter className="sm:justify-end">
           <Track>
-            <Pill variant="plain" className={TAP} disabled={busy} onClick={() => onOpenChange(false)}>Cancel</Pill>
+            <Pill variant="plain" className={TAP} disabled={busy} onClick={() => onOpenChange(false)}>Cancelar</Pill>
             <Pill variant="danger" className={TAP} disabled={busy} onClick={onConfirm}>{busy ? 'Working…' : confirmLabel}</Pill>
           </Track>
         </DialogFooter>

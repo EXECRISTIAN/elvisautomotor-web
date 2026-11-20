@@ -97,11 +97,7 @@ export function FilterBar({ list, selectedFields = new Set() }: FilterBarProps) 
               className="pl-9 w-full h-10 rounded-lg placeholder:text-muted-foreground/80"
               value={searchString}
               onChange={(e) => setSearchString(e.target.value)}
-              placeholder={`Search by ${
-                searchLabels.length
-                  ? searchLabels.join(", ").toLowerCase()
-                  : "ID"
-              }`}
+              placeholder="Buscar…"
             />
           </form>
         </div>
@@ -115,7 +111,7 @@ export function FilterBar({ list, selectedFields = new Set() }: FilterBarProps) 
               className="lg:px-4 lg:py-2 lg:w-auto rounded-lg"
             >
               <SlidersHorizontal className="stroke-muted-foreground" />
-              <span className="hidden lg:inline">Filter</span>
+              <span className="hidden lg:inline">Filtrar</span>
             </Button>
           </FilterAdd>
 
@@ -126,7 +122,7 @@ export function FilterBar({ list, selectedFields = new Set() }: FilterBarProps) 
               className="lg:px-4 lg:py-2 lg:w-auto rounded-lg"
             >
               <ArrowUpDown className="stroke-muted-foreground" />
-              <span className="hidden lg:inline">Sort</span>
+              <span className="hidden lg:inline">Ordenar</span>
             </Button>
           </SortSelection>
 
@@ -137,7 +133,7 @@ export function FilterBar({ list, selectedFields = new Set() }: FilterBarProps) 
               className="lg:px-4 lg:py-2 lg:w-auto rounded-lg"
             >
               <Columns3 className="stroke-muted-foreground" />
-              <span className="hidden lg:inline">Display</span>
+              <span className="hidden lg:inline">Mostrar</span>
             </Button>
           </FieldSelection>
 
@@ -150,7 +146,7 @@ export function FilterBar({ list, selectedFields = new Set() }: FilterBarProps) 
               )}
             >
               <CirclePlus />
-              <span className="hidden lg:inline">Create {list.singular}</span>
+              <span className="hidden lg:inline">Crear {list.singular}</span>
             </Link>
           )}
         </div>

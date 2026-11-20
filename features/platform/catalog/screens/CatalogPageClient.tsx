@@ -41,21 +41,21 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
   const unassignedRules = data.routingRules.data.filter(rule => !rule.assignee?.id)
   const emptyMakes = data.makes.data.filter(make => make.modelsCount === 0)
   const queue: Array<{ key: string; what: string; detail: string; status: string; tab: CatalogTab; stale?: boolean }> = [
-    ...(missingPairs.length ? [{ key: 'pairs', what: `${missingPairs.length} inventory ${missingPairs.length === 1 ? 'model' : 'models'} not in catalog`, detail: `${missingPairs.reduce((total, pair) => total + pair.units, 0)} units on the lot`, status: 'Not in catalog', tab: 'makes' as const }] : []),
-    ...(!data.routingRules.error && activeRules === 0 ? [{ key: 'routing', what: 'No active lead routing rule', detail: 'New leads are not assigned', status: 'Not routed', tab: 'routing' as const, stale: true }] : []),
-    ...(unassignedRules.length ? [{ key: 'assignee', what: `${unassignedRules.length} routing ${unassignedRules.length === 1 ? 'rule has' : 'rules have'} no assignee`, detail: unassignedRules.map(rule => rule.name).join(', '), status: 'No assignee', tab: 'routing' as const }] : []),
-    ...(emptyMakes.length ? [{ key: 'empty', what: `${emptyMakes.length} ${emptyMakes.length === 1 ? 'make has' : 'makes have'} no models`, detail: emptyMakes.map(make => make.name).join(', '), status: 'No models', tab: 'makes' as const }] : []),
+    ...(missingPairs.length ? [{ key: 'pairs', what: `${missingPairs.length} ${missingPairs.length === 1 ? 'modelo del inventario' : 'modelos del inventario'} sin cargar en el catálogo`, detail: `${missingPairs.reduce((total, pair) => total + pair.units, 0)} unidades en el salón`, status: 'No está en el catálogo', tab: 'makes' as const }] : []),
+    ...(!data.routingRules.error && activeRules === 0 ? [{ key: 'routing', what: 'No hay reglas activas de asignación de consultas', detail: 'Las consultas nuevas no se asignan', status: 'Sin asignar', tab: 'routing' as const, stale: true }] : []),
+    ...(unassignedRules.length ? [{ key: 'assignee', what: `${unassignedRules.length} ${unassignedRules.length === 1 ? 'regla de asignación no tiene' : 'reglas de asignación no tienen'} responsable`, detail: unassignedRules.map(rule => rule.name).join(', '), status: 'Sin responsable', tab: 'routing' as const }] : []),
+    ...(emptyMakes.length ? [{ key: 'empty', what: `${emptyMakes.length} ${emptyMakes.length === 1 ? 'marca no tiene' : 'marcas no tienen'} modelos`, detail: emptyMakes.map(make => make.name).join(', '), status: 'Sin modelos', tab: 'makes' as const }] : []),
   ]
 
   const header = (
     <DeskHeader
-      title="Catalog"
-      status={anyError ? 'Partly unavailable' : modelCount === 0 ? 'No models' : activeRules === 0 ? 'No active routing' : 'Ready'}
-      meta={`${anyError ? 'Partly unavailable' : modelCount === 0 ? 'No models' : activeRules === 0 ? 'No active routing' : 'Ready'} · ${countLabel(data.makes.data.length, 'make')} · ${countLabel(modelCount, 'model')} · ${countLabel(data.servicePackages.data.length, 'service package')} · ${countLabel(activeRules, 'active routing rule')}`}
+      title="Catálogo"
+      status={anyError ? 'Parcialmente no disponible' : modelCount === 0 ? 'Sin modelos' : activeRules === 0 ? 'Sin asignación activa' : 'Listo'}
+      meta={`${anyError ? 'Parcialmente no disponible' : modelCount === 0 ? 'Sin modelos' : activeRules === 0 ? 'Sin asignación activa' : 'Listo'} · ${countLabel(data.makes.data.length, 'make')} · ${countLabel(modelCount, 'model')} · ${countLabel(data.servicePackages.data.length, 'service package')} · ${countLabel(activeRules, 'active routing rule')}`}
       actions={
         <Pill variant="plain" className={TAP} onClick={reload} disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : undefined} />
-          Refresh
+          Actualizar
         </Pill>
       }
     />
@@ -63,7 +63,7 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
 
   return (
     <PageContainer
-      title="Catalog"
+      title="Catálogo"
       header={header}
       breadcrumbs={[
         { type: 'link', label: 'Inicio', href: basePath },
@@ -73,13 +73,13 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
     >
       <div className="min-w-0 max-w-full space-y-4 px-4 pb-24 md:px-6">
         {queue.length > 0 && (
-          <DeskSection title="Needs you" count={queue.length} id="catalog-needs-you" className="pb-4">
+          <DeskSection title="Pendiente" count={queue.length} id="catalog-needs-you" className="pb-4">
             <DeskTable aria-labelledby="catalog-needs-you">
               <thead>
                 <tr>
-                  <Th>Waiting</Th>
-                  <Th>Status</Th>
-                  <Th align="right"><span className="sr-only">Action</span></Th>
+                  <Th>En espera</Th>
+                  <Th>Estado</Th>
+                  <Th align="right"><span className="sr-only">Acción</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -90,7 +90,7 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
                       <span className="block truncate text-xs text-muted-foreground">{item.detail}</span>
                     </Td>
                     <Td>{item.stale ? <Attention>{item.status}</Attention> : <Status tone="warn">{item.status}</Status>}</Td>
-                    <Td align="right" className="w-px"><Pill size="sm" className={TAP} onClick={() => changeTab(item.tab)}>Open</Pill></Td>
+                    <Td align="right" className="w-px"><Pill size="sm" className={TAP} onClick={() => changeTab(item.tab)}>Abrir</Pill></Td>
                   </Tr>
                 ))}
               </tbody>
@@ -99,13 +99,13 @@ export function CatalogPageClient({ initialData, initialTab }: { initialData: Ca
         )}
 
         <Segmented<CatalogTab>
-          label="Catalog section"
+          label="Sección de catálogo"
           value={tab}
           onChange={changeTab}
           options={[
-            { value: 'makes', label: 'Makes and models', count: data.makes.data.length, tone: data.makes.error ? 'bad' : modelCount === 0 ? 'warn' : undefined },
-            { value: 'services', label: 'Service packages', count: data.servicePackages.data.length, tone: data.servicePackages.error ? 'bad' : undefined },
-            { value: 'routing', label: 'Lead routing', count: data.routingRules.data.length, tone: data.routingRules.error ? 'bad' : activeRules === 0 ? 'warn' : undefined },
+            { value: 'makes', label: 'Marcas y modelos', count: data.makes.data.length, tone: data.makes.error ? 'bad' : modelCount === 0 ? 'warn' : undefined },
+            { value: 'services', label: 'Paquetes de servicio', count: data.servicePackages.data.length, tone: data.servicePackages.error ? 'bad' : undefined },
+            { value: 'routing', label: 'Asignación de consultas', count: data.routingRules.data.length, tone: data.routingRules.error ? 'bad' : activeRules === 0 ? 'warn' : undefined },
           ]}
         />
         {tab === 'makes' && <MakesModelsPanel makes={data.makes.data} inventoryPairs={data.inventoryPairs} error={data.makes.error} onReload={reload} />}

@@ -4,6 +4,7 @@
 
 'use server'
 
+import { elvisListLabels } from '../lib/elvisLists'
 import { cache } from 'react'
 import { keystoneClient, type KeystoneResponse } from '../lib/keystoneClient'
 import { getGraphQLNames } from '../lib/getGqlNames'
@@ -97,7 +98,7 @@ const getCachedAdminMeta = cache(async (): Promise<KeystoneResponse<any>> => {
     const gqlNames = getGraphQLNames(list.key, { plural: list.plural, listQueryName: list.listQueryName })
 
     return {
-      ...list,
+      ...elvisListLabels(list),
       gqlNames,
       graphql: {
         names: gqlNames

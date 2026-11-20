@@ -106,7 +106,7 @@ export function PlatformDateInput({
           />
           {clearable && current ? (
             <div className="flex justify-end border-t px-1 pt-2">
-              <button type="button" className="min-h-9 rounded-[6px] px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => { set(""); setOpen(false); }}>Clear</button>
+              <button type="button" className="min-h-9 rounded-[6px] px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => { set(""); setOpen(false); }}>Limpiar</button>
             </div>
           ) : null}
         </PopoverContent>

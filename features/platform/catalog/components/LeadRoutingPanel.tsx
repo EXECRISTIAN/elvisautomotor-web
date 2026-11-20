@@ -11,14 +11,14 @@ import { ConfirmDialog, EmptyRow, Field, FormDialog, TAP, TAP_INPUT, TAP_SM } fr
 import { cn } from '@/lib/utils'
 
 export const ROUTING_SOURCES = [
-  { value: 'any', label: 'Any source' },
-  { value: 'walk-in', label: 'Walk-in' },
-  { value: 'website', label: 'Website' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'referral', label: 'Referral' },
-  { value: 'ad', label: 'Advertisement' },
-  { value: 'social', label: 'Social media' },
-  { value: 'third-party', label: 'Third party' },
+  { value: 'any', label: 'Cualquier origen' },
+  { value: 'walk-in', label: 'Visita al salón' },
+  { value: 'website', label: 'Sitio web' },
+  { value: 'phone', label: 'Teléfono' },
+  { value: 'referral', label: 'Recomendación' },
+  { value: 'ad', label: 'Publicidad' },
+  { value: 'social', label: 'Redes sociales' },
+  { value: 'third-party', label: 'Terceros' },
 ]
 const sourceLabel = (value: string) => ROUTING_SOURCES.find(source => source.value === value)?.label || value
 
@@ -108,7 +108,7 @@ export function LeadRoutingPanel({
     const response = await configureRoutingRule({ ruleId: draft.ruleId, rooftopId: draft.rooftopId, name, source: draft.source, assigneeId: draft.assigneeId, priority, firstResponseMinutes: minutes, active: draft.active, idempotencyKey })
     setBusy(false)
     if (!response.success) { setFormError(response.error); return }
-    setNotice({ tone: 'ok', text: draft.ruleId ? `Saved ${name}` : `Added ${name}` })
+    setNotice({ tone: 'ok', text: draft.ruleId ? `Saved ${name}` : `Se agregaron ${name}` })
     setDraft(null)
     await onReload()
   }
@@ -154,27 +154,27 @@ export function LeadRoutingPanel({
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Segmented<StateFilter>
-          label="Filter rules"
+          label="Filtrar reglas"
           value={stateFilter}
           onChange={setStateFilter}
           size="sm"
           options={[
-            { value: 'all', label: 'All', count: counts.all },
-            { value: 'active', label: 'Active', count: counts.active, tone: 'ok' },
-            { value: 'inactive', label: 'Inactive', count: counts.inactive, tone: 'idle' },
+            { value: 'all', label: 'Todos', count: counts.all },
+            { value: 'active', label: 'Activo', count: counts.active, tone: 'ok' },
+            { value: 'inactive', label: 'Inactivo', count: counts.inactive, tone: 'idle' },
           ]}
         />
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-48`} aria-label="Lead source"><SelectValue /></SelectTrigger>
+          <SelectTrigger className={`${TAP_INPUT} w-full sm:w-48`} aria-label="Origen de la consulta"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All sources</SelectItem>
+            <SelectItem value="all">Todos los orígenes</SelectItem>
             {ROUTING_SOURCES.map(source => <SelectItem key={source.value} value={source.value}>{source.value === 'any' ? 'Any-source rules' : source.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Track className="sm:ml-auto">
           <Pill variant="primary" className={TAP} disabled={rooftops.length === 0} onClick={() => open()}>
             <Plus />
-            Add rule
+            Agregar regla
           </Pill>
         </Track>
       </div>
@@ -188,13 +188,13 @@ export function LeadRoutingPanel({
             <DeskTable aria-label={`Routing rules${group.rooftop?.name ? ` for ${group.rooftop.name}` : ''}`}>
               <thead>
                 <tr>
-                  <Th align="right" className="w-10"><span className="sr-only">Order</span>#</Th>
-                  <Th>Rule</Th>
-                  <Th priority={2}>Assignee</Th>
-                  <Th>Status</Th>
-                  <Th align="right" priority={2}>First response</Th>
-                  <Th align="right" priority={3}>Priority</Th>
-                  <Th align="right"><span className="sr-only">Actions</span></Th>
+                  <Th align="right" className="w-10"><span className="sr-only">Orden</span>#</Th>
+                  <Th>Regla</Th>
+                  <Th priority={2}>Responsable</Th>
+                  <Th>Estado</Th>
+                  <Th align="right" priority={2}>Primera respuesta</Th>
+                  <Th align="right" priority={3}>Prioridad</Th>
+                  <Th align="right"><span className="sr-only">Acciones</span></Th>
                 </tr>
               </thead>
               <tbody>
@@ -211,8 +211,8 @@ export function LeadRoutingPanel({
                           <span className="md:hidden"> · {assignee || 'No assignee'} · {formatMinutes(rule.firstResponseMinutes)}</span>
                         </span>
                       </Td>
-                      <Td priority={2}>{assignee ? <span className="text-foreground">{assignee}</span> : <Attention>No assignee</Attention>}</Td>
-                      <Td>{rule.active ? <Status tone="ok">Active</Status> : <Status tone="idle">Inactive</Status>}</Td>
+                      <Td priority={2}>{assignee ? <span className="text-foreground">{assignee}</span> : <Attention>Sin responsable</Attention>}</Td>
+                      <Td>{rule.active ? <Status tone="ok">Activo</Status> : <Status tone="idle">Inactivo</Status>}</Td>
                       <Td align="right" priority={2}><Figure size="sm">{formatMinutes(rule.firstResponseMinutes)}</Figure></Td>
                       <Td align="right" priority={3}><Code>{rule.priority}</Code></Td>
                       <Td align="right" className="w-px whitespace-nowrap">
@@ -223,9 +223,9 @@ export function LeadRoutingPanel({
                           </Pill>
                           <Pill size="sm" className={TAP_SM} onClick={() => open(rule)}>
                             <Pencil />
-                            Edit
+                            Editar
                           </Pill>
-                          <Pill size="sm" variant="plain" className={cn(TAP_SM, 'max-sm:w-11')} aria-label={`Delete ${rule.name}`} onClick={() => { setFormError(null); setPending(rule) }}>
+                          <Pill size="sm" variant="plain" className={cn(TAP_SM, 'max-sm:w-11')} aria-label={`Eliminar ${rule.name}`} onClick={() => { setFormError(null); setPending(rule) }}>
                             <Trash2 />
                           </Pill>
                         </div>
@@ -250,45 +250,45 @@ export function LeadRoutingPanel({
       >
         <div className="grid gap-4 sm:grid-cols-2">
           {!draft?.ruleId && rooftops.length > 1 && (
-            <Field id="rule-rooftop" label="Rooftop" error={fieldErrors.rooftopId} className="sm:col-span-2">
+            <Field id="rule-rooftop" label="Sucursal" error={fieldErrors.rooftopId} className="sm:col-span-2">
               <Select value={draft?.rooftopId || ''} onValueChange={value => { setDraft(current => current && { ...current, rooftopId: value, assigneeId: '' }); void loadStaff(value) }}>
-                <SelectTrigger id="rule-rooftop" className={TAP_INPUT}><SelectValue placeholder="Select rooftop" /></SelectTrigger>
+                <SelectTrigger id="rule-rooftop" className={TAP_INPUT}><SelectValue placeholder="Elige una sucursal" /></SelectTrigger>
                 <SelectContent>{rooftops.map(rooftop => <SelectItem key={rooftop.id} value={rooftop.id}>{rooftop.name}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
           )}
-          <Field id="rule-name" label="Name" error={fieldErrors.name} className="sm:col-span-2">
+          <Field id="rule-name" label="Nombre" error={fieldErrors.name} className="sm:col-span-2">
             <Input id="rule-name" className={TAP_INPUT} maxLength={200} value={draft?.name || ''} aria-invalid={Boolean(fieldErrors.name)} onChange={event => setDraft(current => current && { ...current, name: event.target.value })} />
           </Field>
-          <Field id="rule-source" label="Lead source">
+          <Field id="rule-source" label="Origen de la consulta">
             <Select value={draft?.source || 'any'} onValueChange={value => setDraft(current => current && { ...current, source: value })}>
               <SelectTrigger id="rule-source" className={TAP_INPUT}><SelectValue /></SelectTrigger>
               <SelectContent>{ROUTING_SOURCES.map(source => <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
-          <Field id="rule-assignee" label="Assign to" error={fieldErrors.assigneeId || staffError}>
+          <Field id="rule-assignee" label="Asignar a" error={fieldErrors.assigneeId || staffError}>
             <Select value={draft?.assigneeId || ''} onValueChange={value => setDraft(current => current && { ...current, assigneeId: value })}>
               <SelectTrigger id="rule-assignee" className={TAP_INPUT}><SelectValue placeholder={staffOptions.length ? 'Select person' : 'No eligible staff'} /></SelectTrigger>
               <SelectContent>{staffOptions.map(user => <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
-          <Field id="rule-priority" label="Priority" error={fieldErrors.priority} hint="Higher runs first">
+          <Field id="rule-priority" label="Prioridad" error={fieldErrors.priority} hint="Higher runs first">
             <Input id="rule-priority" className={TAP_INPUT} inputMode="numeric" value={draft?.priority || ''} aria-invalid={Boolean(fieldErrors.priority)} onChange={event => setDraft(current => current && { ...current, priority: event.target.value })} />
           </Field>
-          <Field id="rule-response" label="First response (minutes)" error={fieldErrors.firstResponseMinutes}>
+          <Field id="rule-response" label="Primera respuesta (minutos)" error={fieldErrors.firstResponseMinutes}>
             <Input id="rule-response" className={TAP_INPUT} inputMode="numeric" value={draft?.firstResponseMinutes || ''} aria-invalid={Boolean(fieldErrors.firstResponseMinutes)} onChange={event => setDraft(current => current && { ...current, firstResponseMinutes: event.target.value })} />
           </Field>
           <label htmlFor="rule-active" className="flex min-h-11 items-center gap-3 text-sm sm:col-span-2">
             <Switch id="rule-active" checked={draft?.active ?? true} onCheckedChange={checked => setDraft(current => current && { ...current, active: checked })} />
-            Active
+            Activo
           </label>
         </div>
       </FormDialog>
 
       <ConfirmDialog
         open={pending !== null}
-        title={`Delete ${pending?.name || 'rule'}?`}
-        confirmLabel="Delete"
+        title={`Eliminar ${pending?.name || 'rule'}?`}
+        confirmLabel="Eliminar"
         busy={busy}
         error={formError}
         onConfirm={confirmDelete}

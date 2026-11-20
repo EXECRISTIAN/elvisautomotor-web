@@ -41,11 +41,13 @@ export const User = list({
     ...trackingFields,
     // Basic Info
     name: text({
+      label: 'Nombre y apellido',
       validation: {
         isRequired: true,
       },
     }),
     email: text({
+      label: 'Email',
       isFilterable: false,
       isOrderable: false,
       isIndexed: 'unique',
@@ -54,6 +56,7 @@ export const User = list({
       },
     }),
     password: password({
+      label: 'Contraseña',
       access: {
         read: denyAll,
         update: ({ session, item }) =>
@@ -62,6 +65,7 @@ export const User = list({
       validation: { isRequired: true },
     }),
     role: relationship({
+      label: 'Rol',
       ref: 'Role.assignedTo',
       access: {
         create: permissions.canManageRoles,
@@ -69,6 +73,7 @@ export const User = list({
           permissions.canManageRoles({ session }) && session?.itemId !== item.id,
       },
       ui: {
+        description: 'Necesario para que aparezca en Personal. Para un vendedor, elige "Vendedor".',
         createView: { fieldMode: args => permissions.canManageRoles(args) ? 'edit' : 'hidden' },
         itemView: {
           fieldMode: ({ session, item }) => permissions.canManageRoles({ session }) && rules.canUpdatePeople({ session }) === true && session?.itemId !== item?.id ? 'edit' : 'read',
@@ -79,37 +84,38 @@ export const User = list({
       ref: 'DealerGroupMembership.user',
       many: true,
       access: { update: denyAll },
-      ui: { displayMode: 'count' },
+      ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } },
     }),
     rooftopMemberships: relationship({
       ref: 'RooftopMembership.user',
       many: true,
       access: { update: denyAll },
-      ui: { displayMode: 'count' },
+      ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } },
     }),
     membershipAuditEvents: relationship({
       ref: 'MembershipAuditEvent.targetUser',
       many: true,
       access: { update: denyAll },
-      ui: { displayMode: 'count' },
+      ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } },
     }),
     performedMembershipAuditEvents: relationship({
       ref: 'MembershipAuditEvent.actor',
       many: true,
       access: { update: denyAll },
-      ui: { displayMode: 'count' },
+      ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } },
     }),
     domainAuditEvents: relationship({
       ref: 'DomainAuditEvent.actor',
       many: true,
       access: { update: denyAll },
-      ui: { displayMode: 'count' },
+      ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } },
     }),
     apiKeys: relationship({
       access: { create: () => false, update: () => false },
       ref: 'ApiKey.user',
       many: true,
       ui: {
+        createView: { fieldMode: 'hidden' },
         itemView: { fieldMode: 'read' },
       },
     }),
@@ -122,7 +128,7 @@ export const User = list({
         { label: 'Dismissed', value: 'dismissed' },
       ],
       defaultValue: 'not_started',
-      label: 'Onboarding Status',
+      label: 'Estado de la configuración inicial',
       ui: {
         createView: { fieldMode: 'hidden' },
         itemView: { fieldMode: 'read' },
@@ -132,73 +138,76 @@ export const User = list({
 
     // Dealership-specific fields
     phone: text({
-      label: 'Phone Number',
+      label: 'Teléfono',
       ui: {
-        description: 'Contact phone number',
+        description: 'Teléfono de contacto (opcional)',
       },
     }),
     employeeId: text({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople, read: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id },
-      label: 'Employee ID',
+      label: 'Legajo',
       ui: {
-        description: 'Internal employee identifier',
+        createView: { fieldMode: 'hidden' },
+        description: 'Número interno del empleado (opcional)',
         itemView: { fieldMode: ({ session, item }) => permissions.canManagePeople({ session }) ? 'edit' : session?.itemId === item?.id ? 'read' : 'hidden' },
       },
     }),
     commissionRate: float({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople, read: ({ session, item }) => permissions.canManagePeople({ session }) || session?.itemId === item.id },
-      label: 'Commission Rate (%)',
+      label: 'Comisión (%)',
       defaultValue: 0,
       validation: { min: 0, max: 100 },
       ui: {
-        description: 'Sales commission percentage (e.g., 10 for 10%)',
+        createView: { fieldMode: 'hidden' },
+        description: 'Porcentaje de comisión por venta (por ejemplo, 10 para 10%)',
         itemView: { fieldMode: ({ session, item }) => permissions.canManagePeople({ session }) ? 'edit' : session?.itemId === item?.id ? 'read' : 'hidden' },
       },
     }),
     isSalesperson: checkbox({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: 'Is Salesperson',
+      label: 'Es vendedor',
       ui: {
-        description: 'Whether this user is a salesperson',
+        description: 'Marca si atiende consultas y operaciones de venta.',
         itemView: { fieldMode: args => permissions.canManagePeople(args) ? 'edit' : 'read' },
       },
     }),
     isServiceAdvisor: checkbox({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: 'Is Service Advisor',
+      label: 'Es asesor de servicio',
       ui: {
-        description: 'Whether this user is a service advisor',
+        createView: { fieldMode: 'hidden' },
+        description: 'Atiende el taller (no se usa en Elvis por ahora).',
         itemView: { fieldMode: args => permissions.canManagePeople(args) ? 'edit' : 'read' },
       },
     }),
     isFinanceManager: checkbox({
       access: { create: permissions.canManagePeople, update: permissions.canManagePeople },
       defaultValue: false,
-      label: 'Is Finance Manager',
+      label: 'Gestiona créditos',
       ui: {
-        description: 'Whether this user handles financing',
+        description: 'Marca si gestiona solicitudes de crédito con los bancos.',
         itemView: { fieldMode: args => permissions.canManagePeople(args) ? 'edit' : 'read' },
       },
     }),
 
     // Reverse relationships are read-only. Their owning domain commands control linkage.
-    assignedLeads: relationship({ ref: 'Lead.assignedSalesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Assigned Leads' }),
-    deals: relationship({ ref: 'Deal.salesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Deals' }),
-    customerAppointments: relationship({ ref: 'ServiceAppointment.customer', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Service Appointments (Customer)' }),
-    techAppointments: relationship({ ref: 'ServiceAppointment.assignedTech', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Service Appointments (Technician)' }),
-    priceChanges: relationship({ ref: 'PriceHistory.changedBy', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Price Changes' }),
-    customerMergeEvents: relationship({ ref: 'CustomerMergeEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    leadAssignmentsFrom: relationship({ ref: 'LeadAssignmentEvent.fromUser', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    leadAssignmentsTo: relationship({ ref: 'LeadAssignmentEvent.toUser', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    performedLeadAssignments: relationship({ ref: 'LeadAssignmentEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    leadRoutingRules: relationship({ ref: 'LeadRoutingRule.assignee', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    customerContactPreferenceEvents: relationship({ ref: 'CustomerContactPreferenceEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    assignedSalesVisits: relationship({ ref: 'SalesVisit.assignedSalesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    managedSalesVisits: relationship({ ref: 'SalesVisit.manager', many: true, access: { update: denyAll }, ui: { displayMode: 'count' } }),
-    interactions: relationship({ ref: 'CustomerInteraction.performedBy', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Customer Interactions' }),
-    tasks: relationship({ ref: 'Task.assignedTo', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Tasks' }),
-    dealApprovals: relationship({ ref: 'DealApproval.approver', many: true, access: { update: denyAll }, ui: { displayMode: 'count' }, label: 'Deal Approvals' }),
+    assignedLeads: relationship({ ref: 'Lead.assignedSalesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Consultas asignadas' }),
+    deals: relationship({ ref: 'Deal.salesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Operaciones' }),
+    customerAppointments: relationship({ ref: 'ServiceAppointment.customer', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Citas de taller (como cliente)' }),
+    techAppointments: relationship({ ref: 'ServiceAppointment.assignedTech', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Citas de taller (como técnico)' }),
+    priceChanges: relationship({ ref: 'PriceHistory.changedBy', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Cambios de precio' }),
+    customerMergeEvents: relationship({ ref: 'CustomerMergeEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    leadAssignmentsFrom: relationship({ ref: 'LeadAssignmentEvent.fromUser', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    leadAssignmentsTo: relationship({ ref: 'LeadAssignmentEvent.toUser', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    performedLeadAssignments: relationship({ ref: 'LeadAssignmentEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    leadRoutingRules: relationship({ ref: 'LeadRoutingRule.assignee', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    customerContactPreferenceEvents: relationship({ ref: 'CustomerContactPreferenceEvent.actor', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    assignedSalesVisits: relationship({ ref: 'SalesVisit.assignedSalesperson', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    managedSalesVisits: relationship({ ref: 'SalesVisit.manager', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } } }),
+    interactions: relationship({ ref: 'CustomerInteraction.performedBy', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Interacciones con clientes' }),
+    tasks: relationship({ ref: 'Task.assignedTo', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Tareas' }),
+    dealApprovals: relationship({ ref: 'DealApproval.approver', many: true, access: { update: denyAll }, ui: { displayMode: 'count', createView: { fieldMode: 'hidden' } }, label: 'Aprobaciones' }),
   },
 });

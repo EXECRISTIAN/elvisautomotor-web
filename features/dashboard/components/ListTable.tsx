@@ -79,7 +79,7 @@ export function ListTable({
     if (idsToDelete.length === 0) return;
 
     if (!list.gqlNames?.deleteManyMutationName) {
-      toast.error('Delete functionality not available for this list');
+      toast.error('No se pueden eliminar registros de esta tabla');
       return;
     }
 
@@ -109,7 +109,7 @@ export function ListTable({
         });
       }
     } catch (err) {
-      const errorMessage = 'Unable to delete the selected items. Please try again.';
+      const errorMessage = 'No se pudieron eliminar los registros elegidos. Intenta de nuevo.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -125,7 +125,7 @@ export function ListTable({
   };
 
   if (!data || !data.items) {
-    return <div>No data available</div>;
+    return <div>Sin datos</div>;
   }
 
   // Create a query object that behaves like the old query object
@@ -201,7 +201,7 @@ export function ListTable({
     // For complex objects, show a placeholder instead of [object Object]
     return (
       <span className="text-muted-foreground italic text-xs">
-        Complex data
+        Datos complejos
       </span>
     );
   };
@@ -309,7 +309,7 @@ export function ListTable({
                   );
                 })}
                 <th className="whitespace-nowrap py-3 px-5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-background text-left">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -360,7 +360,7 @@ export function ListTable({
                       href={`${basePath}/${list.path}/${item.id}`}
                       className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                     >
-                      View
+                      Ver
                     </Link>
                   </td>
                 </tr>

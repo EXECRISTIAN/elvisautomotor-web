@@ -82,6 +82,7 @@ export const RETENTION_CATEGORIES: ReadonlyArray<{ value: string; label: string 
 export const MAX_RETENTION_DAYS = 36500
 
 export const US_TIME_ZONES = [
+  'America/Argentina/Buenos_Aires',
   'America/New_York',
   'America/Detroit',
   'America/Indiana/Indianapolis',

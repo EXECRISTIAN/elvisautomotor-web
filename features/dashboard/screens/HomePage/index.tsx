@@ -4,6 +4,7 @@
  */
 
 import React from 'react'
+import { isElvisVisibleList } from '../../lib/elvisLists'
 import Link from 'next/link'
 import { PlusIcon, Database } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -35,7 +36,7 @@ function ListCard({ list, count, hideCreate = false }: ListCardProps) {
             {isSingleton 
               ? 'Singleton' 
               : typeof count === 'number'
-                ? `${count} item${count !== 1 ? 's' : ''}`
+                ? `${count} ${count !== 1 ? 'registros' : 'registro'}`
                 : null
             }
           </p>
@@ -51,10 +52,10 @@ function ListCard({ list, count, hideCreate = false }: ListCardProps) {
             variant="outline" 
             size="icon"
             className="h-7 w-7"
-            title={`Add ${list.singular?.toLowerCase() || 'item'}`}
+            title={`Agregar ${list.singular?.toLowerCase() || 'registro'}`}
           >
             <PlusIcon className="h-4 w-4" />
-            <span className="sr-only">Create new {list.label}</span>
+            <span className="sr-only">Crear en {list.label}</span>
           </Button>
         </Link>
       )}
@@ -66,9 +67,9 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
       <Database className="h-12 w-12 text-muted-foreground mb-4" />
-      <h3 className="text-lg font-semibold mb-2">No lists configured</h3>
+      <h3 className="text-lg font-semibold mb-2">No hay tablas configuradas</h3>
       <p className="text-muted-foreground">
-        There are no data models configured in your admin interface.
+        No hay tablas configuradas en el panel.
       </p>
     </div>
   )
@@ -82,8 +83,8 @@ export async function HomePage() {
     console.error('Failed to fetch admin meta:', adminMetaResponse.error)
     return (
       <PageContainer 
-        title="Dashboard" 
-        header={<h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>}
+        title="Panel" 
+        header={<h1 className="text-lg font-semibold md:text-2xl">Panel</h1>}
         breadcrumbs={[{ type: 'page' as const, label: 'Inicio' }]}
       >
         <EmptyState />
@@ -94,7 +95,7 @@ export async function HomePage() {
   const adminMeta = adminMetaResponse.data
   const lists = adminMeta?.lists || []
   // Lists are already enhanced with gqlNames from getAdminMetaAction
-  const enhancedLists = lists.filter((list: any) => !list.isHidden)
+  const enhancedLists = lists.filter((list: any) => !list.isHidden && isElvisVisibleList(list))
 
   // Fetch list counts server-side
   let countData: Record<string, number> = {}
@@ -107,7 +108,7 @@ export async function HomePage() {
 
   const header = (
     <div className="flex flex-col">
-      <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+      <h1 className="text-lg font-semibold md:text-2xl">Panel</h1>
       {enhancedLists.length > 0 && (
         <p className="text-muted-foreground">{enhancedLists.length} Models</p>
       )}
@@ -120,18 +121,18 @@ export async function HomePage() {
 
   if (enhancedLists.length === 0) {
     return (
-      <PageContainer title="Dashboard" header={header} breadcrumbs={breadcrumbs}>
+      <PageContainer title="Panel" header={header} breadcrumbs={breadcrumbs}>
         <EmptyState />
       </PageContainer>
     )
   }
 
   return (
-    <PageContainer title="Dashboard" header={header} breadcrumbs={breadcrumbs}>
+    <PageContainer title="Panel" header={header} breadcrumbs={breadcrumbs}>
       <div className="w-full max-w-4xl p-4 md:p-6 flex flex-col gap-4">
         <div className="mb-4">
           <h2 className="tracking-wide uppercase font-medium mb-2 text-muted-foreground text-sm">
-            Data Models
+            Tablas
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">

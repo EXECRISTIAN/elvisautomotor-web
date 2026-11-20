@@ -22,7 +22,7 @@ export async function SignInPage({ searchParams }: SignInPageProps) {
           <Logo aria-hidden="true" />
         </div>
         <h1 className="mt-6 text-lg font-semibold text-foreground dark:text-foreground">
-          Sign in to your account
+          Inicia sesión en tu cuenta
         </h1>
         {publicSignUpsAllowed() && (
           <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
@@ -31,18 +31,18 @@ export async function SignInPage({ searchParams }: SignInPageProps) {
               href="/dashboard/signup"
               className="ml-1 font-medium text-primary hover:text-primary/90 dark:text-primary hover:dark:text-primary/90"
             >
-              Sign up
+              Crear cuenta
             </Link>
           </p>
         )}
         <SignInForm from={from} />
         <p className="mt-6 text-sm text-muted-foreground dark:text-muted-foreground">
-          Forgot your password?
+          ¿Olvidaste tu contraseña?
           <Link
             href="/dashboard/reset"
             className="ml-1 font-medium text-primary hover:text-primary/90 dark:text-primary hover:dark:text-primary/90"
           >
-            Reset password
+            Restablecer contraseña
           </Link>
         </p>
       </div>
