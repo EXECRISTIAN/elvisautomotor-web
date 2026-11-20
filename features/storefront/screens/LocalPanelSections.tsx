@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Download, Plus, Trash2 } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import {
-  PERMISSIONS, ROLES, addCashClose, addCashMove, applyCarChanges, deleteCashMove, listActivity, listCash, listCloses, listSales,
+  PERMISSIONS, ROLES, addCashClose, analytics, addCashMove, applyCarChanges, deleteCashMove, listActivity, listCash, listCloses, listSales,
   listSubmissions, logActivity, newId, exportAll, importAll, rolePermissions, saveCar, saveRolePermissions, saveSale, saveSiteSettings, siteSettings, voidSale,
   type LocalCar, type LocalUser, type Sale,
 } from '../lib/localStore'
@@ -46,13 +46,13 @@ function Stat({ label, value, note, onClick }: { label: string; value: string; n
     ? <button type="button" onClick={onClick} className="elv-pq-panel !p-4 text-left transition-colors hover:border-[var(--sf-accent)]" aria-label={`${label}: ${value}. Ver detalle`}>{body}</button>
     : <div className="elv-pq-panel !p-4">{body}</div>
 }
-function Bars({ data }: { data: Array<{ label: string; value: number }> }) {
+function Bars({ data, fmt = money }: { data: Array<{ label: string; value: number }>; fmt?: (n: number) => string }) {
   const max = Math.max(1, ...data.map((d) => d.value))
   return (
-    <div className="flex h-40 items-end gap-2" role="img" aria-label={data.map((d) => `${d.label}: ${money(d.value)}`).join(', ')}>
+    <div className="flex h-40 items-end gap-2" role="img" aria-label={data.map((d) => `${d.label}: ${fmt(d.value)}`).join(', ')}>
       {data.map((d) => (
         <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-          <div className="w-full rounded-t-[4px]" style={{ height: `${Math.max(2, (d.value / max) * 100)}%`, background: 'var(--sf-gold-gradient)' }} title={money(d.value)} />
+          <div className="w-full rounded-t-[4px]" style={{ height: `${Math.max(2, (d.value / max) * 100)}%`, background: 'var(--sf-gold-gradient)' }} title={fmt(d.value)} />
           <span className="sf-faint truncate text-[0.7rem]">{d.label}</span>
         </div>
       ))}
@@ -88,6 +88,32 @@ export function SummarySection({ go }: { go?: (tab: string, filter?: string) => 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="elv-pq-panel"><p className="font-bold">Ventas por mes</p><div className="mt-4"><Bars data={months.map((m) => ({ label: monthLabel(m), value: sales.filter((s) => monthKey(s.fecha) === m).reduce((t, s) => t + s.precio, 0) }))} /></div></div>
         <div className="elv-pq-panel"><p className="font-bold">Balance de caja por mes (ingresos − egresos)</p><div className="mt-4"><Bars data={months.map((m) => ({ label: monthLabel(m), value: Math.max(0, cash.filter((c) => monthKey(c.fecha) === m).reduce((t, c) => t + (c.tipo === 'ingreso' ? c.monto : -c.monto), 0)) }))} /></div></div>
+      </div>
+      <TrafficPanel />
+    </div>
+  )
+}
+
+function TrafficPanel() {
+  const a = analytics(7)
+  const names: Record<string, string> = { '/': 'Inicio', '/inventory': 'Inventario', '/inventory/(auto)': 'Fichas de autos', '/ofertas': 'Ofertas', '/financing': 'Financiación', '/precalificador': 'Precalificador', '/trade-in': 'Vende tu auto', '/nosotros': 'Nosotros', '/contact': 'Contacto', '/test-drive': 'Prueba de manejo', '/compare': 'Comparar' }
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="elv-pq-panel">
+        <p className="font-bold">Visitas a la web (últimos 7 días)</p>
+        <p className="sf-muted text-[0.85rem]">{a.total} visitas · {a.leads} consultas · conversión {a.total ? ((a.leads / a.total) * 100).toFixed(1) : '0'}%{a.medianLoad != null ? ` · carga típica ${(a.medianLoad / 1000).toFixed(1)} s` : ''}</p>
+        <div className="mt-4"><Bars data={a.perDay.map((d) => ({ label: d.day.slice(8) + '/' + d.day.slice(5, 7), value: d.total }))} fmt={(n) => `${n} visitas`} /></div>
+      </div>
+      <div className="elv-pq-panel">
+        <p className="font-bold">Páginas más vistas</p>
+        {a.pages.length ? (
+          <ol className="mt-3 grid gap-2 text-[0.9rem]">
+            {a.pages.slice(0, 8).map(([page, n]) => (
+              <li key={page} className="flex justify-between gap-3 border-b pb-1" style={{ borderColor: 'var(--sf-rule)' }}><span className="truncate">{names[page] ?? page}</span><strong>{n}</strong></li>
+            ))}
+          </ol>
+        ) : <p className="sf-faint mt-3">Todavía no hay visitas registradas.</p>}
+        <p className="sf-faint mt-3 text-[0.75rem]">Se cuenta en este equipo, sin servicios externos. Las visitas al panel no se cuentan.</p>
       </div>
     </div>
   )

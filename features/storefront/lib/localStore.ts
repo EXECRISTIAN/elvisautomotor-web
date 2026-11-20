@@ -17,10 +17,10 @@ export type SiteSettings = Record<string, string>
 export type OfferSection = { id: string; nombre: string; descripcion: string; activa: boolean }
 export type RaffleEntry = { numero: number; nombre: string; telefono: string; estado: 'reservado' | 'pagado'; fecha: string }
 export type Raffle = { id: string; titulo: string; premio: string; autoId: string; precioNumero: number; cantidad: number; fechaSorteo: string; estado: 'activa' | 'cerrada' | 'sorteada'; bases: string; numeros: RaffleEntry[]; ganador: number | null; creada: string }
-type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings; secciones: OfferSection[]; rifas: Raffle[] }
+type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings; secciones: OfferSection[]; rifas: Raffle[]; visitas: Record<string, Record<string, number>>; carga: number[] }
 
 const MIRROR = 'elvis:datos'
-const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {}, secciones: [], rifas: [] }
+const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {}, secciones: [], rifas: [], visitas: {}, carga: [] }
 
 export function isLocalDemo() {
   return typeof window !== 'undefined' && (window as unknown as { __ELVIS_OFFLINE__?: boolean }).__ELVIS_OFFLINE__ === true
@@ -42,6 +42,8 @@ function normalize(raw: any): Db {
     sitio: raw?.sitio && typeof raw.sitio === 'object' ? raw.sitio : {},
     secciones: Array.isArray(raw?.secciones) ? raw.secciones : [],
     rifas: Array.isArray(raw?.rifas) ? raw.rifas : [],
+    visitas: raw?.visitas && typeof raw.visitas === 'object' ? raw.visitas : {},
+    carga: Array.isArray(raw?.carga) ? raw.carga : [],
   }
 }
 
@@ -286,4 +288,29 @@ export function reserveRaffleNumber(raffleId: string, entry: Omit<RaffleEntry, '
   raffle.numeros.push({ ...entry, estado: 'reservado', fecha: new Date().toISOString() })
   persist()
   return true
+}
+
+// ---------- Analítica local (sin servicios externos) ----------
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+/** Cuenta una visita a la página (se guarda en la carpeta "datos"). No cuenta el panel. */
+export function logPageView(path: string, loadMs?: number) {
+  if (!isLocalDemo() || path.startsWith('/panel')) return
+  const d = db()
+  const page = path.split('#')[0].split('?')[0].replace(/^\/inventory\/.+/, '/inventory/(auto)') || '/'
+  const day = (d.visitas[dayKey()] ??= {})
+  day[page] = (day[page] ?? 0) + 1
+  if (loadMs && loadMs > 0 && loadMs < 60000) d.carga = [...d.carga.slice(-199), Math.round(loadMs)]
+  const keys = Object.keys(d.visitas).sort()
+  for (const k of keys.slice(0, Math.max(0, keys.length - 90))) delete d.visitas[k]
+  persist()
+}
+export function analytics(days = 7) {
+  const d = db()
+  const keys = Array.from({ length: days }, (_, i) => { const x = new Date(); x.setDate(x.getDate() - (days - 1 - i)); return dayKey(x) })
+  const perDay = keys.map((k) => ({ day: k, total: Object.values(d.visitas[k] ?? {}).reduce((a, b) => a + b, 0) }))
+  const pages: Record<string, number> = {}
+  for (const k of keys) for (const [p, n] of Object.entries(d.visitas[k] ?? {})) pages[p] = (pages[p] ?? 0) + n
+  const leads = d.consultas.filter((c) => keys.includes(dayKey(new Date(c.createdAt)))).length
+  const loads = [...d.carga].sort((a, b) => a - b)
+  return { perDay, pages: Object.entries(pages).sort((a, b) => b[1] - a[1]), total: perDay.reduce((a, b) => a + b.total, 0), leads, medianLoad: loads.length ? loads[Math.floor(loads.length / 2)] : null }
 }

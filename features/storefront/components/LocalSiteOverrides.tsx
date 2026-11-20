@@ -1,13 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { isLocalDemo, siteSettings } from '../lib/localStore'
+import { isLocalDemo, logPageView, siteSettings } from '../lib/localStore'
 
 /** Muestra local: aplica en la web lo editado en el panel → Sitio (textos, aviso y colores). */
 export function LocalSiteOverrides() {
   const [notice, setNotice] = useState('')
   useEffect(() => {
     if (!isLocalDemo()) return
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    const record = () => logPageView(location.pathname, nav ? nav.loadEventEnd || nav.domContentLoadedEventEnd : undefined)
+    if (document.readyState === 'complete') setTimeout(record, 0)
+    else window.addEventListener('load', () => setTimeout(record, 0), { once: true })
     const site = siteSettings()
     setNotice(site.aviso?.trim() || '')
     const root = document.querySelector<HTMLElement>('.storefront')

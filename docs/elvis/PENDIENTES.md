@@ -144,3 +144,9 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - /ofertas: secciones propias y rifa con grilla de números; en la muestra offline la progresiva (Meriva N7) queda siempre en curso.
 - Títulos de pestaña "AE: Sección"; favicon con trazo más grueso.
 - Pendiente online: pasar secciones y rifas a la base real. Rifas requieren autorización (Lotería de la Provincia).
+
+### 20/11 20:10 — responsive, navegadores, analítica
+- Auditoría de desborde horizontal a 320/360/768/1024/1440 px en 11 páginas: sin problemas.
+- Analítica local en Resumen: visitas por día, páginas más vistas, conversión (consultas/visitas) y tiempo típico de carga. Sin servicios externos.
+- Navegadores: probado solo en Chromium (Firefox/Safari no disponibles en el entorno). Pendiente: probar en Safari de iPhone y Firefox reales.
+- Online: conectar analítica real (p. ej. Google Analytics o Plausible) cuando se publique.
