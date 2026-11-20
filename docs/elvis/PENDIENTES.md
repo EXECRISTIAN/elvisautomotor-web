@@ -90,3 +90,17 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Ficha de Google Maps: 4,1 ★ con 2.404 opiniones, 547 fotos; confirma Andrés Baranda 2134, C1878 Quilmes; el teléfono no está cargado en Maps (sugerirle agregarlo).
 - No se pudo bajar más: Google Maps, Facebook e Instagram piden iniciar sesión para ver galerías completas. Las publicaciones recientes de Instagram son cuadros de video con clientes (no se usan caras de clientes).
 - Para el inventario real hacen falta fotos de cada auto en buena resolución: pedírselas a Elvis o bajarlas con su cuenta.
+
+## Bloque 20/11/2026 (tarde)
+- Portada: accesos "Autos 0 km" y "Autos usados" (también en el menú del celular).
+- Ficha del usado: informe de estado (deuda, infracciones, GNC, aire, cubiertas, motor, chapa, pintura, plásticos, interior, mecánica, funcionamiento, llantas). **Datos de ejemplo inventados**: reemplazar por los reales desde el panel (Inventario → vehículo → "Estado del usado").
+- Ofertas express: cargando "Precio anterior" en un auto aparece rebajado (precio tachado). Hoy no hay ninguna: se ve el cartel "No hay ofertas express en curso".
+- Financiación: botón "Otra cantidad" de cuotas (dentro del rango del plan) y acceso al precalificador.
+- **Precalificador** (/precalificador): copia del flujo de captación de Elvis 2.0 (WhatsApp, 0 km/usado, contado/financiado, permuta, tipo de 0 km, cuota, situación laboral, ingresos, tarjetas, créditos, Veraz, cuándo, por qué Elvis, horario, DNI/CUIL). Llega al panel como consulta con todas las respuestas.
+  - **Por confirmar con Elvis:** en su sistema dice "la reapertura de la agencia de usados está prevista para el primer trimestre de 2027". No se copió ese texto; en el sitio los usados se muestran normalmente.
+- Véndelo en Elvis: patente (obligatoria) y número de motor; selectores con lista debajo; catálogo de 31 marcas / 256 modelos / 769 versiones.
+- Contacto: opción WhatsApp, franja mañana/tarde (una o las dos), botón "Quiero que me contacten".
+- Botón "Noticias y ofertas por WhatsApp" (canal) en inicio, ofertas y pie.
+- Panel en la PC: usuario **123** / contraseña **123** (solo local; cambiar antes de publicar). `INICIAR-ELVIS.bat` levanta todo con Docker Desktop y guarda los datos en la PC.
+- Muestra rápida: `INICIAR-MUESTRA.bat` (menús y simulador funcionan; no guarda datos).
+- Se quitó "Basado en Openfront (MIT)" del pie (la licencia sigue en el repositorio, que es lo que exige).

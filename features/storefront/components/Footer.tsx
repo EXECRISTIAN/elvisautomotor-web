@@ -12,6 +12,7 @@ import { useStorefrontBusiness } from './StorefrontBusinessProvider'
 const SHOP = [
   { href: '/inventory', label: 'Inventario' },
   { href: '/ofertas', label: 'Ofertas' },
+  { href: '/precalificador', label: 'Precalifica tu crédito' },
   { href: '/compare', label: 'Comparar' },
   { href: '/financing', label: 'Financiación' },
   { href: '/trade-in', label: 'Vende tu auto' },

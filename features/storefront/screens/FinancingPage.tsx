@@ -194,6 +194,14 @@ export function FinancingPage({ plans }: { plans: PublicFinancingPlan[] }) {
             </div>
           </div>
 
+          <Link href="/precalificador" className="sf-well flex min-h-16 items-center justify-between gap-4 p-5 transition-colors hover:border-[var(--sf-accent)]" style={{ borderColor: 'var(--sf-accent)' }}>
+            <span>
+              <span className="block font-bold">¿Quieres saber si calificas para un 0 km?</span>
+              <span className="sf-muted block text-[length:var(--sf-text-sm)]">Responde unas preguntas rápidas en el precalificador y un vendedor te escribe por WhatsApp.</span>
+            </span>
+            <span className="sf-btn sf-btn-primary shrink-0 rounded-[8px]">Precalificar</span>
+          </Link>
+
           <FormSection title="1. Simula tu cuota" first>
             <div className="grid gap-4">
               <Field label="Vehículo" htmlFor="fin-vehicle">

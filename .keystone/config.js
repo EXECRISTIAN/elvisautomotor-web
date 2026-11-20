@@ -9195,6 +9195,66 @@ async function submitInquiry(_root, { data }, context) {
   });
 }
 
+// features/keystone/mutations/submitPrecalification.ts
+var TIMES = { morning: "por la ma\xF1ana", afternoon: "por la tarde" };
+async function submitPrecalification(_root, { data }, context) {
+  const fullName = requiredText(data.fullName, "Nombre y apellido", 160);
+  const [firstName, ...rest] = fullName.split(/\s+/);
+  const lastName = rest.join(" ") || "-";
+  const phone = validPhone(data.phone);
+  const dni = optionalText(data.dni, 12, "DNI").replace(/\D/g, "");
+  const cuil = optionalText(data.cuil, 15, "CUIL").replace(/\D/g, "");
+  const locality = optionalText(data.locality, 100, "Localidad");
+  const province = optionalText(data.province, 100, "Provincia");
+  const message = optionalText(data.message, 2e3, "Mensaje");
+  if (dni && (dni.length < 7 || dni.length > 8)) throw new SubmissionError("El DNI debe tener 7 u 8 n\xFAmeros.");
+  if (cuil && cuil.length !== 11) throw new SubmissionError("El CUIL debe tener 11 n\xFAmeros (XX-XXXXXXXX-X).");
+  if (!data.consent) throw new SubmissionError("Necesitamos tu autorizaci\xF3n para contactarte.");
+  const answers = (Array.isArray(data.answers) ? data.answers : []).slice(0, 40).map((item) => ({
+    question: optionalText(item?.question, 200, "Pregunta"),
+    answer: optionalText(item?.answer, 300, "Respuesta")
+  })).filter((item) => item.question && item.answer);
+  if (!answers.length) throw new SubmissionError("Responde las preguntas antes de enviar.");
+  const times = [...new Set((Array.isArray(data.contactTimes) ? data.contactTimes : []).map(String))].filter((t) => typeof t === "string" && t in TIMES);
+  const timesLabel = times.map((t) => TIMES[t]).join(" o ");
+  return runPublicSubmission({
+    context,
+    workflow: "inquiry",
+    rooftopSlug: data.rooftopSlug,
+    idempotencyKey: data.idempotencyKey,
+    honeypot: data.website,
+    requestEvidence: { kind: "precalificacion", fullName, phone, dni, cuil, locality, province, message, answers, times },
+    aggregateType: "Lead",
+    aggregateId: (result2) => String(result2.leadId),
+    handler: async (transactionContext, { rooftopId }) => {
+      const { customer } = await resolveCustomerInTransaction(transactionContext, { rooftopId, firstName, lastName, email: "", phone });
+      const notes = [
+        "Precalificador completado desde la web.",
+        `WhatsApp: ${phone}${timesLabel ? ` \xB7 Prefiere que lo contacten ${timesLabel}` : ""}.`,
+        [dni && `DNI ${dni}`, cuil && `CUIL ${cuil.slice(0, 2)}-${cuil.slice(2, 10)}-${cuil.slice(10)}`, [locality, province].filter(Boolean).join(", ")].filter(Boolean).join(" \xB7 "),
+        "",
+        ...answers.map((item) => `\u2022 ${item.question} \u2192 ${item.answer}`),
+        "",
+        message ? `Mensaje del cliente: ${message}` : "El cliente no dej\xF3 un mensaje adicional."
+      ].filter((line, index, all) => line !== "" || all[index - 1] !== "").join("\n");
+      const lead = await transactionContext.sudo().query.Lead.createOne({
+        data: {
+          rooftop: { connect: { id: rooftopId } },
+          customer: { connect: { id: customer.id } },
+          firstName,
+          lastName,
+          phone,
+          source: "website",
+          status: "new",
+          notes
+        },
+        query: "id"
+      });
+      return { leadId: lead.id };
+    }
+  });
+}
+
 // features/integrations/payment/index.ts
 var paymentProviderAdapters = {
   stripe: () => Promise.resolve().then(() => (init_stripe(), stripe_exports)),
@@ -19868,6 +19928,24 @@ function extendGraphqlSchema(baseSchema) {
         reused: Boolean
       }
 
+      input PrecalificationAnswerInput { question: String!, answer: String! }
+      input SubmitPrecalificationInput {
+        fullName: String!
+        phone: String!
+        dni: String
+        cuil: String
+        locality: String
+        province: String
+        message: String
+        answers: [PrecalificationAnswerInput!]!
+        contactTimes: [String!]
+        consent: Boolean!
+        rooftopSlug: String
+        idempotencyKey: String!
+        website: String
+      }
+      type SubmitPrecalificationPayload { ok: Boolean!, errorCode: String, errorMessage: String, leadId: ID, reused: Boolean }
+
       type SubmitInquiryPayload {
         ok: Boolean!
         errorCode: String
@@ -20417,6 +20495,7 @@ function extendGraphqlSchema(baseSchema) {
         rescheduleCustomerBooking(kind: String!, id: ID!, date: String!, time: String!, idempotencyKey: String!): CustomerBookingResult!
         updateActiveUser(data: UserUpdateProfileInput!): ActiveUserProfile
         submitInquiry(data: SubmitInquiryInput!): SubmitInquiryPayload!
+        submitPrecalification(data: SubmitPrecalificationInput!): SubmitPrecalificationPayload!
         reserveVehicle(data: ReserveVehicleInput!): ReserveVehiclePayload!
         submitTestDrive(data: SubmitTestDriveInput!): SubmitTestDrivePayload!
         submitTradeIn(data: SubmitTradeInInput!): SubmitTradeInPayload!
@@ -20569,6 +20648,7 @@ function extendGraphqlSchema(baseSchema) {
         rescheduleCustomerBooking: operatorCommand(rescheduleCustomerBooking),
         updateActiveUser,
         submitInquiry: publicSubmissionResolver(submitInquiry),
+        submitPrecalification: publicSubmissionResolver(submitPrecalification),
         reserveVehicle: publicSubmissionResolver(reserveVehicle),
         submitTestDrive: publicSubmissionResolver(submitTestDrive),
         submitTradeIn: publicSubmissionResolver(submitTradeIn),

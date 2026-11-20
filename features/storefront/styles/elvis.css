@@ -175,3 +175,18 @@
 /* Respuesta visible al tocar cualquier botón u opción. */
 .storefront .sf-pill:active:not(:disabled), .storefront .sf-btn:active:not(:disabled) { transform: scale(0.97); }
 .storefront .sf-pill, .storefront .sf-btn { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+/* Precalificador: tarjetas grandes y fáciles de tocar. */
+.elv-pq-panel { border: 1px solid var(--sf-rule); border-radius: 20px; padding: 1.5rem; background: var(--sf-paper-2, var(--sf-paper)); }
+@media (min-width: 640px) { .elv-pq-panel { padding: 2rem; } }
+.elv-pq-card {
+  display: flex; align-items: center; width: 100%; min-height: 3.75rem; padding: 0.9rem 1.15rem; text-align: left;
+  border: 1px solid var(--sf-rule-strong, var(--sf-rule)); border-radius: 14px; background: var(--sf-paper-3, rgb(255 255 255 / 0.04));
+  font-weight: 700; font-size: 1.02rem; line-height: 1.3; color: var(--sf-ink); cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 120ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.elv-pq-card:hover { border-color: var(--sf-accent); }
+.elv-pq-card:active { transform: scale(0.985); }
+.elv-pq-card:focus-visible { outline: 2px solid var(--sf-accent); outline-offset: 2px; }
+.elv-pq-card[aria-pressed="true"] { background: var(--sf-gold-gradient); color: var(--sf-accent-ink); border-color: transparent; }
+.elv-pq-note { border: 1px solid var(--sf-rule); border-radius: 14px; padding: 0.9rem 1rem; font-size: 0.9rem; color: var(--sf-ink-2); }

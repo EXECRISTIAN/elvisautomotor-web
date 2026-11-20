@@ -28,6 +28,7 @@ const MENU = [
   { href: '/inventory?condition=used', label: 'Autos usados' },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/financing', label: 'Financiación' },
+  { href: '/precalificador', label: 'Precalifica tu crédito' },
   { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/test-drive', label: 'Prueba de manejo' },
   { href: '/compare', label: 'Comparar' },

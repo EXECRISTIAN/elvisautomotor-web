@@ -7,6 +7,7 @@ import { cancelCustomerBooking, rescheduleCustomerBooking } from './customerBook
 import { confirmCustomerEmailVerification, customerEmailLinkStatus, requestCustomerEmailVerification } from './customerEmailVerification';
 import updateActiveUser from "./updateActiveUser";
 import { submitInquiry } from './submitInquiry';
+import { submitPrecalification } from './submitPrecalification';
 import { reserveVehicle } from './reserveVehicle';
 import { payServiceInvoice } from './payServiceInvoice';
 import { submitTestDrive } from './submitTestDrive';
@@ -180,6 +181,24 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         selectedVehicle: PublicSubmissionVehicle
         reused: Boolean
       }
+
+      input PrecalificationAnswerInput { question: String!, answer: String! }
+      input SubmitPrecalificationInput {
+        fullName: String!
+        phone: String!
+        dni: String
+        cuil: String
+        locality: String
+        province: String
+        message: String
+        answers: [PrecalificationAnswerInput!]!
+        contactTimes: [String!]
+        consent: Boolean!
+        rooftopSlug: String
+        idempotencyKey: String!
+        website: String
+      }
+      type SubmitPrecalificationPayload { ok: Boolean!, errorCode: String, errorMessage: String, leadId: ID, reused: Boolean }
 
       type SubmitInquiryPayload {
         ok: Boolean!
@@ -730,6 +749,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         rescheduleCustomerBooking(kind: String!, id: ID!, date: String!, time: String!, idempotencyKey: String!): CustomerBookingResult!
         updateActiveUser(data: UserUpdateProfileInput!): ActiveUserProfile
         submitInquiry(data: SubmitInquiryInput!): SubmitInquiryPayload!
+        submitPrecalification(data: SubmitPrecalificationInput!): SubmitPrecalificationPayload!
         reserveVehicle(data: ReserveVehicleInput!): ReserveVehiclePayload!
         submitTestDrive(data: SubmitTestDriveInput!): SubmitTestDrivePayload!
         submitTradeIn(data: SubmitTradeInInput!): SubmitTradeInPayload!
@@ -882,6 +902,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         rescheduleCustomerBooking: operatorCommand(rescheduleCustomerBooking),
         updateActiveUser,
         submitInquiry: publicSubmissionResolver(submitInquiry),
+        submitPrecalification: publicSubmissionResolver(submitPrecalification),
         reserveVehicle: publicSubmissionResolver(reserveVehicle),
         submitTestDrive: publicSubmissionResolver(submitTestDrive),
         submitTradeIn: publicSubmissionResolver(submitTradeIn),

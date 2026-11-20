@@ -262,3 +262,24 @@ export async function uploadStorefrontTradeInPhoto(formData: FormData): Promise<
     return { success: false, error: 'No pudimos subir la foto.' }
   }
 }
+
+export async function submitStorefrontPrecalification(input: CommonSubmissionInput & {
+  fullName: string
+  phone: string
+  dni?: string
+  cuil?: string
+  locality?: string
+  province?: string
+  message?: string
+  answers: Array<{ question: string; answer: string }>
+  contactTimes?: string[]
+  consent: boolean
+}) {
+  return executeSubmission<SubmissionPayload & { leadId?: string; reused?: boolean }>(
+    'submitPrecalification',
+    `mutation SubmitPrecalification($data: SubmitPrecalificationInput!) {
+      submitPrecalification(data: $data) { ok errorCode errorMessage leadId reused }
+    }`,
+    input
+  )
+}
