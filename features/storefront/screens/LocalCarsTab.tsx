@@ -1,0 +1,187 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
+import { ComboField } from '../components/ComboField'
+import { PhotoPicker } from '../components/PhotoPicker'
+import { applyCarChanges, deleteCar, deletePhoto, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
+import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
+import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS, USED_REPORT_TEXT_FIELDS } from '@/features/lib/vehicleSpecs'
+
+const money = (n: unknown) => (Number(n) > 0 ? Number(n).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }) : 'Sin precio')
+const STATUS: Record<string, string> = { available: 'Disponible', reserved: 'Reservado', sold: 'Vendido' }
+const YEARS = Array.from({ length: 40 }, (_, i) => String(new Date().getFullYear() + 1 - i))
+const opt = (list: readonly { label: string; value: string }[]) => list.map((o) => o.label.replace(/ \(se informa abajo\)$/, ''))
+const toValue = (list: readonly { label: string; value: string }[], label: string) => list.find((o) => o.label.replace(/ \(se informa abajo\)$/, '') === label)?.value ?? ''
+const toLabel = (list: readonly { label: string; value: string }[], value?: string) => list.find((o) => o.value === value)?.label.replace(/ \(se informa abajo\)$/, '') ?? ''
+
+function photoUrl(car: LocalCar) {
+  const images = (car.images ?? []) as Array<{ image?: { url?: string } | null; imagePath?: string; isPrimary?: boolean }>
+  const img = images.find((i) => i.isPrimary) ?? images[0]
+  return img?.image?.url || (img?.imagePath ? `/images/vehicles/${img.imagePath.split('/').pop()}` : '')
+}
+
+export function LocalCarsTab() {
+  const [base, setBase] = useState<LocalCar[] | null>(null)
+  const [version, setVersion] = useState(0)
+  const [editing, setEditing] = useState<LocalCar | null>(null)
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    void fetch('/_offline/datos.json').then((r) => r.json()).then((d) => setBase(d.vehicles ?? [])).catch(() => setBase([]))
+  }, [])
+
+  const cars = useMemo(() => (base ? applyCarChanges(base) : []), [base, version])
+  const shown = cars.filter((car) => !query || `${car.year} ${car.make} ${car.model} ${car.trim} ${car.stockNumber}`.toLowerCase().includes(query.toLowerCase()))
+
+  const startNew = () => {
+    setError('')
+    setEditing({ id: newId('auto').toLowerCase(), __new: true, vin: '', year: new Date().getFullYear(), make: '', model: '', trim: '', condition: 'used', status: 'available', price: 0, previousPrice: null, mileage: 0, color: '', fuelType: 'nafta', transmission: 'manual', engine: '', stockNumber: `L-${String(cars.length + 1).padStart(3, '0')}`, isFeatured: false, description: '', features: [], images: [], usedReport: {} })
+  }
+
+  async function addPhotos(files: File[]) {
+    if (!editing) return
+    setBusy(true)
+    try {
+      const urls: string[] = []
+      for (const file of files.filter((f) => f.type.startsWith('image/')).slice(0, 20)) urls.push(await savePhoto(file))
+      const images = [...(editing.images ?? []), ...urls.map((url, i) => ({ id: newId('img'), imagePath: '', image: { url }, isPrimary: !(editing.images ?? []).length && i === 0, sortOrder: (editing.images ?? []).length + i }))]
+      setEditing({ ...editing, images })
+    } finally {
+      setBusy(false)
+    }
+  }
+  function removePhoto(index: number) {
+    if (!editing) return
+    const images = [...(editing.images ?? [])]
+    const [removed] = images.splice(index, 1)
+    if (removed?.image?.url?.startsWith('/_local/')) deletePhoto(removed.image.url)
+    if (removed?.isPrimary && images[0]) images[0] = { ...images[0], isPrimary: true }
+    setEditing({ ...editing, images })
+  }
+  function makePrimary(index: number) {
+    if (!editing) return
+    setEditing({ ...editing, images: (editing.images ?? []).map((img: any, i: number) => ({ ...img, isPrimary: i === index })) })
+  }
+
+  function save(event: React.FormEvent) {
+    event.preventDefault()
+    if (!editing) return
+    if (!String(editing.make).trim() || !String(editing.model).trim() || !Number(editing.year)) { setError('Completa marca, modelo y año.'); return }
+    if (!(Number(editing.price) > 0)) { setError('Indica el precio.'); return }
+    if (editing.previousPrice && Number(editing.previousPrice) <= Number(editing.price)) { setError('El precio anterior (oferta express) tiene que ser mayor al precio actual. Déjalo vacío si no está en oferta.'); return }
+    const report = editing.condition === 'new' ? null : Object.fromEntries(Object.entries(editing.usedReport ?? {}).filter(([, v]) => v !== '' && v != null))
+    saveCar({ ...editing, year: Number(editing.year), price: Number(editing.price), previousPrice: editing.previousPrice ? Number(editing.previousPrice) : null, mileage: editing.condition === 'new' ? 0 : Number(editing.mileage) || 0, usedReport: report && Object.keys(report).length ? report : null })
+    setEditing(null)
+    setVersion((v) => v + 1)
+  }
+  function remove(car: LocalCar) {
+    if (!window.confirm(`¿Borrar ${car.year} ${car.make} ${car.model}? Deja de verse en el sitio.`)) return
+    deleteCar(car.id)
+    setVersion((v) => v + 1)
+  }
+  function quick(car: LocalCar, patch: Partial<LocalCar>) {
+    saveCar({ ...car, ...patch })
+    setVersion((v) => v + 1)
+  }
+
+  const set = (patch: Partial<LocalCar>) => editing && setEditing({ ...editing, ...patch })
+  const setReport = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, usedReport: { ...(editing.usedReport ?? {}), ...patch } })
+  const field = 'sf-input mt-2 w-full'
+
+  if (base === null) return <p className="sf-muted mt-6">Cargando autos…</p>
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-end gap-3">
+        <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={startNew}><Plus className="size-4" aria-hidden="true" />Agregar auto</button>
+        <div className="min-w-0 flex-1 sm:max-w-xs"><label htmlFor="lc-q" className="sf-label">Buscar</label><input id="lc-q" value={query} onChange={(e) => setQuery(e.target.value)} className={field} placeholder="Marca, modelo o stock" /></div>
+      </div>
+
+      {editing && (
+        <form onSubmit={save} className="elv-pq-panel mt-4 grid gap-4">
+          <h2 className="sf-display text-[1.3rem]">{editing.__new ? 'Agregar auto' : `Editar ${editing.year} ${editing.make} ${editing.model}`}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div><span className="sf-label">Estado</span><div className="sf-track sf-track-choices mt-2">{[['used', 'Usado'], ['new', '0 km']].map(([v, l]) => <button key={v} type="button" className="sf-pill min-h-11" aria-pressed={editing.condition === v} onClick={() => set({ condition: v })}>{l}</button>)}</div></div>
+            <div><label htmlFor="lc-year" className="sf-label">Año</label><div className="mt-2"><ComboField id="lc-year" value={String(editing.year || '')} onChange={(v) => set({ year: v })} options={YEARS} inputMode="numeric" maxLength={4} allowCustom={false} /></div></div>
+            <div><label htmlFor="lc-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="lc-make" value={editing.make} onChange={(v) => set({ make: v, model: v === editing.make ? editing.model : '' })} options={catalogMakes()} /></div></div>
+            <div><label htmlFor="lc-model" className="sf-label">Modelo</label><div className="mt-2"><ComboField id="lc-model" value={editing.model} onChange={(v) => set({ model: v })} options={catalogModels(editing.make)} emptyText="Escribe el modelo" /></div></div>
+            <div><label htmlFor="lc-trim" className="sf-label">Versión</label><div className="mt-2"><ComboField id="lc-trim" value={editing.trim} onChange={(v) => set({ trim: v })} options={catalogVersions(editing.make, editing.model)} emptyText="Escribe la versión" /></div></div>
+            <div><label htmlFor="lc-price" className="sf-label">Precio ($)</label><input id="lc-price" inputMode="numeric" value={editing.price || ''} onChange={(e) => set({ price: e.target.value.replace(/\D/g, '') })} className={field} placeholder="Ej.: 25000000" /></div>
+            <div><label htmlFor="lc-prev" className="sf-label">Precio anterior <span className="sf-faint">(oferta express)</span></label><input id="lc-prev" inputMode="numeric" value={editing.previousPrice || ''} onChange={(e) => set({ previousPrice: e.target.value.replace(/\D/g, '') || null })} className={field} placeholder="Vacío si no está en oferta" /></div>
+            {editing.condition !== 'new' && <div><label htmlFor="lc-km" className="sf-label">Kilometraje</label><input id="lc-km" inputMode="numeric" value={editing.mileage || ''} onChange={(e) => set({ mileage: e.target.value.replace(/\D/g, '') })} className={field} /></div>}
+            <div><label htmlFor="lc-fuel" className="sf-label">Combustible</label><div className="mt-2"><ComboField id="lc-fuel" value={toLabel(FUEL_OPTIONS, editing.fuelType)} onChange={(v) => set({ fuelType: toValue(FUEL_OPTIONS, v) })} options={opt(FUEL_OPTIONS)} allowCustom={false} /></div></div>
+            <div><label htmlFor="lc-trans" className="sf-label">Caja</label><div className="mt-2"><ComboField id="lc-trans" value={toLabel(TRANSMISSION_OPTIONS, editing.transmission)} onChange={(v) => set({ transmission: toValue(TRANSMISSION_OPTIONS, v) })} options={opt(TRANSMISSION_OPTIONS)} allowCustom={false} /></div></div>
+            <div><label htmlFor="lc-engine" className="sf-label">Motor</label><input id="lc-engine" value={editing.engine || ''} onChange={(e) => set({ engine: e.target.value })} className={field} placeholder="Ej.: 1.6" /></div>
+            <div><label htmlFor="lc-color" className="sf-label">Color</label><input id="lc-color" value={editing.color || ''} onChange={(e) => set({ color: e.target.value })} className={field} /></div>
+            <div><label htmlFor="lc-stock" className="sf-label">Stock n.º</label><input id="lc-stock" value={editing.stockNumber || ''} onChange={(e) => set({ stockNumber: e.target.value })} className={field} /></div>
+            <div><span className="sf-label">Disponibilidad</span><div className="mt-2"><ComboField id="lc-status" value={STATUS[editing.status] ?? 'Disponible'} onChange={(v) => set({ status: Object.keys(STATUS).find((k) => STATUS[k] === v) ?? 'available' })} options={Object.values(STATUS)} allowCustom={false} /></div></div>
+          </div>
+          <label className="flex min-h-11 items-center gap-3"><input type="checkbox" className="size-5" checked={Boolean(editing.isFeatured)} onChange={(e) => set({ isFeatured: e.target.checked })} />Destacado en la página principal</label>
+          <div><label htmlFor="lc-desc" className="sf-label">Descripción</label><textarea id="lc-desc" rows={3} value={editing.description || ''} onChange={(e) => set({ description: e.target.value })} className={field} /></div>
+
+          <div>
+            <p className="sf-label">Fotos <span className="sf-faint">(la marcada con ★ es la principal)</span></p>
+            {(editing.images ?? []).length > 0 && (
+              <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {(editing.images ?? []).map((img: any, index: number) => (
+                  <li key={img.id ?? index} className="relative aspect-square overflow-hidden rounded-[8px] border" style={{ borderColor: img.isPrimary ? 'var(--sf-accent)' : 'var(--sf-rule)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.image?.url || (img.imagePath ? `/images/vehicles/${String(img.imagePath).split('/').pop()}` : '')} alt={`Foto ${index + 1}`} className="size-full object-cover" />
+                    <button type="button" onClick={() => makePrimary(index)} className="absolute left-1 top-1 grid size-9 place-items-center rounded-full bg-black/70 text-white" aria-label={`Usar la foto ${index + 1} como principal`} aria-pressed={Boolean(img.isPrimary)}><Star className={`size-4 ${img.isPrimary ? 'fill-current text-[var(--sf-accent)]' : ''}`} aria-hidden="true" /></button>
+                    <button type="button" onClick={() => removePhoto(index)} className="absolute right-1 top-1 grid size-9 place-items-center rounded-full bg-black/70 text-white" aria-label={`Quitar foto ${index + 1}`}><X className="size-4" aria-hidden="true" /></button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-3"><PhotoPicker onFiles={addPhotos} disabled={busy} /></div>
+            {busy && <p className="sf-muted mt-2 text-[0.85rem]" role="status">Guardando fotos…</p>}
+          </div>
+
+          {editing.condition !== 'new' && (
+            <fieldset className="grid gap-4 border-t pt-4" style={{ borderColor: 'var(--sf-rule)' }}>
+              <legend className="sf-label pt-2">Estado del usado (informe que ve el comprador)</legend>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {([['usedDebt', 'Deuda', DEBT_OPTIONS], ['usedFines', 'Infracciones', FINES_OPTIONS], ['usedGnc', 'GNC', GNC_OPTIONS], ['usedAc', 'Aire acondicionado', AC_OPTIONS]] as const).map(([key, label, list]) => (
+                  <div key={key}><label htmlFor={`lc-${key}`} className="sf-label">{label}</label><div className="mt-2"><ComboField id={`lc-${key}`} value={toLabel(list, editing.usedReport?.[key])} onChange={(v) => setReport({ [key]: toValue(list, v) })} options={opt(list)} allowCustom={false} placeholder="Sin informar" /></div>
+                    <input aria-label={`Detalle: ${label}`} value={editing.usedReport?.[`${key}Notes`] ?? ''} onChange={(e) => setReport({ [`${key}Notes`]: e.target.value })} className="sf-input mt-2 w-full" placeholder="Detalle (opcional)" /></div>
+                ))}
+                <div><label htmlFor="lc-tires" className="sf-label">Vida útil de cubiertas (%)</label><input id="lc-tires" inputMode="numeric" value={editing.usedReport?.usedTireLifePct ?? ''} onChange={(e) => { const n = e.target.value.replace(/\D/g, ''); setReport({ usedTireLifePct: n === '' ? '' : Math.min(100, Number(n)) }) }} className={field} placeholder="0 a 100" /></div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {USED_REPORT_TEXT_FIELDS.map(([key, label]) => (
+                  <div key={key}><label htmlFor={`lc-${key}`} className="sf-label">{label}</label><textarea id={`lc-${key}`} rows={2} value={editing.usedReport?.[key] ?? ''} onChange={(e) => setReport({ [key]: e.target.value })} className={field} /></div>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {error && <p role="alert" className="text-[0.9rem]" style={{ color: 'var(--sf-warn, #e0a23a)' }}>{error}</p>}
+          <div className="flex flex-wrap gap-2"><button type="submit" disabled={busy} className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar</button><button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => setEditing(null)}>Cancelar</button></div>
+        </form>
+      )}
+
+      <p className="sf-faint mt-4 text-[0.8rem]">{cars.length} autos · {cars.filter((c) => c.condition === 'new').length} 0 km · {cars.filter((c) => c.condition !== 'new').length} usados</p>
+      <ul className="mt-3 grid gap-3">
+        {shown.map((car) => (
+          <li key={car.id} className="elv-pq-panel !p-3 flex flex-wrap items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {photoUrl(car) ? <img src={photoUrl(car)} alt="" className="h-16 w-24 shrink-0 rounded-[6px] object-cover" /> : <span className="grid h-16 w-24 shrink-0 place-items-center rounded-[6px] text-[0.7rem]" style={{ background: 'var(--sf-rule)' }}>Sin foto</span>}
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold">{car.year} {car.make} {car.model} {car.trim}</span>
+              <span className="sf-muted block text-[0.85rem]">{car.condition === 'new' ? '0 km' : 'Usado'} · {money(car.price)}{car.previousPrice > car.price ? ` (antes ${money(car.previousPrice)})` : ''} · {STATUS[car.status] ?? 'Disponible'}{car.isFeatured ? ' · Destacado' : ''}</span>
+            </span>
+            <span className="flex flex-wrap gap-2">
+              <a href={vehicleHref(car.id)} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]">Ver</a>
+              {car.status !== 'sold' ? <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => quick(car, { status: 'sold' })}>Marcar vendido</button> : <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => quick(car, { status: 'available' })}>Volver a publicar</button>}
+              <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { setError(''); setEditing({ ...car, usedReport: car.usedReport ?? {} }) }}><Pencil className="size-4" aria-hidden="true" />Editar</button>
+              <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => remove(car)} aria-label={`Borrar ${car.make} ${car.model}`}><Trash2 className="size-4" aria-hidden="true" /></button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

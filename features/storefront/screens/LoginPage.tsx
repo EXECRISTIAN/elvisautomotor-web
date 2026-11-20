@@ -31,8 +31,8 @@ export function LoginPage() {
         {view === 'signin' ? (
           <form action={signinAction} className="space-y-4">
             <div>
-              <label htmlFor="signin-email" className="sf-label">Email</label>
-              <input id="signin-email" name="email" type="email" autoComplete="email" required className="sf-input" />
+              <label htmlFor="signin-email" className="sf-label">Email o usuario</label>
+              <input id="signin-email" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required className="sf-input" />
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-3">

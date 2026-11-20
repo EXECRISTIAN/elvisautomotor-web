@@ -16,5 +16,6 @@ mkdir -p $SITE/_offline
 curl -sS -m 30 http://localhost:3000/api/graphql -H 'content-type: application/json' -d '{"query":"{ publicInventoryVehicles(take: 100, orderBy: [{ year: desc }]) { items { id vin stockNumber year make model trim color: exteriorColor fuelType transmission engine isFeatured progressiveOffer mileage price previousPrice usedReport status condition features description images { id imagePath image { url } isPrimary sortOrder } } } }"}' \
   | python3 -c 'import json,sys; d=json.load(sys.stdin); json.dump({"vehicles": d["data"]["publicInventoryVehicles"]["items"]}, open(sys.argv[1],"w"), ensure_ascii=False)' $SITE/_offline/datos.json
 # Marca la muestra local: los formularios y el panel guardan en el navegador (sin servidor).
-for f in $(find $RAW -name '*.html'); do sed -i 's#<head>#<head><script>window.__ELVIS_OFFLINE__=true</script>#' "$f"; done
+TPL=$(ls $RAW/inventory | head -1 | sed 's/\.html$//')
+for f in $(find $RAW -name '*.html'); do sed -i "s#<head>#<head><script>window.__ELVIS_OFFLINE__=true;window.__ELVIS_TEMPLATE__='$TPL'</script>#" "$f"; done
 echo "html original: $(find $RAW -name '*.html' | wc -l) páginas"

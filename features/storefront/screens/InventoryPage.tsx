@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react'
 import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
+import { isLocalDemo } from '@/features/storefront/lib/localStore'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import { buildVehicleOrderBy, buildVehicleWhereInput, EMPTY_INVENTORY_FILTERS, inventoryQueryFromSearch } from '@/features/storefront/lib/data/vehicle-inventory'
@@ -99,7 +100,8 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
     if (initialSearch.current !== null) {
       const served = initialSearch.current === searchKey
       initialSearch.current = null
-      if (served) return
+      // En la muestra local se relee siempre: puede haber autos agregados o cambiados desde el panel.
+      if (served && !isLocalDemo()) return
     }
     void loadVehicles()
   }, [filters, sortBy, currentPage, hydratedFromUrl, invalidPage])

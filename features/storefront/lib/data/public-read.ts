@@ -3,7 +3,7 @@
 // Lecturas públicas desde el navegador. En la muestra local (sin servidor) responde con la copia del
 // inventario incluida en el zip (_offline/datos.json), con los mismos filtros y orden que el servidor.
 import { fetchGraphQL as serverFetch } from './graphql-client'
-import { isLocalDemo } from '../localStore'
+import { applyCarChanges, isLocalDemo } from '../localStore'
 
 type Vehicle = Record<string, any>
 let snapshot: Promise<{ vehicles: Vehicle[] }> | null = null
@@ -21,7 +21,7 @@ function matches(v: Vehicle, where: any): boolean {
   if (Array.isArray(where.AND)) return where.AND.every((w: any) => matches(v, w))
   if (Array.isArray(where.OR)) return where.OR.some((w: any) => matches(v, w))
   return Object.entries(where).every(([key, cond]: [string, any]) => {
-    if (key === 'status') return cond?.equals ? lower(v.status) === lower(cond.equals) || (cond.equals === 'available' && v.status === 'available') : true
+    if (key === 'status') return cond?.equals ? lower(v.status || 'available') === lower(cond.equals) : true
     if (key === 'condition' || key === 'fuelType' || key === 'transmission') return cond?.equals ? lower(v[key]) === lower(cond.equals) : true
     if (key === 'make' || key === 'model' || key === 'trim') return cond?.contains ? lower(v[key]).includes(lower(cond.contains)) : cond?.equals ? lower(v[key]) === lower(cond.equals) : true
     if (key === 'isFeatured' || key === 'progressiveOffer') return cond?.equals === true ? Boolean(v[key]) : true
@@ -42,7 +42,8 @@ function order(list: Vehicle[], orderBy: any) {
 
 export async function fetchGraphQL<T>(query: string, variables?: Record<string, any>): Promise<T> {
   if (!isLocalDemo()) return serverFetch<T>(query, variables)
-  const { vehicles } = await load()
+  const { vehicles: base } = await load()
+  const vehicles = applyCarChanges(base as any[]).filter((v) => v.status !== 'deleted')
   if (/publicInventoryVehicle\s*\(\s*id/.test(query)) {
     const found = vehicles.find((v) => v.id === variables?.id) ?? null
     return { publicInventoryVehicle: found } as T

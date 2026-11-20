@@ -248,6 +248,7 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         vin: String
         licensePlate: String!
         engineNumber: String
+        listingUrl: String
         mileage: Int!
         condition: String!
         ownership: String!

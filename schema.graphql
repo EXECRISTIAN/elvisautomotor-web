@@ -10038,6 +10038,7 @@ input SubmitTradeInInput {
   vin: String
   licensePlate: String!
   engineNumber: String
+  listingUrl: String
   mileage: Int!
   condition: String!
   ownership: String!

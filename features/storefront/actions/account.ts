@@ -47,14 +47,25 @@ async function authenticate(email: string, password: string) {
 export async function signInCustomer(_state: AccountState, data: FormData): Promise<AccountState> {
   const email = String(data.get('email') || '').trim().toLowerCase()
   const password = String(data.get('password') || '')
-  if (!email || !password) return { error: 'Ingresa tu email y contraseña.' }
+  if (!email || !password) return { error: 'Ingresa tu email o usuario y la contraseña.' }
+  let staff = false
   try {
     const token = await authenticate(email, password)
-    if (!token) return { error: 'Email o contraseña incorrectos.' }
+    if (!token) return { error: 'Usuario o contraseña incorrectos.' }
     await setAuthToken(token)
+    // Si entra alguien del personal (por ejemplo, el administrador), va directo al panel.
+    const me = await openfrontClient
+      .request<{ authenticatedItem: { role?: { id: string } | null } | null }>(
+        `query StaffCheck { authenticatedItem { ... on User { role { id } } } }`,
+        {},
+        { authorization: `Bearer ${token}` }
+      )
+      .catch(() => null)
+    staff = Boolean(me?.authenticatedItem?.role?.id)
   } catch {
     return { error: 'No pudimos iniciar sesión. Intenta de nuevo.' }
   }
+  if (staff) redirect('/dashboard')
   revalidatePath('/account')
   redirect('/account')
 }

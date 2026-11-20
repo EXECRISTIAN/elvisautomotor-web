@@ -5,7 +5,7 @@ import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import { Container } from '../components/Container'
-import { FeaturedVehicleCard } from '../components/FeaturedVehicleCard'
+import { HomeFeaturedGrid, HomeUsedRail } from '../components/LiveSections'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { WhatsAppChannelButton } from '../components/WhatsAppChannelButton'
 import { loadHomeQuery, selectHomeFeaturedVehicles } from '../lib/data/home-inventory'
@@ -143,13 +143,7 @@ export async function HomePage() {
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
-          {vehicles.length > 0 ? (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {vehicles.map((vehicle, index) => (
-                <FeaturedVehicleCard key={vehicle.id} vehicle={vehicle} currencyCode={business.currencyCode} priority={index < 2} />
-              ))}
-            </div>
-          ) : (
+          <HomeFeaturedGrid initial={vehicles} currencyCode={business.currencyCode} empty={
             <div className="elv-empty mt-8" role={featured.status === 'unavailable' ? 'alert' : undefined}>
               <p className="font-semibold">
                 {featured.status === 'unavailable' ? 'No pudimos cargar el inventario en este momento.' : 'Estamos actualizando nuestro inventario.'}
@@ -160,7 +154,7 @@ export async function HomePage() {
                 <WhatsAppButton className="sf-btn sf-btn-outline rounded-[8px]" />
               </div>
             </div>
-          )}
+          } />
           <div className="mt-10 flex justify-center">
             <WhatsAppChannelButton />
           </div>
@@ -177,19 +171,8 @@ export async function HomePage() {
                 <h2 id="used-title" className="sf-display mt-2 text-[clamp(1.6rem,3.2vw,2.4rem)]">Usados seleccionados, <span className="sf-gold-text">con informe</span></h2>
                 <p className="mt-3" style={{ color: 'var(--sf-ink-2)' }}>Cada usado tiene su informe de estado: deuda, infracciones, GNC, aire, cubiertas, chapa, pintura y mecánica. Sin sorpresas.</p>
               </div>
-              <Link href="/inventory?condition=used" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
-                Ver todos los usados{usedAll.length > 4 ? ` (${usedAll.length})` : ''}
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
             </div>
-            {/* En celular, carrusel que se desliza con el dedo; desde tablet, grilla. */}
-            <div className="elv-used-rail mt-8" role="list" aria-label="Usados seleccionados">
-              {used.map((vehicle) => (
-                <div key={vehicle.id} role="listitem" className="elv-used-rail-item">
-                  <FeaturedVehicleCard vehicle={vehicle} currencyCode={business.currencyCode} />
-                </div>
-              ))}
-            </div>
+            <HomeUsedRail initial={used} total={usedAll.length} currencyCode={business.currencyCode} />
             <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
               <Link href="/financing" className="sf-btn sf-btn-outline min-h-12 whitespace-normal rounded-[8px] text-center">Financiación para usados</Link>
               <Link href="/trade-in" className="sf-btn sf-btn-ghost min-h-12 whitespace-normal rounded-[8px] text-center">Entrega tu usado como parte de pago</Link>

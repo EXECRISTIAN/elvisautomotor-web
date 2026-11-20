@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Download, LogOut, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Container } from '../components/Container'
+import { LocalCarsTab } from './LocalCarsTab'
 import { ComboField } from '../components/ComboField'
 import {
   checkLogin, deleteSubmission, isLocalDemo, listSubmissions, listUsers, newId, saveUsers, updateSubmission,
@@ -20,7 +21,7 @@ const LABELS: Record<string, string> = {
   year: 'Año', make: 'Marca', model: 'Modelo', trim: 'Versión', mileage: 'Kilometraje', licensePlate: 'Patente', engineNumber: 'N.º de motor', vin: 'Chasis',
   condition: 'Estado', ownership: 'Titularidad', payoffAmount: 'Saldo de crédito', notes: 'Notas', vehiclePrice: 'Precio del vehículo', downPayment: 'Anticipo',
   loanTerm: 'Cuotas', monthlyPayment: 'Cuota estimada', requestedAmount: 'Monto a financiar', employmentStatus: 'Situación laboral', monthlyIncome: 'Ingresos',
-  creditScore: 'Situación crediticia', preferredDate: 'Fecha', preferredTime: 'Hora', consent: 'Autorizó contacto',
+  creditScore: 'Situación crediticia', listingUrl: 'Link de la publicación', preferredDate: 'Fecha', preferredTime: 'Hora', consent: 'Autorizó contacto',
 }
 const TIME = { morning: 'Mañana', afternoon: 'Tarde' } as Record<string, string>
 
@@ -39,7 +40,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateSty
 export function LocalPanelPage() {
   const [ready, setReady] = useState(false)
   const [user, setUser] = useState<LocalUser | null>(null)
-  const [tab, setTab] = useState<'consultas' | 'usuarios'>('consultas')
+  const [tab, setTab] = useState<'consultas' | 'autos' | 'usuarios'>('consultas')
   const [items, setItems] = useState<LocalSubmission[]>([])
   const [users, setUsers] = useState<LocalUser[]>([])
   const [kind, setKind] = useState('')
@@ -131,10 +132,13 @@ export function LocalPanelPage() {
 
         <div className="sf-track sf-track-choices mt-6" role="tablist">
           <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'consultas'} aria-selected={tab === 'consultas'} onClick={() => { refresh(); setTab('consultas') }}>Consultas ({items.length})</button>
+          <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'autos'} aria-selected={tab === 'autos'} onClick={() => setTab('autos')}>Autos</button>
           {isAdmin && <button type="button" role="tab" className="sf-pill min-h-11" aria-pressed={tab === 'usuarios'} aria-selected={tab === 'usuarios'} onClick={() => setTab('usuarios')}>Usuarios ({users.length})</button>}
         </div>
 
-        {tab === 'consultas' ? (
+        {tab === 'autos' ? (
+          <LocalCarsTab />
+        ) : tab === 'consultas' ? (
           <div className="mt-6">
             <div className="flex flex-wrap items-end gap-3">
               <div className="w-full sm:w-64">
@@ -162,6 +166,16 @@ export function LocalPanelPage() {
                           return text ? <div key={key} className="contents"><dt className="sf-muted">{LABELS[key] ?? (key === 'answers' ? 'Respuestas' : key)}</dt><dd className="whitespace-pre-line">{text}</dd></div> : null
                         })}
                       </dl>
+                      {item.photos && item.photos.length > 0 && (
+                        <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6" aria-label="Fotos enviadas">
+                          {item.photos.map((url, index) => (
+                            <li key={url}><a href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }} aria-label={`Abrir foto ${index + 1}`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={url} alt={`Foto ${index + 1}`} className="aspect-square w-full object-cover" />
+                            </a></li>
+                          ))}
+                        </ul>
+                      )}
                       <div className="mt-4 flex flex-wrap gap-2">
                         {STATUSES.map((s) => <button key={s} type="button" className="sf-pill min-h-11 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={item.status === s} onClick={() => { updateSubmission(item.id, { status: s }); refresh() }}>{s}</button>)}
                         {item.data.phone ? <a className="sf-btn sf-btn-primary min-h-11 rounded-[8px]" href={`https://wa.me/549${String(item.data.phone).replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noreferrer">Escribir por WhatsApp</a> : null}

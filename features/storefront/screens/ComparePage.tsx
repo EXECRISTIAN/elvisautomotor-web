@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { vehicleHref } from '../lib/localStore'
 import Link from 'next/link'
 import Image from 'next/image'
 import { fetchGraphQL } from '@/features/storefront/lib/data/public-read'
@@ -272,7 +273,7 @@ export function ComparePage() {
                   const status = vehicleStatus(vehicle.status)
                   return (
                     <th key={vehicle.id} scope="col" className="min-w-[13rem] p-3 text-left align-top font-normal sm:min-w-[15rem] sm:p-4">
-                      <Link href={`/inventory/${vehicle.id}`} className="sf-photo block aspect-[4/3]" tabIndex={-1} aria-hidden="true">
+                      <Link href={vehicleHref(vehicle.id)} className="sf-photo block aspect-[4/3]" tabIndex={-1} aria-hidden="true">
                         {imageUrl ? (
                           <Image src={imageUrl} alt="" fill className="object-cover" sizes="240px" unoptimized={skipImageOptimizer(imageUrl)} />
                         ) : (
@@ -282,7 +283,7 @@ export function ComparePage() {
                       </Link>
                       <h2 className="sf-title-line mt-3">
                         <span className="sf-dot" data-tone={status.tone} aria-hidden="true" />
-                        <Link href={`/inventory/${vehicle.id}`} className="sf-heading min-w-0 text-[length:var(--sf-text-md)] hover:text-[var(--sf-accent)]">
+                        <Link href={vehicleHref(vehicle.id)} className="sf-heading min-w-0 text-[length:var(--sf-text-md)] hover:text-[var(--sf-accent)]">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                         </Link>
                       </h2>
@@ -346,7 +347,7 @@ export function ComparePage() {
                 {vehicles.map((vehicle) => (
                   <td key={vehicle.id} className="px-3 py-4 sm:px-4">
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/inventory/${vehicle.id}`} className="sf-btn sf-btn-primary sf-btn-sm min-h-10">
+                      <Link href={vehicleHref(vehicle.id)} className="sf-btn sf-btn-primary sf-btn-sm min-h-10">
                         View
                       </Link>
                       <Link href={`/test-drive?vehicleId=${vehicle.id}`} className="sf-btn sf-btn-ghost sf-btn-sm min-h-10">

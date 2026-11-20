@@ -1,5 +1,5 @@
 import { Container } from '../components/Container'
-import { VehicleCard } from '../components/VehicleCard'
+import { ExpressOffersGrid } from '../components/LiveSections'
 import type { Vehicle } from '../lib/types'
 import { ProgressiveOfferCard, type PublicProgressiveOffer } from '../components/ProgressiveOfferCard'
 import { WhatsAppChannelButton } from '../components/WhatsAppChannelButton'
@@ -31,16 +31,7 @@ export function OffersPage({ offers, express = [] }: { offers: PublicProgressive
         <Container>
           <h2 id="express-title" className="sf-display text-[clamp(1.4rem,3vw,2rem)]">Ofertas express</h2>
           <p className="sf-muted mt-2 max-w-2xl">Autos que en este momento están más baratos que su precio habitual.</p>
-          {express.length > 0 ? (
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {express.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} />)}
-            </div>
-          ) : (
-            <div className="sf-well mt-8 p-6" role="status">
-              <p className="font-semibold">No hay ofertas express en curso en este momento.</p>
-              <p className="sf-muted mt-1 text-[length:var(--sf-text-sm)]">Cuando bajemos el precio de un auto, aparece acá. También las avisamos en el canal de WhatsApp.</p>
-            </div>
-          )}
+          <ExpressOffersGrid initial={express} />
         </Container>
       </section>
 

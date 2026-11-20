@@ -8,15 +8,15 @@ CÓMO ABRIRLA
 
 QUÉ FUNCIONA
 - Todo el sitio: menús, filtros, fichas, simulador de cuotas, comparar, precalificador.
-- Los formularios se envían y quedan guardados EN ESTE NAVEGADOR de esta PC.
+- Los formularios se envían y todo queda guardado en la carpeta "datos" (al lado de este
+  archivo): consultas, usuarios, autos y fotos. Copia esa carpeta para hacer un respaldo.
+- Fotos: "Agregar fotos" (galería/archivos) o "Sacar foto" (cámara del celular o webcam).
 - Panel: abajo de todo, "Acceso al panel" (o la dirección /panel).
   Usuario: 123   Contraseña: 123
   Ahí ves las consultas que llegaron, cambias su estado, las exportas a Excel,
   y creas, editas o borras usuarios con su rol.
 
 PARA TENER EN CUENTA
-- Los datos quedan en el navegador que uses (si cambias de navegador o borras el
-  historial, se pierden). Es una demostración: los autos y usuarios son de ejemplo.
-- Las fotos que se adjuntan en "Vende tu auto" no se guardan en la muestra.
+- Es una demostración: los autos y usuarios de ejemplo son inventados.
 - Ábrela SIEMPRE con "INICIAR-MUESTRA.bat". Si abres los archivos de la carpeta "sitio"
   directamente, se ven las páginas pero los menús, listas y botones no responden.

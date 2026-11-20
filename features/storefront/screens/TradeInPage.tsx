@@ -12,6 +12,7 @@ import { WhatsAppButton } from '../components/WhatsAppButton'
 import { ELVIS_INFO } from '../lib/elvisContent'
 import { PageHeader } from '../components/PageHeader'
 import { ComboField } from '../components/ComboField'
+import { PhotoPicker } from '../components/PhotoPicker'
 import { catalogMakes, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { formatMileage, formatPrice } from '../lib/format'
@@ -83,6 +84,7 @@ const EMPTY = {
   ownership: 'own',
   payoffAmount: '',
   notes: '',
+  listingUrl: '',
   firstName: '',
   lastName: '',
   email: '',
@@ -352,6 +354,9 @@ export function TradeInPage() {
                     </div>
                   </Field>
                 )}
+                <Field label="Link de la publicación del auto" htmlFor="trade-link" optional>
+                  <input id="trade-link" type="url" inputMode="url" value={formData.listingUrl} onChange={(e) => setFormData((p) => ({ ...p, listingUrl: e.target.value }))} className="sf-input" placeholder="Pega el link de MercadoLibre, Facebook, Instagram, Drive…" autoComplete="off" spellCheck={false} />
+                </Field>
                 <Field label="Información adicional" htmlFor="trade-notes" optional>
                   <textarea id="trade-notes" rows={3} maxLength={2000} value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} className="sf-input resize-y" placeholder="Service al día, detalles de chapa, neumáticos, único dueño…" />
                 </Field>
@@ -370,23 +375,14 @@ export function TradeInPage() {
                     </ul>
                   )}
                   {photos.length < MAX_PHOTOS && (
-                    <label className="sf-btn sf-btn-ghost cursor-pointer">
-                      Agregar fotos
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        multiple
-                        className="sr-only"
-                        onChange={(event) => {
-                          const files = Array.from(event.target.files || [])
-                          event.target.value = ''
-                          const valid = files.filter((file) => /^image\/(jpeg|png|webp)$/.test(file.type))
-                          const room = MAX_PHOTOS - photos.length
-                          setPhotoNotice(valid.length < files.length ? 'Algunos archivos no son fotos JPG, PNG o WebP y no se agregaron.' : valid.length > room ? `Puedes agregar hasta ${MAX_PHOTOS} fotos.` : null)
-                          setPhotos((current) => [...current, ...valid.slice(0, room).map((file) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) }))])
-                        }}
-                      />
-                    </label>
+                    <PhotoPicker
+                      onFiles={(files) => {
+                        const valid = files.filter((file) => /^image\//.test(file.type))
+                        const room = MAX_PHOTOS - photos.length
+                        setPhotoNotice(valid.length < files.length ? 'Algunos archivos no son fotos y no se agregaron.' : valid.length > room ? `Puedes agregar hasta ${MAX_PHOTOS} fotos.` : null)
+                        setPhotos((current) => [...current, ...valid.slice(0, MAX_PHOTOS - current.length).map((file) => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file) }))])
+                      }}
+                    />
                   )}
                   {photoNotice && <p className="sf-error mt-2">{photoNotice}</p>}
                 </div>

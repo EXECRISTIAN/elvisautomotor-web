@@ -9212,7 +9212,7 @@ async function submitPrecalification(_root, { data }, context) {
   if (!data.consent) throw new SubmissionError("Necesitamos tu autorizaci\xF3n para contactarte.");
   const answers = (Array.isArray(data.answers) ? data.answers : []).slice(0, 40).map((item) => ({
     question: optionalText(item?.question, 200, "Pregunta"),
-    answer: optionalText(item?.answer, 300, "Respuesta")
+    answer: optionalText(item?.answer, 800, "Respuesta")
   })).filter((item) => item.question && item.answer);
   if (!answers.length) throw new SubmissionError("Responde las preguntas antes de enviar.");
   const times = [...new Set((Array.isArray(data.contactTimes) ? data.contactTimes : []).map(String))].filter((t) => typeof t === "string" && t in TIMES);
@@ -9857,6 +9857,10 @@ async function submitTradeIn(_root, { data }, context) {
   const condition = requiredText(data.condition, "Estado", 30);
   const ownership = requiredText(data.ownership, "Titularidad", 30);
   const notes = optionalText(data.notes, 2e3, "Informaci\xF3n adicional");
+  const listingUrl = optionalText(data.listingUrl, 500, "Link de la publicaci\xF3n");
+  if (listingUrl && !/^https?:\/\/[^\s]+\.[^\s]+/i.test(listingUrl)) {
+    throw new SubmissionError("El link de la publicaci\xF3n debe empezar con http:// o https://.");
+  }
   const payoffAmount = finiteNumber(data.payoffAmount || 0, "Saldo del cr\xE9dito", { min: 0, max: 1e10 });
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError("El estado o la titularidad no son v\xE1lidos.");
@@ -9890,6 +9894,7 @@ async function submitTradeIn(_root, { data }, context) {
       vin,
       licensePlate,
       engineNumber,
+      listingUrl,
       condition,
       ownership,
       payoffAmount,
@@ -9921,7 +9926,7 @@ async function submitTradeIn(_root, { data }, context) {
           trim,
           mileage,
           condition,
-          exteriorCondition: notes || "Solicitud web; falta inspecci\xF3n del exterior.",
+          exteriorCondition: [notes, listingUrl && `Publicaci\xF3n del auto: ${listingUrl}`].filter(Boolean).join("\n") || "Solicitud web; falta inspecci\xF3n del exterior.",
           interiorCondition: `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ""}`,
           lead: {
             create: {
@@ -19994,6 +19999,7 @@ function extendGraphqlSchema(baseSchema) {
         vin: String
         licensePlate: String!
         engineNumber: String
+        listingUrl: String
         mileage: Int!
         condition: String!
         ownership: String!

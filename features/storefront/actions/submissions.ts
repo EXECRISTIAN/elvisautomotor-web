@@ -126,6 +126,7 @@ export async function submitStorefrontTradeIn(input: CommonSubmissionInput & {
   vin?: string
   licensePlate: string
   engineNumber?: string
+  listingUrl?: string
   mileage: number
   condition: string
   ownership: string

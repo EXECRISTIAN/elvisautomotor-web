@@ -18,6 +18,7 @@ import { VehicleGallery } from '../components/vdp/VehicleGallery'
 import { VehicleNotFound } from '../components/vdp/VehicleNotFound'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { UsedReport } from '../components/UsedReport'
+import { isLocalDemo } from '../lib/localStore'
 import { PreviousPrice, isExpressOffer } from '../components/PreviousPrice'
 import { formatMileage, formatPrice, vehicleTitle } from '../lib/format'
 import { customerRequestReference } from '../lib/customerRequests'
@@ -89,6 +90,19 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
     sync()
     window.addEventListener('comparison-updated', sync)
     return () => window.removeEventListener('comparison-updated', sync)
+  }, [id])
+
+  // Muestra local: la ficha se lee del inventario local (con los cambios del panel) según la dirección.
+  useEffect(() => {
+    if (!isLocalDemo()) return
+    let current = true
+    const load = () => {
+      const urlId = decodeURIComponent(window.location.hash.slice(1) || window.location.pathname.split('/').filter(Boolean).pop() || id)
+      void resolveVehicleDetail(urlId, (query, variables) => fetchGraphQL<unknown>(query, variables)).then((result) => { if (current) { setLoadState({ ...result, id } as VehicleDetailPageState); setActiveImageIndex(0) } })
+    }
+    load()
+    window.addEventListener('hashchange', load)
+    return () => { current = false; window.removeEventListener('hashchange', load) }
   }, [id])
 
   useEffect(() => {

@@ -52,7 +52,7 @@ export function PrecalificadorPage() {
   const business = useStorefrontBusiness()
   const [phone, setPhone] = useState('')
   const [answers, setAnswers] = useState<Answers>({})
-  const [tradeCar, setTradeCar] = useState({ make: '', model: '', year: '' })
+  const [tradeCar, setTradeCar] = useState({ make: '', model: '', year: '', link: '' })
   const [step, setStep] = useState(0) // 0 = teléfono; 1..n = preguntas; 'final' al final
   const [final, setFinal] = useState(false)
   const [form, setForm] = useState({ fullName: '', dni: '', cuil: '', locality: '', province: 'Buenos Aires', confirmPhone: '', message: '', times: [] as string[], consent: false })
@@ -97,7 +97,7 @@ export function PrecalificadorPage() {
     if (form.dni && !/^\d{7,8}$/.test(onlyDigits(form.dni))) { setError('El DNI debe tener 7 u 8 números.'); return }
     if (form.cuil && onlyDigits(form.cuil).length !== 11) { setError('El CUIL debe tener 11 números.'); return }
     if (!form.consent) { setError('Necesitamos tu autorización para contactarte.'); return }
-    const list = (used ? CHOICES.slice(0, 1) : flow).filter((c) => answers[c.id]).map((c) => ({ question: c.title, answer: c.id === 'tradeVehicle' ? `${tradeCar.make} ${tradeCar.model} ${tradeCar.year} · ${answers[c.id]}` : answers[c.id] }))
+    const list = (used ? CHOICES.slice(0, 1) : flow).filter((c) => answers[c.id]).map((c) => ({ question: c.title, answer: c.id === 'tradeVehicle' ? `${tradeCar.make} ${tradeCar.model} ${tradeCar.year} · ${answers[c.id]}${tradeCar.link.trim() ? ` · ${tradeCar.link.trim()}` : ''}` : answers[c.id] }))
     setSending(true)
     try {
       const result = await submitStorefrontPrecalification({
@@ -167,6 +167,7 @@ export function PrecalificadorPage() {
                   <div><label htmlFor="pq-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="pq-make" value={tradeCar.make} onChange={(v) => setTradeCar((c) => (v === c.make ? c : { ...c, make: v, model: '' }))} options={catalogMakes()} placeholder="Ej.: Chevrolet" /></div></div>
                   <div><label htmlFor="pq-model" className="sf-label">Modelo</label><div className="mt-2"><ComboField id="pq-model" value={tradeCar.model} onChange={(v) => setTradeCar((c) => ({ ...c, model: v }))} options={catalogModels(tradeCar.make)} placeholder="Ej.: Onix" emptyText="Escribe el modelo" /></div></div>
                   <div><label htmlFor="pq-year" className="sf-label">Año</label><div className="mt-2"><ComboField id="pq-year" value={tradeCar.year} onChange={(v) => setTradeCar((c) => ({ ...c, year: v }))} options={YEARS} inputMode="numeric" maxLength={4} allowCustom={false} placeholder="Ej.: 2018" /></div></div>
+                  <div><label htmlFor="pq-link" className="sf-label">Link de la publicación <span className="sf-faint">(opcional)</span></label><input id="pq-link" type="url" inputMode="url" value={tradeCar.link} onChange={(e) => setTradeCar((c) => ({ ...c, link: e.target.value }))} className="sf-input mt-2 w-full" placeholder="MercadoLibre, Facebook, Drive con fotos…" autoComplete="off" spellCheck={false} /></div>
                   <p className="sf-label mt-2">Valor aproximado de tu permuta</p>
                 </div>
               )}

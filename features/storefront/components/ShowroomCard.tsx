@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { vehicleHref } from '../lib/localStore'
 import { ArrowUpRight } from 'lucide-react'
 import type { Vehicle } from '../lib/types'
 import { formatMileage, formatPrice } from '../lib/format'
@@ -17,7 +18,7 @@ export function ShowroomCard({ vehicle, currencyCode, priority = false }: { vehi
   const name = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')
 
   return (
-    <Link href={`/inventory/${vehicle.id}`} className="sf-showroom-card group">
+    <Link href={vehicleHref(vehicle.id)} className="sf-showroom-card group">
       {image ? (
         <Image src={image} alt="" fill unoptimized={skipImageOptimizer(image)} priority={priority} sizes="(min-width: 1024px) 22rem, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
       ) : (
@@ -43,7 +44,7 @@ export function ShowroomRow({ vehicle, currencyCode, priority = false }: { vehic
   const model = [vehicle.make, vehicle.model].filter(Boolean).join(' ')
 
   return (
-    <Link href={`/inventory/${vehicle.id}`} className="sf-showroom-row group">
+    <Link href={vehicleHref(vehicle.id)} className="sf-showroom-row group">
       {image ? (
         <Image src={image} alt="" fill unoptimized={skipImageOptimizer(image)} priority={priority} sizes="100vw" className="object-cover object-[70%_60%]" />
       ) : (

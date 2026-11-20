@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { vehicleHref } from '../lib/localStore'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Check, Plus } from 'lucide-react'
@@ -48,7 +49,7 @@ export function VehicleCard({
   const name = `${vehicle.year} ${vehicle.make} ${vehicle.model}`
   const title = vehicle.trim ? `${name} ${vehicle.trim}` : name
   const status = vehicleStatus(vehicle.status)
-  const href = `/inventory/${vehicle.id}`
+  const href = vehicleHref(vehicle.id)
   const representative = isRepresentativePhoto(imageUrl, vehicle)
 
   const toggleCompare = () => {

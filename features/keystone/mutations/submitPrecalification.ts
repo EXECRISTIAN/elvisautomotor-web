@@ -25,7 +25,7 @@ export async function submitPrecalification(_root: unknown, { data }: { data: an
 
   const answers = (Array.isArray(data.answers) ? data.answers : []).slice(0, 40).map((item: any) => ({
     question: optionalText(item?.question, 200, 'Pregunta'),
-    answer: optionalText(item?.answer, 300, 'Respuesta'),
+    answer: optionalText(item?.answer, 800, 'Respuesta'),
   })).filter((item: { question: string; answer: string }) => item.question && item.answer)
   if (!answers.length) throw new SubmissionError('Responde las preguntas antes de enviar.')
   const times = [...new Set((Array.isArray(data.contactTimes) ? data.contactTimes : []).map(String))].filter((t): t is string => typeof t === 'string' && t in TIMES)

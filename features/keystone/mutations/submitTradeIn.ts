@@ -38,6 +38,10 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
   const condition = requiredText(data.condition, 'Estado', 30)
   const ownership = requiredText(data.ownership, 'Titularidad', 30)
   const notes = optionalText(data.notes, 2000, 'Información adicional')
+  const listingUrl = optionalText(data.listingUrl, 500, 'Link de la publicación')
+  if (listingUrl && !/^https?:\/\/[^\s]+\.[^\s]+/i.test(listingUrl)) {
+    throw new SubmissionError('El link de la publicación debe empezar con http:// o https://.')
+  }
   const payoffAmount = finiteNumber(data.payoffAmount || 0, 'Saldo del crédito', { min: 0, max: 10_000_000_000 })
   if (!CONDITIONS.has(condition) || !OWNERSHIP.has(ownership)) {
     throw new SubmissionError('El estado o la titularidad no son válidos.')
@@ -73,6 +77,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
       vin,
       licensePlate,
       engineNumber,
+      listingUrl,
       condition,
       ownership,
       payoffAmount,
@@ -106,7 +111,7 @@ export async function submitTradeIn(_root: unknown, { data }: { data: any }, con
           trim,
           mileage,
           condition,
-          exteriorCondition: notes || 'Solicitud web; falta inspección del exterior.',
+          exteriorCondition: [notes, listingUrl && `Publicación del auto: ${listingUrl}`].filter(Boolean).join('\n') || 'Solicitud web; falta inspección del exterior.',
           interiorCondition: `Ownership: ${ownership}${payoffAmount > 0 ? `; customer-reported payoff: ${formatCurrency(payoffAmount)}` : ''}`,
           lead: {
             create: {
