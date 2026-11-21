@@ -185,3 +185,6 @@
 /* Menú de secciones del panel local: se desliza en celular. */
 .storefront .elv-panel-nav { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.35rem; scrollbar-width: thin; }
 .storefront .elv-panel-nav > .sf-pill { border: 1px solid var(--sf-rule); border-radius: 999px; padding-inline: 1rem; }
+
+/* Casillas de verificación con el dorado de la marca (en todo el sitio). */
+.storefront input[type='checkbox'], .storefront input[type='radio'] { accent-color: var(--sf-accent); width: 1.15rem; height: 1.15rem; }

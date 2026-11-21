@@ -390,7 +390,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
               className="flex items-center justify-between gap-3 border-b px-4 py-2 lg:border-b-0 lg:px-0 lg:pb-5 lg:pt-0"
               style={{ borderColor: 'var(--sf-rule)' }}
             >
-              <h2 id="inventory-filters-title" className="sf-title-line sf-heading text-[length:var(--sf-text-lg)]">
+              <h2 id="inventory-filters-title" className="sf-display flex items-center gap-2 text-[1.25rem] uppercase tracking-wide">
                 Filtros
                 {activeFilterCount > 0 && (
                   <span className="sf-chip sf-figure" aria-label={`${activeFilterCount} activos`}>{activeFilterCount}</span>
@@ -533,10 +533,9 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 />
               </div>
 
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[length:var(--sf-text-sm)] font-semibold">
-                <input type="checkbox" checked={filters.progressiveOffer === 'true'} onChange={(e) => handleFilterChange('progressiveOffer', e.target.checked ? 'true' : '')} />
+              <button type="button" className="sf-pill min-h-11 w-full justify-center rounded-[8px] border" style={{ borderColor: "var(--sf-rule-strong, var(--sf-rule))" }} aria-pressed={filters.progressiveOffer === 'true'} onClick={() => handleFilterChange('progressiveOffer', filters.progressiveOffer === 'true' ? '' : 'true')}>
                 Solo oferta progresiva
-              </label>
+              </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">

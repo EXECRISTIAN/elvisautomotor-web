@@ -200,3 +200,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Mails: AGENTS.md no permite construir envío automático de emails; quedan botones que abren el programa de correo con el mail de registro y el del contrato ya escritos (el contrato se adjunta a mano).
 - Menú "Clientes" arriba; ingreso unificado (personal y clientes) con "Crear usuario" y "Olvidé mi usuario o contraseña" (muestra el usuario y ofrece pedir nueva contraseña por WhatsApp). Área de cliente: datos, compras y descarga del contrato.
 - Pie: "Términos y condiciones de uso" (texto sin completar, modo demostrativo). Quitado "Créditos de fotos" del pie.
+- Inventario → Filtros: título con la tipografía de la marca (mayúsculas), "Solo oferta progresiva" ahora es un botón dorado como los demás (antes casilla gris del sistema). Casillas de todo el sitio con el dorado de la marca.
