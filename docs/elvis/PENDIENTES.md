@@ -193,3 +193,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 21/11 04:30
 - Panel → Autos: botón "Exportar a Excel" (CSV) con año, marca, modelo, versión, patente, stock, 0 km/usado, tipo de vehículo, tracción, km, precio, precio anterior, estado y oferta. Respeta el buscador.
 - Filtros de carrocería/tracción en Inventario: quedan para cuando se pasen esos campos a la base real (hoy el inventario filtra en el servidor).
+- /ofertas: en celular y tablet los filtros arrancan plegados (botón Filtrar); en escritorio siempre visibles.

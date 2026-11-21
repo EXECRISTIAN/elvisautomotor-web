@@ -98,10 +98,10 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
             <p className="font-semibold" role="status">{results.length} {results.length === 1 ? 'oferta disponible' : 'ofertas disponibles'}</p>
             <div className="flex flex-wrap gap-2">
               {active > 0 && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => setF(EMPTY)}><X className="size-4" aria-hidden="true" />Limpiar filtros ({active})</button>}
-              <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px] md:hidden" aria-expanded={open} onClick={() => setOpen(!open)}><SlidersHorizontal className="size-4" aria-hidden="true" />{open ? 'Ocultar filtros' : 'Filtrar'}</button>
+              <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px] lg:hidden" aria-expanded={open} onClick={() => setOpen(!open)}><SlidersHorizontal className="size-4" aria-hidden="true" />{open ? 'Ocultar filtros' : 'Filtrar'}</button>
             </div>
           </div>
-          <div className={`${open ? 'grid' : 'hidden'} mt-4 gap-4 sm:grid-cols-2 md:grid lg:grid-cols-4 xl:grid-cols-5`}>
+          <div className={`${open ? 'grid' : 'hidden'} mt-4 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid-cols-5`}>
             {select('tipo', 'Tipo de oferta', typeIds.filter((id) => id === 'progresiva' ? progCount > 0 || liveOffers.length > 0 : offered.some((v) => types(v as any).includes(id))).map(typeLabel))}
             {select('condicion', '0 km / usado', opts('condicion', (v) => (v.condition === 'new' ? '0 km' : 'Usado')))}
             {select('marca', 'Marca', opts('marca', (v) => v.make))}
