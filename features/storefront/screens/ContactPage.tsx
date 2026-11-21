@@ -85,6 +85,7 @@ export function ContactPage() {
             rows={[
               { label: 'Nombre', value: [formData.firstName, formData.lastName].filter(Boolean).join(' ') },
               { label: 'Respuesta por', value: preferredLabel, strong: true },
+              ...(formData.contactTimes.length ? [{ label: 'Horario', value: formData.contactTimes.map((t) => CONTACT_TIMES.find((o) => o.value === t)?.label ?? t).join(' y ').replace(' y Por', ' y por') }] : []),
               { label: 'Email', value: formData.email },
               ...(formData.phone ? [{ label: 'Teléfono', value: formData.phone }] : []),
             ]}

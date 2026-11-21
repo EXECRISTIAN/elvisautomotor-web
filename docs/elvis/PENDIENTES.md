@@ -169,3 +169,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 21/11 00:30
 - "Vende tu auto" probado de punta a punta en celular: OK.
 - Consultas: las reservas de rifa aparecían "Sin nombre" y sin tipo; ahora muestran el nombre y el tipo "Rifa" (filtrable).
+
+### Ronda 21/11 01:30
+- Probados de punta a punta: Financiación (celular) y Contacto (celular y escritorio): OK.
+- Contacto: la confirmación ahora muestra también el horario elegido ("Por la mañana y por la tarde").
