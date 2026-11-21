@@ -9,7 +9,8 @@ export type LocalSubmission = { id: string; kind: string; label: string; created
 export type LocalUser = { id: string; name: string; username: string; password: string; role: string; active: boolean; createdAt: string }
 export type LocalCar = Record<string, any> & { id: string }
 type CarChanges = { added: LocalCar[]; edits: Record<string, Partial<LocalCar>>; deleted: string[] }
-export type Sale = { id: string; fecha: string; autoId: string; auto: string; cliente: string; telefono: string; dni: string; precio: number; costo: number; formaPago: string; anticipo: number; canje: number; vendedor: string; notas: string; anulada?: boolean }
+export type Client = { id: string; nombre: string; apellido: string; dni: string; telefono: string; email: string; domicilio: string; localidad: string; creado: string; usuario?: string; clave?: string }
+export type Sale = { id: string; fecha: string; autoId: string; auto: string; clienteId?: string; email?: string; contrato?: { nombre: string; url: string }; cliente: string; telefono: string; dni: string; precio: number; costo: number; formaPago: string; anticipo: number; canje: number; vendedor: string; notas: string; anulada?: boolean }
 export type CashMove = { id: string; fecha: string; tipo: 'ingreso' | 'egreso'; categoria: string; medio: string; monto: number; detalle: string; usuario: string; ventaId?: string }
 export type CashClose = { id: string; fecha: string; esperado: number; contado: number; diferencia: number; usuario: string; nota: string }
 export type Activity = { id: string; fecha: string; usuario: string; accion: string }
@@ -17,10 +18,10 @@ export type SiteSettings = Record<string, string>
 export type OfferSection = { id: string; nombre: string; descripcion: string; activa: boolean }
 export type RaffleEntry = { numero: number; nombre: string; telefono: string; estado: 'reservado' | 'pagado'; fecha: string }
 export type Raffle = { id: string; titulo: string; premio: string; autoId: string; precioNumero: number; cantidad: number; fechaSorteo: string; estado: 'activa' | 'cerrada' | 'sorteada'; bases: string; numeros: RaffleEntry[]; ganador: number | null; creada: string }
-type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings; secciones: OfferSection[]; rifas: Raffle[]; visitas: Record<string, Record<string, number>>; carga: number[] }
+type Db = { consultas: LocalSubmission[]; usuarios: LocalUser[]; autos: CarChanges; ventas: Sale[]; caja: CashMove[]; cierres: CashClose[]; actividad: Activity[]; permisos: Record<string, string[]>; sitio: SiteSettings; secciones: OfferSection[]; rifas: Raffle[]; visitas: Record<string, Record<string, number>>; carga: number[]; clientes: Client[] }
 
 const MIRROR = 'elvis:datos'
-const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {}, secciones: [], rifas: [], visitas: {}, carga: [] }
+const EMPTY: Db = { consultas: [], usuarios: [], autos: { added: [], edits: {}, deleted: [] }, ventas: [], caja: [], cierres: [], actividad: [], permisos: {}, sitio: {}, secciones: [], rifas: [], visitas: {}, carga: [], clientes: [] }
 
 export function isLocalDemo() {
   return typeof window !== 'undefined' && (window as unknown as { __ELVIS_OFFLINE__?: boolean }).__ELVIS_OFFLINE__ === true
@@ -44,6 +45,7 @@ function normalize(raw: any): Db {
     rifas: Array.isArray(raw?.rifas) ? raw.rifas : [],
     visitas: raw?.visitas && typeof raw.visitas === 'object' ? raw.visitas : {},
     carga: Array.isArray(raw?.carga) ? raw.carga : [],
+    clientes: Array.isArray(raw?.clientes) ? raw.clientes : [],
   }
 }
 
@@ -331,4 +333,38 @@ export function analytics(days = 7) {
   const leads = d.consultas.filter((c) => keys.includes(dayKey(new Date(c.createdAt)))).length
   const loads = [...d.carga].sort((a, b) => a - b)
   return { perDay, pages: Object.entries(pages).sort((a, b) => b[1] - a[1]), total: perDay.reduce((a, b) => a + b.total, 0), leads, medianLoad: loads.length ? loads[Math.floor(loads.length / 2)] : null }
+}
+
+// ---------- Clientes registrados ----------
+export const listClients = (): Client[] => db().clientes
+export function saveClient(client: Client) {
+  const list = db().clientes
+  const i = list.findIndex((c) => c.id === client.id)
+  if (i >= 0) list[i] = client
+  else list.unshift(client)
+  persist()
+}
+export const clientName = (c: Client) => `${c.nombre} ${c.apellido}`.trim()
+/** Ingreso de clientes: con usuario, email o DNI. */
+export function checkClientLogin(id: string, password: string) {
+  const key = id.trim().toLowerCase()
+  return db().clientes.find((c) => c.clave && c.clave === password && [c.usuario, c.email, c.dni].some((x) => x && x.toLowerCase() === key)) ?? null
+}
+export function findClient(id: string) {
+  const key = id.trim().toLowerCase().replace(/\./g, '')
+  return db().clientes.find((c) => [c.usuario, c.email, c.dni].some((x) => x && x.toLowerCase() === key)) ?? null
+}
+
+/** Guarda un archivo (contrato, PDF o foto) en la carpeta "datos". */
+export async function saveFile(file: File): Promise<{ nombre: string; url: string }> {
+  db()
+  const ext = (/\.([a-z0-9]{1,5})$/i.exec(file.name)?.[1] ?? 'pdf').toLowerCase()
+  const name = `${newId('DOC').toLowerCase()}.${ext}`
+  if (diskAvailable) {
+    const response = await fetch(`/_local/fotos/${name}`, { method: 'PUT', headers: { 'content-type': file.type || 'application/octet-stream' }, body: file })
+    if (response.ok) return { nombre: file.name, url: `/_local/fotos/${name}` }
+  }
+  if (file.size > 1_500_000) throw new Error('Sin el iniciador solo se pueden guardar archivos de hasta 1,5 MB. Abre la muestra con INICIAR-MUESTRA.bat.')
+  const url = await new Promise<string>((resolve) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.readAsDataURL(file) })
+  return { nombre: file.name, url }
 }

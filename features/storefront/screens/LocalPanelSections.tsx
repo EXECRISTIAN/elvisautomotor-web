@@ -7,7 +7,8 @@ import { ComboField } from '../components/ComboField'
 import {
   PERMISSIONS, ROLES, addCashClose, analytics, addCashMove, applyCarChanges, deleteCashMove, listActivity, listCash, listCloses, listSales,
   listSubmissions, logActivity, newId, exportAll, importAll, rolePermissions, saveCar, saveRolePermissions, saveSale, saveSiteSettings, siteSettings, voidSale,
-  type LocalCar, type LocalUser, type Sale,
+  listClients, saveClient, clientName, saveFile,
+  type Client, type LocalCar, type LocalUser, type Sale,
 } from '../lib/localStore'
 
 const money = (n: number) => (Number(n) || 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
@@ -144,6 +145,29 @@ function printReceipt(sale: Sale) {
 }
 
 // ---------- Ventas ----------
+const mailto = (to: string, subject: string, body: string) => `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+function registrationMail(c: Client) {
+  const site = siteSettings()
+  return mailto(c.email, 'Bienvenido a Elvis Automotores', `Hola ${c.nombre}:\n\nTe registramos como cliente de Elvis Automotores.\n\nPara ver tus compras y tu contrato, entra en la web a Clientes → Crear usuario con tu DNI y este email.\n\nTus datos: ${clientName(c)} · DNI ${c.dni} · ${c.telefono || 'sin teléfono'}\n\nAnte cualquier consulta escríbenos o llámanos${site.telefono ? ` al ${site.telefono}` : ''}.\n\nGracias por elegirnos.\nElvis Automotores`)
+}
+function contractMail(s: Sale) {
+  return mailto(s.email ?? '', `Contrato de venta · ${s.auto}`, `Hola ${s.cliente}:\n\nTe enviamos el contrato de compraventa del ${s.auto} (fecha ${s.fecha.split('-').reverse().join('/')}, precio ${money(s.precio)}).\n\n${s.contrato ? `Va adjunto el archivo “${s.contrato.nombre}”.` : 'Va adjunto el contrato.'}\n\nGracias por tu compra.\nElvis Automotores`)
+}
+function SaleDone({ sale, client, registered, onClose }: { sale: Sale; client: Client; registered: boolean; onClose: () => void }) {
+  return (
+    <div className="elv-pq-panel mt-4 grid gap-3" role="status">
+      <p className="font-bold">Venta guardada: {sale.auto} a {clientName(client)}.</p>
+      <p className="sf-muted text-[0.9rem]">Los mails se abren en tu programa de correo, ya escritos y dirigidos a {client.email}.{sale.contrato ? ' Para el contrato, descárgalo y adjúntalo al mail antes de enviarlo.' : ''}</p>
+      <div className="flex flex-wrap gap-2">
+        {registered && <a className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" href={registrationMail(client)}>Enviar mail de registro</a>}
+        <a className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" href={contractMail(sale)}>Enviar mail con el contrato</a>
+        {sale.contrato && <a className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" href={sale.contrato.url} download={sale.contrato.nombre} target="_blank" rel="noreferrer"><Download className="size-4" aria-hidden="true" />Descargar contrato</a>}
+        <button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={onClose}>Listo</button>
+      </div>
+    </div>
+  )
+}
+
 export function SalesSection({ user }: { user: LocalUser }) {
   const { cars, refresh } = useCars()
   const [v, setV] = useState(0)
@@ -152,34 +176,68 @@ export function SalesSection({ user }: { user: LocalUser }) {
   const [form, setForm] = useState<Sale | null>(null)
   const [cashMedio, setCashMedio] = useState('Efectivo')
   const [error, setError] = useState('')
+  const [newClient, setNewClient] = useState<Client | null>(null)
+  const [contract, setContract] = useState<File | null>(null)
+  const [done, setDone] = useState<{ sale: Sale; client: Client; registered: boolean } | null>(null)
+  const clients = listClients()
+  const clientLabel = (c: Client) => `${clientName(c)}${c.dni ? ` · DNI ${c.dni}` : ''}`
+  const emptyClient = (): Client => ({ id: newId('CLI').toLowerCase(), nombre: '', apellido: '', dni: '', telefono: '', email: '', domicilio: '', localidad: '', creado: new Date().toISOString() })
   const available = cars.filter((c) => (c.status ?? 'available') !== 'sold')
   const label = (c: LocalCar) => `${c.year} ${c.make} ${c.model} ${c.trim ?? ''} · ${c.stockNumber || c.id.slice(0, 6)}`.replace(/\s+/g, ' ')
 
-  function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!form) return
-    if (!form.autoId || !form.cliente.trim() || !(form.precio > 0)) { setError('Elige el auto, el cliente y el precio final.'); return }
+    let client = clients.find((c) => c.id === form.clienteId) ?? null
+    const registered = Boolean(newClient)
+    if (newClient) {
+      if (!newClient.nombre.trim() || !newClient.apellido.trim() || digits(newClient.dni).length < 7 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newClient.email.trim())) { setError('Para registrar al cliente completa nombre, apellido, DNI y un email válido.'); return }
+      if (clients.some((c) => c.dni && c.dni === digits(newClient.dni))) { setError('Ya hay un cliente registrado con ese DNI: elígelo de la lista.'); return }
+      client = { ...newClient, dni: digits(newClient.dni), email: newClient.email.trim() }
+    }
+    if (!form.autoId || !client || !(form.precio > 0)) { setError('Elige el auto, el cliente registrado (o regístralo) y el precio final.'); return }
+    let contrato = form.contrato
+    if (contract) { try { contrato = await saveFile(contract) } catch (err) { setError(err instanceof Error ? err.message : 'No se pudo guardar el contrato.'); return } }
+    if (registered) { saveClient(client); logActivity(user.name, `Registró al cliente ${clientName(client)}`) }
+    form.clienteId = client.id; form.cliente = clientName(client); form.telefono = client.telefono; form.dni = client.dni; form.email = client.email; form.contrato = contrato
     const car = cars.find((c) => c.id === form.autoId)
     const cobrado = form.formaPago.startsWith('Contado') ? form.precio - form.canje : form.anticipo
     saveSale(form, cobrado > 0 ? { fecha: new Date(`${form.fecha}T12:00:00`).toISOString(), tipo: 'ingreso', categoria: 'Venta de auto', medio: cashMedio, monto: cobrado, detalle: `${form.auto} · ${form.cliente}`, usuario: user.name, ventaId: form.id } : undefined)
     if (car) saveCar({ ...car, status: 'sold' })
     logActivity(user.name, `Registró la venta de ${form.auto} a ${form.cliente} por ${money(form.precio)}`)
-    setForm(null); setError(''); setV((x) => x + 1); refresh()
+    setDone({ sale: { ...form }, client, registered })
+    setForm(null); setNewClient(null); setContract(null); setError(''); setV((x) => x + 1); refresh()
   }
 
   return (
     <div className="mt-6">
       <div className="flex flex-wrap gap-2">
-        <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={() => { setError(''); setForm(blank()) }}><Plus className="size-4" aria-hidden="true" />Registrar venta</button>
+        <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={() => { setError(''); setDone(null); setNewClient(null); setContract(null); setForm(blank()) }}><Plus className="size-4" aria-hidden="true" />Registrar venta</button>
         <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" disabled={!sales.length} onClick={() => csv('elvis-ventas', [['Fecha', 'Auto', 'Cliente', 'Teléfono', 'DNI', 'Precio', 'Costo', 'Ganancia', 'Forma de pago', 'Anticipo', 'Canje', 'Vendedor', 'Estado'], ...sales.map((s) => [s.fecha, s.auto, s.cliente, s.telefono, s.dni, s.precio, s.costo, s.precio - s.costo, s.formaPago, s.anticipo, s.canje, s.vendedor, s.anulada ? 'Anulada' : 'Vigente'])])}><Download className="size-4" aria-hidden="true" />Exportar a Excel</button>
       </div>
       {form && (
         <form onSubmit={save} className="elv-pq-panel mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="sm:col-span-2 lg:col-span-3"><label htmlFor="sv-auto" className="sf-label">Auto</label><div className="mt-2"><ComboField id="sv-auto" value={form.auto} onChange={(v) => { const car = available.find((c) => label(c) === v); setForm({ ...form, auto: v, autoId: car?.id ?? '', precio: car ? Number(car.price) || 0 : form.precio }) }} options={available.map(label)} allowCustom={false} placeholder="Elige el auto vendido" /></div></div>
           <div><label htmlFor="sv-fecha" className="sf-label">Fecha</label><input id="sv-fecha" type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} className={field} /></div>
-          <div><label htmlFor="sv-cliente" className="sf-label">Cliente</label><input id="sv-cliente" value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} className={field} /></div>
-          <div><label htmlFor="sv-tel" className="sf-label">Teléfono</label><input id="sv-tel" inputMode="tel" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} className={field} /></div>
-          <div><label htmlFor="sv-dni" className="sf-label">DNI</label><input id="sv-dni" inputMode="numeric" value={form.dni} onChange={(e) => setForm({ ...form, dni: digits(e.target.value).slice(0, 8) })} className={field} /></div>
+          <div className="sm:col-span-2 lg:col-span-2">
+            <label htmlFor="sv-cliente" className="sf-label">Cliente registrado</label>
+            {newClient ? <p className="sf-muted mt-2 text-[0.9rem]">Se registra un cliente nuevo (completa sus datos abajo).</p> : (
+              <div className="mt-2"><ComboField id="sv-cliente" value={(() => { const c = clients.find((x) => x.id === form.clienteId); return c ? clientLabel(c) : '' })()} onChange={(v) => setForm({ ...form, clienteId: clients.find((c) => clientLabel(c) === v)?.id ?? '' })} options={clients.map(clientLabel)} allowCustom={false} placeholder={clients.length ? 'Busca por nombre o DNI' : 'Todavía no hay clientes registrados'} emptyText="No está registrado: usa “Registrar cliente nuevo”" /></div>
+            )}
+            <button type="button" className="sf-btn sf-btn-outline mt-2 min-h-11 rounded-[10px]" onClick={() => { setNewClient(newClient ? null : emptyClient()); setForm({ ...form, clienteId: '' }) }}>{newClient ? 'Elegir un cliente registrado' : 'Registrar cliente nuevo'}</button>
+          </div>
+          {newClient && (
+            <fieldset className="grid gap-4 rounded-[10px] border p-4 sm:col-span-2 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3" style={{ borderColor: 'var(--sf-rule)' }}>
+              <legend className="sf-label px-1">Registro del cliente</legend>
+              <div><label htmlFor="nc-nombre" className="sf-label">Nombre</label><input id="nc-nombre" value={newClient.nombre} onChange={(e) => setNewClient({ ...newClient, nombre: e.target.value })} className={field} autoComplete="off" /></div>
+              <div><label htmlFor="nc-apellido" className="sf-label">Apellido</label><input id="nc-apellido" value={newClient.apellido} onChange={(e) => setNewClient({ ...newClient, apellido: e.target.value })} className={field} autoComplete="off" /></div>
+              <div><label htmlFor="nc-dni" className="sf-label">DNI</label><input id="nc-dni" inputMode="numeric" value={newClient.dni} onChange={(e) => setNewClient({ ...newClient, dni: digits(e.target.value).slice(0, 8) })} className={field} /></div>
+              <div><label htmlFor="nc-email" className="sf-label">Email</label><input id="nc-email" type="email" inputMode="email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} className={field} /></div>
+              <div><label htmlFor="nc-tel" className="sf-label">Teléfono</label><input id="nc-tel" inputMode="tel" value={newClient.telefono} onChange={(e) => setNewClient({ ...newClient, telefono: e.target.value })} className={field} /></div>
+              <div><label htmlFor="nc-dom" className="sf-label">Domicilio</label><input id="nc-dom" value={newClient.domicilio} onChange={(e) => setNewClient({ ...newClient, domicilio: e.target.value })} className={field} /></div>
+              <div><label htmlFor="nc-loc" className="sf-label">Localidad</label><input id="nc-loc" value={newClient.localidad} onChange={(e) => setNewClient({ ...newClient, localidad: e.target.value })} className={field} /></div>
+            </fieldset>
+          )}
           <div><label htmlFor="sv-precio" className="sf-label">Precio final ($)</label><input id="sv-precio" inputMode="numeric" value={form.precio || ''} onChange={(e) => setForm({ ...form, precio: Number(digits(e.target.value)) })} className={field} /></div>
           <div><label htmlFor="sv-costo" className="sf-label">Costo del auto ($) <span className="sf-faint">(para la ganancia)</span></label><input id="sv-costo" inputMode="numeric" value={form.costo || ''} onChange={(e) => setForm({ ...form, costo: Number(digits(e.target.value)) })} className={field} /></div>
           <div><label htmlFor="sv-pago" className="sf-label">Forma de pago</label><div className="mt-2"><ComboField id="sv-pago" value={form.formaPago} onChange={(v) => setForm({ ...form, formaPago: v || 'Contado' })} options={PAGOS} allowCustom={false} /></div></div>
@@ -187,18 +245,22 @@ export function SalesSection({ user }: { user: LocalUser }) {
           {form.formaPago.includes('inanciado') && <div><label htmlFor="sv-anticipo" className="sf-label">Anticipo cobrado ($)</label><input id="sv-anticipo" inputMode="numeric" value={form.anticipo || ''} onChange={(e) => setForm({ ...form, anticipo: Number(digits(e.target.value)) })} className={field} /></div>}
           <div><label htmlFor="sv-medio" className="sf-label">Medio de cobro (va a caja)</label><div className="mt-2"><ComboField id="sv-medio" value={cashMedio} onChange={(v) => setCashMedio(v || 'Efectivo')} options={MEDIOS} allowCustom={false} /></div></div>
           <div><label htmlFor="sv-vend" className="sf-label">Vendedor</label><input id="sv-vend" value={form.vendedor} onChange={(e) => setForm({ ...form, vendedor: e.target.value })} className={field} /></div>
+          <div className="sm:col-span-2 lg:col-span-3"><label htmlFor="sv-contrato" className="sf-label">Contrato de venta <span className="sf-faint">(PDF, Word o foto)</span></label><input id="sv-contrato" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => setContract(e.target.files?.[0] ?? null)} className="mt-2 block w-full text-[0.9rem]" />{contract && <p className="sf-faint mt-1 text-[0.8rem]">{contract.name}</p>}</div>
           <div className="sm:col-span-2 lg:col-span-3"><label htmlFor="sv-notas" className="sf-label">Notas</label><textarea id="sv-notas" rows={2} value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} className={field} /></div>
           <p className="sf-muted sm:col-span-2 lg:col-span-3 text-[0.85rem]">Al guardar: el auto queda como vendido en el sitio y lo cobrado se suma a la caja.</p>
           {error && <p role="alert" className="sm:col-span-2 lg:col-span-3 text-[0.9rem]" style={{ color: 'var(--sf-warn, #e0a23a)' }}>{error}</p>}
-          <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar venta</button><button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => setForm(null)}>Cancelar</button></div>
+          <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar venta</button><button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => { setForm(null); setNewClient(null); setContract(null) }}>Cancelar</button></div>
         </form>
       )}
+      {done && <SaleDone {...done} onClose={() => setDone(null)} />}
       <ul className="mt-4 grid gap-3">
         {sales.length === 0 && <li className="sf-muted">Todavía no hay ventas registradas.</li>}
         {sales.map((s) => (
           <li key={s.id} className="elv-pq-panel !p-4 flex flex-wrap items-center justify-between gap-3" style={s.anulada ? { opacity: 0.55 } : undefined}>
             <span className="min-w-0"><span className="block font-bold">{s.auto}</span><span className="sf-muted block text-[0.85rem]">{s.fecha} · {s.cliente} · {s.formaPago} · {s.vendedor}{s.anulada ? ' · ANULADA' : ''}</span></span>
             <span className="flex items-center gap-3"><span className="text-right"><span className="block font-bold tabular-nums">{money(s.precio)}</span>{s.costo > 0 && <span className="sf-faint block text-[0.8rem] tabular-nums">Ganancia {money(s.precio - s.costo)}</span>}</span>
+              {s.contrato && <a className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" href={s.contrato.url} download={s.contrato.nombre} target="_blank" rel="noreferrer">Contrato</a>}
+              {!s.anulada && s.email && <a className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" href={contractMail(s)}>Mail</a>}
               {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => printReceipt(s)}>Comprobante</button>}
               {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { if (window.confirm('¿Anular esta venta? El movimiento de caja queda; puedes cargar un egreso si devolviste dinero.')) { voidSale(s.id); logActivity(user.name, `Anuló la venta de ${s.auto}`); setV((x) => x + 1) } }}>Anular</button>}</span>
           </li>
@@ -297,6 +359,11 @@ export function ClientsSection() {
       const c = map.get(k) ?? { nombre, telefono: String(d.phone || ''), email: String(d.email || ''), dni: String(d.dni || ''), consultas: 0, compras: 0, ultima: s.createdAt }
       c.consultas += 1; if (s.createdAt > c.ultima) c.ultima = s.createdAt
       map.set(k, c)
+    }
+    for (const r of listClients()) {
+      const k = key(r.telefono, r.email, clientName(r))
+      const c = map.get(k) ?? { nombre: `${clientName(r)} · registrado`, telefono: r.telefono, email: r.email, dni: r.dni, consultas: 0, compras: 0, ultima: r.creado }
+      map.set(k, { ...c, dni: c.dni || r.dni })
     }
     for (const s of listSales().filter((x) => !x.anulada)) {
       const k = key(s.telefono, '', s.cliente)

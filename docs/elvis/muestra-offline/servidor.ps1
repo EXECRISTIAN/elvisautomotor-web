@@ -8,7 +8,7 @@ $datos = Join-Path $PSScriptRoot 'datos'
 $fotos = Join-Path $datos 'fotos'
 New-Item -ItemType Directory -Force -Path $fotos | Out-Null
 $types = @{ '.html'='text/html; charset=utf-8'; '.js'='application/javascript'; '.css'='text/css'; '.json'='application/json';
-  '.svg'='image/svg+xml'; '.png'='image/png'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg'; '.webp'='image/webp'; '.ico'='image/x-icon';
+  '.svg'='image/svg+xml'; '.png'='image/png'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg'; '.webp'='image/webp'; '.ico'='image/x-icon'; '.pdf'='application/pdf'; '.doc'='application/msword'; '.docx'='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   '.woff2'='font/woff2'; '.woff'='font/woff'; '.txt'='text/plain; charset=utf-8'; '.xml'='application/xml' }
 
 $listener = $null

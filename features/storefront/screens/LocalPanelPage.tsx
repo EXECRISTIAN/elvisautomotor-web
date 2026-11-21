@@ -5,17 +5,19 @@ import { useEffect, useMemo, useState } from 'react'
 import { Download, LogOut, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Container } from '../components/Container'
 import { OffersAdminSection } from './LocalOffersAdmin'
+import { ClientArea, ClientSignup, ForgotAccess } from './LocalClientArea'
 import { LocalCarsTab } from './LocalCarsTab'
 import { ActivitySection, CashSection, ClientsSection, PermissionsSection, SalesSection, SiteSection, SummarySection } from './LocalPanelSections'
 import { ComboField } from '../components/ComboField'
 import {
-  ROLES, can, checkLogin, deleteSubmission, logActivity, isLocalDemo, listSubmissions, listUsers, newId, saveUsers, updateSubmission,
+  ROLES, can, checkLogin, checkClientLogin, listClients, type Client, deleteSubmission, logActivity, isLocalDemo, listSubmissions, listUsers, newId, saveUsers, updateSubmission,
   type LocalSubmission, type LocalUser,
 } from '../lib/localStore'
 
 const STATUSES = ['nueva', 'contactado', 'cerrada']
 const KINDS: Record<string, string> = { consulta: 'Consultas', precalificacion: 'Precalificador', usado: 'Usados ofrecidos', credito: 'Créditos', prueba: 'Pruebas de manejo', servicio: 'Servicio', reserva: 'Reservas', rifa: 'Rifa' }
 const SESSION = 'elvis:sesion'
+const CLIENT_SESSION = 'elvis:cliente'
 
 const LABELS: Record<string, string> = {
   firstName: 'Nombre', lastName: 'Apellido', fullName: 'Nombre y apellido', email: 'Email', phone: 'Teléfono', message: 'Mensaje',
@@ -64,6 +66,8 @@ export function LocalPanelPage() {
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState<string | null>(null)
   const [login, setLogin] = useState({ username: '', password: '', error: '' })
+  const [mode, setMode] = useState<'ingresar' | 'crear' | 'olvide'>('ingresar')
+  const [client, setClient] = useState<Client | null>(null)
   const [editing, setEditing] = useState<LocalUser | null>(null)
   const [formError, setFormError] = useState('')
 
@@ -74,6 +78,8 @@ export function LocalPanelPage() {
     setUsers(all)
     setItems(listSubmissions())
     setUser(all.find((u) => u.id === saved && u.active) ?? null)
+    const savedClient = (() => { try { return window.sessionStorage.getItem(CLIENT_SESSION) } catch { return null } })()
+    setClient(listClients().find((c) => c.id === savedClient) ?? null)
     setReady(true)
   }, [])
 
@@ -90,7 +96,11 @@ export function LocalPanelPage() {
   function doLogin(event: React.FormEvent) {
     event.preventDefault()
     const found = checkLogin(login.username, login.password)
-    if (!found) { setLogin((l) => ({ ...l, error: 'Usuario o contraseña incorrectos.' })); return }
+    if (!found) {
+      const c = checkClientLogin(login.username, login.password)
+      if (c) { try { window.sessionStorage.setItem(CLIENT_SESSION, c.id) } catch { /* nada */ } setClient(c); return }
+      setLogin((l) => ({ ...l, error: 'Usuario o contraseña incorrectos.' })); return
+    }
     try { window.sessionStorage.setItem(SESSION, found.id) } catch { /* sin almacenamiento */ }
     logActivity(found.name, 'Ingresó al panel')
     setUser(found)
@@ -124,19 +134,26 @@ export function LocalPanelPage() {
   }
 
   if (!ready) return null
+  if (!user && client) return <ClientArea client={client} onLogout={() => { try { window.sessionStorage.removeItem(CLIENT_SESSION) } catch { /* nada */ } setClient(null); setLogin({ username: '', password: '', error: '' }) }} />
+  if (!user && mode === 'crear') return <ClientSignup onBack={() => setMode('ingresar')} onDone={(c) => { try { window.sessionStorage.setItem(CLIENT_SESSION, c.id) } catch { /* nada */ } setClient(c); setMode('ingresar') }} />
+  if (!user && mode === 'olvide') return <ForgotAccess onBack={() => setMode('ingresar')} />
   if (!user) {
     return (
       <section className="py-14">
         <Container className="max-w-sm">
           <form onSubmit={doLogin} className="elv-pq-panel">
-            <h1 className="sf-display text-[1.6rem]">Panel de Elvis</h1>
-            <p className="sf-muted mt-1 text-[0.9rem]">Ingresa con tu usuario.</p>
-            <label htmlFor="lp-user" className="sf-label mt-6 block">Usuario</label>
+            <h1 className="sf-display text-[1.6rem]">Ingresar</h1>
+            <p className="sf-muted mt-1 text-[0.9rem]">Clientes y personal de Elvis.</p>
+            <label htmlFor="lp-user" className="sf-label mt-6 block">Usuario, email o DNI</label>
             <input id="lp-user" autoComplete="username" autoCapitalize="none" value={login.username} onChange={(e) => setLogin((l) => ({ ...l, username: e.target.value, error: '' }))} className="sf-input mt-2 w-full" />
             <label htmlFor="lp-pass" className="sf-label mt-4 block">Contraseña</label>
             <input id="lp-pass" type="password" autoComplete="current-password" value={login.password} onChange={(e) => setLogin((l) => ({ ...l, password: e.target.value, error: '' }))} className="sf-input mt-2 w-full" />
             {login.error && <p role="alert" className="mt-3 text-[0.9rem]" style={{ color: 'var(--sf-warn, #e0a23a)' }}>{login.error}</p>}
             <button type="submit" className="sf-btn sf-btn-primary mt-6 min-h-12 w-full rounded-[10px]">Ingresar</button>
+            <div className="mt-4 grid gap-2">
+              <button type="button" className="sf-btn sf-btn-outline min-h-12 w-full rounded-[10px]" onClick={() => setMode('crear')}>Crear usuario</button>
+              <button type="button" className="sf-link min-h-11 text-[0.9rem]" onClick={() => setMode('olvide')}>Olvidé mi usuario o contraseña</button>
+            </div>
           </form>
         </Container>
       </section>

@@ -194,3 +194,9 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Panel → Autos: botón "Exportar a Excel" (CSV) con año, marca, modelo, versión, patente, stock, 0 km/usado, tipo de vehículo, tracción, km, precio, precio anterior, estado y oferta. Respeta el buscador.
 - Filtros de carrocería/tracción en Inventario: quedan para cuando se pasen esos campos a la base real (hoy el inventario filtra en el servidor).
 - /ofertas: en celular y tablet los filtros arrancan plegados (botón Filtrar); en escritorio siempre visibles.
+
+### 21/11 05:40 — ventas con cliente y contrato, área de clientes
+- Ventas: cliente registrado obligatorio (elegir de la lista o registrarlo en el momento: nombre, apellido, DNI, email, teléfono, domicilio), contrato adjunto (PDF/Word/foto, se guarda en "datos").
+- Mails: AGENTS.md no permite construir envío automático de emails; quedan botones que abren el programa de correo con el mail de registro y el del contrato ya escritos (el contrato se adjunta a mano).
+- Menú "Clientes" arriba; ingreso unificado (personal y clientes) con "Crear usuario" y "Olvidé mi usuario o contraseña" (muestra el usuario y ofrece pedir nueva contraseña por WhatsApp). Área de cliente: datos, compras y descarga del contrato.
+- Pie: "Términos y condiciones de uso" (texto sin completar, modo demostrativo). Quitado "Créditos de fotos" del pie.

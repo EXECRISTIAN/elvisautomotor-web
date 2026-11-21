@@ -19,6 +19,7 @@ const NAV = [
   { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/nosotros', label: 'Nosotros' },
   { href: '/contact', label: 'Contacto' },
+  { href: '/account', label: 'Clientes' },
 ]
 
 const MENU = [
