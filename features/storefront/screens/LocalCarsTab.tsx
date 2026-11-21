@@ -6,6 +6,7 @@ import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
 import { applyCarChanges, offerSections, siteSettings, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
+import { BODY_TYPES, TRACCION, TIPO_TRACCION, vehicleKind } from '@/features/lib/vehicleKinds'
 import { catalogMakes, POPULAR_MAKES, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 import { AC_OPTIONS, DEBT_OPTIONS, FINES_OPTIONS, FUEL_OPTIONS, GNC_OPTIONS, TRANSMISSION_OPTIONS, USED_REPORT_TEXT_FIELDS } from '@/features/lib/vehicleSpecs'
 
@@ -101,6 +102,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
   const set = (patch: Partial<LocalCar>) => editing && setEditing({ ...editing, ...patch })
   const setReport = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, usedReport: { ...(editing.usedReport ?? {}), ...patch } })
   const field = 'sf-input mt-2 w-full'
+  const kind = vehicleKind((editing ?? {}) as Record<string, string>)
   const prog = { inicial: 0, baja: 0, cada: '1 hora', piso: 0, desde: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), condiciones: '', ...(editing?.progresiva ?? {}) }
   const setProg = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, progresiva: { ...prog, ...patch } })
   const sections = offerSections().filter((sec) => sec.activa)
@@ -134,6 +136,9 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
             {editing.condition !== 'new' && <div><label htmlFor="lc-km" className="sf-label">Kilometraje</label><input id="lc-km" inputMode="numeric" value={editing.mileage || ''} onChange={(e) => set({ mileage: e.target.value.replace(/\D/g, '') })} className={field} /></div>}
             <div><label htmlFor="lc-fuel" className="sf-label">Combustible</label><div className="mt-2"><ComboField id="lc-fuel" value={toLabel(FUEL_OPTIONS, editing.fuelType)} onChange={(v) => set({ fuelType: toValue(FUEL_OPTIONS, v) })} options={opt(FUEL_OPTIONS)} allowCustom={false} /></div></div>
             <div><label htmlFor="lc-trans" className="sf-label">Caja</label><div className="mt-2"><ComboField id="lc-trans" value={toLabel(TRANSMISSION_OPTIONS, editing.transmission)} onChange={(v) => set({ transmission: toValue(TRANSMISSION_OPTIONS, v) })} options={opt(TRANSMISSION_OPTIONS)} allowCustom={false} /></div></div>
+            <div><span className="sf-label">Tipo de vehículo</span><div className="mt-2"><ComboField id="lc-body" value={editing.carroceria || kind.carroceria} onChange={(v) => set({ carroceria: v })} options={BODY_TYPES} allowCustom={false} /></div></div>
+            <div><span className="sf-label">Tracción</span><div className="mt-2"><ComboField id="lc-trac" value={editing.traccion || kind.traccion} onChange={(v) => set({ traccion: v })} options={TRACCION} allowCustom={false} /></div></div>
+            <div><span className="sf-label">Tipo de tracción</span><div className="mt-2"><ComboField id="lc-trac-tipo" value={editing.tipoTraccion || kind.tipoTraccion} onChange={(v) => set({ tipoTraccion: v })} options={TIPO_TRACCION} allowCustom={false} /></div></div>
             <div><label htmlFor="lc-engine" className="sf-label">Motor</label><input id="lc-engine" value={editing.engine || ''} onChange={(e) => set({ engine: e.target.value })} className={field} placeholder="Ej.: 1.6" /></div>
             <div><label htmlFor="lc-color" className="sf-label">Color</label><input id="lc-color" value={editing.color || ''} onChange={(e) => set({ color: e.target.value })} className={field} /></div>
             <div><label htmlFor="lc-plate" className="sf-label">Patente</label><input id="lc-plate" value={editing.patente || ''} onChange={(e) => set({ patente: e.target.value.toUpperCase() })} className={field} placeholder="Ej.: AB123CD" autoCapitalize="characters" /></div>

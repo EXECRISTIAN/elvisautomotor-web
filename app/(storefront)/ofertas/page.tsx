@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 async function loadExpressOffers() {
   const result = await loadHomeQuery(
     () => fetchGraphQL<unknown>(GET_VEHICLES, {
-      where: { AND: [{ status: { equals: 'available' } }, { expressOffer: { equals: true } }] },
+      where: { AND: [{ status: { equals: 'available' } }] },
       orderBy: [{ priceCents: 'asc' }],
-      take: 24,
+      take: 100,
     }),
     selectHomeFeaturedVehicles<Vehicle>,
   )
@@ -26,6 +26,6 @@ async function loadExpressOffers() {
 }
 
 export default async function Page() {
-  const [offers, express] = await Promise.all([loadProgressiveOffers(), loadExpressOffers()])
-  return <OffersPage offers={offers} express={express} />
+  const [offers, vehicles] = await Promise.all([loadProgressiveOffers(), loadExpressOffers()])
+  return <OffersPage offers={offers} vehicles={vehicles} />
 }

@@ -17,7 +17,7 @@ const money = (n: number) => `$ ${Math.round(n || 0).toLocaleString('es-AR')}`
  * Progresivas. En la muestra local (offline) la oferta se mantiene siempre en curso:
  * se corre el inicio para que el precio vaya bajando "desde hoy".
  */
-export function ProgressiveOffersList({ offers }: { offers: PublicProgressiveOffer[] }) {
+export function ProgressiveOffersList({ offers, vehicleFilter }: { offers: PublicProgressiveOffer[]; vehicleFilter?: (vehicleId: string) => boolean }) {
   const [list, setList] = useState(offers)
   useEffect(() => {
     if (!isLocalDemo()) return
@@ -42,8 +42,9 @@ export function ProgressiveOffersList({ offers }: { offers: PublicProgressiveOff
       if (fromPanel.length) setList([...fromPanel, ...base])
     }).catch(() => {})
   }, [offers])
-  const current = list.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming')
-  const past = list.filter((offer) => offer.phase === 'sold' || offer.phase === 'final')
+  const shown = list.filter((offer) => !vehicleFilter || !offer.id.startsWith('panel-') || vehicleFilter(offer.vehicleId ?? ''))
+  const current = shown.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming')
+  const past = shown.filter((offer) => offer.phase === 'sold' || offer.phase === 'final')
   return (
     <>
       {current.length > 0 ? current.map((offer) => <ProgressiveOfferCard key={offer.id} offer={offer} />) : (
@@ -88,7 +89,6 @@ export function LocalOffersExtras() {
   }, [])
   return (
     <>
-      {sections.map((section) => <SectionBlock key={section.id} section={section} />)}
       {raffles.length > 0 && (
         <section id="rifa" className="scroll-mt-24 border-t py-14" style={{ borderColor: 'var(--sf-rule)' }} aria-labelledby="rifa-title">
           <Container className="space-y-8">

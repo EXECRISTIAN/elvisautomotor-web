@@ -177,3 +177,11 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 21/11 02:30
 - Probado: alta de auto con foto desde el panel y que aparezca en la web (inicio, usados, ofertas, ficha): OK.
 - Panel → Autos: la lista muestra la patente de cada auto.
+
+### 21/11 02:40 — /ofertas con filtros
+- Quitados los botones de arriba (Ofertas express / Progresivas / canal de WhatsApp).
+- Filtros sobre las ofertas disponibles: tipo de oferta, 0 km/usado, marca, modelo, año desde/hasta, tipo de vehículo, tracción, tipo de tracción, combustible, caja, precio y km máximos. Las opciones muestran solo lo que existe en las ofertas.
+- Orden: primero las secciones con ofertas disponibles; las vacías al final.
+- Nuevos campos de auto en el panel: tipo de vehículo, tracción y tipo de tracción (si no se cargan, se deducen del modelo/versión).
+- Datos de ejemplo: 4 autos de la base demo con precio anterior (ofertas express) en deploy/local/02-ofertas-ejemplo.sql.
+- Online: carrocería/tracción hoy se deducen; cuando se publique, sumar esos campos a la base real.
