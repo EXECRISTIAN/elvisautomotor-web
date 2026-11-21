@@ -204,3 +204,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Filtros (Inventario y Ofertas): kilometraje "Desde / Hasta" (nuevo mínimo); se oculta y se limpia al elegir 0 km. Textos de los filtros centrados.
 - Filtros del inventario: panel con borde y margen interno (antes pegado a los bordes), columna más ancha. Precio y kilometraje con puntos de miles al escribir (filtros de Inventario y Ofertas, y campos de precio/km/montos del panel).
 - Logos de marcas (55, de las URLs que pasó el usuario) en public/images/marcas; se muestran en las listas de marca (Vende tu auto, Precalificador, panel Autos, filtros de Ofertas). Sin logo: Chrysler, Dodge, Land Rover y SEAT (no estaban en la lista).
+- Encabezado: en escritorio el botón de WhatsApp es solo ícono para que no se superponga con el menú (incluido "Clientes"); revisado de 768 a 2560 px sin choques.
