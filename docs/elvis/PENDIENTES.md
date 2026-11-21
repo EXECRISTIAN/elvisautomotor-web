@@ -173,3 +173,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 21/11 01:30
 - Probados de punta a punta: Financiación (celular) y Contacto (celular y escritorio): OK.
 - Contacto: la confirmación ahora muestra también el horario elegido ("Por la mañana y por la tarde").
+
+### Ronda 21/11 02:30
+- Probado: alta de auto con foto desde el panel y que aparezca en la web (inicio, usados, ofertas, ficha): OK.
+- Panel → Autos: la lista muestra la patente de cada auto.

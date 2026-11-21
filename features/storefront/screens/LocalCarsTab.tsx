@@ -204,7 +204,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
             {photoUrl(car) ? <img src={photoUrl(car)} alt="" className="h-16 w-24 shrink-0 rounded-[6px] object-cover" /> : <span className="grid h-16 w-24 shrink-0 place-items-center rounded-[6px] text-[0.7rem]" style={{ background: 'var(--sf-rule)' }}>Sin foto</span>}
             <span className="min-w-0 flex-1">
               <span className="block font-bold">{car.year} {car.make} {car.model} {car.trim}</span>
-              <span className="sf-muted block text-[0.85rem]">{car.condition === 'new' ? '0 km' : 'Usado'} · {money(car.price)}{car.previousPrice > car.price ? ` (antes ${money(car.previousPrice)})` : ''} · {STATUS[car.status] ?? 'Disponible'}{car.isFeatured ? ' · Destacado' : ''}</span>
+              <span className="sf-muted block text-[0.85rem]">{car.condition === 'new' ? '0 km' : 'Usado'}{car.patente ? ` · ${car.patente}` : ''} · {money(car.price)}{car.previousPrice > car.price ? ` (antes ${money(car.previousPrice)})` : ''} · {STATUS[car.status] ?? 'Disponible'}{car.isFeatured ? ' · Destacado' : ''}</span>
             </span>
             <span className="flex flex-wrap gap-2">
               <a href={vehicleHref(car.id)} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]">Ver</a>
