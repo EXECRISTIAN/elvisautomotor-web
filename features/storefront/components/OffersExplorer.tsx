@@ -13,6 +13,7 @@ import type { PublicProgressiveOffer } from './ProgressiveOfferCard'
 import type { Vehicle } from '../lib/types'
 import { isLocalDemo, offerSections, siteSettings, type OfferSection } from '../lib/localStore'
 import { vehicleKind } from '@/features/lib/vehicleKinds'
+import { makeLogo } from '@/features/lib/vehicleCatalog'
 import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 
 type Filters = Record<'tipo' | 'condicion' | 'marca' | 'modelo' | 'desde' | 'hasta' | 'carroceria' | 'traccion' | 'tipoTraccion' | 'combustible' | 'caja' | 'precio' | 'kmMin' | 'km', string>
@@ -86,8 +87,8 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
     return { id, list, count }
   }).sort((a, b) => Number(b.count > 0) - Number(a.count > 0))
 
-  const select = (key: keyof Filters, label: string, options: string[], numeric = false) => (
-    <div><span className="sf-label">{label}</span><div className="mt-2"><ComboField id={`of-${key}`} value={f[key]} onChange={(v) => set({ [key]: v, ...(key === 'marca' ? { modelo: '' } : {}) } as Partial<Filters>)} options={options} allowCustom={false} placeholder="Todos" inputMode={numeric ? 'numeric' : 'text'} emptyText="Sin opciones disponibles" /></div></div>
+  const select = (key: keyof Filters, label: string, options: string[], numeric = false, icon?: (o: string) => string | null) => (
+    <div><span className="sf-label">{label}</span><div className="mt-2"><ComboField id={`of-${key}`} value={f[key]} onChange={(v) => set({ [key]: v, ...(key === 'marca' ? { modelo: '' } : {}) } as Partial<Filters>)} options={options} allowCustom={false} placeholder="Todos" icon={icon} inputMode={numeric ? 'numeric' : 'text'} emptyText="Sin opciones disponibles" /></div></div>
   )
 
   return (
@@ -104,7 +105,7 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
           <div data-elv-filters="" className={`${open ? 'grid' : 'hidden'} mt-4 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid-cols-5`}>
             {select('tipo', 'Tipo de oferta', typeIds.filter((id) => id === 'progresiva' ? progCount > 0 || liveOffers.length > 0 : offered.some((v) => types(v as any).includes(id))).map(typeLabel))}
             {select('condicion', '0 km / usado', opts('condicion', (v) => (v.condition === 'new' ? '0 km' : 'Usado')))}
-            {select('marca', 'Marca', opts('marca', (v) => v.make))}
+            {select('marca', 'Marca', opts('marca', (v) => v.make), false, makeLogo)}
             {select('modelo', 'Modelo', opts('modelo', (v) => v.model))}
             {select('desde', 'Año desde', opts('desde', (v) => v.year), true)}
             {select('hasta', 'Año hasta', opts('hasta', (v) => v.year), true)}

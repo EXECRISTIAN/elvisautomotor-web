@@ -8,7 +8,7 @@ import { ComboField } from '../components/ComboField'
 import { WhatsAppChannelButton } from '../components/WhatsAppChannelButton'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { submitStorefrontPrecalification } from '../lib/submit'
-import { catalogMakes, POPULAR_MAKES, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
+import { catalogMakes, POPULAR_MAKES, makeLogo, catalogModels, catalogVersions } from '@/features/lib/vehicleCatalog'
 
 type Answers = Record<string, string>
 type Choice = { id: string; title: string; subtitle?: string; options: string[]; when?: (a: Answers) => boolean }
@@ -165,7 +165,7 @@ export function PrecalificadorPage() {
               {current.id === 'tradeVehicle' && (
                 <div className="mt-5 grid gap-4">
                   <div><label htmlFor="pq-year" className="sf-label">Año</label><div className="mt-2"><ComboField id="pq-year" value={tradeCar.year} onChange={(v) => setTradeCar((c) => ({ ...c, year: v }))} options={YEARS} inputMode="numeric" maxLength={4} allowCustom={false} placeholder="Ej.: 2018" /></div></div>
-                  <div><label htmlFor="pq-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="pq-make" value={tradeCar.make} onChange={(v) => setTradeCar((c) => (v === c.make ? c : { ...c, make: v, model: '', trim: '' }))} options={catalogMakes(tradeCar.year)} popular={POPULAR_MAKES} allLabel="Todas las marcas" placeholder="Ej.: Chevrolet" /></div></div>
+                  <div><label htmlFor="pq-make" className="sf-label">Marca</label><div className="mt-2"><ComboField id="pq-make" value={tradeCar.make} onChange={(v) => setTradeCar((c) => (v === c.make ? c : { ...c, make: v, model: '', trim: '' }))} options={catalogMakes(tradeCar.year)} popular={POPULAR_MAKES} icon={makeLogo} allLabel="Todas las marcas" placeholder="Ej.: Chevrolet" /></div></div>
                   <div><label htmlFor="pq-model" className="sf-label">Modelo</label><div className="mt-2"><ComboField id="pq-model" value={tradeCar.model} onChange={(v) => setTradeCar((c) => (v === c.model ? c : { ...c, model: v, trim: '' }))} options={catalogModels(tradeCar.make, tradeCar.year)} placeholder="Ej.: Onix" emptyText="Escribe el modelo" /></div></div>
                   <div><label htmlFor="pq-trim" className="sf-label">Versión <span className="sf-faint">(opcional)</span></label><div className="mt-2"><ComboField id="pq-trim" value={tradeCar.trim} onChange={(v) => setTradeCar((c) => ({ ...c, trim: v }))} options={catalogVersions(tradeCar.make, tradeCar.model, tradeCar.year)} placeholder={tradeCar.model ? "Elige la versión" : "Primero elige el modelo"} emptyText="Escribe la versión" /></div></div>
                   <div><label htmlFor="pq-link" className="sf-label">Link de la publicación <span className="sf-faint">(opcional)</span></label><input id="pq-link" type="url" inputMode="url" value={tradeCar.link} onChange={(e) => setTradeCar((c) => ({ ...c, link: e.target.value }))} className="sf-input mt-2 w-full" placeholder="MercadoLibre, Facebook, Drive con fotos…" autoComplete="off" spellCheck={false} /></div>

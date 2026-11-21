@@ -21,6 +21,8 @@ type Props = {
   /** Opciones destacadas que se muestran primero ("Más populares"). */
   popular?: string[]
   allLabel?: string
+  /** Ícono opcional por opción (por ejemplo, el logo de la marca). */
+  icon?: (option: string) => string | null
 }
 
 const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
@@ -29,7 +31,7 @@ const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, ''
  * Campo con lista desplegable debajo: se puede tocar para elegir o escribir para filtrar.
  * Funciona con mouse, teclado (flechas, Enter, Escape) y pantallas táctiles.
  */
-export function ComboField({ id, name, value, onChange, options, placeholder, required, inputMode = 'text', maxLength, allowCustom = true, emptyText = 'Sin coincidencias', disabled, popular, allLabel = 'Todas' }: Props) {
+export function ComboField({ id, name, value, onChange, options, placeholder, required, inputMode = 'text', maxLength, allowCustom = true, emptyText = 'Sin coincidencias', disabled, popular, allLabel = 'Todas', icon }: Props) {
   const listId = useId()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<string | null>(null)
@@ -169,6 +171,7 @@ export function ComboField({ id, name, value, onChange, options, placeholder, re
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => choose(option)}
             >
+              {icon?.(option) && <img src={icon(option)!} alt="" aria-hidden="true" width={24} height={24} loading="lazy" className="mr-3 size-6 shrink-0 rounded-full bg-white object-contain p-0.5" />}
               {option}
             </li>,
           ]).concat(allowCustom && !query ? [

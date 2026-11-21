@@ -1276,3 +1276,10 @@ export function catalogVersions(make: string, model: string, year?: string | num
 
 /** Marcas más buscadas: se muestran primero en la lista. */
 export const POPULAR_MAKES = ['Volkswagen', 'Ford', 'Chevrolet', 'Toyota', 'Peugeot', 'Renault']
+
+// Logos de marcas (public/images/marcas). Clave: nombre en minúsculas, sin acentos, espacios → "_", "&" → "and".
+const LOGOS = new Set(['abarth', 'alfa_romeo', 'arcfox', 'audi', 'baic', 'bmw', 'byd', 'changan', 'chery', 'chevrolet', 'citroen', 'dfsk', 'dongfeng', 'ds', 'fiat', 'ford', 'forthing', 'foton', 'gac', 'geely', 'great_wall', 'gwm', 'haval', 'honda', 'hyundai', 'jac', 'jeep', 'jetour', 'jmc', 'jmev', 'kaiyi', 'kia', 'leapmotor', 'lexus', 'lynk_and_co', 'maxus', 'mercedes_benz', 'mg', 'mini', 'mitsubishi', 'nissan', 'peugeot', 'ram', 'rely', 'renault', 'shineray', 'skywell', 'smart', 'soueast', 'subaru', 'suzuki', 'swm', 'toyota', 'volkswagen', 'volvo'])
+export function makeLogo(make: string) {
+  const slug = make.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/&/g, 'and').replace(/[\s-]+/g, '_')
+  return LOGOS.has(slug) ? `/images/marcas/${slug}.png` : null
+}
