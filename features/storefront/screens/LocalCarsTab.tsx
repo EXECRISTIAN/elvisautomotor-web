@@ -2,7 +2,7 @@
 'use no memo' // Lee datos guardados fuera de React (carpeta datos): sin memorización automática.
 
 import { useEffect, useMemo, useState } from 'react'
-import { Pencil, Plus, Star, Trash2, X } from 'lucide-react'
+import { Download, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
 import { applyCarChanges, offerSections, siteSettings, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
@@ -102,6 +102,14 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
   const set = (patch: Partial<LocalCar>) => editing && setEditing({ ...editing, ...patch })
   const setReport = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, usedReport: { ...(editing.usedReport ?? {}), ...patch } })
   const field = 'sf-input mt-2 w-full'
+  function exportCars() {
+    const head = ['Año', 'Marca', 'Modelo', 'Versión', 'Patente', 'Stock', '0 km / usado', 'Tipo de vehículo', 'Tracción', 'Tipo de tracción', 'Kilometraje', 'Precio', 'Precio anterior', 'Estado', 'Oferta']
+    const rows = shown.map((car) => { const k = vehicleKind(car as Record<string, string>); return [car.year, car.make, car.model, car.trim, car.patente ?? '', car.stockNumber ?? '', car.condition === 'new' ? '0 km' : 'Usado', k.carroceria, k.traccion, k.tipoTraccion, car.mileage ?? 0, car.price ?? 0, car.previousPrice ?? '', STATUS[car.status] ?? car.status, offerLabel(car)] })
+    const csv = '\ufeff' + [head, ...rows].map((r) => r.map((c) => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    const a = Object.assign(document.createElement('a'), { href: url, download: `elvis-autos-${new Date().toISOString().slice(0, 10)}.csv` })
+    a.click(); URL.revokeObjectURL(url)
+  }
   const kind = vehicleKind((editing ?? {}) as Record<string, string>)
   const prog = { inicial: 0, baja: 0, cada: '1 hora', piso: 0, desde: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), condiciones: '', ...(editing?.progresiva ?? {}) }
   const setProg = (patch: Record<string, unknown>) => editing && setEditing({ ...editing, progresiva: { ...prog, ...patch } })
@@ -119,6 +127,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
     <div className="mt-6">
       <div className="flex flex-wrap items-end gap-3">
         <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" onClick={startNew}><Plus className="size-4" aria-hidden="true" />Agregar auto</button>
+        <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" disabled={!shown.length} onClick={exportCars}><Download className="size-4" aria-hidden="true" />Exportar a Excel</button>
         <div className="min-w-0 flex-1 sm:max-w-xs"><label htmlFor="lc-q" className="sf-label">Buscar</label><input id="lc-q" value={query} onChange={(e) => setQuery(e.target.value)} className={field} placeholder="Patente, marca, modelo o stock" /></div>
       </div>
 
