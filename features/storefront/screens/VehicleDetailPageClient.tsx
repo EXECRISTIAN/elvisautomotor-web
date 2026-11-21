@@ -1,5 +1,6 @@
 'use client'
 
+import { vehicleKind } from '@/features/lib/vehicleKinds'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Check, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
@@ -287,6 +288,8 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
     { label: 'Kilometraje', value: formatMileage(vehicle.mileage), figure: true },
     { label: 'Combustible', value: fuelLabel(vehicle.fuelType) },
     { label: 'Transmisión', value: transmissionLabel(vehicle.transmission) },
+    { label: 'Tipo de vehículo', value: vehicleKind(vehicle as Record<string, any>).carroceria },
+    { label: 'Tracción', value: `${vehicleKind(vehicle as Record<string, any>).traccion} · ${vehicleKind(vehicle as Record<string, any>).tipoTraccion.toLowerCase()}` },
     { label: 'Cilindrada', value: vehicle.engine || '' },
     { label: 'Color', value: vehicle.color || '' },
   ]

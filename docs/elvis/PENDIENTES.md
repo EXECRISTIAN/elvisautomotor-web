@@ -185,3 +185,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Nuevos campos de auto en el panel: tipo de vehículo, tracción y tipo de tracción (si no se cargan, se deducen del modelo/versión).
 - Datos de ejemplo: 4 autos de la base demo con precio anterior (ofertas express) en deploy/local/02-ofertas-ejemplo.sql.
 - Online: carrocería/tracción hoy se deducen; cuando se publique, sumar esos campos a la base real.
+
+### Ronda 21/11 03:30
+- Ficha de cada auto: muestra Tipo de vehículo y Tracción (ej. Hilux: Pickup · 4x4 conectable), igual que los filtros de Ofertas.
+- Pendiente opcional: sumar estos filtros también al Inventario.
