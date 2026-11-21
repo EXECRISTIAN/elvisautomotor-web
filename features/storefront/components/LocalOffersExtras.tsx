@@ -134,7 +134,7 @@ function RaffleCard({ initial }: { initial: Raffle }) {
     if (!reserveRaffleNumber(raffle.id, { numero: pick, nombre: form.nombre.trim(), telefono: form.telefono.trim() })) {
       setMsg('Ese número se acaba de tomar. Elige otro.')
     } else {
-      saveSubmission('rifa', `Rifa: número ${pick}`, { name: form.nombre.trim(), phone: form.telefono.trim(), message: `Reservó el número ${pick} de la rifa “${raffle.titulo}”.` })
+      saveSubmission('rifa', `Rifa: número ${pick}`, { fullName: form.nombre.trim(), phone: form.telefono.trim(), message: `Reservó el número ${pick} de la rifa “${raffle.titulo}”.` })
       setMsg(`¡Listo! Reservaste el número ${pick}. Te contactamos para confirmar el pago.`)
       setPick(null)
     }

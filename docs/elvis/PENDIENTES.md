@@ -165,3 +165,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 20/11 23:30
 - Muestra offline: guardado en la carpeta "datos" en fila (una escritura por vez, siempre la última). Antes, dos guardados seguidos podían llegar desordenados y pisar datos. Probado 3 veces: lo guardado en un navegador aparece en otro navegador nuevo (patente y rifa).
+
+### Ronda 21/11 00:30
+- "Vende tu auto" probado de punta a punta en celular: OK.
+- Consultas: las reservas de rifa aparecían "Sin nombre" y sin tipo; ahora muestran el nombre y el tipo "Rifa" (filtrable).

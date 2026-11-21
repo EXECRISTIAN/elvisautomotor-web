@@ -14,7 +14,7 @@ import {
 } from '../lib/localStore'
 
 const STATUSES = ['nueva', 'contactado', 'cerrada']
-const KINDS: Record<string, string> = { consulta: 'Consultas', precalificacion: 'Precalificador', usado: 'Usados ofrecidos', credito: 'Créditos', prueba: 'Pruebas de manejo', servicio: 'Servicio', reserva: 'Reservas' }
+const KINDS: Record<string, string> = { consulta: 'Consultas', precalificacion: 'Precalificador', usado: 'Usados ofrecidos', credito: 'Créditos', prueba: 'Pruebas de manejo', servicio: 'Servicio', reserva: 'Reservas', rifa: 'Rifa' }
 const SESSION = 'elvis:sesion'
 
 const LABELS: Record<string, string> = {
@@ -50,7 +50,7 @@ function leadPriority(item: LocalSubmission): { label: string; tone: string } | 
   const score = SCORE.reduce((total, [pattern, points]) => total + (pattern.test(text) ? points : 0), 0)
   return score >= 5 ? { label: 'Prioridad alta', tone: '#3fb37f' } : score >= 2 ? { label: 'Prioridad media', tone: '#e0a23a' } : { label: 'Prioridad baja', tone: '#9a9a9a' }
 }
-const who = (s: LocalSubmission) => String(s.data.fullName || [s.data.firstName, s.data.lastName].filter(Boolean).join(' ') || 'Sin nombre')
+const who = (s: LocalSubmission) => String(s.data.fullName || s.data.name || [s.data.firstName, s.data.lastName].filter(Boolean).join(' ') || 'Sin nombre')
 const fmtDate = (iso: string) => new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
 
 export function LocalPanelPage() {
