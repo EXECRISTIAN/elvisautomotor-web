@@ -113,11 +113,11 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
             {select('tipoTraccion', 'Tipo de tracción', opts('tipoTraccion', (v) => vehicleKind(v).tipoTraccion))}
             {select('combustible', 'Combustible', opts('combustible', (v) => fuelLabel(v.fuelType ?? '')))}
             {select('caja', 'Caja', opts('caja', (v) => transmissionLabel(v.transmission ?? '')))}
-            <div><label htmlFor="of-precio" className="sf-label">Precio hasta ($)</label><input id="of-precio" inputMode="numeric" value={f.precio} onChange={(e) => set({ precio: e.target.value.replace(/\D/g, '') })} className="sf-input mt-2 w-full" placeholder="Sin límite" /></div>
+            <div><label htmlFor="of-precio" className="sf-label">Precio hasta ($)</label><input id="of-precio" inputMode="numeric" value={f.precio ? Number(f.precio).toLocaleString('es-AR') : ''} onChange={(e) => set({ precio: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input mt-2 w-full" placeholder="Sin límite" /></div>
             {f.condicion !== '0 km' && (
               <div><span className="sf-label">Kilometraje</span><div className="mt-2 grid grid-cols-2 gap-3">
-                <input id="of-kmMin" aria-label="Kilometraje mínimo" inputMode="numeric" value={f.kmMin} onChange={(e) => set({ kmMin: e.target.value.replace(/\D/g, '') })} className="sf-input w-full" placeholder="Desde" />
-                <input id="of-km" aria-label="Kilometraje máximo" inputMode="numeric" value={f.km} onChange={(e) => set({ km: e.target.value.replace(/\D/g, '') })} className="sf-input w-full" placeholder="Hasta" />
+                <input id="of-kmMin" aria-label="Kilometraje mínimo" inputMode="numeric" value={f.kmMin ? Number(f.kmMin).toLocaleString('es-AR') : ''} onChange={(e) => set({ kmMin: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input w-full" placeholder="Desde" />
+                <input id="of-km" aria-label="Kilometraje máximo" inputMode="numeric" value={f.km ? Number(f.km).toLocaleString('es-AR') : ''} onChange={(e) => set({ km: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input w-full" placeholder="Hasta" />
               </div></div>
             )}
           </div>

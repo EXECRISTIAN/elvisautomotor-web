@@ -43,6 +43,9 @@ function isSheetViewport() {
 // the results then push the footer down from.
 export type InitialInventory = { search: string; items: Vehicle[]; totalCount: number }
 
+const onlyDigits = (v: string) => v.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 13)
+const thousands = (v: string) => (v ? Number(v).toLocaleString('es-AR') : '')
+
 export function InventoryPage({ initial }: { initial?: InitialInventory | null }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>(initial?.items ?? [])
   const [totalCount, setTotalCount] = useState(initial?.totalCount ?? 0)
@@ -378,7 +381,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
       </section>
 
       <Container className="py-6 md:py-10">
-        <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-12">
+        <div className="lg:grid lg:grid-cols-[20rem_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-12">
           <aside
             ref={sheetRef}
             id="inventory-filters"
@@ -387,8 +390,8 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
             aria-labelledby="inventory-filters-title"
             data-elv-filters=""
             onKeyDown={handleSheetKeyDown}
-            className={`${filtersOpen ? 'flex max-lg:fixed max-lg:inset-0 max-lg:z-[60]' : 'hidden lg:flex'} flex-col lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)]`}
-            style={{ background: 'var(--sf-paper)' }}
+            className={`${filtersOpen ? 'flex max-lg:fixed max-lg:inset-0 max-lg:z-[60]' : 'hidden lg:flex'} flex-col lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:rounded-[12px] lg:border lg:p-5`}
+            style={{ background: 'var(--sf-paper)', borderColor: 'var(--sf-rule)' }}
           >
             <div
               className="flex items-center justify-between gap-3 border-b px-4 py-2 lg:border-b-0 lg:px-0 lg:pb-5 lg:pt-0"
@@ -499,22 +502,18 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   <input
                     id="inventory-price-min"
                     aria-label="Precio mínimo"
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="0.01"
-                    value={filters.priceMin}
-                    onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                    type="text"
+                    inputMode="numeric"
+                    value={thousands(filters.priceMin)}
+                    onChange={(e) => handleFilterChange('priceMin', onlyDigits(e.target.value))}
                     placeholder="Desde"
                     className="sf-input sf-figure"
                   />
                   <input
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="0.01"
-                    value={filters.priceMax}
-                    onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                    type="text"
+                    inputMode="numeric"
+                    value={thousands(filters.priceMax)}
+                    onChange={(e) => handleFilterChange('priceMax', onlyDigits(e.target.value))}
                     placeholder="Hasta"
                     className="sf-input sf-figure"
                     aria-label="Precio máximo"
@@ -526,8 +525,8 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 <div>
                   <span className="sf-label">Kilometraje</span>
                   <div className="mt-2 grid grid-cols-2 gap-3">
-                    <input id="inventory-mileage-min" type="number" inputMode="numeric" min="0" step="1" value={filters.mileageMin} onChange={(e) => handleFilterChange('mileageMin', e.target.value)} placeholder="Desde" aria-label="Kilometraje mínimo" className="sf-input sf-figure" />
-                    <input id="inventory-mileage-max" type="number" inputMode="numeric" min="0" step="1" value={filters.mileageMax} onChange={(e) => handleFilterChange('mileageMax', e.target.value)} placeholder="Hasta" aria-label="Kilometraje máximo" className="sf-input sf-figure" />
+                    <input id="inventory-mileage-min" type="text" inputMode="numeric" value={thousands(filters.mileageMin)} onChange={(e) => handleFilterChange('mileageMin', onlyDigits(e.target.value))} placeholder="Desde" aria-label="Kilometraje mínimo" className="sf-input sf-figure" />
+                    <input id="inventory-mileage-max" type="text" inputMode="numeric" value={thousands(filters.mileageMax)} onChange={(e) => handleFilterChange('mileageMax', onlyDigits(e.target.value))} placeholder="Hasta" aria-label="Kilometraje máximo" className="sf-input sf-figure" />
                   </div>
                 </div>
               )}

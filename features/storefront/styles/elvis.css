@@ -194,5 +194,6 @@
 .storefront [data-elv-filters] input:not([type='checkbox']):not([type='radio']),
 .storefront [data-elv-filters] select { text-align: center; text-align-last: center; }
 .storefront [data-elv-filters] input::placeholder { text-align: center; }
-.storefront [data-elv-filters] button[role='combobox'] > span:first-child { flex: 1; text-align: center; padding-left: 1rem; }
+.storefront [data-elv-filters] button[role='combobox'] > span:first-child { flex: 1; text-align: center; }
 .storefront [data-elv-filters] input[role='combobox'] { padding-left: 5rem; }
+.storefront [data-elv-filters] .grid > input { padding-left: .5rem; padding-right: .5rem; }
