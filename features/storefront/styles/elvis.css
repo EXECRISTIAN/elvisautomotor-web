@@ -188,3 +188,11 @@
 
 /* Casillas de verificación con el dorado de la marca (en todo el sitio). */
 .storefront input[type='checkbox'], .storefront input[type='radio'] { accent-color: var(--sf-accent); width: 1.15rem; height: 1.15rem; }
+
+/* Filtros (Inventario y Ofertas): títulos y contenido de los campos centrados. */
+.storefront [data-elv-filters] .sf-label { display: block; text-align: center; }
+.storefront [data-elv-filters] input:not([type='checkbox']):not([type='radio']),
+.storefront [data-elv-filters] select { text-align: center; text-align-last: center; }
+.storefront [data-elv-filters] input::placeholder { text-align: center; }
+.storefront [data-elv-filters] button[role='combobox'] > span:first-child { flex: 1; text-align: center; padding-left: 1rem; }
+.storefront [data-elv-filters] input[role='combobox'] { padding-left: 5rem; }

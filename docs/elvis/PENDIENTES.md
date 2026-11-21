@@ -201,3 +201,4 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Menú "Clientes" arriba; ingreso unificado (personal y clientes) con "Crear usuario" y "Olvidé mi usuario o contraseña" (muestra el usuario y ofrece pedir nueva contraseña por WhatsApp). Área de cliente: datos, compras y descarga del contrato.
 - Pie: "Términos y condiciones de uso" (texto sin completar, modo demostrativo). Quitado "Créditos de fotos" del pie.
 - Inventario → Filtros: título con la tipografía de la marca (mayúsculas), "Solo oferta progresiva" ahora es un botón dorado como los demás (antes casilla gris del sistema). Casillas de todo el sitio con el dorado de la marca.
+- Filtros (Inventario y Ofertas): kilometraje "Desde / Hasta" (nuevo mínimo); se oculta y se limpia al elegir 0 km. Textos de los filtros centrados.

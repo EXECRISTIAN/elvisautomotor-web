@@ -15,8 +15,8 @@ import { isLocalDemo, offerSections, siteSettings, type OfferSection } from '../
 import { vehicleKind } from '@/features/lib/vehicleKinds'
 import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 
-type Filters = Record<'tipo' | 'condicion' | 'marca' | 'modelo' | 'desde' | 'hasta' | 'carroceria' | 'traccion' | 'tipoTraccion' | 'combustible' | 'caja' | 'precio' | 'km', string>
-const EMPTY: Filters = { tipo: '', condicion: '', marca: '', modelo: '', desde: '', hasta: '', carroceria: '', traccion: '', tipoTraccion: '', combustible: '', caja: '', precio: '', km: '' }
+type Filters = Record<'tipo' | 'condicion' | 'marca' | 'modelo' | 'desde' | 'hasta' | 'carroceria' | 'traccion' | 'tipoTraccion' | 'combustible' | 'caja' | 'precio' | 'kmMin' | 'km', string>
+const EMPTY: Filters = { tipo: '', condicion: '', marca: '', modelo: '', desde: '', hasta: '', carroceria: '', traccion: '', tipoTraccion: '', combustible: '', caja: '', precio: '', kmMin: '', km: '' }
 const uniq = (list: Array<string | number | null | undefined>) => [...new Set(list.filter((x) => x != null && x !== '').map(String))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
 const isExpress = (v: Vehicle) => Boolean(v.previousPrice && v.previousPrice > v.price)
 
@@ -63,14 +63,14 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
       && yes('desde', v.year >= Number(f.desde)) && yes('hasta', v.year <= Number(f.hasta))
       && yes('carroceria', k.carroceria === f.carroceria) && yes('traccion', k.traccion === f.traccion) && yes('tipoTraccion', k.tipoTraccion === f.tipoTraccion)
       && yes('combustible', fuelLabel(v.fuelType ?? '') === f.combustible) && yes('caja', transmissionLabel(v.transmission ?? '') === f.caja)
-      && yes('precio', v.price <= Number(f.precio.replace(/\D/g, ''))) && yes('km', (v.mileage || 0) <= Number(f.km.replace(/\D/g, '')))
+      && yes('precio', v.price <= Number(f.precio.replace(/\D/g, ''))) && yes('kmMin', (v.mileage || 0) >= Number(f.kmMin)) && yes('km', (v.mileage || 0) <= Number(f.km.replace(/\D/g, '')))
   }
   const typeOk = (v: Vehicle) => !f.tipo || types(v as any).includes(typeIds.find((id) => typeLabel(id) === f.tipo) ?? f.tipo)
   const results = offered.filter((v) => vehicleOk(v as any) && typeOk(v))
   // Opciones: solo valores que existen en las ofertas disponibles (con los demás filtros aplicados).
   const opts = (key: keyof Filters, get: (v: any) => string | number | null | undefined) => uniq(offered.filter((v) => vehicleOk(v as any, key) && typeOk(v)).map(get))
   const active = Object.values(f).filter(Boolean).length
-  const set = (patch: Partial<Filters>) => setF((prev) => ({ ...prev, ...patch }))
+  const set = (patch: Partial<Filters>) => setF((prev) => ({ ...prev, ...patch, ...(patch.condicion === '0 km' ? { kmMin: '', km: '' } : {}) }))
 
   const vehicleFiltersOn = Object.entries(f).some(([k, v]) => k !== 'tipo' && v)
   const progOffers = useMemo(() => offers.filter((o) => {
@@ -101,7 +101,7 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
               <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px] lg:hidden" aria-expanded={open} onClick={() => setOpen(!open)}><SlidersHorizontal className="size-4" aria-hidden="true" />{open ? 'Ocultar filtros' : 'Filtrar'}</button>
             </div>
           </div>
-          <div className={`${open ? 'grid' : 'hidden'} mt-4 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid-cols-5`}>
+          <div data-elv-filters="" className={`${open ? 'grid' : 'hidden'} mt-4 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid-cols-5`}>
             {select('tipo', 'Tipo de oferta', typeIds.filter((id) => id === 'progresiva' ? progCount > 0 || liveOffers.length > 0 : offered.some((v) => types(v as any).includes(id))).map(typeLabel))}
             {select('condicion', '0 km / usado', opts('condicion', (v) => (v.condition === 'new' ? '0 km' : 'Usado')))}
             {select('marca', 'Marca', opts('marca', (v) => v.make))}
@@ -114,7 +114,12 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
             {select('combustible', 'Combustible', opts('combustible', (v) => fuelLabel(v.fuelType ?? '')))}
             {select('caja', 'Caja', opts('caja', (v) => transmissionLabel(v.transmission ?? '')))}
             <div><label htmlFor="of-precio" className="sf-label">Precio hasta ($)</label><input id="of-precio" inputMode="numeric" value={f.precio} onChange={(e) => set({ precio: e.target.value.replace(/\D/g, '') })} className="sf-input mt-2 w-full" placeholder="Sin límite" /></div>
-            <div><label htmlFor="of-km" className="sf-label">Kilómetros hasta</label><input id="of-km" inputMode="numeric" value={f.km} onChange={(e) => set({ km: e.target.value.replace(/\D/g, '') })} className="sf-input mt-2 w-full" placeholder="Sin límite" /></div>
+            {f.condicion !== '0 km' && (
+              <div><span className="sf-label">Kilometraje</span><div className="mt-2 grid grid-cols-2 gap-3">
+                <input id="of-kmMin" aria-label="Kilometraje mínimo" inputMode="numeric" value={f.kmMin} onChange={(e) => set({ kmMin: e.target.value.replace(/\D/g, '') })} className="sf-input w-full" placeholder="Desde" />
+                <input id="of-km" aria-label="Kilometraje máximo" inputMode="numeric" value={f.km} onChange={(e) => set({ km: e.target.value.replace(/\D/g, '') })} className="sf-input w-full" placeholder="Hasta" />
+              </div></div>
+            )}
           </div>
         </Container>
       </section>

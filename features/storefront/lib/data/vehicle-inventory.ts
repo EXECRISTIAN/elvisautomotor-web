@@ -6,6 +6,7 @@ export type VehicleInventoryFilters = {
   yearMax?: string
   priceMin?: string
   priceMax?: string
+  mileageMin?: string
   mileageMax?: string
   condition?: string
   fuelType?: string
@@ -22,7 +23,7 @@ export type VehicleInventorySortKey =
   | string
 
 export const EMPTY_INVENTORY_FILTERS = {
-  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMax: '', condition: '', fuelType: '', transmission: '', progressiveOffer: '',
+  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMin: '', mileageMax: '', condition: '', fuelType: '', transmission: '', progressiveOffer: '',
 }
 
 /** Read the inventory filters and sort from the URL. The server render and the client both use this. */
@@ -38,6 +39,7 @@ export function inventoryQueryFromSearch(search: string) {
       yearMax: params.get('yearMax') || year,
       priceMin: params.get('priceMin') || '',
       priceMax: params.get('priceMax') || '',
+      mileageMin: params.get('mileageMin') || '',
       mileageMax: params.get('mileageMax') || '',
       condition: params.get('condition') || '',
       fuelType: params.get('fuelType') || '',
@@ -80,11 +82,15 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   const yearMax = parseNonNegativeInteger(filters.yearMax, 'Año máximo')
   const priceMinCents = parsePriceCents(filters.priceMin, 'Precio mínimo')
   const priceMaxCents = parsePriceCents(filters.priceMax, 'Precio máximo')
+  const mileageMin = parseNonNegativeInteger(filters.mileageMin, 'Kilometraje mínimo')
   const mileageMax = parseNonNegativeInteger(filters.mileageMax, 'Kilometraje máximo')
   const condition = filters.condition?.trim() || ''
 
   if (yearMin !== undefined && yearMax !== undefined && yearMin > yearMax) {
     throw new Error('El año mínimo no puede ser mayor que el máximo.')
+  }
+  if (mileageMin !== undefined && mileageMax !== undefined && mileageMin > mileageMax) {
+    throw new Error('El kilometraje mínimo no puede ser mayor que el máximo.')
   }
   if (priceMinCents !== undefined && priceMaxCents !== undefined && priceMinCents > priceMaxCents) {
     throw new Error('El precio mínimo no puede ser mayor que el máximo.')
@@ -109,7 +115,7 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   if (yearMax !== undefined) where.AND.push({ year: { lte: yearMax } })
   if (priceMinCents !== undefined) where.AND.push({ priceCents: { gte: priceMinCents } })
   if (priceMaxCents !== undefined) where.AND.push({ priceCents: { lte: priceMaxCents } })
-  if (mileageMax !== undefined) where.AND.push({ mileage: { lte: mileageMax } })
+  if (mileageMin !== undefined || mileageMax !== undefined) where.AND.push({ mileage: { ...(mileageMin !== undefined ? { gte: mileageMin } : {}), ...(mileageMax !== undefined ? { lte: mileageMax } : {}) } })
   if (condition) where.AND.push({ condition: { equals: condition } })
   const fuelType = filters.fuelType?.trim() || ''
   const transmission = filters.transmission?.trim() || ''

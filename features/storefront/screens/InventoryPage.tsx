@@ -205,6 +205,8 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => {
       const next = { ...prev, [key]: value }
+      // Un 0 km no tiene kilometraje: al elegirlo se limpia ese filtro.
+      if (key === 'condition' && value === 'new') { next.mileageMin = ''; next.mileageMax = '' }
       if (key === 'make' && facets && prev.model && !facetModels(facets, value).some((model) => model.toLowerCase() === prev.model.toLowerCase())) {
         next.model = ''
       }
@@ -335,6 +337,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
       },
     })
   }
+  if (filters.mileageMin) chips.push({ key: 'mileageMin', label: `Desde ${miles(filters.mileageMin)}`, clear: () => handleFilterChange('mileageMin', '') })
   if (filters.mileageMax) chips.push({ key: 'mileage', label: `Hasta ${miles(filters.mileageMax)}`, clear: () => handleFilterChange('mileageMax', '') })
   if (filters.progressiveOffer === 'true') chips.push({ key: 'progressiveOffer', label: 'Oferta progresiva', clear: () => handleFilterChange('progressiveOffer', '') })
   if (filters.fuelType) chips.push({ key: 'fuelType', label: fuelLabel(filters.fuelType) || filters.fuelType, clear: () => handleFilterChange('fuelType', '') })
@@ -382,6 +385,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
             role={filtersOpen ? 'dialog' : undefined}
             aria-modal={filtersOpen || undefined}
             aria-labelledby="inventory-filters-title"
+            data-elv-filters=""
             onKeyDown={handleSheetKeyDown}
             className={`${filtersOpen ? 'flex max-lg:fixed max-lg:inset-0 max-lg:z-[60]' : 'hidden lg:flex'} flex-col lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)]`}
             style={{ background: 'var(--sf-paper)' }}
@@ -518,20 +522,15 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="inventory-mileage-max" className="sf-label">Kilometraje máximo</label>
-                <input
-                  id="inventory-mileage-max"
-                  type="number"
-                  inputMode="numeric"
-                  min="0"
-                  step="1"
-                  value={filters.mileageMax}
-                  onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
-                  placeholder="Sin límite"
-                  className="sf-input sf-figure"
-                />
-              </div>
+              {filters.condition !== 'new' && (
+                <div>
+                  <span className="sf-label">Kilometraje</span>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
+                    <input id="inventory-mileage-min" type="number" inputMode="numeric" min="0" step="1" value={filters.mileageMin} onChange={(e) => handleFilterChange('mileageMin', e.target.value)} placeholder="Desde" aria-label="Kilometraje mínimo" className="sf-input sf-figure" />
+                    <input id="inventory-mileage-max" type="number" inputMode="numeric" min="0" step="1" value={filters.mileageMax} onChange={(e) => handleFilterChange('mileageMax', e.target.value)} placeholder="Hasta" aria-label="Kilometraje máximo" className="sf-input sf-figure" />
+                  </div>
+                </div>
+              )}
 
               <button type="button" className="sf-pill min-h-11 w-full justify-center rounded-[8px] border" style={{ borderColor: "var(--sf-rule-strong, var(--sf-rule))" }} aria-pressed={filters.progressiveOffer === 'true'} onClick={() => handleFilterChange('progressiveOffer', filters.progressiveOffer === 'true' ? '' : 'true')}>
                 Solo oferta progresiva
