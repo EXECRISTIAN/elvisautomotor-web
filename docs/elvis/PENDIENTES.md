@@ -222,3 +222,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 24/11 13:30
 - Área de clientes: "Cambiar mi contraseña" (pide la actual). Probado en celular.
+
+### Ronda 24/11 14:30
+- Revisión de 12 páginas en celular y escritorio: sin errores.
+- Ofertas: selector de orden (Mayor descuento, Menor precio, Mayor precio, Más nuevos).

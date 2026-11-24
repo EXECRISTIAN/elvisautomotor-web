@@ -67,7 +67,10 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
       && yes('precioMin', v.price >= Number(f.precioMin)) && yes('precio', v.price <= Number(f.precio.replace(/\D/g, ''))) && yes('kmMin', (v.mileage || 0) >= Number(f.kmMin)) && yes('km', (v.mileage || 0) <= Number(f.km.replace(/\D/g, '')))
   }
   const typeOk = (v: Vehicle) => !f.tipo || types(v as any).includes(typeIds.find((id) => typeLabel(id) === f.tipo) ?? f.tipo)
-  const results = offered.filter((v) => vehicleOk(v as any) && typeOk(v))
+  const [sort, setSort] = useState('Mayor descuento')
+  const discount = (v: Vehicle) => (v.previousPrice && v.previousPrice > v.price ? (v.previousPrice - v.price) / v.previousPrice : 0)
+  const results = offered.filter((v) => vehicleOk(v as any) && typeOk(v)).sort((a, b) =>
+    sort === 'Menor precio' ? a.price - b.price : sort === 'Mayor precio' ? b.price - a.price : sort === 'Más nuevos' ? b.year - a.year : discount(b) - discount(a) || a.price - b.price)
   // Opciones: solo valores que existen en las ofertas disponibles (con los demás filtros aplicados).
   const opts = (key: keyof Filters, get: (v: any) => string | number | null | undefined) => uniq(offered.filter((v) => vehicleOk(v as any, key) && typeOk(v)).map(get))
   const active = Object.values(f).filter(Boolean).length
@@ -97,7 +100,8 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
         <Container>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="font-semibold" role="status">{results.length} {results.length === 1 ? 'oferta disponible' : 'ofertas disponibles'}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-48"><ComboField id="of-orden" value={sort} onChange={(v) => setSort(v || 'Mayor descuento')} options={['Mayor descuento', 'Menor precio', 'Mayor precio', 'Más nuevos']} allowCustom={false} /></div>
               {active > 0 && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => setF(EMPTY)}><X className="size-4" aria-hidden="true" />Limpiar filtros ({active})</button>}
               <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px] lg:hidden" aria-expanded={open} onClick={() => setOpen(!open)}><SlidersHorizontal className="size-4" aria-hidden="true" />{open ? 'Ocultar filtros' : 'Filtrar'}</button>
             </div>
