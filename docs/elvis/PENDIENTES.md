@@ -213,3 +213,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 24/11 10:30
 - Inventario → filtro Marca: muestra el logo de cada marca (12 de 12 marcas del stock demo).
+
+### Ronda 24/11 11:30
+- Ofertas → filtros: precio "Desde / Hasta" (antes solo hasta), igual que en Inventario.

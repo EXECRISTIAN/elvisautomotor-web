@@ -16,8 +16,8 @@ import { vehicleKind } from '@/features/lib/vehicleKinds'
 import { makeLogo } from '@/features/lib/vehicleCatalog'
 import { fuelLabel, transmissionLabel } from '@/features/lib/vehicleSpecs'
 
-type Filters = Record<'tipo' | 'condicion' | 'marca' | 'modelo' | 'desde' | 'hasta' | 'carroceria' | 'traccion' | 'tipoTraccion' | 'combustible' | 'caja' | 'precio' | 'kmMin' | 'km', string>
-const EMPTY: Filters = { tipo: '', condicion: '', marca: '', modelo: '', desde: '', hasta: '', carroceria: '', traccion: '', tipoTraccion: '', combustible: '', caja: '', precio: '', kmMin: '', km: '' }
+type Filters = Record<'tipo' | 'condicion' | 'marca' | 'modelo' | 'desde' | 'hasta' | 'carroceria' | 'traccion' | 'tipoTraccion' | 'combustible' | 'caja' | 'precioMin' | 'precio' | 'kmMin' | 'km', string>
+const EMPTY: Filters = { tipo: '', condicion: '', marca: '', modelo: '', desde: '', hasta: '', carroceria: '', traccion: '', tipoTraccion: '', combustible: '', caja: '', precioMin: '', precio: '', kmMin: '', km: '' }
 const uniq = (list: Array<string | number | null | undefined>) => [...new Set(list.filter((x) => x != null && x !== '').map(String))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
 const isExpress = (v: Vehicle) => Boolean(v.previousPrice && v.previousPrice > v.price)
 
@@ -64,7 +64,7 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
       && yes('desde', v.year >= Number(f.desde)) && yes('hasta', v.year <= Number(f.hasta))
       && yes('carroceria', k.carroceria === f.carroceria) && yes('traccion', k.traccion === f.traccion) && yes('tipoTraccion', k.tipoTraccion === f.tipoTraccion)
       && yes('combustible', fuelLabel(v.fuelType ?? '') === f.combustible) && yes('caja', transmissionLabel(v.transmission ?? '') === f.caja)
-      && yes('precio', v.price <= Number(f.precio.replace(/\D/g, ''))) && yes('kmMin', (v.mileage || 0) >= Number(f.kmMin)) && yes('km', (v.mileage || 0) <= Number(f.km.replace(/\D/g, '')))
+      && yes('precioMin', v.price >= Number(f.precioMin)) && yes('precio', v.price <= Number(f.precio.replace(/\D/g, ''))) && yes('kmMin', (v.mileage || 0) >= Number(f.kmMin)) && yes('km', (v.mileage || 0) <= Number(f.km.replace(/\D/g, '')))
   }
   const typeOk = (v: Vehicle) => !f.tipo || types(v as any).includes(typeIds.find((id) => typeLabel(id) === f.tipo) ?? f.tipo)
   const results = offered.filter((v) => vehicleOk(v as any) && typeOk(v))
@@ -114,7 +114,10 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
             {select('tipoTraccion', 'Tipo de tracción', opts('tipoTraccion', (v) => vehicleKind(v).tipoTraccion))}
             {select('combustible', 'Combustible', opts('combustible', (v) => fuelLabel(v.fuelType ?? '')))}
             {select('caja', 'Caja', opts('caja', (v) => transmissionLabel(v.transmission ?? '')))}
-            <div><label htmlFor="of-precio" className="sf-label">Precio hasta ($)</label><input id="of-precio" inputMode="numeric" value={f.precio ? Number(f.precio).toLocaleString('es-AR') : ''} onChange={(e) => set({ precio: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input mt-2 w-full" placeholder="Sin límite" /></div>
+            <div><span className="sf-label">Precio ($)</span><div className="mt-2 grid grid-cols-2 gap-3">
+              <input id="of-precioMin" aria-label="Precio mínimo" inputMode="numeric" value={f.precioMin ? Number(f.precioMin).toLocaleString('es-AR') : ''} onChange={(e) => set({ precioMin: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input w-full" placeholder="Desde" />
+              <input id="of-precio" aria-label="Precio máximo" inputMode="numeric" value={f.precio ? Number(f.precio).toLocaleString('es-AR') : ''} onChange={(e) => set({ precio: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input w-full" placeholder="Hasta" />
+            </div></div>
             {f.condicion !== '0 km' && (
               <div><span className="sf-label">Kilometraje</span><div className="mt-2 grid grid-cols-2 gap-3">
                 <input id="of-kmMin" aria-label="Kilometraje mínimo" inputMode="numeric" value={f.kmMin ? Number(f.kmMin).toLocaleString('es-AR') : ''} onChange={(e) => set({ kmMin: e.target.value.replace(/\D/g, '').slice(0, 13) })} className="sf-input w-full" placeholder="Desde" />
