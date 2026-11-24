@@ -219,6 +219,7 @@ export function LocalPanelPage() {
                     </span>
                     <span className="flex flex-wrap items-center gap-2">
                       {(() => { const pr = leadPriority(item); return pr ? <span className="sf-chip" style={{ borderColor: pr.tone, color: pr.tone }}>{pr.label}</span> : null })()}
+                      {item.asignado ? <span className="sf-chip">{item.asignado}</span> : null}
                       <span className="sf-chip" data-status={item.status}>{item.status}</span>
                     </span>
                   </button>
@@ -240,6 +241,7 @@ export function LocalPanelPage() {
                           ))}
                         </ul>
                       )}
+                      <LeadFollowUp item={item} userName={user.name} onChange={refresh} />
                       <div className="mt-4 flex flex-wrap gap-2">
                         {STATUSES.map((s) => <button key={s} type="button" className="sf-pill min-h-11 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={item.status === s} onClick={() => { updateSubmission(item.id, { status: s }); logActivity(user.name, `Marcó como ${s} la consulta de ${who(item)}`); refresh() }}>{s}</button>)}
                         {item.data.phone ? <a className="sf-btn sf-btn-primary min-h-11 rounded-[8px]" href={`https://wa.me/549${String(item.data.phone).replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noreferrer">Escribir por WhatsApp</a> : null}
@@ -282,5 +284,35 @@ export function LocalPanelPage() {
         )}
       </Container>
     </section>
+  )
+}
+
+/** Seguimiento interno de una consulta: vendedor asignado y notas con fecha. */
+function LeadFollowUp({ item, userName, onChange }: { item: LocalSubmission; userName: string; onChange: () => void }) {
+  const [text, setText] = useState('')
+  const sellers = listUsers().filter((u) => u.active)
+  const notes = item.notas ?? []
+  return (
+    <div className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-[14rem_1fr]" style={{ borderColor: 'var(--sf-rule)' }}>
+      <div>
+        <label htmlFor={`as-${item.id}`} className="sf-label">Asignada a</label>
+        <select id={`as-${item.id}`} value={item.asignado ?? ''} onChange={(e) => { updateSubmission(item.id, { asignado: e.target.value }); logActivity(userName, `Asignó la consulta ${item.id} a ${e.target.value || 'nadie'}`); onChange() }} className="sf-input mt-2 w-full">
+          <option value="">Sin asignar</option>
+          {sellers.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}
+        </select>
+      </div>
+      <div className="min-w-0">
+        <span className="sf-label">Notas internas</span>
+        <ul className="mt-2 grid gap-1 text-[0.85rem]">
+          {notes.length === 0 && <li className="sf-muted">Sin notas.</li>}
+          {notes.map((n, i) => <li key={i}><span className="sf-faint tabular-nums">{new Date(n.fecha).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })} · {n.usuario}:</span> {n.texto}</li>)}
+        </ul>
+        <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (!text.trim()) return; updateSubmission(item.id, { notas: [...notes, { fecha: new Date().toISOString(), usuario: userName, texto: text.trim() }] }); setText(''); onChange() }}>
+          <label htmlFor={`nt-${item.id}`} className="sr-only">Nueva nota</label>
+          <input id={`nt-${item.id}`} value={text} onChange={(e) => setText(e.target.value)} className="sf-input min-w-0 flex-1" placeholder="Ej.: lo llamé, vuelve el sábado" />
+          <button type="submit" className="sf-btn sf-btn-outline min-h-11 rounded-[8px]">Agregar</button>
+        </form>
+      </div>
+    </div>
   )
 }

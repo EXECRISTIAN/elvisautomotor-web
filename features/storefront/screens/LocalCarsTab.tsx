@@ -2,7 +2,7 @@
 'use no memo' // Lee datos guardados fuera de React (carpeta datos): sin memorización automática.
 
 import { useEffect, useMemo, useState } from 'react'
-import { Download, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Copy, Download, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import { PhotoPicker } from '../components/PhotoPicker'
 import { applyCarChanges, offerSections, siteSettings, deleteCar, deletePhoto, logActivity, newId, savePhoto, saveCar, vehicleHref, type LocalCar } from '../lib/localStore'
@@ -62,6 +62,18 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
     if (removed?.image?.url?.startsWith('/_local/')) deletePhoto(removed.image.url)
     if (removed?.isPrimary && images[0]) images[0] = { ...images[0], isPrimary: true }
     setEditing({ ...editing, images })
+  }
+  function movePhoto(index: number, delta: number) {
+    if (!editing) return
+    const images = [...(editing.images ?? [])]
+    const to = index + delta
+    if (to < 0 || to >= images.length) return
+    ;[images[index], images[to]] = [images[to], images[index]]
+    setEditing({ ...editing, images })
+  }
+  function duplicate(car: LocalCar) {
+    setError('')
+    setEditing({ ...car, id: newId('auto').toLowerCase(), __new: true, vin: '', patente: '', status: 'available', stockNumber: `L-${String(cars.length + 1).padStart(3, '0')}`, images: [], usedReport: car.usedReport ?? {} })
   }
   function makePrimary(index: number) {
     if (!editing) return
@@ -178,6 +190,10 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img.image?.url || (img.imagePath ? `/images/vehicles/${String(img.imagePath).split('/').pop()}` : '')} alt={`Foto ${index + 1}`} className="size-full object-cover" />
                     <button type="button" onClick={() => makePrimary(index)} className="absolute left-1 top-1 grid size-9 place-items-center rounded-full bg-black/70 text-white" aria-label={`Usar la foto ${index + 1} como principal`} aria-pressed={Boolean(img.isPrimary)}><Star className={`size-4 ${img.isPrimary ? 'fill-current text-[var(--sf-accent)]' : ''}`} aria-hidden="true" /></button>
+                    <span className="absolute bottom-1 left-1 flex gap-1">
+                      <button type="button" disabled={index === 0} onClick={() => movePhoto(index, -1)} className="grid size-9 place-items-center rounded-full bg-black/70 text-white disabled:opacity-30" aria-label={`Mover la foto ${index + 1} antes`}><ChevronLeft className="size-4" aria-hidden="true" /></button>
+                      <button type="button" disabled={index === (editing.images ?? []).length - 1} onClick={() => movePhoto(index, 1)} className="grid size-9 place-items-center rounded-full bg-black/70 text-white disabled:opacity-30" aria-label={`Mover la foto ${index + 1} después`}><ChevronRight className="size-4" aria-hidden="true" /></button>
+                    </span>
                     <button type="button" onClick={() => removePhoto(index)} className="absolute right-1 top-1 grid size-9 place-items-center rounded-full bg-black/70 text-white" aria-label={`Quitar foto ${index + 1}`}><X className="size-4" aria-hidden="true" /></button>
                   </li>
                 ))}
@@ -224,6 +240,7 @@ export function LocalCarsTab({ user }: { user?: { name: string } }) {
               <a href={vehicleHref(car.id)} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]">Ver</a>
               {car.status !== 'sold' ? <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => quick(car, { status: 'sold' })}>Marcar vendido</button> : <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => quick(car, { status: 'available' })}>Volver a publicar</button>}
               <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { setError(''); setEditing({ ...car, usedReport: car.usedReport ?? {} }) }}><Pencil className="size-4" aria-hidden="true" />Editar</button>
+              <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => duplicate(car)} aria-label={`Duplicar ${car.make} ${car.model}`} title="Duplicar (para cargar uno parecido)"><Copy className="size-4" aria-hidden="true" /></button>
               <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => remove(car)} aria-label={`Borrar ${car.make} ${car.model}`}><Trash2 className="size-4" aria-hidden="true" /></button>
             </span>
           </li>

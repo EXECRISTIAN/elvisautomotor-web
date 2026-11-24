@@ -42,20 +42,20 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 32. ✅ Página 404 con buscador y accesos rápidos.
 
 ## 4. Panel de administración — agregar o cambiar
-33. 🟡 Ventas: poder editar una venta (hoy solo se anula y se carga de nuevo).
-34. 🟡 Clientes: editar y borrar clientes registrados; ver su historial completo (compras + consultas) desde el panel.
-35. 🟡 Consultas: asignarlas a un vendedor y dejar notas internas con fecha.
-36. 🟡 Autos: duplicar un auto (para cargar varios parecidos), ordenar fotos arrastrando.
-37. 🟡 Caja: filtro por rango de fechas y totales por medio de pago.
-38. 🟡 Resumen: comparar mes actual contra el anterior.
-39. ⚪ Rifas: imprimir talonario / lista de números.
-40. ⚪ Actividad: filtro por usuario y fecha.
-41. ⚪ Respaldo automático de la carpeta "datos" (hoy es manual desde Sitio).
+33. ✅ Ventas: editar una venta (botón Editar; no toca la caja).
+34. ✅ Clientes: editar, borrar y ver historial (compras + consultas).
+35. ✅ Consultas: asignar a un vendedor y notas internas con fecha.
+36. ✅ Autos: duplicar un auto y ordenar fotos con flechas.
+37. ✅ Caja: rango de fechas y neto por medio de pago.
+38. ✅ Resumen: mes actual contra el anterior.
+39. ✅ Rifas: imprimir talonario.
+40. ✅ Actividad: filtro por usuario y fechas.
+41. ✅ Respaldo automático diario de datos.json en datosespaldos (últimas 30).
 
 ## 5. Muestra offline (sin instalar nada)
 42. 🔴 Probar en tu PC con Windows el último zip: que la portada se vea bien con el .bat sin Ctrl+F5 (arreglo de copias viejas, no probado en Windows).
 43. 🟡 Probar en Safari (iPhone) y Firefox: acá solo se prueba en Chrome.
-44. ⚪ Que el .bat avise si el puerto 8080 está ocupado por otra muestra abierta.
+44. ✅ El .bat avisa si el puerto 8080 está ocupado.
 
 ## 6. Calidad y revisión técnica
 45. 🟡 Revisión de accesibilidad (contraste, lectores de pantalla, navegación con teclado) de punta a punta.

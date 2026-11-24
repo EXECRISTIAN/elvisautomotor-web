@@ -2,12 +2,12 @@
 'use no memo' // Lee datos guardados fuera de React (carpeta datos): sin memorización automática.
 
 import { useEffect, useMemo, useState } from 'react'
-import { Download, Plus, Trash2 } from 'lucide-react'
+import { Download, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ComboField } from '../components/ComboField'
 import {
   PERMISSIONS, ROLES, addCashClose, analytics, addCashMove, applyCarChanges, deleteCashMove, listActivity, listCash, listCloses, listSales,
   listSubmissions, logActivity, newId, exportAll, importAll, rolePermissions, saveCar, saveRolePermissions, saveSale, saveSiteSettings, siteSettings, voidSale,
-  listClients, saveClient, clientName, saveFile,
+  listClients, saveClient, deleteClient, clientName, saveFile,
   type Client, type LocalCar, type LocalUser, type Sale,
 } from '../lib/localStore'
 
@@ -73,6 +73,16 @@ export function SummarySection({ go }: { go?: (tab: string, filter?: string) => 
   const monthIn = cash.filter((m) => m.tipo === 'ingreso' && monthKey(m.fecha) === month).reduce((t, m) => t + m.monto, 0)
   const monthOut = cash.filter((m) => m.tipo === 'egreso' && monthKey(m.fecha) === month).reduce((t, m) => t + m.monto, 0)
   const newLeads = listSubmissions().filter((s) => s.status === 'nueva').length
+  const prevDate = new Date(); prevDate.setDate(1); prevDate.setMonth(prevDate.getMonth() - 1)
+  const prev = monthKey(prevDate.toISOString())
+  const sum = (m: string) => {
+    const s = sales.filter((x) => monthKey(x.fecha) === m)
+    const c = cash.filter((x) => monthKey(x.fecha) === m)
+    return { ventas: s.length, vendido: s.reduce((t, x) => t + x.precio, 0), ganancia: s.reduce((t, x) => t + (x.precio - (x.costo || 0)), 0), caja: c.reduce((t, x) => t + (x.tipo === 'ingreso' ? x.monto : -x.monto), 0), consultas: listSubmissions().filter((x) => monthKey(x.createdAt) === m).length }
+  }
+  const cur = sum(month), old = sum(prev)
+  const diff = (a: number, b: number) => (b === 0 ? (a === 0 ? '—' : 'nuevo') : `${a >= b ? '+' : ''}${Math.round(((a - b) / Math.abs(b)) * 100)}%`)
+  const compareRows: Array<[string, number, number, (n: number) => string]> = [['Autos vendidos', cur.ventas, old.ventas, String], ['Monto vendido', cur.vendido, old.vendido, money], ['Ganancia', cur.ganancia, old.ganancia, money], ['Balance de caja', cur.caja, old.caja, money], ['Consultas recibidas', cur.consultas, old.consultas, String]]
   const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - (5 - i)); return monthKey(d.toISOString()) })
   return (
     <div className="mt-6 grid gap-6">
@@ -85,6 +95,13 @@ export function SummarySection({ go }: { go?: (tab: string, filter?: string) => 
         <Stat onClick={go && (() => go('autos'))} label="Valor del stock" value={money(stock.reduce((t, c) => t + (Number(c.price) || 0), 0))} note="A precio publicado" />
         <Stat onClick={go && (() => go('ventas'))} label="Vendido en total" value={money(sales.reduce((t, s) => t + s.precio, 0))} note={`${sales.length} ventas`} />
         <Stat onClick={go && (() => go('ventas'))} label="Ticket promedio" value={money(sales.length ? sales.reduce((t, s) => t + s.precio, 0) / sales.length : 0)} />
+      </div>
+      <div className="elv-pq-panel overflow-x-auto">
+        <p className="font-bold">Este mes contra el anterior</p>
+        <table className="mt-3 w-full min-w-[28rem] text-[0.9rem]">
+          <thead><tr className="sf-muted text-left"><th className="py-1 font-semibold">Dato</th><th className="py-1 text-right font-semibold">{monthLabel(month)}</th><th className="py-1 text-right font-semibold">{monthLabel(prev)}</th><th className="py-1 text-right font-semibold">Cambio</th></tr></thead>
+          <tbody>{compareRows.map(([label, a, b, f]) => <tr key={label} className="border-t" style={{ borderColor: 'var(--sf-rule)' }}><td className="py-2">{label}</td><td className="py-2 text-right tabular-nums">{f(a)}</td><td className="py-2 text-right tabular-nums">{f(b)}</td><td className="py-2 text-right font-bold tabular-nums" style={{ color: a >= b ? '#3fb37f' : '#e0703a' }}>{diff(a, b)}</td></tr>)}</tbody>
+        </table>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="elv-pq-panel"><p className="font-bold">Ventas por mes</p><div className="mt-4"><Bars data={months.map((m) => ({ label: monthLabel(m), value: sales.filter((s) => monthKey(s.fecha) === m).reduce((t, s) => t + s.precio, 0) }))} /></div></div>
@@ -182,7 +199,8 @@ export function SalesSection({ user }: { user: LocalUser }) {
   const clients = listClients()
   const clientLabel = (c: Client) => `${clientName(c)}${c.dni ? ` · DNI ${c.dni}` : ''}`
   const emptyClient = (): Client => ({ id: newId('CLI').toLowerCase(), nombre: '', apellido: '', dni: '', telefono: '', email: '', domicilio: '', localidad: '', creado: new Date().toISOString() })
-  const available = cars.filter((c) => (c.status ?? 'available') !== 'sold')
+  const previous = form ? sales.find((s) => s.id === form.id) : undefined
+  const available = cars.filter((c) => (c.status ?? 'available') !== 'sold' || c.id === previous?.autoId)
   const label = (c: LocalCar) => `${c.year} ${c.make} ${c.model} ${c.trim ?? ''} · ${c.stockNumber || c.id.slice(0, 6)}`.replace(/\s+/g, ' ')
 
   async function save(e: React.FormEvent) {
@@ -201,6 +219,14 @@ export function SalesSection({ user }: { user: LocalUser }) {
     if (registered) { saveClient(client); logActivity(user.name, `Registró al cliente ${clientName(client)}`) }
     form.clienteId = client.id; form.cliente = clientName(client); form.telefono = client.telefono; form.dni = client.dni; form.email = client.email; form.contrato = contrato
     const car = cars.find((c) => c.id === form.autoId)
+    if (previous) {
+      saveSale({ ...form })
+      if (previous.autoId !== form.autoId) { const old = cars.find((c) => c.id === previous.autoId); if (old) saveCar({ ...old, status: 'available' }) }
+      if (car) saveCar({ ...car, status: 'sold' })
+      logActivity(user.name, `Editó la venta de ${form.auto} (${form.cliente}, ${money(form.precio)})`)
+      setForm(null); setNewClient(null); setContract(null); setError(''); setV((x) => x + 1); refresh()
+      return
+    }
     const cobrado = form.formaPago.startsWith('Contado') ? form.precio - form.canje : form.anticipo
     saveSale(form, cobrado > 0 ? { fecha: new Date(`${form.fecha}T12:00:00`).toISOString(), tipo: 'ingreso', categoria: 'Venta de auto', medio: cashMedio, monto: cobrado, detalle: `${form.auto} · ${form.cliente}`, usuario: user.name, ventaId: form.id } : undefined)
     if (car) saveCar({ ...car, status: 'sold' })
@@ -249,7 +275,7 @@ export function SalesSection({ user }: { user: LocalUser }) {
           <div className="sm:col-span-2 lg:col-span-3"><label htmlFor="sv-notas" className="sf-label">Notas</label><textarea id="sv-notas" rows={2} value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} className={field} /></div>
           <p className="sf-muted sm:col-span-2 lg:col-span-3 text-[0.85rem]">Al guardar: el auto queda como vendido en el sitio y lo cobrado se suma a la caja.</p>
           {error && <p role="alert" className="sm:col-span-2 lg:col-span-3 text-[0.9rem]" style={{ color: 'var(--sf-warn, #e0a23a)' }}>{error}</p>}
-          <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar venta</button><button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => { setForm(null); setNewClient(null); setContract(null) }}>Cancelar</button></div>
+          <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">{previous ? 'Guardar cambios' : 'Guardar venta'}</button>{previous && <span className="sf-muted self-center text-[0.85rem]">Editar no cambia la caja: si cambió lo cobrado, cárgalo en Caja.</span>}<button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => { setForm(null); setNewClient(null); setContract(null) }}>Cancelar</button></div>
         </form>
       )}
       {done && <SaleDone {...done} onClose={() => setDone(null)} />}
@@ -261,6 +287,7 @@ export function SalesSection({ user }: { user: LocalUser }) {
             <span className="flex items-center gap-3"><span className="text-right"><span className="block font-bold tabular-nums">{money(s.precio)}</span>{s.costo > 0 && <span className="sf-faint block text-[0.8rem] tabular-nums">Ganancia {money(s.precio - s.costo)}</span>}</span>
               {s.contrato && <a className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" href={s.contrato.url} download={s.contrato.nombre} target="_blank" rel="noreferrer">Contrato</a>}
               {!s.anulada && s.email && <a className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" href={contractMail(s)}>Mail</a>}
+              {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { setError(''); setDone(null); setNewClient(null); setContract(null); setForm({ ...s }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}><Pencil className="size-4" aria-hidden="true" />Editar</button>}
               {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => printReceipt(s)}>Comprobante</button>}
               {!s.anulada && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => { if (window.confirm('¿Anular esta venta? El movimiento de caja queda; puedes cargar un egreso si devolviste dinero.')) { voidSale(s.id); logActivity(user.name, `Anuló la venta de ${s.auto}`); setV((x) => x + 1) } }}>Anular</button>}</span>
           </li>
@@ -276,11 +303,15 @@ export function CashSection({ user }: { user: LocalUser }) {
   const moves = useMemo(() => listCash(), [v])
   const closes = useMemo(() => listCloses(), [v])
   const [day, setDay] = useState(today())
+  const [until, setUntil] = useState(today())
   const [form, setForm] = useState({ tipo: 'ingreso' as 'ingreso' | 'egreso', categoria: '', medio: 'Efectivo', monto: '', detalle: '' })
   const [count, setCount] = useState('')
   const [error, setError] = useState('')
   const balance = moves.reduce((t, m) => t + (m.tipo === 'ingreso' ? m.monto : -m.monto), 0)
-  const dayMoves = moves.filter((m) => m.fecha.slice(0, 10) === day)
+  const to = until < day ? day : until
+  const dayMoves = moves.filter((m) => m.fecha.slice(0, 10) >= day && m.fecha.slice(0, 10) <= to)
+  const byMedio = Object.entries(dayMoves.reduce<Record<string, number>>((acc, m) => { acc[m.medio] = (acc[m.medio] || 0) + (m.tipo === 'ingreso' ? m.monto : -m.monto); return acc }, {}))
+  const rangeLabel = day === to ? (day === today() ? 'de hoy' : day) : `${day} a ${to}`
   const dayIn = dayMoves.filter((m) => m.tipo === 'ingreso').reduce((t, m) => t + m.monto, 0)
   const dayOut = dayMoves.filter((m) => m.tipo === 'egreso').reduce((t, m) => t + m.monto, 0)
   const cashOnly = moves.filter((m) => m.medio === 'Efectivo').reduce((t, m) => t + (m.tipo === 'ingreso' ? m.monto : -m.monto), 0)
@@ -305,8 +336,8 @@ export function CashSection({ user }: { user: LocalUser }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Saldo total" value={money(balance)} note="Todos los medios" />
         <Stat label="Efectivo en caja" value={money(cashOnly)} note="Según movimientos" />
-        <Stat label={`Ingresos ${day === today() ? 'de hoy' : day}`} value={money(dayIn)} />
-        <Stat label={`Egresos ${day === today() ? 'de hoy' : day}`} value={money(dayOut)} />
+        <Stat label={`Ingresos ${rangeLabel}`} value={money(dayIn)} />
+        <Stat label={`Egresos ${rangeLabel}`} value={money(dayOut)} />
       </div>
       <form onSubmit={add} className="elv-pq-panel grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <p className="font-bold sm:col-span-2 lg:col-span-3">Nuevo movimiento</p>
@@ -324,11 +355,13 @@ export function CashSection({ user }: { user: LocalUser }) {
         <button type="button" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]" disabled={!count} onClick={close}>Cerrar caja</button>
       </div>
       <div className="flex flex-wrap items-end gap-3">
-        <div><label htmlFor="cj-day" className="sf-label">Ver movimientos del día</label><input id="cj-day" type="date" value={day} onChange={(e) => setDay(e.target.value)} className={field} /></div>
+        <div><label htmlFor="cj-day" className="sf-label">Movimientos desde</label><input id="cj-day" type="date" value={day} onChange={(e) => setDay(e.target.value)} className={field} /></div>
+        <div><label htmlFor="cj-until" className="sf-label">Hasta</label><input id="cj-until" type="date" value={to} min={day} onChange={(e) => setUntil(e.target.value)} className={field} /></div>
         <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" disabled={!moves.length} onClick={() => csv('elvis-caja', [['Fecha', 'Tipo', 'Categoría', 'Medio', 'Monto', 'Detalle', 'Usuario'], ...moves.map((m) => [fmtDate(m.fecha), m.tipo, m.categoria, m.medio, m.tipo === 'ingreso' ? m.monto : -m.monto, m.detalle, m.usuario])])}><Download className="size-4" aria-hidden="true" />Exportar caja a Excel</button>
       </div>
       <ul className="grid gap-2">
-        {dayMoves.length === 0 && <li className="sf-muted">Sin movimientos ese día.</li>}
+        {byMedio.length > 0 && <li className="elv-pq-panel !p-3 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem]"><span className="font-bold">Neto por medio:</span>{byMedio.map(([medio, total]) => <span key={medio} className="tabular-nums">{medio}: <strong>{money(total)}</strong></span>)}</li>}
+        {dayMoves.length === 0 && <li className="sf-muted">Sin movimientos en esas fechas.</li>}
         {dayMoves.map((m) => (
           <li key={m.id} className="elv-pq-panel !p-3 flex flex-wrap items-center justify-between gap-2">
             <span className="min-w-0"><span className="block font-semibold">{m.categoria}{m.detalle ? ` · ${m.detalle}` : ''}</span><span className="sf-muted block text-[0.8rem]">{fmtDate(m.fecha)} · {m.medio} · {m.usuario}</span></span>
@@ -376,6 +409,24 @@ export function ClientsSection() {
   const [, force] = useState(0)
   const [temp, setTemp] = useState<{ id: string; clave: string } | null>(null)
   const registered = listClients().filter((c) => !q || `${clientName(c)} ${c.dni} ${c.email} ${c.usuario ?? ''}`.toLowerCase().includes(q.toLowerCase()))
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [openHistory, setOpenHistory] = useState('')
+  function saveEditedClient(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingClient) return
+    saveClient({ ...editingClient, dni: digits(editingClient.dni), email: editingClient.email.trim() })
+    setEditingClient(null); force((n) => n + 1)
+  }
+  function removeClient(c: Client) {
+    if (!window.confirm(`¿Borrar a ${clientName(c)}? Pierde el acceso al área de clientes. Sus ventas quedan registradas.`)) return
+    deleteClient(c.id); force((n) => n + 1)
+  }
+  function history(c: Client) {
+    const tel = digits(c.telefono)
+    const compras = listSales().filter((s) => s.clienteId === c.id || (c.dni && s.dni === c.dni))
+    const consultas = listSubmissions().filter((s) => { const d = s.data as Record<string, string>; return (c.email && String(d.email || '').toLowerCase() === c.email.toLowerCase()) || (tel && digits(String(d.phone || '')) === tel) || (c.dni && String(d.dni || '') === c.dni) })
+    return { compras, consultas }
+  }
   function resetPassword(c: Client) {
     if (!window.confirm(`¿Darle una contraseña nueva a ${clientName(c)}? La anterior deja de funcionar.`)) return
     const clave = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000))
@@ -396,7 +447,28 @@ export function ClientsSection() {
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-[0.9rem]" style={{ borderColor: 'var(--sf-rule)' }}>
                 <span className="min-w-0"><span className="block font-semibold">{clientName(c)}</span><span className="sf-muted block text-[0.8rem]">DNI {c.dni} · {c.email} · {c.clave ? `usuario ${c.usuario}` : 'todavía sin usuario'}</span>
                   {temp?.id === c.id && <span role="status" className="mt-1 block font-semibold" style={{ color: 'var(--sf-accent)' }}>Contraseña nueva: {temp.clave} (pásasela al cliente; puede ingresar con su DNI)</span>}</span>
-                <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px]" onClick={() => resetPassword(c)}>{c.clave ? 'Nueva contraseña' : 'Crear acceso'}</button>
+                <span className="flex flex-wrap gap-2">
+                  <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" aria-expanded={openHistory === c.id} onClick={() => setOpenHistory(openHistory === c.id ? '' : c.id)}>Historial</button>
+                  <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => setEditingClient({ ...c })}><Pencil className="size-4" aria-hidden="true" />Editar</button>
+                  <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px]" onClick={() => resetPassword(c)}>{c.clave ? 'Nueva contraseña' : 'Crear acceso'}</button>
+                  <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" aria-label={`Borrar a ${clientName(c)}`} onClick={() => removeClient(c)}><Trash2 className="size-4" aria-hidden="true" /></button>
+                </span>
+                {editingClient?.id === c.id && (
+                  <form onSubmit={saveEditedClient} className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {([['nombre', 'Nombre'], ['apellido', 'Apellido'], ['dni', 'DNI'], ['telefono', 'Teléfono'], ['email', 'Email'], ['domicilio', 'Domicilio'], ['localidad', 'Localidad']] as const).map(([k, l]) => (
+                      <div key={k}><label htmlFor={`ce-${k}`} className="sf-label">{l}</label><input id={`ce-${k}`} value={editingClient[k] ?? ''} onChange={(e) => setEditingClient({ ...editingClient, [k]: e.target.value })} className={field} /></div>
+                    ))}
+                    <div className="flex flex-wrap items-end gap-2"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar</button><button type="button" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]" onClick={() => setEditingClient(null)}>Cancelar</button></div>
+                  </form>
+                )}
+                {openHistory === c.id && (() => { const h = history(c); return (
+                  <div className="grid w-full gap-1 text-[0.85rem]">
+                    <p className="font-semibold">Compras ({h.compras.length})</p>
+                    {h.compras.length === 0 ? <p className="sf-muted">Sin compras.</p> : h.compras.map((s) => <p key={s.id}>{s.fecha} · {s.auto} · {money(s.precio)}{s.anulada ? ' · ANULADA' : ''}</p>)}
+                    <p className="mt-2 font-semibold">Consultas ({h.consultas.length})</p>
+                    {h.consultas.length === 0 ? <p className="sf-muted">Sin consultas.</p> : h.consultas.map((s) => <p key={s.id}>{fmtDate(s.createdAt)} · {s.label} · {s.status}</p>)}
+                  </div>
+                ) })()}
               </li>
             ))}
           </ul>
@@ -499,9 +571,19 @@ export function PermissionsSection({ user }: { user: LocalUser }) {
 
 // ---------- Actividad ----------
 export function ActivitySection() {
-  const items = listActivity()
+  const all = listActivity()
+  const [who, setWho] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const users = Array.from(new Set(all.map((a) => a.usuario))).sort()
+  const items = all.filter((a) => (!who || a.usuario === who) && (!from || a.fecha.slice(0, 10) >= from) && (!to || a.fecha.slice(0, 10) <= to))
   return (
     <div className="mt-6">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <div><label htmlFor="ac-who" className="sf-label">Usuario</label><select id="ac-who" value={who} onChange={(e) => setWho(e.target.value)} className={field}><option value="">Todos</option>{users.map((u) => <option key={u} value={u}>{u}</option>)}</select></div>
+        <div><label htmlFor="ac-from" className="sf-label">Desde</label><input id="ac-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={field} /></div>
+        <div><label htmlFor="ac-to" className="sf-label">Hasta</label><input id="ac-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} className={field} /></div>
+      </div>
       <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" disabled={!items.length} onClick={() => csv('elvis-actividad', [['Fecha', 'Usuario', 'Acción'], ...items.map((a) => [fmtDate(a.fecha), a.usuario, a.accion])])}><Download className="size-4" aria-hidden="true" />Exportar a Excel</button>
       <ul className="mt-4 grid gap-1 text-[0.9rem]">
         {items.length === 0 && <li className="sf-muted">Sin actividad registrada todavía.</li>}

@@ -2,7 +2,7 @@
 'use no memo'
 
 import { useEffect, useState } from 'react'
-import { Download, Plus, Trash2, Trophy } from 'lucide-react'
+import { Download, Plus, Printer, Trash2, Trophy } from 'lucide-react'
 import {
   applyCarChanges, deleteRaffle, listRaffles, logActivity, newId, offerSections, saveOfferSections, saveRaffle, saveSiteSettings, siteSettings,
   type LocalCar, type LocalUser, type OfferSection, type Raffle,
@@ -95,6 +95,19 @@ function exportRaffle(r: Raffle) {
   a.click(); URL.revokeObjectURL(url)
 }
 
+function printRaffle(r: Raffle) {
+  const esc = (t: unknown) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string)
+  const taken = new Map(r.numeros.map((n) => [n.numero, n]))
+  const cells = Array.from({ length: r.cantidad }, (_, i) => i + 1).map((num) => {
+    const n = taken.get(num)
+    return `<div class="c${n ? ' t' : ''}"><b>${String(num).padStart(String(r.cantidad).length, '0')}</b><span>${n ? esc(n.nombre) : '&nbsp;'}</span><small>${n ? (n.estado === 'pagado' ? 'Pagado' : 'Reservado') : ''}</small></div>`
+  }).join('')
+  const w = window.open('', '_blank')
+  if (!w) return
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Rifa ${esc(r.titulo)}</title><style>body{font-family:Arial,sans-serif;margin:16px;color:#000}h1{font-size:20px;margin:0}p{margin:4px 0 12px;font-size:13px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px}.c{border:1px solid #999;padding:4px;min-height:52px;font-size:11px;display:flex;flex-direction:column}.c b{font-size:15px}.t{background:#eee}@media print{button{display:none}}</style></head><body><button onclick="print()">Imprimir</button><h1>${esc(r.titulo)}</h1><p>Premio: ${esc(r.premio)} · Número: $${Number(r.precioNumero).toLocaleString('es-AR')} · Sorteo: ${esc(r.fechaSorteo || 'a definir')} · Vendidos ${r.numeros.length} de ${r.cantidad}</p><div class="g">${cells}</div></body></html>`)
+  w.document.close()
+}
+
 const emptyRaffle = (): Raffle => ({ id: newId('rifa').toLowerCase(), titulo: '', premio: '', autoId: '', precioNumero: 0, cantidad: 100, fechaSorteo: '', estado: 'activa', bases: '', numeros: [], ganador: null, creada: new Date().toISOString() })
 
 function RafflesAdmin({ user }: { user: LocalUser }) {
@@ -178,6 +191,7 @@ function RafflesAdmin({ user }: { user: LocalUser }) {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" aria-expanded={open === r.id} onClick={() => setOpen(open === r.id ? null : r.id)}>Números</button>
+                <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" onClick={() => printRaffle(r)}><Printer className="size-4" aria-hidden="true" />Imprimir talonario</button>
                 {r.numeros.length > 0 && <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" onClick={() => exportRaffle(r)}><Download className="size-4" aria-hidden="true" />Excel</button>}
                 <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" onClick={() => { setEditing({ ...r }); setError('') }}>Editar</button>
                 {r.estado !== 'sorteada' && <button type="button" className="sf-btn sf-btn-primary min-h-11 rounded-[10px]" onClick={() => draw(r)}><Trophy className="size-4" aria-hidden="true" />Sortear</button>}

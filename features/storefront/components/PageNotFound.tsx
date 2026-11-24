@@ -6,7 +6,7 @@ const SHORTCUTS = [
   { href: '/inventory', label: 'Inventario' },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/financing', label: 'Financiación' },
-  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/contact', label: 'Contacto' },
 ]
 
@@ -18,7 +18,7 @@ export function PageNotFound() {
           <span className="sf-dot" aria-hidden="true" />
           Página no encontrada
         </h1>
-        <p className="sf-copy">La página que buscás no existe o se movió. Podés buscar un auto o ir a una sección:</p>
+        <p className="sf-copy">La página que buscas no existe o se movió. Puedes buscar un auto o ir a una sección:</p>
         <form action="/inventory" method="get" role="search" className="flex w-full max-w-md gap-2">
           <label htmlFor="nf-search" className="sr-only">Buscar auto</label>
           <input id="nf-search" name="search" type="search" placeholder="Marca, modelo o patente" className="sf-input min-w-0 flex-1" />

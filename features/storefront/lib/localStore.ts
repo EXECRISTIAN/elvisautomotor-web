@@ -5,7 +5,7 @@
 // /_local/db y /_local/fotos). Se guarda además una copia en el navegador por si acaso.
 // Se activa solo cuando la página la sirve el iniciador (window.__ELVIS_OFFLINE__).
 
-export type LocalSubmission = { id: string; kind: string; label: string; createdAt: string; status: string; data: Record<string, unknown>; photos?: string[] }
+export type LocalSubmission = { id: string; kind: string; label: string; createdAt: string; status: string; data: Record<string, unknown>; photos?: string[]; asignado?: string; notas?: Array<{ fecha: string; usuario: string; texto: string }> }
 export type LocalUser = { id: string; name: string; username: string; password: string; role: string; active: boolean; createdAt: string }
 export type LocalCar = Record<string, any> & { id: string }
 type CarChanges = { added: LocalCar[]; edits: Record<string, Partial<LocalCar>>; deleted: string[] }
@@ -342,6 +342,10 @@ export function saveClient(client: Client) {
   const i = list.findIndex((c) => c.id === client.id)
   if (i >= 0) list[i] = client
   else list.unshift(client)
+  persist()
+}
+export function deleteClient(id: string) {
+  db().clientes = db().clientes.filter((c) => c.id !== id)
   persist()
 }
 export const clientName = (c: Client) => `${c.nombre} ${c.apellido}`.trim()
