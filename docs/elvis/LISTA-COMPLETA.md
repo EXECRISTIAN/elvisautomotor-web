@@ -33,10 +33,10 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 ## 3. Web pública — agregar o cambiar
 24. ✅ Inventario: filtros de tipo de vehículo, tracción y tipo de tracción (hecho).
 25. ✅ Inventario: orden "mayor descuento" (hecho).
-26. 🟡 Fotos del salón: la de portada pesa 650 KB sin optimizar; conviene una versión más liviana para celular.
+26. ✅ Portada: versión para celular de 139 KB (antes 658 KB).
 27. 🟡 Quitar los créditos de autor de las fotos de ejemplo cuando se reemplacen por fotos propias.
 28. 🟡 "Clientes" online: unificar con el área de clientes de la muestra (hoy online usa otra pantalla de "Mi cuenta").
-29. 🟡 Prueba de manejo: permitir elegir el auto desde la ficha con el auto ya cargado (verificar en todos los casos).
+29. ✅ Prueba de manejo con el auto ya elegido: verificado desde la ficha y por enlace, online y en la muestra.
 30. ⚪ Ficha del auto: mostrar patente parcial (ej. AB***CD) si Elvis quiere.
 31. ✅ Página "Términos" propia (/terminos, enlazada desde el pie; texto pendiente).
 32. ✅ Página 404 con buscador y accesos rápidos.
@@ -50,7 +50,8 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 38. ✅ Resumen: mes actual contra el anterior.
 39. ✅ Rifas: imprimir talonario.
 40. ✅ Actividad: filtro por usuario y fechas.
-41. ✅ Respaldo automático diario de datos.json en datosespaldos (últimas 30).
+41. ✅ Respaldo automático diario de datos.json en datos
+espaldos (últimas 30).
 
 ## 5. Muestra offline (sin instalar nada)
 42. 🔴 Probar en tu PC con Windows el último zip: que la portada se vea bien con el .bat sin Ctrl+F5 (arreglo de copias viejas, no probado en Windows).

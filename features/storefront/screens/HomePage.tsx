@@ -95,7 +95,11 @@ export async function HomePage() {
     <div className="sf-home elv-home" data-flush-end>
       {/* ---------- Hero ---------- */}
       <section className="elv-hero" aria-labelledby="hero-title">
-        <Image src={HERO_PHOTO} alt="" fill priority unoptimized sizes="100vw" className="object-cover object-[60%_75%]" />
+        <picture>
+          <source media="(max-width: 767px)" srcSet="/images/elvis/salon-frente-movil.jpg" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={HERO_PHOTO} alt="" fetchPriority="high" decoding="async" className="absolute inset-0 size-full object-cover object-[60%_75%]" />
+        </picture>
         <span className="elv-hero-shade" aria-hidden="true" />
         <span className="elv-hero-stripe" aria-hidden="true" />
         <Container className="relative flex min-h-[34rem] flex-col justify-center pb-28 pt-14 md:min-h-[38rem] md:pb-36">
