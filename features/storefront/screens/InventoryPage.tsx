@@ -9,6 +9,7 @@ import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
 import { buildVehicleOrderBy, buildVehicleWhereInput, EMPTY_INVENTORY_FILTERS, inventoryQueryFromSearch } from '@/features/storefront/lib/data/vehicle-inventory'
 import { buildInventoryFacets, facetModels, fetchListedInventoryOptions, type InventoryFacets } from '@/features/storefront/lib/data/inventory-facets'
+import { makeLogo } from '@/features/lib/vehicleCatalog'
 import { INVENTORY_PAGE_SIZE, parseInventoryPage, resolveInventoryPage } from '@/features/storefront/lib/data/inventory-pagination'
 import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
 import { Container } from '../components/Container'
@@ -460,7 +461,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                     value={filters.make}
                     onValueChange={(value) => handleFilterChange('make', value)}
                     className="sf-input sf-trigger"
-                    options={[{ value: '', label: facets ? 'Todas' : 'Cargando' }, ...makeOptions.map((make) => ({ value: make, label: make }))]}
+                    options={[{ value: '', label: facets ? 'Todas' : 'Cargando' }, ...makeOptions.map((make) => ({ value: make, label: make, icon: makeLogo(make) }))]}
                   />
                 </div>
                 <div className="min-w-0">

@@ -5,7 +5,7 @@ import { Check, ChevronDown, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-export type PlatformSelectOption = { value: string; label: string; hint?: string; disabled?: boolean };
+export type PlatformSelectOption = { value: string; label: string; hint?: string; disabled?: boolean; icon?: string | null };
 
 type Props = {
   options: ReadonlyArray<PlatformSelectOption>;
@@ -164,6 +164,7 @@ export function PlatformSelect({
                   className="flex min-h-10 w-full items-center gap-2 rounded-[4px] px-2.5 text-left text-sm outline-none hover:bg-muted focus-visible:bg-muted disabled:opacity-50 aria-selected:font-medium"
                 >
                   <Check className={cn("size-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")} aria-hidden="true" />
+                  {option.icon ? <img src={option.icon} alt="" aria-hidden="true" width={22} height={22} loading="lazy" className="size-[22px] shrink-0 rounded-full bg-white object-contain p-0.5" /> : null}
                   <span className="min-w-0 flex-1 break-words">{option.label}</span>
                   {option.hint ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{option.hint}</span> : null}
                 </button>

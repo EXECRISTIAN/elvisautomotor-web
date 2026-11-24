@@ -210,3 +210,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 24/11 09:30
 - Panel → Clientes: sección "Clientes con cuenta" con botón "Nueva contraseña" / "Crear acceso" (genera una de 6 números que se le pasa al cliente). Probado: el cliente entra con su DNI y la nueva contraseña.
+
+### Ronda 24/11 10:30
+- Inventario → filtro Marca: muestra el logo de cada marca (12 de 12 marcas del stock demo).
