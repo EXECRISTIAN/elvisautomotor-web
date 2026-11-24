@@ -219,3 +219,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 24/11 12:30
 - Área de clientes: sección "Tus consultas" (las que hizo con su email, teléfono o DNI) con su estado.
+
+### Ronda 24/11 13:30
+- Área de clientes: "Cambiar mi contraseña" (pide la actual). Probado en celular.

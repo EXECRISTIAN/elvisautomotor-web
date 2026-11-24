@@ -102,6 +102,15 @@ export function ForgotAccess({ onBack }: { onBack: () => void }) {
 export function ClientArea({ client, onLogout }: { client: Client; onLogout: () => void }) {
   const sales = listSales().filter((s) => !s.anulada && (s.clienteId === client.id || (client.dni && s.dni === client.dni)))
   const tel = digits(client.telefono)
+  const [pw, setPw] = useState({ actual: '', nueva: '', repetir: '', msg: '' })
+  function changePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (pw.actual !== client.clave) return setPw({ ...pw, msg: 'La contraseña actual no es correcta.' })
+    if (pw.nueva.length < 4) return setPw({ ...pw, msg: 'La nueva contraseña tiene que tener al menos 4 caracteres.' })
+    if (pw.nueva !== pw.repetir) return setPw({ ...pw, msg: 'Las contraseñas nuevas no coinciden.' })
+    saveClient({ ...client, clave: pw.nueva }); client.clave = pw.nueva
+    setPw({ actual: '', nueva: '', repetir: '', msg: 'Listo, tu contraseña se cambió.' })
+  }
   const requests = listSubmissions().filter((r) => {
     const d = r.data as Record<string, unknown>
     return String(d.email ?? '').toLowerCase() === client.email.toLowerCase() || (tel.length >= 8 && digits(String(d.phone ?? '')).endsWith(tel.slice(-8))) || (client.dni && String(d.dni ?? '') === client.dni)
@@ -116,6 +125,15 @@ export function ClientArea({ client, onLogout }: { client: Client; onLogout: () 
         <div className="elv-pq-panel mt-6">
           <p className="font-bold">Tus datos</p>
           <p className="sf-muted mt-2 text-[0.9rem]">{clientName(client)} · DNI {client.dni} · {client.email}{client.telefono ? ` · ${client.telefono}` : ''}</p>
+          <details className="mt-3">
+            <summary className="sf-link min-h-11 cursor-pointer text-[0.9rem]">Cambiar mi contraseña</summary>
+            <form onSubmit={changePassword} className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div><label htmlFor="ca-actual" className="sf-label">Actual</label><input id="ca-actual" type="password" autoComplete="current-password" value={pw.actual} onChange={(e) => setPw({ ...pw, actual: e.target.value, msg: '' })} className={field} /></div>
+              <div><label htmlFor="ca-nueva" className="sf-label">Nueva</label><input id="ca-nueva" type="password" autoComplete="new-password" value={pw.nueva} onChange={(e) => setPw({ ...pw, nueva: e.target.value, msg: '' })} className={field} /></div>
+              <div><label htmlFor="ca-rep" className="sf-label">Repetir nueva</label><input id="ca-rep" type="password" autoComplete="new-password" value={pw.repetir} onChange={(e) => setPw({ ...pw, repetir: e.target.value, msg: '' })} className={field} /></div>
+              <div className="flex flex-wrap items-center gap-3 sm:col-span-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar contraseña</button>{pw.msg && <span role="status" className="text-[0.9rem]">{pw.msg}</span>}</div>
+            </form>
+          </details>
         </div>
         <div className="elv-pq-panel mt-4">
           <p className="font-bold">Tus compras</p>
