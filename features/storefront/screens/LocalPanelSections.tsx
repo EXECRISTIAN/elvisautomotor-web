@@ -373,12 +373,35 @@ export function ClientsSection() {
     return [...map.values()].sort((a, b) => b.ultima.localeCompare(a.ultima))
   }, [])
   const shown = clients.filter((c) => !q || `${c.nombre} ${c.telefono} ${c.email} ${c.dni}`.toLowerCase().includes(q.toLowerCase()))
+  const [, force] = useState(0)
+  const [temp, setTemp] = useState<{ id: string; clave: string } | null>(null)
+  const registered = listClients().filter((c) => !q || `${clientName(c)} ${c.dni} ${c.email} ${c.usuario ?? ''}`.toLowerCase().includes(q.toLowerCase()))
+  function resetPassword(c: Client) {
+    if (!window.confirm(`¿Darle una contraseña nueva a ${clientName(c)}? La anterior deja de funcionar.`)) return
+    const clave = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000))
+    saveClient({ ...c, clave, usuario: c.usuario || c.dni })
+    setTemp({ id: c.id, clave }); force((n) => n + 1)
+  }
   return (
     <div className="mt-6">
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 sm:max-w-xs"><label htmlFor="cl-q" className="sf-label">Buscar</label><input id="cl-q" value={q} onChange={(e) => setQ(e.target.value)} className={field} placeholder="Nombre, teléfono, email o DNI" /></div>
         <button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" disabled={!clients.length} onClick={() => csv('elvis-clientes', [['Nombre', 'Teléfono', 'Email', 'DNI', 'Consultas', 'Compras'], ...clients.map((c) => [c.nombre, c.telefono, c.email, c.dni, c.consultas, c.compras])])}><Download className="size-4" aria-hidden="true" />Exportar a Excel</button>
       </div>
+      {registered.length > 0 && (
+        <div className="elv-pq-panel mt-4">
+          <p className="font-bold">Clientes con cuenta</p>
+          <ul className="mt-3 grid gap-2">
+            {registered.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-[0.9rem]" style={{ borderColor: 'var(--sf-rule)' }}>
+                <span className="min-w-0"><span className="block font-semibold">{clientName(c)}</span><span className="sf-muted block text-[0.8rem]">DNI {c.dni} · {c.email} · {c.clave ? `usuario ${c.usuario}` : 'todavía sin usuario'}</span>
+                  {temp?.id === c.id && <span role="status" className="mt-1 block font-semibold" style={{ color: 'var(--sf-accent)' }}>Contraseña nueva: {temp.clave} (pásasela al cliente; puede ingresar con su DNI)</span>}</span>
+                <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px]" onClick={() => resetPassword(c)}>{c.clave ? 'Nueva contraseña' : 'Crear acceso'}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <ul className="mt-4 grid gap-2">
         {shown.length === 0 && <li className="sf-muted">Todavía no hay clientes: aparecen cuando llegan consultas o registras ventas.</li>}
         {shown.map((c) => (

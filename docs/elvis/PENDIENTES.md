@@ -207,3 +207,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Encabezado: en escritorio el botón de WhatsApp es solo ícono para que no se superponga con el menú (incluido "Clientes"); revisado de 768 a 2560 px sin choques.
 - Foto principal y del salón: se cargan directo del archivo (sin /_next/image), por si el iniciador de Windows no las sirve. Pendiente: el usuario ve la portada oscura/sin foto al abrir con el .bat (con file:// se ve bien); falta diagnosticar en su PC.
 - Muestra: con el .bat se veía sin foto ni dorados por una copia vieja guardada en el navegador (en incógnito andaba). servidor.ps1 ahora manda Cache-Control no-store para páginas/datos y no-cache para el resto. LEEME: Ctrl+F5.
+
+### Ronda 24/11 09:30
+- Panel → Clientes: sección "Clientes con cuenta" con botón "Nueva contraseña" / "Crear acceso" (genera una de 6 números que se le pasa al cliente). Probado: el cliente entra con su DNI y la nueva contraseña.
