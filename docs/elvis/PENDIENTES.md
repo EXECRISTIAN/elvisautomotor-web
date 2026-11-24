@@ -226,3 +226,6 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 ### Ronda 24/11 14:30
 - Revisión de 12 páginas en celular y escritorio: sin errores.
 - Ofertas: selector de orden (Mayor descuento, Menor precio, Mayor precio, Más nuevos).
+
+### Ronda 24/11 15:30
+- Rifas: botón "Excel" que baja los números vendidos/reservados (número, nombre, teléfono, estado, fecha, ganador).

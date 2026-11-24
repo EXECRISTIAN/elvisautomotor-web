@@ -2,7 +2,7 @@
 'use no memo'
 
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Trophy } from 'lucide-react'
+import { Download, Plus, Trash2, Trophy } from 'lucide-react'
 import {
   applyCarChanges, deleteRaffle, listRaffles, logActivity, newId, offerSections, saveOfferSections, saveRaffle, saveSiteSettings, siteSettings,
   type LocalCar, type LocalUser, type OfferSection, type Raffle,
@@ -85,6 +85,14 @@ export function OffersAdminSection({ user }: { user: LocalUser }) {
       <RafflesAdmin user={user} />
     </div>
   )
+}
+
+function exportRaffle(r: Raffle) {
+  const rows = [['Número', 'Nombre', 'Teléfono', 'Estado', 'Fecha', 'Ganador'], ...[...r.numeros].sort((a, b) => a.numero - b.numero).map((n) => [n.numero, n.nombre, n.telefono, n.estado === 'pagado' ? 'Pagado' : 'Reservado', new Date(n.fecha).toLocaleDateString('es-AR'), r.ganador === n.numero ? 'Sí' : ''])]
+  const csv = '\ufeff' + rows.map((x) => x.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n')
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+  const a = Object.assign(document.createElement('a'), { href: url, download: `rifa-${r.titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv` })
+  a.click(); URL.revokeObjectURL(url)
 }
 
 const emptyRaffle = (): Raffle => ({ id: newId('rifa').toLowerCase(), titulo: '', premio: '', autoId: '', precioNumero: 0, cantidad: 100, fechaSorteo: '', estado: 'activa', bases: '', numeros: [], ganador: null, creada: new Date().toISOString() })
@@ -170,6 +178,7 @@ function RafflesAdmin({ user }: { user: LocalUser }) {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" aria-expanded={open === r.id} onClick={() => setOpen(open === r.id ? null : r.id)}>Números</button>
+                {r.numeros.length > 0 && <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" onClick={() => exportRaffle(r)}><Download className="size-4" aria-hidden="true" />Excel</button>}
                 <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" onClick={() => { setEditing({ ...r }); setError('') }}>Editar</button>
                 {r.estado !== 'sorteada' && <button type="button" className="sf-btn sf-btn-primary min-h-11 rounded-[10px]" onClick={() => draw(r)}><Trophy className="size-4" aria-hidden="true" />Sortear</button>}
                 <button type="button" aria-label={`Borrar ${r.titulo}`} className="sf-btn sf-btn-ghost min-h-11 rounded-[10px]" onClick={() => { if (confirm(`¿Borrar la rifa “${r.titulo}” y sus números?`)) { deleteRaffle(r.id); refresh() } }}><Trash2 className="size-4" aria-hidden="true" /></button>
