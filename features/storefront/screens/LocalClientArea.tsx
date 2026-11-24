@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { Download, LogOut } from 'lucide-react'
 import { Container } from '../components/Container'
-import { clientName, findClient, listClients, listSales, newId, saveClient, siteSettings, type Client } from '../lib/localStore'
+import { clientName, findClient, listClients, listSales, listSubmissions, newId, saveClient, siteSettings, type Client } from '../lib/localStore'
 
 const field = 'sf-input mt-2 w-full'
 const money = (n: number) => `$ ${Math.round(n || 0).toLocaleString('es-AR')}`
@@ -101,6 +101,11 @@ export function ForgotAccess({ onBack }: { onBack: () => void }) {
 /** Área del cliente: sus datos, compras y contratos. */
 export function ClientArea({ client, onLogout }: { client: Client; onLogout: () => void }) {
   const sales = listSales().filter((s) => !s.anulada && (s.clienteId === client.id || (client.dni && s.dni === client.dni)))
+  const tel = digits(client.telefono)
+  const requests = listSubmissions().filter((r) => {
+    const d = r.data as Record<string, unknown>
+    return String(d.email ?? '').toLowerCase() === client.email.toLowerCase() || (tel.length >= 8 && digits(String(d.phone ?? '')).endsWith(tel.slice(-8))) || (client.dni && String(d.dni ?? '') === client.dni)
+  })
   return (
     <section className="py-10">
       <Container className="max-w-3xl">
@@ -120,6 +125,19 @@ export function ClientArea({ client, onLogout }: { client: Client; onLogout: () 
                 <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 border-b pb-3" style={{ borderColor: 'var(--sf-rule)' }}>
                   <span><span className="block font-semibold">{s.auto}</span><span className="sf-muted block text-[0.85rem]">{s.fecha.split('-').reverse().join('/')} · {money(s.precio)} · {s.formaPago}</span></span>
                   {s.contrato ? <a className="sf-btn sf-btn-outline min-h-11 rounded-[10px]" href={s.contrato.url} download={s.contrato.nombre} target="_blank" rel="noreferrer"><Download className="size-4" aria-hidden="true" />Contrato</a> : <span className="sf-faint text-[0.85rem]">Contrato pendiente</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="elv-pq-panel mt-4">
+          <p className="font-bold">Tus consultas</p>
+          {requests.length === 0 ? <p className="sf-muted mt-2">No encontramos consultas con tu email o teléfono.</p> : (
+            <ul className="mt-3 grid gap-2">
+              {requests.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-[0.9rem]" style={{ borderColor: 'var(--sf-rule)' }}>
+                  <span>{r.label}<span className="sf-muted block text-[0.8rem]">{new Date(r.createdAt).toLocaleDateString('es-AR')}</span></span>
+                  <span className="sf-chip">{r.status === 'nueva' ? 'Recibida' : r.status}</span>
                 </li>
               ))}
             </ul>
