@@ -38,8 +38,8 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 28. 🟡 "Clientes" online: unificar con el área de clientes de la muestra (hoy online usa otra pantalla de "Mi cuenta").
 29. 🟡 Prueba de manejo: permitir elegir el auto desde la ficha con el auto ya cargado (verificar en todos los casos).
 30. ⚪ Ficha del auto: mostrar patente parcial (ej. AB***CD) si Elvis quiere.
-31. ⚪ Página de "Términos" propia (hoy es solo texto en el pie, sin enlace).
-32. ⚪ Página 404 con buscador / accesos rápidos.
+31. ✅ Página "Términos" propia (/terminos, enlazada desde el pie; texto pendiente).
+32. ✅ Página 404 con buscador y accesos rápidos.
 
 ## 4. Panel de administración — agregar o cambiar
 33. 🟡 Ventas: poder editar una venta (hoy solo se anula y se carga de nuevo).

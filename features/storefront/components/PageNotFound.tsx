@@ -1,6 +1,15 @@
 import Link from 'next/link'
 import { Container } from './Container'
 
+const SHORTCUTS = [
+  { href: '/', label: 'Inicio' },
+  { href: '/inventory', label: 'Inventario' },
+  { href: '/ofertas', label: 'Ofertas' },
+  { href: '/financing', label: 'Financiación' },
+  { href: '/trade-in', label: 'Vendé tu auto' },
+  { href: '/contact', label: 'Contacto' },
+]
+
 export function PageNotFound() {
   return (
     <Container className="py-[var(--sf-space-2xl)]">
@@ -9,10 +18,17 @@ export function PageNotFound() {
           <span className="sf-dot" aria-hidden="true" />
           Página no encontrada
         </h1>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/" className="sf-btn sf-btn-primary">Inicio</Link>
-          <Link href="/inventory" className="sf-btn sf-btn-ghost">Inventario</Link>
-        </div>
+        <p className="sf-copy">La página que buscás no existe o se movió. Podés buscar un auto o ir a una sección:</p>
+        <form action="/inventory" method="get" role="search" className="flex w-full max-w-md gap-2">
+          <label htmlFor="nf-search" className="sr-only">Buscar auto</label>
+          <input id="nf-search" name="search" type="search" placeholder="Marca, modelo o patente" className="sf-input min-w-0 flex-1" />
+          <button type="submit" className="sf-btn sf-btn-primary">Buscar</button>
+        </form>
+        <nav aria-label="Accesos rápidos" className="flex flex-wrap gap-2">
+          {SHORTCUTS.map((s, i) => (
+            <Link key={s.href} href={s.href} className={i === 0 ? 'sf-btn sf-btn-primary' : 'sf-btn sf-btn-ghost'}>{s.label}</Link>
+          ))}
+        </nav>
       </div>
     </Container>
   )

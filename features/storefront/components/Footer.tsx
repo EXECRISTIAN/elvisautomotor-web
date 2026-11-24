@@ -119,7 +119,7 @@ export function Footer(_props: { branding?: boolean } = {}) {
         <div className="mt-12 flex flex-col gap-3 border-t pt-6 text-[length:var(--sf-text-xs)] sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--sf-rule-dark)', color: 'var(--sf-on-dark-2)' }}>
           <p>© {year} {business.fullName.replace(/\.$/, '')}. Todos los derechos reservados.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className="inline-flex min-h-11 items-center">Términos y condiciones de uso</span>
+            <Link href="/terminos" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Términos y condiciones de uso</Link>
             <Link href="/panel" className="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">Acceso al panel</Link>
           </div>
         </div>
