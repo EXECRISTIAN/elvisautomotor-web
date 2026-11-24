@@ -87,7 +87,6 @@ export function PlatformDateInput({
             type="button"
             id={triggerId}
             aria-haspopup="dialog"
-            aria-required={required || undefined}
             aria-expanded={open}
             aria-label={aria["aria-label"]}
             aria-invalid={aria["aria-invalid"] || undefined}

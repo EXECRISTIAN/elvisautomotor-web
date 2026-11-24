@@ -101,7 +101,7 @@ export function OffersExplorer({ vehicles: initial, offers }: { vehicles: Vehicl
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="font-semibold" role="status">{results.length} {results.length === 1 ? 'oferta disponible' : 'ofertas disponibles'}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="w-48"><ComboField id="of-orden" value={sort} onChange={(v) => setSort(v || 'Mayor descuento')} options={['Mayor descuento', 'Menor precio', 'Mayor precio', 'Más nuevos']} allowCustom={false} /></div>
+              <label htmlFor="of-orden" className="sr-only">Ordenar por</label><div className="w-48"><ComboField id="of-orden" value={sort} onChange={(v) => setSort(v || 'Mayor descuento')} options={['Mayor descuento', 'Menor precio', 'Mayor precio', 'Más nuevos']} allowCustom={false} /></div>
               {active > 0 && <button type="button" className="sf-btn sf-btn-ghost min-h-11 rounded-[8px]" onClick={() => setF(EMPTY)}><X className="size-4" aria-hidden="true" />Limpiar filtros ({active})</button>}
               <button type="button" className="sf-btn sf-btn-outline min-h-11 rounded-[8px] lg:hidden" aria-expanded={open} onClick={() => setOpen(!open)}><SlidersHorizontal className="size-4" aria-hidden="true" />{open ? 'Ocultar filtros' : 'Filtrar'}</button>
             </div>

@@ -130,6 +130,7 @@
 }
 .storefront .elv-contact-grid > div:only-child { grid-column: 1 / -1; }
 .storefront .sf-pill[aria-pressed="true"],
+.storefront .sf-pill[aria-selected="true"],
 .storefront .sf-pill[data-active="true"] {
   background: var(--sf-gold-gradient);
   color: var(--sf-accent-ink);
@@ -137,7 +138,7 @@
 }
 
 /* Botón del canal de WhatsApp: igual que los demás botones, solo cambia el color. */
-.storefront .elv-wa-channel { background: #1f9d55; color: #fff; border-color: transparent; }
+.storefront .elv-wa-channel { background: #167a42; color: #fff; border-color: transparent; }
 .storefront .elv-wa-channel:hover { background: #1a8a4a; }
 .storefront .elv-wa-channel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
@@ -197,3 +198,4 @@
 .storefront [data-elv-filters] button[role='combobox'] > span:first-child { flex: 1; text-align: center; }
 .storefront [data-elv-filters] input[role='combobox'] { padding-left: 5rem; }
 .storefront [data-elv-filters] .grid > input { padding-left: .5rem; padding-right: .5rem; }
+.storefront .sf-trigger .text-muted-foreground { color: #8f8b84; }

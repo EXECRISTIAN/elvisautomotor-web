@@ -29,13 +29,13 @@ export function ElvisLogo({ variant = 'full', className, title = 'Elvis Automoto
   const uid = useId().replace(/:/g, '')
   if (variant === 'mark') {
     return (
-      <svg viewBox="50 41 60 80" className={className} role="img" aria-label={title}>
+      <svg viewBox="50 41 60 80" className={className} {...(title ? { role: "img", "aria-label": title } : { "aria-hidden": true })}>
         <Isotype filterId={`${uid}-glow`} />
       </svg>
     )
   }
   return (
-    <svg viewBox="-2 -2 364 104" className={className} role="img" aria-label={title}>
+    <svg viewBox="-2 -2 364 104" className={className} {...(title ? { role: "img", "aria-label": title } : { "aria-hidden": true })}>
       <defs>
         <linearGradient id={`${uid}-t`} x1="122" y1="0" x2="352" y2="0" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#F3D58A" /><stop offset="0.5" stopColor="#C9A04A" /><stop offset="1" stopColor="#E8C46F" />

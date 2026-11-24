@@ -229,3 +229,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 
 ### Ronda 24/11 15:30
 - Rifas: botón "Excel" que baja los números vendidos/reservados (número, nombre, teléfono, estado, fecha, ganador).
+
+### Ronda 24/11 20:30 (puntos de LISTA-COMPLETA que dependían de mí)
+Hechos: 19, 24, 25, 26, 29, 31, 32, 33–41, 44, 45, 46 (detalle en `LISTA-COMPLETA.md`).
+Quedan: 17 (pasar a la base real lo que vive en la muestra; incluye 28), 22 (respaldos online, depende del hosting), 30 (patente parcial: lo decide Elvis), 27 (cuando haya fotos propias).

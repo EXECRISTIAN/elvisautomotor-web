@@ -176,7 +176,7 @@ export function LocalPanelPage() {
 
         <nav className="elv-panel-nav mt-6" role="tablist" aria-label="Secciones del panel">
           {sections.map(([key, label]) => (
-            <button key={key} type="button" role="tab" className="sf-pill min-h-11 shrink-0" aria-pressed={current === key} aria-selected={current === key} onClick={() => { refresh(); setTab(key) }}>{label}</button>
+            <button key={key} type="button" role="tab" className="sf-pill min-h-11 shrink-0" aria-selected={current === key} onClick={() => { refresh(); setTab(key) }}>{label}</button>
           ))}
         </nav>
 

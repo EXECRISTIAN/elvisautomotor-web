@@ -1,6 +1,6 @@
 # Elvis Automotores — lista completa de lo que falta, cambiar o revisar
 
-Estado al 24/11/2026. No se implementa nada de esta lista hasta que se pida.
+Estado al 24/11/2026. Los puntos marcados ✅ ya están hechos.
 Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre paréntesis: quién lo resuelve.
 
 ## 1. Depende de Elvis (datos o decisiones)
@@ -35,7 +35,7 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 25. ✅ Inventario: orden "mayor descuento" (hecho).
 26. ✅ Portada: versión para celular de 139 KB (antes 658 KB).
 27. 🟡 Quitar los créditos de autor de las fotos de ejemplo cuando se reemplacen por fotos propias.
-28. 🟡 "Clientes" online: unificar con el área de clientes de la muestra (hoy online usa otra pantalla de "Mi cuenta").
+28. ➡️ "Clientes" online: queda incluido en el punto 17 (pasar el área de clientes a la base real).
 29. ✅ Prueba de manejo con el auto ya elegido: verificado desde la ficha y por enlace, online y en la muestra.
 30. ⚪ Ficha del auto: mostrar patente parcial (ej. AB***CD) si Elvis quiere.
 31. ✅ Página "Términos" propia (/terminos, enlazada desde el pie; texto pendiente).
@@ -59,6 +59,6 @@ espaldos (últimas 30).
 44. ✅ El .bat avisa si el puerto 8080 está ocupado.
 
 ## 6. Calidad y revisión técnica
-45. 🟡 Revisión de accesibilidad (contraste, lectores de pantalla, navegación con teclado) de punta a punta.
-46. 🟡 Revisión de SEO: títulos, descripciones y datos estructurados de cada ficha de auto.
+45. ✅ Accesibilidad: revisión automática (WCAG A/AA) de todas las páginas y del panel, 0 errores; corregidos contraste, etiquetas y botones sin nombre.
+46. ✅ SEO: títulos y descripciones revisados, enlace canónico en fichas, punto doble corregido; las fichas ya tenían datos estructurados.
 47. ⚪ 5 pruebas automáticas viejas del proyecto original fallan (tests/family-security), no afectan a Elvis.
