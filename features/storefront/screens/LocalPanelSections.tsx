@@ -443,7 +443,7 @@ export function SiteSection({ user }: { user: LocalUser }) {
           </label>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar cambios del sitio</button><a href="/" target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]">Ver el sitio</a>{saved && <span role="status" className="sf-muted">Guardado.</span>}</div>
+      <div className="flex flex-wrap items-center gap-3"><button type="submit" className="sf-btn sf-btn-primary min-h-12 rounded-[10px]">Guardar cambios del sitio</button><a href="/" target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost min-h-12 rounded-[10px]">Ver el sitio</a><button type="button" className="sf-btn sf-btn-outline min-h-12 rounded-[10px]" onClick={() => { if (window.confirm('¿Volver al diseño original? Se borran los colores, textos y aviso que cambiaste acá.')) { const keep: Record<string, string> = {}; for (const k of ['ofertaExpressNombre', 'ofertaProgresivaNombre', 'rifaNombre']) if (values[k]) keep[k] = values[k]; saveSiteSettings(keep); setValues(keep); logActivity(user.name, 'Restableció el diseño original del sitio'); setSaved(true) } }}>Restablecer diseño original</button>{saved && <span role="status" className="sf-muted">Guardado.</span>}</div>
     </form>
   )
 }
