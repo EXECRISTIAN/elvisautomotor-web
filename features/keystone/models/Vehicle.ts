@@ -1,4 +1,5 @@
 import { list } from '@keystone-6/core'
+import { BODY_TYPES, TRACCION, TIPO_TRACCION } from '../../lib/vehicleKinds'
 import { denyAll } from '@keystone-6/core/access'
 import { relationship, text, select, integer, checkbox, image, json, timestamp, virtual, float } from '@keystone-6/core/fields'
 import { group } from '@keystone-6/core'
@@ -169,6 +170,25 @@ export const Vehicle = list({
       options: [...TRANSMISSION_OPTIONS],
       label: 'Transmisión',
       access: { update: () => false },
+    }),
+    carroceria: select({
+      type: 'string',
+      options: BODY_TYPES.map((value) => ({ label: value, value })),
+      label: 'Tipo de vehículo',
+      db: { isNullable: true },
+      ui: { description: 'Si queda vacío se deduce del modelo.' },
+    }),
+    traccion: select({
+      type: 'string',
+      options: TRACCION.map((value) => ({ label: value, value })),
+      label: 'Tracción',
+      db: { isNullable: true },
+    }),
+    tipoTraccion: select({
+      type: 'string',
+      options: TIPO_TRACCION.map((value) => ({ label: value, value })),
+      label: 'Tipo de tracción',
+      db: { isNullable: true },
     }),
     engine: text({
       label: 'Cilindrada / motor',

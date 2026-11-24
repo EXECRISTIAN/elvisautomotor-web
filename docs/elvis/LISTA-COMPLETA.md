@@ -24,15 +24,15 @@ Marcas: 🔴 importante · 🟡 conviene · ⚪ menor / opcional. Entre parénte
 16. 🔴 Elegir hosting (servidor para la web + base de datos) y almacenamiento de fotos. (vos / yo)
 17. 🔴 Pasar a la base de datos real todo lo que hoy vive solo en la muestra: ventas, caja, cierres, clientes registrados, área de clientes, contratos, usuarios y permisos, secciones de ofertas, ofertas progresivas creadas desde el panel, rifas, edición del sitio, analítica. (yo)
 18. 🔴 Cambiar el usuario/contraseña 123/123 y crear los usuarios reales del personal. (vos / yo)
-19. 🔴 Campos "tipo de vehículo", "tracción" y "tipo de tracción" en la base real (hoy se deducen del modelo). (yo)
+19. ✅ Campos "tipo de vehículo", "tracción" y "tipo de tracción" en la base real (hecho; si quedan vacíos se deducen del modelo).
 20. 🔴 Mails: hoy se abren armados en tu programa de correo (las reglas del proyecto no permiten envío automático). Decidir si online se mantiene así o se cambian las reglas. (vos)
 21. 🟡 Analítica real (Google Analytics o similar), Google Search Console y Perfil de Empresa de Google. (yo + acceso de Elvis)
 22. 🟡 Copias de seguridad automáticas de la base de datos. (yo)
 23. 🟡 Comprobante de venta: hoy es "no fiscal". Si quieren factura electrónica (AFIP/ARCA), hay que integrarla. (Elvis / contador)
 
 ## 3. Web pública — agregar o cambiar
-24. 🟡 Inventario: agregar filtros de tipo de vehículo, tracción y tipo de tracción (hoy solo están en Ofertas).
-25. 🟡 Inventario: orden "mayor descuento" como en Ofertas.
+24. ✅ Inventario: filtros de tipo de vehículo, tracción y tipo de tracción (hecho).
+25. ✅ Inventario: orden "mayor descuento" (hecho).
 26. 🟡 Fotos del salón: la de portada pesa 650 KB sin optimizar; conviene una versión más liviana para celular.
 27. 🟡 Quitar los créditos de autor de las fotos de ejemplo cuando se reemplacen por fotos propias.
 28. 🟡 "Clientes" online: unificar con el área de clientes de la muestra (hoy online usa otra pantalla de "Mi cuenta").

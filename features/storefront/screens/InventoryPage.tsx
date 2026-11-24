@@ -10,6 +10,7 @@ import { Vehicle } from '@/features/storefront/lib/types'
 import { buildVehicleOrderBy, buildVehicleWhereInput, EMPTY_INVENTORY_FILTERS, inventoryQueryFromSearch } from '@/features/storefront/lib/data/vehicle-inventory'
 import { buildInventoryFacets, facetModels, fetchListedInventoryOptions, type InventoryFacets } from '@/features/storefront/lib/data/inventory-facets'
 import { makeLogo } from '@/features/lib/vehicleCatalog'
+import { BODY_TYPES, TRACCION, TIPO_TRACCION } from '@/features/lib/vehicleKinds'
 import { INVENTORY_PAGE_SIZE, parseInventoryPage, resolveInventoryPage } from '@/features/storefront/lib/data/inventory-pagination'
 import { PlatformSelect } from '@/features/platform/components/PlatformSelect'
 import { Container } from '../components/Container'
@@ -32,6 +33,7 @@ const SORTS = [
   { value: 'price-asc', label: 'Menor precio' },
   { value: 'price-desc', label: 'Mayor precio' },
   { value: 'mileage-asc', label: 'Menos km' },
+  { value: 'discount', label: 'Mayor descuento' },
 ]
 
 const SHEET_QUERY = '(max-width: 1023.98px)'
@@ -344,6 +346,7 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
   if (filters.mileageMin) chips.push({ key: 'mileageMin', label: `Desde ${miles(filters.mileageMin)}`, clear: () => handleFilterChange('mileageMin', '') })
   if (filters.mileageMax) chips.push({ key: 'mileage', label: `Hasta ${miles(filters.mileageMax)}`, clear: () => handleFilterChange('mileageMax', '') })
   if (filters.progressiveOffer === 'true') chips.push({ key: 'progressiveOffer', label: 'Oferta progresiva', clear: () => handleFilterChange('progressiveOffer', '') })
+  for (const key of ['carroceria', 'traccion', 'tipoTraccion'] as const) if (filters[key]) chips.push({ key, label: filters[key], clear: () => handleFilterChange(key, '') })
   if (filters.fuelType) chips.push({ key: 'fuelType', label: fuelLabel(filters.fuelType) || filters.fuelType, clear: () => handleFilterChange('fuelType', '') })
   if (filters.transmission) chips.push({ key: 'transmission', label: transmissionLabel(filters.transmission) || filters.transmission, clear: () => handleFilterChange('transmission', '') })
 
@@ -556,6 +559,21 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                     className="sf-input sf-trigger"
                     options={[{ value: '', label: 'Todas' }, ...TRANSMISSION_OPTIONS]}
                   />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="inventory-body" className="sf-label">Tipo de vehículo</label>
+                <PlatformSelect id="inventory-body" value={filters.carroceria} onValueChange={(value) => handleFilterChange('carroceria', value)} className="sf-input sf-trigger" options={[{ value: '', label: 'Todos' }, ...BODY_TYPES.map((v) => ({ value: v, label: v }))]} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="min-w-0">
+                  <label htmlFor="inventory-traccion" className="sf-label">Tracción</label>
+                  <PlatformSelect id="inventory-traccion" value={filters.traccion} onValueChange={(value) => handleFilterChange('traccion', value)} className="sf-input sf-trigger" options={[{ value: '', label: 'Todas' }, ...TRACCION.map((v) => ({ value: v, label: v }))]} />
+                </div>
+                <div className="min-w-0">
+                  <label htmlFor="inventory-traccion-tipo" className="sf-label">Tipo de tracción</label>
+                  <PlatformSelect id="inventory-traccion-tipo" value={filters.tipoTraccion} onValueChange={(value) => handleFilterChange('tipoTraccion', value)} className="sf-input sf-trigger" options={[{ value: '', label: 'Todos' }, ...TIPO_TRACCION.map((v) => ({ value: v, label: v }))]} />
                 </div>
               </div>
             </div>

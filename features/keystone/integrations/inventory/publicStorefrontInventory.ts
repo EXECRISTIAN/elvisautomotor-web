@@ -1,4 +1,5 @@
 import { storefrontRooftopSlug } from '../../tenantRecords'
+import { vehicleKind } from '../../../lib/vehicleKinds'
 import { activeProgressiveOfferVehicleIds } from '../../mutations/publicProgressiveOffers'
 import { activeReservationWhere } from '../../mutations/reservationHold'
 import { assertCurrentInventoryApproval, assertPublishableInventory } from '../../lifecycle/inventoryPublication'
@@ -38,6 +39,9 @@ function readWhere(where: PublicInventoryOptions['where']) {
           }
         }
         if (group.length) filters.anyOf = [...(filters.anyOf || []), group]
+      } else if (key === 'carroceria' || key === 'traccion' || key === 'tipoTraccion') {
+        const option = String(value?.equals || '').trim()
+        if (option) filters[key] = option
       } else if (key === 'fuelType' || key === 'transmission') {
         const option = String(value?.equals || '').trim().toLocaleLowerCase()
         if (option) filters[key] = option
@@ -97,6 +101,12 @@ function matches(vehicle: any, filters: Record<string, any>) {
   if (filters.fuelType && String(vehicle.fuelType || '') !== filters.fuelType) return false
   if (filters.transmission && String(vehicle.transmission || '') !== filters.transmission) return false
   if (filters.isFeatured && !vehicle.isFeatured) return false
+  if (filters.carroceria || filters.traccion || filters.tipoTraccion) {
+    const kind = vehicleKind(vehicle)
+    if (filters.carroceria && kind.carroceria !== filters.carroceria) return false
+    if (filters.traccion && kind.traccion !== filters.traccion) return false
+    if (filters.tipoTraccion && kind.tipoTraccion !== filters.tipoTraccion) return false
+  }
   if (filters.expressOffer && !isExpressOffer(vehicle)) return false
   if (filters.anyOf?.some((group: Array<{ field: string; search: string }>) =>
     !group.some(({ field, search }) => String(vehicle[field] || '').toLocaleLowerCase().includes(search)))) return false
@@ -106,6 +116,10 @@ function matches(vehicle: any, filters: Record<string, any>) {
 function compare(a: any, b: any, orderBy: PublicInventoryOptions['orderBy']) {
   const order = Array.isArray(orderBy) ? orderBy.find(item => item && typeof item === 'object' && Object.keys(item).length) : undefined
   const [requestedField, requestedDirection] = order ? Object.entries(order)[0] : ['year', 'desc']
+  if (requestedField === 'discount') {
+    const off = (v: any) => (isExpressOffer(v) ? (v.previousPriceCents - v.priceCents) / v.previousPriceCents : 0)
+    return off(b) - off(a) || Number(a.priceCents ?? 0) - Number(b.priceCents ?? 0) || String(a.id).localeCompare(String(b.id))
+  }
   const field = requestedField === 'priceCents' ? 'priceCents' : requestedField === 'mileage' ? 'mileage' : 'year'
   const direction = requestedDirection === 'asc' ? 1 : -1
   const left = a[field] == null ? (direction > 0 ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER) : Number(a[field])
@@ -208,6 +222,7 @@ async function queryPublicInventory(context: any, options: PublicInventoryOption
         exteriorColor: vehicle.exteriorColor,
         fuelType: vehicle.fuelType || null,
         transmission: vehicle.transmission || null,
+        ...vehicleKind(vehicle),
         engine: vehicle.engine || '',
         isFeatured: Boolean(vehicle.isFeatured),
         progressiveOffer: offerIds.has(vehicle.id),

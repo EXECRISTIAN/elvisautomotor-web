@@ -151,6 +151,9 @@ model Vehicle {
   interiorColor                 String                   @default("")
   fuelType                      String?
   transmission                  String?
+  carroceria                    String?
+  traccion                      String?
+  tipoTraccion                  String?
   engine                        String                   @default("")
   usedDebt                      String?
   usedDebtNotes                 String                   @default("")

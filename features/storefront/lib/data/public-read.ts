@@ -2,6 +2,7 @@
 
 // Lecturas públicas desde el navegador. En la muestra local (sin servidor) responde con la copia del
 // inventario incluida en el zip (_offline/datos.json), con los mismos filtros y orden que el servidor.
+import { vehicleKind } from '@/features/lib/vehicleKinds'
 import { fetchGraphQL as serverFetch } from './graphql-client'
 import { applyCarChanges, isLocalDemo } from '../localStore'
 
@@ -26,6 +27,7 @@ function matches(v: Vehicle, where: any): boolean {
     if (key === 'make' || key === 'model' || key === 'trim') return cond?.contains ? lower(v[key]).includes(lower(cond.contains)) : cond?.equals ? lower(v[key]) === lower(cond.equals) : true
     if (key === 'isFeatured' || key === 'progressiveOffer') return cond?.equals === true ? Boolean(v[key]) : true
     if (key === 'expressOffer') return cond?.equals === true ? Boolean(v.previousPrice && v.previousPrice > v.price) : true
+    if (key === 'carroceria' || key === 'traccion' || key === 'tipoTraccion') return cond?.equals ? (vehicleKind(v as any) as any)[key] === cond.equals : true
     if (key === 'ofertaSeccion') return cond?.equals ? v.ofertaSeccion === cond.equals : true
     if (key === 'year' || key === 'mileage') return inRange(v[key], cond)
     if (key === 'priceCents') return inRange(v.price == null ? null : Math.round(v.price * 100), cond)
@@ -36,6 +38,10 @@ function matches(v: Vehicle, where: any): boolean {
 function order(list: Vehicle[], orderBy: any) {
   const first = Array.isArray(orderBy) ? orderBy[0] : orderBy
   const [field, dir] = first ? Object.entries(first)[0] as [string, string] : ['year', 'desc']
+  if (field === 'discount') {
+    const off = (v: any) => (v.previousPrice && v.previousPrice > v.price ? (v.previousPrice - v.price) / v.previousPrice : 0)
+    return [...list].sort((a, b) => off(b) - off(a) || (Number(a.price) || 0) - (Number(b.price) || 0))
+  }
   const key = field === 'priceCents' ? 'price' : field
   const sign = dir === 'asc' ? 1 : -1
   return [...list].sort((a, b) => ((Number(a[key]) || 0) - (Number(b[key]) || 0)) * sign || String(a.id).localeCompare(String(b.id)))

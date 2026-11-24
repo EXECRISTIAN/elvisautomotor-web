@@ -18,11 +18,17 @@ export const GET_VEHICLES = `
         color: exteriorColor
       fuelType
       transmission
+      carroceria
+      traccion
+      tipoTraccion
       engine
       isFeatured
       progressiveOffer
         fuelType
         transmission
+        carroceria
+        traccion
+        tipoTraccion
         engine
         isFeatured
       progressiveOffer
@@ -59,6 +65,9 @@ export const GET_VEHICLE_BY_ID = `
       color: exteriorColor
       fuelType
       transmission
+      carroceria
+      traccion
+      tipoTraccion
       engine
       isFeatured
       progressiveOffer
@@ -96,6 +105,9 @@ export const GET_VEHICLE_RECORD_BY_ID = `
       color: exteriorColor
       fuelType
       transmission
+      carroceria
+      traccion
+      tipoTraccion
       engine
       isFeatured
       progressiveOffer

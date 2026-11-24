@@ -12,6 +12,9 @@ export type VehicleInventoryFilters = {
   fuelType?: string
   transmission?: string
   progressiveOffer?: string
+  carroceria?: string
+  traccion?: string
+  tipoTraccion?: string
 }
 
 export type VehicleInventorySortKey =
@@ -23,7 +26,7 @@ export type VehicleInventorySortKey =
   | string
 
 export const EMPTY_INVENTORY_FILTERS = {
-  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMin: '', mileageMax: '', condition: '', fuelType: '', transmission: '', progressiveOffer: '',
+  search: '', make: '', model: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '', mileageMin: '', mileageMax: '', condition: '', fuelType: '', transmission: '', progressiveOffer: '', carroceria: '', traccion: '', tipoTraccion: '',
 }
 
 /** Read the inventory filters and sort from the URL. The server render and the client both use this. */
@@ -43,6 +46,9 @@ export function inventoryQueryFromSearch(search: string) {
       mileageMax: params.get('mileageMax') || '',
       condition: params.get('condition') || '',
       fuelType: params.get('fuelType') || '',
+      carroceria: params.get('carroceria') || '',
+      traccion: params.get('traccion') || '',
+      tipoTraccion: params.get('tipoTraccion') || '',
       transmission: params.get('transmission') || '',
       progressiveOffer: params.get('progressiveOffer') || '',
     },
@@ -122,6 +128,10 @@ export function buildVehicleWhereInput(filters: VehicleInventoryFilters = {}) {
   if (fuelType) where.AND.push({ fuelType: { equals: fuelType } })
   if (transmission) where.AND.push({ transmission: { equals: transmission } })
   if (filters.progressiveOffer === 'true') where.AND.push({ progressiveOffer: { equals: true } })
+  for (const key of ['carroceria', 'traccion', 'tipoTraccion'] as const) {
+    const value = filters[key]?.trim()
+    if (value) where.AND.push({ [key]: { equals: value } })
+  }
 
   return where
 }
@@ -136,6 +146,8 @@ export function buildVehicleOrderBy(sortBy: VehicleInventorySortKey = 'year-desc
       return [{ mileage: 'asc' }]
     case 'year-asc':
       return [{ year: 'asc' }]
+    case 'discount':
+      return [{ discount: 'desc' }]
     case 'year-desc':
     default:
       return [{ year: 'desc' }]

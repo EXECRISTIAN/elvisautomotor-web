@@ -33,10 +33,10 @@ export function inferTraction(model = '', trim = '') {
 }
 
 /** Datos de tipo y tracción de un auto: lo cargado en el panel manda; si no, se deduce. */
-export function vehicleKind(v: { model?: string; trim?: string; carroceria?: string; traccion?: string; tipoTraccion?: string }) {
-  const guess = inferTraction(v.model, v.trim)
+export function vehicleKind(v: { model?: string | null; trim?: string | null; carroceria?: string | null; traccion?: string | null; tipoTraccion?: string | null }) {
+  const guess = inferTraction(v.model ?? "", v.trim ?? "")
   return {
-    carroceria: v.carroceria || inferBodyType(v.model, v.trim),
+    carroceria: v.carroceria || inferBodyType(v.model ?? "", v.trim ?? ""),
     traccion: v.traccion || guess.traccion,
     tipoTraccion: v.tipoTraccion || guess.tipo,
   }

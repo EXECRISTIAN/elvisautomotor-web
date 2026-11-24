@@ -1524,6 +1524,46 @@ var Model = (0, import_core4.list)({
 
 // features/keystone/models/Vehicle.ts
 var import_core5 = require("@keystone-6/core");
+
+// features/lib/vehicleKinds.ts
+var BODY_TYPES = ["Hatchback", "Sed\xE1n", "SUV", "Pickup", "Utilitario", "Monovolumen", "Rural / Familiar", "Coup\xE9", "Convertible"];
+var TRACCION = ["4x2", "4x4"];
+var TIPO_TRACCION = ["Delantera", "Trasera", "Integral (AWD)", "4x4 conectable"];
+var BODY_BY_MODEL = [
+  [/\b(hilux|ranger|amarok|s-?10|toro|strada|saveiro|frontier|np300|navara|alaskan|oroch|l200|triton|tacoma|tundra|f-?1[05]0|maverick|montana|titano|landtrek|ram\b|1500|2500|rampage|gladiator|tunland|poer|wingle|t6|t8|t60|t90|vigus|cannon|colorado|silverado|dakota|rich 6|hunter)\b/i, "Pickup"],
+  [/\b(kangoo|partner|berlingo|fiorino|sprinter|master|trafic|ducato|boxer|jumper|expert|jumpy|transit|transporter|crafter|vito|h-?1|hiace|caddy|doblo|doblò|nv200|express|scudo|daily|urvan|k01|k02|c31|c35|v21|v22|deliver)\b/i, "Utilitario"],
+  [/\b(ecosport|t-?cross|nivus|taos|tiguan|touareg|tracker|equinox|trailblazer|captiva|blazer|2008|3008|5008|duster|captur|koleos|kardian|arkana|austral|kicks|x-?trail|qashqai|murano|pathfinder|compass|renegade|commander|cherokee|wrangler|creta|tucson|santa fe|kona|venue|sportage|seltos|sorento|sonet|stonic|niro|rav4|corolla cross|yaris cross|sw4|fortuner|c-hr|land cruiser|4runner|territory|bronco|kuga|escape|edge|explorer|everest|puma|c3 aircross|c4 cactus|c5 aircross|basalt|pulse|fastback|500x|hr-v|cr-v|wr-v|zr-v|pilot|outlander|eclipse cross|asx|montero|pajero|jolion|h6|h2|dargo|tiggo|x70|x90|dashing|coolray|okavango|monjaro|cs35|cs55|cs75|uni-|zs|hs|x1|x2|x3|x4|x5|x6|x7|q2|q3|q5|q7|q8|gla|glb|glc|gle|gls|xc40|xc60|xc90|forester|outback|crosstrek|xv|vitara|jimny|s-cross|countryman|yuan|song|atto|seal u|tang|bj40|x35|x55|glory|t5|ix5|js4|e-js4|s3|s4|s5|t-roc|atlas|teramont|id\.4|id\.5|ariya|ioniq 5|ev6|ev9|ex30|xc|eqa|eqb|eqc|tank)\b/i, "SUV"],
+  [/\b(cronos|corolla|virtus|vento|jetta|passat|versa|sentra|logan|fluence|onix plus|prisma|joy plus|cruze|cobalt|grand siena|siena|voyage|408|301|508|c4 lounge|c-elysée|city|civic|accord|elantra|accent|sonata|cerato|k3|k5|camry|yaris sedán|etios sedán|mazda3|a4|a6|serie 3|serie 5|clase c|clase e|s60|s90|ga4|ga6|arrizo|emgrand|seal|qin|han)\b/i, "Sed\xE1n"],
+  [/\b(spin|xpander|carnival|sienna|odyssey|picasso|grand c4|spacetourer|meriva|zafira|suran|sharan|touran|alhambra|traveller|staria|multivan|id\. buzz|carens|ertiga|xl7|m4|m6|m8|g10|g50|mifa)\b/i, "Monovolumen"],
+  [/\b(sportwagen|variant|sw\b|touring|estate|avant|weekend|rural|familiar|sportstourer|allroad|cross country)\b/i, "Rural / Familiar"],
+  [/\b(cabrio|convertible|roadster|spider|spyder)\b/i, "Convertible"],
+  [/\b(coup[eé]|mustang|camaro|challenger|gr86|brz|supra|z4|tt|rcz|86|370z|gt-r|scirocco)\b/i, "Coup\xE9"]
+];
+function inferBodyType(model = "", trim = "") {
+  const text80 = `${model} ${trim}`;
+  for (const [re, body] of BODY_BY_MODEL) if (re.test(text80)) return body;
+  return "Hatchback";
+}
+function inferTraction(model = "", trim = "") {
+  const text80 = `${model} ${trim}`;
+  if (/\b(awd|quattro|4matic|xdrive|4motion|all4|4wd)\b/i.test(text80)) return { traccion: "4x4", tipo: "Integral (AWD)" };
+  if (/\b4x4\b/i.test(text80)) return { traccion: "4x4", tipo: "4x4 conectable" };
+  const body = inferBodyType(model, trim);
+  if (body === "Pickup" && /\b(f-?1[05]0|ram|1500|2500|silverado|tundra)\b/i.test(text80)) return { traccion: "4x2", tipo: "Trasera" };
+  if (body === "Pickup") return { traccion: "4x2", tipo: "Trasera" };
+  if (/\b(mustang|camaro|serie|clase c|clase e|gr86|brz|supra|z4)\b/i.test(text80)) return { traccion: "4x2", tipo: "Trasera" };
+  return { traccion: "4x2", tipo: "Delantera" };
+}
+function vehicleKind(v) {
+  const guess = inferTraction(v.model ?? "", v.trim ?? "");
+  return {
+    carroceria: v.carroceria || inferBodyType(v.model ?? "", v.trim ?? ""),
+    traccion: v.traccion || guess.traccion,
+    tipoTraccion: v.tipoTraccion || guess.tipo
+  };
+}
+
+// features/keystone/models/Vehicle.ts
 var import_access9 = require("@keystone-6/core/access");
 var import_fields10 = require("@keystone-6/core/fields");
 var import_core6 = require("@keystone-6/core");
@@ -1812,6 +1852,25 @@ var Vehicle = (0, import_core5.list)({
       options: [...TRANSMISSION_OPTIONS],
       label: "Transmisi\xF3n",
       access: { update: () => false }
+    }),
+    carroceria: (0, import_fields10.select)({
+      type: "string",
+      options: BODY_TYPES.map((value) => ({ label: value, value })),
+      label: "Tipo de veh\xEDculo",
+      db: { isNullable: true },
+      ui: { description: "Si queda vac\xEDo se deduce del modelo." }
+    }),
+    traccion: (0, import_fields10.select)({
+      type: "string",
+      options: TRACCION.map((value) => ({ label: value, value })),
+      label: "Tracci\xF3n",
+      db: { isNullable: true }
+    }),
+    tipoTraccion: (0, import_fields10.select)({
+      type: "string",
+      options: TIPO_TRACCION.map((value) => ({ label: value, value })),
+      label: "Tipo de tracci\xF3n",
+      db: { isNullable: true }
     }),
     engine: (0, import_fields10.text)({
       label: "Cilindrada / motor",
@@ -9843,7 +9902,7 @@ async function submitTradeIn(_root, { data }, context) {
   const email = validEmail(data.email);
   const phone = validPhone(data.phone);
   const year = finiteNumber(data.year, "A\xF1o", {
-    min: 1980,
+    min: 1900,
     max: (/* @__PURE__ */ new Date()).getFullYear() + 1,
     integer: true
   });
@@ -19372,6 +19431,9 @@ function readWhere(where) {
           }
         }
         if (group2.length) filters.anyOf = [...filters.anyOf || [], group2];
+      } else if (key7 === "carroceria" || key7 === "traccion" || key7 === "tipoTraccion") {
+        const option = String(value?.equals || "").trim();
+        if (option) filters[key7] = option;
       } else if (key7 === "fuelType" || key7 === "transmission") {
         const option = String(value?.equals || "").trim().toLocaleLowerCase();
         if (option) filters[key7] = option;
@@ -19424,6 +19486,12 @@ function matches(vehicle, filters) {
   if (filters.fuelType && String(vehicle.fuelType || "") !== filters.fuelType) return false;
   if (filters.transmission && String(vehicle.transmission || "") !== filters.transmission) return false;
   if (filters.isFeatured && !vehicle.isFeatured) return false;
+  if (filters.carroceria || filters.traccion || filters.tipoTraccion) {
+    const kind = vehicleKind(vehicle);
+    if (filters.carroceria && kind.carroceria !== filters.carroceria) return false;
+    if (filters.traccion && kind.traccion !== filters.traccion) return false;
+    if (filters.tipoTraccion && kind.tipoTraccion !== filters.tipoTraccion) return false;
+  }
   if (filters.expressOffer && !isExpressOffer(vehicle)) return false;
   if (filters.anyOf?.some((group2) => !group2.some(({ field, search }) => String(vehicle[field] || "").toLocaleLowerCase().includes(search)))) return false;
   return inRange(vehicle.year, filters.year) && inRange(vehicle.priceCents, filters.priceCents) && inRange(vehicle.mileage, filters.mileage);
@@ -19431,6 +19499,10 @@ function matches(vehicle, filters) {
 function compare(a, b, orderBy) {
   const order2 = Array.isArray(orderBy) ? orderBy.find((item) => item && typeof item === "object" && Object.keys(item).length) : void 0;
   const [requestedField, requestedDirection] = order2 ? Object.entries(order2)[0] : ["year", "desc"];
+  if (requestedField === "discount") {
+    const off = (v) => isExpressOffer(v) ? (v.previousPriceCents - v.priceCents) / v.previousPriceCents : 0;
+    return off(b) - off(a) || Number(a.priceCents ?? 0) - Number(b.priceCents ?? 0) || String(a.id).localeCompare(String(b.id));
+  }
   const field = requestedField === "priceCents" ? "priceCents" : requestedField === "mileage" ? "mileage" : "year";
   const direction = requestedDirection === "asc" ? 1 : -1;
   const left = a[field] == null ? direction > 0 ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER : Number(a[field]);
@@ -19523,6 +19595,7 @@ async function queryPublicInventory(context, options = {}) {
         exteriorColor: vehicle.exteriorColor,
         fuelType: vehicle.fuelType || null,
         transmission: vehicle.transmission || null,
+        ...vehicleKind(vehicle),
         engine: vehicle.engine || "",
         isFeatured: Boolean(vehicle.isFeatured),
         progressiveOffer: offerIds.has(vehicle.id),
@@ -19886,6 +19959,9 @@ function extendGraphqlSchema(baseSchema) {
         mileage: Int
         price: Float
         previousPrice: Float
+        carroceria: String
+        traccion: String
+        tipoTraccion: String
         usedReport: JSON
         status: String
         condition: String

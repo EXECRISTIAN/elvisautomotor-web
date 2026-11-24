@@ -1034,6 +1034,9 @@ type Vehicle {
   interiorColor: String
   fuelType: String
   transmission: String
+  carroceria: String
+  traccion: String
+  tipoTraccion: String
   engine: String
   usedDebt: String
   usedDebtNotes: String
@@ -1115,6 +1118,9 @@ input VehicleWhereInput {
   interiorColor: StringFilter
   fuelType: StringNullableFilter
   transmission: StringNullableFilter
+  carroceria: StringNullableFilter
+  traccion: StringNullableFilter
+  tipoTraccion: StringNullableFilter
   engine: StringFilter
   usedDebt: StringNullableFilter
   usedDebtNotes: StringFilter
@@ -1204,6 +1210,9 @@ input VehicleOrderByInput {
   interiorColor: OrderDirection
   fuelType: OrderDirection
   transmission: OrderDirection
+  carroceria: OrderDirection
+  traccion: OrderDirection
+  tipoTraccion: OrderDirection
   engine: OrderDirection
   usedDebt: OrderDirection
   usedDebtNotes: OrderDirection
@@ -1247,6 +1256,9 @@ input VehicleUpdateInput {
   interiorColor: String
   fuelType: String
   transmission: String
+  carroceria: String
+  traccion: String
+  tipoTraccion: String
   engine: String
   usedDebt: String
   usedDebtNotes: String
@@ -1360,6 +1372,9 @@ input VehicleCreateInput {
   interiorColor: String
   fuelType: String
   transmission: String
+  carroceria: String
+  traccion: String
+  tipoTraccion: String
   engine: String
   usedDebt: String
   usedDebtNotes: String
@@ -9910,6 +9925,9 @@ type PublicInventoryVehicle {
   mileage: Int
   price: Float
   previousPrice: Float
+  carroceria: String
+  traccion: String
+  tipoTraccion: String
   usedReport: JSON
   status: String
   condition: String

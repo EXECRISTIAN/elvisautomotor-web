@@ -9,6 +9,9 @@ export interface Vehicle {
   color: string
   fuelType?: string | null
   transmission?: string | null
+  carroceria?: string | null
+  traccion?: string | null
+  tipoTraccion?: string | null
   engine?: string
   isFeatured?: boolean
   progressiveOffer?: boolean

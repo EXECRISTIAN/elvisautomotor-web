@@ -135,6 +135,9 @@ export function extendGraphqlSchema(baseSchema: GraphQLSchema) {
         mileage: Int
         price: Float
         previousPrice: Float
+        carroceria: String
+        traccion: String
+        tipoTraccion: String
         usedReport: JSON
         status: String
         condition: String
