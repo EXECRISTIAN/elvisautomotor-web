@@ -30,3 +30,5 @@ PARA TENER EN CUENTA
 - Es una demostración: los autos y usuarios de ejemplo son inventados.
 - Ábrela SIEMPRE con "INICIAR-MUESTRA.bat". Si abres los archivos de la carpeta "sitio"
   directamente, se ven las páginas pero los menús, listas y botones no responden.
+
+Si despues de actualizar la muestra algo se ve raro (sin foto o sin colores), recarga la pagina con Ctrl + F5.

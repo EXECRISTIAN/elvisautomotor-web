@@ -93,6 +93,8 @@ while ($listener.IsListening) {
     if ($file) {
       $ext = [IO.Path]::GetExtension($file).ToLower()
       $res.ContentType = $(if ($types.ContainsKey($ext)) { $types[$ext] } else { 'application/octet-stream' })
+      # Paginas y datos: sin copia en el navegador, asi siempre se ve la ultima version de la muestra.
+      if ($ext -eq '.html' -or $ext -eq '.json' -or $path -eq '/_next/image') { $res.Headers.Add('Cache-Control', 'no-store') } else { $res.Headers.Add('Cache-Control', 'no-cache') }
       $bytes = [IO.File]::ReadAllBytes($file)
       $res.ContentLength64 = $bytes.Length
       $res.OutputStream.Write($bytes, 0, $bytes.Length)
