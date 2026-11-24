@@ -199,3 +199,20 @@
 .storefront [data-elv-filters] input[role='combobox'] { padding-left: 5rem; }
 .storefront [data-elv-filters] .grid > input { padding-left: .5rem; padding-right: .5rem; }
 .storefront .sf-trigger .text-muted-foreground { color: #8f8b84; }
+
+/* Mi cuenta: botón distinto a los enlaces del menú (contorno dorado + ícono). */
+.storefront .elv-account-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; min-width: 2.75rem; padding: 0 .9rem; border: 1px solid var(--sf-accent); border-radius: 999px; color: var(--sf-accent); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transition: background-color .15s, color .15s; }
+.storefront .elv-account-btn:hover, .storefront .elv-account-btn[aria-current="page"] { background: var(--sf-gold-gradient); color: #111; border-color: transparent; }
+@media (max-width: 639px) { .storefront .elv-account-btn { padding: 0; width: 2.75rem; } }
+
+/* WhatsApp flotante abajo a la derecha; sube cuando hay barras fijas abajo para no taparlas. */
+.storefront .elv-wa-float { position: fixed; z-index: 45; right: max(1rem, env(safe-area-inset-right)); bottom: calc(1rem + env(safe-area-inset-bottom)); display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 999px; background: #167a42; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.45); transition: bottom .2s, transform .15s; }
+.storefront .elv-wa-float:hover { transform: scale(1.06); }
+.storefront .elv-wa-float svg { width: 1.75rem; height: 1.75rem; }
+@media (max-width: 40rem) { body:has(.sf-compare-bar) .storefront .elv-wa-float, .storefront:has(.sf-compare-bar) .elv-wa-float { bottom: calc(5.5rem + env(safe-area-inset-bottom)); } }
+@media (max-width: 63.99rem) {
+  .storefront:has(.elv-sticky-actions[data-shown="true"]) .elv-wa-float { bottom: calc(7.5rem + env(safe-area-inset-bottom)); }
+  .storefront:has(.elv-sticky-actions[data-shown="true"]):has(.sf-compare-bar) .elv-wa-float { bottom: calc(11.5rem + env(safe-area-inset-bottom)); }
+}
+.storefront footer { padding-bottom: 5rem; }
+@media print { .storefront .elv-wa-float { display: none; } }

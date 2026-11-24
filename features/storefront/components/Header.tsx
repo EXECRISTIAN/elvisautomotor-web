@@ -19,7 +19,6 @@ const NAV = [
   { href: '/trade-in', label: 'Vende tu auto' },
   { href: '/nosotros', label: 'Nosotros' },
   { href: '/contact', label: 'Contacto' },
-  { href: '/account', label: 'Clientes' },
 ]
 
 const MENU = [
@@ -133,15 +132,13 @@ export function Header() {
 
             <Link
               href="/account"
-              aria-current={isActive(pathname, '/account') ? 'page' : undefined}
-              className="hidden size-10 place-items-center rounded-[3px] transition-colors hover:text-[var(--sf-accent)] sm:grid lg:hidden"
+              aria-current={isActive(pathname, '/account') || isActive(pathname, '/panel') ? 'page' : undefined}
+              className="elv-account-btn"
               aria-label="Mi cuenta"
             >
-              <UserRound className="size-5" aria-hidden="true" />
+              <UserRound className="size-[1.125rem] shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline">Mi cuenta</span>
             </Link>
-
-            <WhatsAppButton label="WhatsApp" className="sf-btn sf-btn-outline ml-1 hidden min-h-[2.75rem] rounded-[6px] px-4 text-[0.75rem] md:inline-flex lg:hidden" />
-            <WhatsAppButton iconOnly label="Consulta por WhatsApp" className="grid size-11 shrink-0 place-items-center rounded-[6px] text-[var(--sf-accent)] md:hidden lg:grid lg:border lg:border-[var(--sf-accent)]" />
 
             <button
               ref={menuButtonRef}
@@ -158,6 +155,7 @@ export function Header() {
         </Container>
       </div>
 
+      <WhatsAppButton iconOnly label="Consulta por WhatsApp" className="elv-wa-float" />
       {menuOpen && (
         <div
           id="storefront-mobile-menu"

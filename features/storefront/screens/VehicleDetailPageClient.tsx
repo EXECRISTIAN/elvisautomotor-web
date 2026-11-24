@@ -518,7 +518,8 @@ export function VehicleDetailPageClient({ id, initialState }: { id: string; init
 
       {!readOnly && (
       <div
-        className={`fixed inset-x-3 z-40 transition-[opacity,transform] duration-200 lg:hidden ${compareCount > 0 ? 'bottom-[7.25rem] md:bottom-[5.25rem]' : 'bottom-12'} ${actionsVisible ? 'pointer-events-none translate-y-4 opacity-0' : 'opacity-100'}`}
+        data-shown={actionsVisible ? 'false' : 'true'}
+        className={`elv-sticky-actions fixed inset-x-3 z-40 transition-[opacity,transform] duration-200 lg:hidden ${compareCount > 0 ? 'bottom-[7.25rem] md:bottom-[5.25rem]' : 'bottom-12'} ${actionsVisible ? 'pointer-events-none translate-y-4 opacity-0' : 'opacity-100'}`}
         role="region"
         aria-label="Acciones del vehículo"
         aria-hidden={actionsVisible || undefined}
