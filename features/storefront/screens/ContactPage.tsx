@@ -43,6 +43,7 @@ export function ContactPage() {
     message: '',
     website: '',
   })
+  const [visitTime, setVisitTime] = useState('')
   const [idempotencyKey] = useState(() => crypto.randomUUID())
   const [submitted, setSubmitted] = useState(false)
   const [submissionReference, setSubmissionReference] = useState<string | null>(null)
@@ -55,8 +56,10 @@ export function ContactPage() {
     setIsSubmitting(true)
     setSubmissionError(null)
     try {
+      const visitNote = visitTime ? `Quiere agendar una cita de compra ${visitTime === 'manana' ? 'por la mañana' : 'por la tarde'}.` : ''
       const result = await submitStorefrontInquiry({
         ...formData,
+        message: [formData.message.trim(), visitNote].filter(Boolean).join('\n\n'),
         intent: 'general-contact',
         rooftopSlug: business.rooftopSlug,
         idempotencyKey,
@@ -103,7 +106,13 @@ export function ContactPage() {
 
   const hasAddress = Boolean(business.addressLine1 || business.addressLine2)
   const hours = [
-    { label: 'Lun–Vie', value: business.hoursMonFri },
+    // "9 a 13 h sin cita (por la tarde, solo con cita asignada)" se muestra en dos filas cortas.
+    ...(/sin cita/i.test(business.hoursMonFri)
+      ? [
+          { label: 'Sin cita', value: business.hoursMonFri.split(/\s*sin cita/i)[0].trim() },
+          { label: 'Con cita', value: 'Por la tarde, solo con cita asignada' },
+        ]
+      : [{ label: 'Lun–Vie', value: business.hoursMonFri }]),
     { label: 'Sábado', value: business.hoursSaturday },
     { label: 'Domingo', value: business.hoursSunday },
   ].filter((row) => row.value)
@@ -310,6 +319,18 @@ export function ContactPage() {
               <button type="submit" disabled={isSubmitting} className="sf-btn sf-btn-primary w-full sm:w-auto sm:min-w-56">
                 {isSubmitting ? 'Enviando…' : 'Quiero que me contacten'}
               </button>
+              <details className="elv-mails">
+                <summary className="sf-muted flex min-h-11 cursor-pointer items-center gap-1.5 text-[length:var(--sf-text-xs)]">
+                  Agendar cita de compra (en construcción)
+                  <ChevronDown className="elv-mails-arrow size-3.5 transition-transform" aria-hidden="true" />
+                </summary>
+                <div role="group" aria-label="Momento de la cita" className="flex flex-wrap gap-2 pb-1">
+                  {([['manana', 'Por la mañana'], ['tarde', 'Por la tarde']] as const).map(([value, label]) => (
+                    <button key={value} type="button" className="sf-pill min-h-11 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={visitTime === value} onClick={() => setVisitTime(visitTime === value ? '' : value)}>{label}</button>
+                  ))}
+                </div>
+                {visitTime && <p className="sf-muted mt-1 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta y te confirmamos día y hora.</p>}
+              </details>
             </div>
           </form>
         </div>
