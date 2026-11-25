@@ -3,6 +3,7 @@
 import * as React from "react";
 import { CalendarDays } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { es } from "react-day-picker/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { PlatformSelect } from "./PlatformSelect";
@@ -103,6 +104,7 @@ export function PlatformDateInput({
         <PopoverContent align="start" sideOffset={4} collisionPadding={12} className="w-auto rounded-[6px] p-2">
           <Calendar
             mode="single"
+            locale={es}
             selected={selected ?? undefined}
             defaultMonth={selected ?? minDate ?? maxDate ?? undefined}
             disabled={outOfRange.length ? outOfRange : undefined}

@@ -2,7 +2,8 @@
 
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, ChevronDown } from 'lucide-react'
+import { ArrowUpRight, CalendarDays, ChevronDown, Phone } from 'lucide-react'
+import { PlatformDateInput } from '@/features/platform/components/PlatformDateTime'
 import { submitStorefrontInquiry } from '../lib/submit'
 import { Container } from '../components/Container'
 import { PageHeader } from '../components/PageHeader'
@@ -43,7 +44,9 @@ export function ContactPage() {
     message: '',
     website: '',
   })
-  const [visitTime, setVisitTime] = useState('')
+  const [visitTime, setVisitTime] = useState<'' | 'llamar' | 'calendario'>('')
+  const [visitDate, setVisitDate] = useState('')
+  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()
   const [idempotencyKey] = useState(() => crypto.randomUUID())
   const [submitted, setSubmitted] = useState(false)
   const [submissionReference, setSubmissionReference] = useState<string | null>(null)
@@ -56,7 +59,7 @@ export function ContactPage() {
     setIsSubmitting(true)
     setSubmissionError(null)
     try {
-      const visitNote = visitTime ? 'Pide que lo llamen para organizar una cita de compra.' : ''
+      const visitNote = visitTime === 'llamar' ? 'Pide que lo llamen para organizar una cita de compra.' : visitTime === 'calendario' && visitDate ? `Pide una cita de compra para el ${visitDate.split('-').reverse().join('/')} por la tarde.` : ''
       const result = await submitStorefrontInquiry({
         ...formData,
         message: [formData.message.trim(), visitNote].filter(Boolean).join('\n\n'),
@@ -106,13 +109,13 @@ export function ContactPage() {
 
   const hasAddress = Boolean(business.addressLine1 || business.addressLine2)
   const hours = [
-    // "9 a 13 h sin cita (por la tarde, solo con cita asignada)" se muestra en dos filas cortas.
-    ...(/sin cita/i.test(business.hoursMonFri)
-      ? [
-          { label: 'Sin cita', value: business.hoursMonFri.split(/\s*sin cita/i)[0].trim() },
-          { label: 'Con cita', value: 'Por la tarde, solo con cita asignada' },
-        ]
-      : [{ label: 'Lun–Vie', value: business.hoursMonFri }]),
+    // "9 a 13 h sin cita (por la tarde, solo con cita asignada)" se muestra en dos líneas cortas.
+    {
+      label: 'Lun–Vie',
+      value: /sin cita/i.test(business.hoursMonFri)
+        ? <span className="flex flex-col items-end gap-1"><span>Sin cita: {business.hoursMonFri.split(/\s*sin cita/i)[0].trim()}</span><span>Con cita: por la tarde, solo con cita asignada</span></span>
+        : business.hoursMonFri,
+    },
     { label: 'Sábado', value: business.hoursSaturday },
     { label: 'Domingo', value: business.hoursSunday },
   ].filter((row) => row.value)
@@ -324,8 +327,18 @@ export function ContactPage() {
                   Agendar cita de compra (en construcción)
                   <ChevronDown className="elv-mails-arrow size-3.5 transition-transform" aria-hidden="true" />
                 </summary>
-                <button type="button" className="sf-pill min-h-11 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={Boolean(visitTime)} onClick={() => setVisitTime(visitTime ? '' : 'si')}>Llámenme para organizar cita</button>
-                {visitTime && <p className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta: te llamamos para acordar día y hora. Deja tu teléfono arriba.</p>}
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" className="sf-pill min-h-11 gap-2 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={visitTime === 'llamar'} onClick={() => setVisitTime(visitTime === 'llamar' ? '' : 'llamar')}><Phone className="size-4" aria-hidden="true" />Llámenme para organizar cita</button>
+                  <button type="button" className="sf-pill min-h-11 gap-2 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={visitTime === 'calendario'} onClick={() => setVisitTime(visitTime === 'calendario' ? '' : 'calendario')}><CalendarDays className="size-4" aria-hidden="true" />Agendar cita en el calendario</button>
+                </div>
+                {visitTime === 'llamar' && <p className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta: te llamamos para acordar día y hora. Deja tu teléfono arriba.</p>}
+                {visitTime === 'calendario' && (
+                  <div className="mt-3 max-w-xs">
+                    <label htmlFor="visit-date" className="sf-label">Día de la cita (lun–vie, por la tarde)</label>
+                    <PlatformDateInput id="visit-date" value={visitDate} min={tomorrow} isDateDisabled={(key) => { const day = new Date(`${key}T12:00:00`).getDay(); return day === 0 || day === 6 }} onChange={(value) => setVisitDate(value)} className="sf-input sf-trigger mt-2" />
+                    <p className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta y te confirmamos el horario.</p>
+                  </div>
+                )}
               </details>
             </div>
           </form>
