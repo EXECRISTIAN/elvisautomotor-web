@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, CarFront, Clock, Handshake, Headset, Landmark, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BadgeCheck, CarFront, Clock, Handshake, Headset, Landmark, Mail, MapPin, Phone, ShieldCheck, Zap } from 'lucide-react'
 import { fetchGraphQL } from '@/features/storefront/lib/data/graphql-client'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import { Vehicle } from '@/features/storefront/lib/types'
@@ -77,6 +77,7 @@ export async function HomePage() {
   const used = usedAll.slice(0, 4)
   const liveOffers = offers.filter((offer) => offer.phase === 'live' || offer.phase === 'upcoming').slice(0, 2)
   const business = settings.status === 'ready' ? settings.business : createStorefrontBusiness()
+  const adviceHref = 'https://formularioatenciononline.netlify.app/'
   const vehicles = featured.status === 'ready' ? featured.value.slice(0, 4) : []
   const words = business.shortName.trim().split(/\s+/)
   const lead = words[0] || 'Elvis'
@@ -113,11 +114,25 @@ export async function HomePage() {
             <p className="mt-4 max-w-xl text-[0.95rem]" style={{ color: 'var(--sf-ink-2)' }} data-edit="heroTexto">{business.homepageDescription}</p>
           )}
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 rounded-[8px] px-6">
-              Explora nuestro inventario
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+            <div className="relative flex">
+              <Link href="/inventory" className="sf-btn sf-btn-primary min-h-12 w-full rounded-[8px] px-6">
+                Explora nuestro inventario
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+              {/* En computadora va pegado debajo de "Explora", sin mover el resto. */}
+              {adviceHref && (
+                <a href={adviceHref} target="_blank" rel="noopener noreferrer" className="elv-advice-btn absolute inset-x-0 top-[calc(100%+0.5rem)] hidden lg:inline-flex">
+                  <Zap className="size-4" aria-hidden="true" />Asesoramiento rápido
+                </a>
+              )}
+            </div>
             <WhatsAppButton className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6" />
+            {/* En celular y tablet va al final, con el mismo formato que WhatsApp. */}
+            {adviceHref && (
+              <a href={adviceHref} target="_blank" rel="noopener noreferrer" className="sf-btn sf-btn-outline min-h-12 rounded-[8px] px-6 lg:hidden">
+                <Zap className="size-5" aria-hidden="true" />Asesoramiento rápido
+              </a>
+            )}
           </div>
         </Container>
       </section>

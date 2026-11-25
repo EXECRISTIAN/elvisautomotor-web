@@ -216,3 +216,7 @@
 }
 .storefront footer { padding-bottom: 5rem; }
 @media print { .storefront .elv-wa-float { display: none; } }
+
+/* Asesoramiento rápido (computadora): más bajo, pegado debajo de "Explora nuestro inventario". */
+.storefront .elv-advice-btn { align-items: center; justify-content: center; gap: .5rem; min-height: 2.5rem; padding: .375rem 1rem; border: 1px solid var(--sf-accent); border-radius: 8px; background: rgba(0,0,0,.55); color: var(--sf-ink, #fff); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transition: background-color .15s, color .15s; }
+.storefront .elv-advice-btn:hover { background: var(--sf-gold-gradient); color: #111; border-color: transparent; }

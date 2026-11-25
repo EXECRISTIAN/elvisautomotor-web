@@ -439,6 +439,9 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                     </button>
                   ))}
                 </div>
+                <button type="button" className="sf-pill mt-3 min-h-11 w-full justify-center rounded-[8px] border" style={{ borderColor: "var(--sf-rule-strong, var(--sf-rule))" }} aria-pressed={filters.progressiveOffer === 'true'} onClick={() => handleFilterChange('progressiveOffer', filters.progressiveOffer === 'true' ? '' : 'true')}>
+                  Solo oferta progresiva
+                </button>
               </div>
 
               <div>
@@ -534,10 +537,6 @@ export function InventoryPage({ initial }: { initial?: InitialInventory | null }
                   </div>
                 </div>
               )}
-
-              <button type="button" className="sf-pill min-h-11 w-full justify-center rounded-[8px] border" style={{ borderColor: "var(--sf-rule-strong, var(--sf-rule))" }} aria-pressed={filters.progressiveOffer === 'true'} onClick={() => handleFilterChange('progressiveOffer', filters.progressiveOffer === 'true' ? '' : 'true')}>
-                Solo oferta progresiva
-              </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">
