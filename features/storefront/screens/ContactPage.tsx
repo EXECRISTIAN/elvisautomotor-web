@@ -56,7 +56,7 @@ export function ContactPage() {
     setIsSubmitting(true)
     setSubmissionError(null)
     try {
-      const visitNote = visitTime ? `Quiere agendar una cita de compra ${visitTime === 'manana' ? 'por la mañana' : 'por la tarde'}.` : ''
+      const visitNote = visitTime ? 'Pide que lo llamen para organizar una cita de compra.' : ''
       const result = await submitStorefrontInquiry({
         ...formData,
         message: [formData.message.trim(), visitNote].filter(Boolean).join('\n\n'),
@@ -324,12 +324,8 @@ export function ContactPage() {
                   Agendar cita de compra (en construcción)
                   <ChevronDown className="elv-mails-arrow size-3.5 transition-transform" aria-hidden="true" />
                 </summary>
-                <div role="group" aria-label="Momento de la cita" className="flex flex-wrap gap-2 pb-1">
-                  {([['manana', 'Por la mañana'], ['tarde', 'Por la tarde']] as const).map(([value, label]) => (
-                    <button key={value} type="button" className="sf-pill min-h-11 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={visitTime === value} onClick={() => setVisitTime(visitTime === value ? '' : value)}>{label}</button>
-                  ))}
-                </div>
-                {visitTime && <p className="sf-muted mt-1 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta y te confirmamos día y hora.</p>}
+                <button type="button" className="sf-pill min-h-11 rounded-[8px] border px-4" style={{ borderColor: 'var(--sf-rule)' }} aria-pressed={Boolean(visitTime)} onClick={() => setVisitTime(visitTime ? '' : 'si')}>Llámenme para organizar cita</button>
+                {visitTime && <p className="sf-muted mt-2 text-[length:var(--sf-text-xs)]">Lo sumamos a tu consulta: te llamamos para acordar día y hora. Deja tu teléfono arriba.</p>}
               </details>
             </div>
           </form>
