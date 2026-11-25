@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, ChevronDown } from 'lucide-react'
 import { submitStorefrontInquiry } from '../lib/submit'
 import { Container } from '../components/Container'
 import { PageHeader } from '../components/PageHeader'
@@ -113,6 +113,7 @@ export function ContactPage() {
     { label: 'Usados y Plan Canje', email: 'usados@elvisautomotores.com' },
     { label: 'Créditos y financiación', email: 'creditos@elvisautomotores.com' },
     { label: 'Posventa', email: 'posventa@elvisautomotores.com' },
+    { label: 'Pagos', email: 'pagos@elvisautomotores.com' },
     { label: 'Administración', email: 'administracion@elvisautomotores.com' },
     { label: 'Atención al cliente', email: 'info@elvisautomotores.com' },
   ]
@@ -150,21 +151,32 @@ export function ContactPage() {
             </section>
 
             <section>
-              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Áreas <span className="sf-muted align-middle text-[length:var(--sf-text-xs)] font-normal normal-case">(mails en construcción)</span></h2>
-              {business.phoneDisplay || departments.length ? (
+              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Áreas</h2>
+              {business.phoneDisplay ? (
                 <dl className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
                   {business.phoneHref && business.phoneDisplay && (
                     <InfoRow label="Teléfono">
                       <a href={business.phoneHref} className="sf-link sf-figure">{business.phoneDisplay}</a>
                     </InfoRow>
                   )}
-                  {departments.map((row) => (
-                    <InfoRow key={row.label} label={row.label}>
-                      <a href={`mailto:${row.email}`} className="sf-link whitespace-nowrap">{row.email}</a>
-                    </InfoRow>
-                  ))}
                 </dl>
-              ) : (
+              ) : null}
+              {departments.length > 0 && (
+                <details className="elv-mails mt-3 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }}>
+                  <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 text-[length:var(--sf-text-sm)] font-semibold">
+                    <span>Mails por área</span>
+                    <span className="flex items-center gap-2"><span className="sf-chip">En construcción</span><ChevronDown className="elv-mails-arrow size-4 transition-transform" aria-hidden="true" /></span>
+                  </summary>
+                  <dl className="border-t px-4" style={{ borderColor: 'var(--sf-rule)' }}>
+                    {departments.map((row) => (
+                      <InfoRow key={row.label} label={row.label}>
+                        <a href={`mailto:${row.email}`} className="sf-link whitespace-nowrap">{row.email}</a>
+                      </InfoRow>
+                    ))}
+                  </dl>
+                </details>
+              )}
+              {business.phoneDisplay || departments.length ? null : (
                 <p className="sf-muted text-[length:var(--sf-text-sm)]">Datos de contacto no informados</p>
               )}
             </section>
