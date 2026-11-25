@@ -109,7 +109,6 @@ export function ContactPage() {
   ].filter((row) => row.value)
   // Casillas por área con el dominio propio (a confirmar con Elvis que existan).
   const departments = [
-    { label: 'Ventas', email: 'ventas@elvisautomotores.com' },
     { label: 'Usados y Plan Canje', email: 'usados@elvisautomotores.com' },
     { label: 'Créditos y financiación', email: 'creditos@elvisautomotores.com' },
     { label: 'Posventa', email: 'posventa@elvisautomotores.com' },
@@ -159,15 +158,20 @@ export function ContactPage() {
                       <a href={business.phoneHref} className="sf-link sf-figure">{business.phoneDisplay}</a>
                     </InfoRow>
                   )}
+                  {business.salesEmail && (
+                    <InfoRow label="Ventas">
+                      <a href={`mailto:${business.salesEmail}`} className="sf-link break-all">{business.salesEmail}</a>
+                    </InfoRow>
+                  )}
                 </dl>
               ) : null}
               {departments.length > 0 && (
-                <details className="elv-mails mt-3 rounded-[8px] border" style={{ borderColor: 'var(--sf-rule)' }}>
-                  <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 text-[length:var(--sf-text-sm)] font-semibold">
-                    <span>Mails por área</span>
-                    <span className="flex items-center gap-2"><span className="sf-chip">En construcción</span><ChevronDown className="elv-mails-arrow size-4 transition-transform" aria-hidden="true" /></span>
+                <details className="elv-mails">
+                  <summary className="sf-muted flex min-h-11 cursor-pointer items-center justify-end gap-1.5 text-[length:var(--sf-text-xs)]">
+                    Otras áreas (en construcción)
+                    <ChevronDown className="elv-mails-arrow size-3.5 transition-transform" aria-hidden="true" />
                   </summary>
-                  <dl className="border-t px-4" style={{ borderColor: 'var(--sf-rule)' }}>
+                  <dl>
                     {departments.map((row) => (
                       <InfoRow key={row.label} label={row.label}>
                         <a href={`mailto:${row.email}`} className="sf-link whitespace-nowrap">{row.email}</a>

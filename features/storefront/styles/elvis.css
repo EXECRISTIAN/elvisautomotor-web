@@ -225,4 +225,4 @@
 .storefront .elv-mails > summary { list-style: none; }
 .storefront .elv-mails > summary::-webkit-details-marker { display: none; }
 .storefront .elv-mails[open] .elv-mails-arrow { transform: rotate(180deg); }
-.storefront .elv-mails dl > div:last-child { border-bottom: 0; }
+.storefront .elv-mails > summary:hover { color: var(--sf-accent); }
