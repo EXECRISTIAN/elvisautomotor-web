@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
+import { SocialIcon } from './SocialIcon'
 import { WhatsAppButton } from './WhatsAppButton'
 import { WhatsAppChannelButton } from './WhatsAppChannelButton'
 import { ELVIS_ABOUT, ELVIS_INFO, ELVIS_LINKS } from '../lib/elvisContent'
@@ -66,7 +67,7 @@ export function Footer(_props: { branding?: boolean } = {}) {
             <WhatsAppChannelButton compact className="mt-3" />
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--sf-text-xs)]" aria-label="Redes sociales">
               {ELVIS_LINKS.social.map((link) => (
-                <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center hover:text-[var(--sf-accent)]">{link.label}</a></li>
+                <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 min-w-11 items-center gap-1.5 hover:text-[var(--sf-accent)]"><SocialIcon label={link.label} className="size-3.5 shrink-0" />{link.label}</a></li>
               ))}
             </ul>
           </div>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BadgeCheck, CarFront, Clock, Landmark, MapPin } from 'lucide-react'
 import { Container } from '../components/Container'
+import { SocialIcon } from '../components/SocialIcon'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_LINKS, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
 
@@ -81,12 +82,12 @@ export function NosotrosPage() {
 
       <section className="py-14">
         <Container className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="sf-display text-[1.4rem]">Síguenos</h2>
+          <h2 className="sf-display text-[1.4rem]">Síguenos en nuestras redes sociales</h2>
           <div className="flex flex-wrap gap-2">
             {ELVIS_LINKS.social.map((link) => (
-              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost rounded-[8px]">{link.label}</a>
+              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost rounded-[8px]"><SocialIcon label={link.label} />{link.label}</a>
             ))}
-            <a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost rounded-[8px]">Canal de WhatsApp</a>
+            <a href={ELVIS_LINKS.whatsappChannel} target="_blank" rel="noreferrer" className="sf-btn sf-btn-ghost rounded-[8px]"><SocialIcon label="whatsapp" />Canal de WhatsApp</a>
             <WhatsAppButton className="sf-btn sf-btn-primary rounded-[8px]" />
           </div>
         </Container>
