@@ -24,9 +24,9 @@ const PREFERRED_CONTACT = [
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b py-3 text-[length:var(--sf-text-sm)]" style={{ borderColor: 'var(--sf-rule)' }}>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b py-3 text-[length:var(--sf-text-sm)]" style={{ borderColor: 'var(--sf-rule)' }}>
       <dt className="sf-muted shrink-0">{label}</dt>
-      <dd className="min-w-0 text-right">{children}</dd>
+      <dd className="ml-auto min-w-0 text-right">{children}</dd>
     </div>
   )
 }
@@ -107,10 +107,15 @@ export function ContactPage() {
     { label: 'Sábado', value: business.hoursSaturday },
     { label: 'Domingo', value: business.hoursSunday },
   ].filter((row) => row.value)
+  // Casillas por área con el dominio propio (a confirmar con Elvis que existan).
   const departments = [
-    business.salesEmail ? { label: 'Ventas', email: business.salesEmail } : null,
-    business.serviceEmail ? { label: 'Taller', email: business.serviceEmail } : null,
-  ].filter((row): row is { label: string; email: string } => Boolean(row))
+    { label: 'Ventas', email: 'ventas@elvisautomotores.com' },
+    { label: 'Usados y Plan Canje', email: 'usados@elvisautomotores.com' },
+    { label: 'Créditos y financiación', email: 'creditos@elvisautomotores.com' },
+    { label: 'Posventa', email: 'posventa@elvisautomotores.com' },
+    { label: 'Administración', email: 'administracion@elvisautomotores.com' },
+    { label: 'Atención al cliente', email: 'info@elvisautomotores.com' },
+  ]
 
   return (
     <>
@@ -145,7 +150,7 @@ export function ContactPage() {
             </section>
 
             <section>
-              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Áreas</h2>
+              <h2 className="sf-heading mb-3 text-[length:var(--sf-text-lg)]">Áreas <span className="sf-muted align-middle text-[length:var(--sf-text-xs)] font-normal normal-case">(mails en construcción)</span></h2>
               {business.phoneDisplay || departments.length ? (
                 <dl className="border-t" style={{ borderColor: 'var(--sf-rule)' }}>
                   {business.phoneHref && business.phoneDisplay && (
@@ -155,7 +160,7 @@ export function ContactPage() {
                   )}
                   {departments.map((row) => (
                     <InfoRow key={row.label} label={row.label}>
-                      <a href={`mailto:${row.email}`} className="sf-link break-all">{row.email}</a>
+                      <a href={`mailto:${row.email}`} className="sf-link whitespace-nowrap">{row.email}</a>
                     </InfoRow>
                   ))}
                 </dl>
