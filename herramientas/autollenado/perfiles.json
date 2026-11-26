@@ -1,0 +1,16 @@
+{
+  "Ejemplo - Ana": {
+    "nombre": "Ana", "apellido": "Pérez", "email": "ana.ejemplo@correo.com",
+    "telefono": "1155551234", "codigoPais": "+54", "nacimiento": "1990-05-10", "edad": "",
+    "genero": "Femenino", "ocupacion": "Docente", "pais": "Argentina", "provincia": "Buenos Aires",
+    "ciudad": "La Plata", "cp": "1900", "direccion": "Calle 7 123", "documento": "",
+    "empresa": "", "extras": "nivel de ingles = básico", "usuario": "", "password": ""
+  },
+  "Ejemplo - Juan": {
+    "nombre": "Juan", "apellido": "Gómez", "email": "juan.ejemplo@correo.com",
+    "telefono": "1166664321", "codigoPais": "+54", "nacimiento": "1985-11-02", "edad": "",
+    "genero": "Masculino", "ocupacion": "Comerciante", "pais": "Argentina", "provincia": "Córdoba",
+    "ciudad": "Córdoba", "cp": "5000", "direccion": "Av. Colón 456", "documento": "",
+    "empresa": "", "extras": "", "usuario": "", "password": ""
+  }
+}

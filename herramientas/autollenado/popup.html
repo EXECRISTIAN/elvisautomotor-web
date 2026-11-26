@@ -27,6 +27,8 @@ li{margin:2px 0;word-break:break-all}li.done{color:#059669;text-decoration:line-
 </div>
 
 <section id="flujo" class="on">
+  <label>Perfil de datos a usar</label>
+  <div class="row"><select class="selPerfil"></select></div>
   <div id="resumen"></div>
   <ol id="items"></ol>
   <button class="btn" id="rellenar">Rellenar esta página</button>
@@ -40,6 +42,14 @@ li{margin:2px 0;word-break:break-all}li.done{color:#059669;text-decoration:line-
 </section>
 
 <section id="datos">
+  <label>Perfil de datos a usar</label>
+  <div class="row"><select class="selPerfil"></select></div>
+  <div class="row">
+    <button class="btn sec" id="nuevoPerfil">Nuevo</button>
+    <button class="btn sec" id="duplicarPerfil">Duplicar</button>
+    <button class="btn sec" id="renombrarPerfil">Renombrar</button>
+    <button class="btn sec" id="borrarPerfil">Borrar</button>
+  </div>
   <div class="row"><div><label>Nombre</label><input data-k="nombre"></div><div><label>Apellido</label><input data-k="apellido"></div></div>
   <label>Email</label><input data-k="email" type="email">
   <div class="row"><div><label>Teléfono</label><input data-k="telefono"></div><div><label>Cód. país (+54)</label><input data-k="codigoPais"></div></div>
@@ -53,7 +63,12 @@ li{margin:2px 0;word-break:break-all}li.done{color:#059669;text-decoration:line-
   <textarea data-k="extras" style="height:70px" placeholder="nivel de ingles = básico&#10;idioma = español"></textarea>
   <label>Usuario preferido</label><input data-k="usuario">
   <label>Contraseña (opcional, se guarda solo en este navegador)</label><input data-k="password" type="password">
-  <button class="btn" id="guardarDatos">Guardar datos</button>
+  <button class="btn" id="guardarDatos">Guardar datos de este perfil</button>
+  <div class="row">
+    <button class="btn sec" id="exportar">Exportar perfiles</button>
+    <button class="btn sec" id="importar">Importar perfiles</button>
+  </div>
+  <input type="file" id="archivo" accept=".json" style="display:none">
 </section>
 
 <section id="lista">

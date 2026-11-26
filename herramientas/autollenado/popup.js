@@ -9,7 +9,13 @@ document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
 });
 
 async function cargar() {
-  const { perfil = {}, urls = [], indice = 0, hechos = [], auto = false } = await get(['perfil','urls','indice','hechos','auto']);
+  const { perfiles = {}, perfilActivo } = await get(['perfiles','perfilActivo']);
+  const perfil = perfiles[perfilActivo] || {};
+  document.querySelectorAll('.selPerfil').forEach(s => {
+    s.innerHTML = '';
+    Object.keys(perfiles).forEach(n => s.add(new Option(n, n, false, n === perfilActivo)));
+  });
+  const { urls = [], indice = 0, hechos = [], auto = false } = await get(['perfil','urls','indice','hechos','auto']);
   document.querySelectorAll('[data-k]').forEach(i => i.value = perfil[i.dataset.k] || '');
   $('#urls').value = urls.join('\n');
   $('#auto').checked = auto;
@@ -40,10 +46,47 @@ async function irA(i) {
   cargar();
 }
 
+const leerForm = () => { const o = {}; document.querySelectorAll('[data-k]').forEach(i => o[i.dataset.k] = i.value.trim()); return o; };
+async function perfiles() { return (await get('perfiles')).perfiles || {}; }
+async function activo() { return (await get('perfilActivo')).perfilActivo; }
+
+document.querySelectorAll('.selPerfil').forEach(s => s.onchange = async () => { await set({ perfilActivo: s.value }); cargar(); estado('Usando: ' + s.value); });
+
 $('#guardarDatos').onclick = async () => {
-  const perfil = {};
-  document.querySelectorAll('[data-k]').forEach(i => perfil[i.dataset.k] = i.value.trim());
-  await set({ perfil }); estado('Datos guardados ✔');
+  const ps = await perfiles(), a = await activo() || 'Principal';
+  ps[a] = leerForm(); await set({ perfiles: ps, perfilActivo: a }); estado(`Perfil "${a}" guardado ✔`); cargar();
+};
+$('#nuevoPerfil').onclick = async () => {
+  const n = prompt('Nombre del nuevo perfil:'); if (!n) return;
+  const ps = await perfiles(); if (ps[n]) return alert('Ya existe');
+  ps[n] = {}; await set({ perfiles: ps, perfilActivo: n }); cargar();
+};
+$('#duplicarPerfil').onclick = async () => {
+  const ps = await perfiles(), a = await activo(); const n = prompt('Nombre de la copia:', a + ' (copia)'); if (!n || ps[n]) return;
+  ps[n] = { ...leerForm() }; await set({ perfiles: ps, perfilActivo: n }); cargar();
+};
+$('#renombrarPerfil').onclick = async () => {
+  const ps = await perfiles(), a = await activo(); const n = prompt('Nuevo nombre:', a); if (!n || n === a || ps[n]) return;
+  ps[n] = ps[a]; delete ps[a]; await set({ perfiles: ps, perfilActivo: n }); cargar();
+};
+$('#borrarPerfil').onclick = async () => {
+  const ps = await perfiles(), a = await activo();
+  if (Object.keys(ps).length < 2) return alert('Debe quedar al menos un perfil');
+  if (!confirm(`¿Borrar el perfil "${a}"?`)) return;
+  delete ps[a]; await set({ perfiles: ps, perfilActivo: Object.keys(ps)[0] }); cargar();
+};
+$('#exportar').onclick = async () => {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(await perfiles(), null, 2)], { type: 'application/json' }));
+  chrome.downloads ? chrome.downloads.download({ url, filename: 'perfiles.json' }) : Object.assign(document.createElement('a'), { href: url, download: 'perfiles.json' }).click();
+};
+$('#importar').onclick = () => $('#archivo').click();
+$('#archivo').onchange = async e => {
+  try {
+    const nuevos = JSON.parse(await e.target.files[0].text());
+    const ps = { ...(await perfiles()), ...nuevos };
+    await set({ perfiles: ps, perfilActivo: (await activo()) || Object.keys(ps)[0] });
+    estado(`Importados ${Object.keys(nuevos).length} perfiles ✔`); cargar();
+  } catch { estado('Archivo no válido'); }
 };
 $('#guardarLista').onclick = async () => {
   const urls = $('#urls').value.split('\n').map(s => s.trim()).filter(Boolean)
