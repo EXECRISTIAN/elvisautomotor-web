@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+body{font:13px system-ui,sans-serif;width:360px;margin:0;padding:12px;background:#fff;color:#222}
+h1{font-size:15px;margin:0 0 8px}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tabs button{flex:1;padding:6px;border:1px solid #ccc;background:#f4f4f4;border-radius:6px;cursor:pointer}
+.tabs button.on{background:#1a56db;color:#fff;border-color:#1a56db}
+section{display:none}section.on{display:block}
+label{display:block;font-size:11px;color:#555;margin-top:6px}
+input,textarea,select{width:100%;box-sizing:border-box;padding:5px;border:1px solid #ccc;border-radius:5px;font:inherit}
+textarea{height:120px}
+.row{display:flex;gap:6px}.row>*{flex:1}
+.btn{margin-top:10px;width:100%;padding:8px;border:0;border-radius:6px;background:#1a56db;color:#fff;font-weight:600;cursor:pointer}
+.btn.sec{background:#e5e7eb;color:#222}
+.btn.ok{background:#059669}
+ol{padding-left:18px;max-height:160px;overflow:auto;margin:6px 0}
+li{margin:2px 0;word-break:break-all}li.done{color:#059669;text-decoration:line-through}li.cur{font-weight:700}
+#estado{margin-top:8px;font-size:12px;color:#1a56db;min-height:16px}
+.chk{display:flex;gap:6px;align-items:center;margin-top:8px}.chk input{width:auto}
+</style></head><body>
+<h1>Autollenado de Registros</h1>
+<div class="tabs">
+  <button data-t="flujo" class="on">Progreso</button>
+  <button data-t="datos">Mis datos</button>
+  <button data-t="lista">Direcciones</button>
+</div>
+
+<section id="flujo" class="on">
+  <div id="resumen"></div>
+  <ol id="items"></ol>
+  <button class="btn" id="rellenar">Rellenar esta página</button>
+  <button class="btn ok" id="siguiente">Listo, ir a la siguiente ➜</button>
+  <div class="row">
+    <button class="btn sec" id="empezar">Empezar desde la 1ª</button>
+    <button class="btn sec" id="saltar">Saltar esta</button>
+  </div>
+  <label class="chk"><input type="checkbox" id="auto"> Rellenar automáticamente al abrir cada dirección</label>
+  <div id="estado"></div>
+</section>
+
+<section id="datos">
+  <div class="row"><div><label>Nombre</label><input data-k="nombre"></div><div><label>Apellido</label><input data-k="apellido"></div></div>
+  <label>Email</label><input data-k="email" type="email">
+  <div class="row"><div><label>Teléfono</label><input data-k="telefono"></div><div><label>Cód. país (+54)</label><input data-k="codigoPais"></div></div>
+  <div class="row"><div><label>Fecha nacimiento</label><input data-k="nacimiento" type="date"></div><div><label>Género</label><input data-k="genero"></div></div>
+  <div class="row"><div><label>País</label><input data-k="pais"></div><div><label>Provincia/Estado</label><input data-k="provincia"></div></div>
+  <div class="row"><div><label>Ciudad</label><input data-k="ciudad"></div><div><label>Código postal</label><input data-k="cp"></div></div>
+  <label>Dirección</label><input data-k="direccion">
+  <div class="row"><div><label>Documento (DNI)</label><input data-k="documento"></div><div><label>Empresa</label><input data-k="empresa"></div></div>
+  <label>Usuario preferido</label><input data-k="usuario">
+  <label>Contraseña (opcional, se guarda solo en este navegador)</label><input data-k="password" type="password">
+  <button class="btn" id="guardarDatos">Guardar datos</button>
+</section>
+
+<section id="lista">
+  <label>Una dirección por línea</label>
+  <textarea id="urls" placeholder="https://www.openenglish.com/...&#10;https://..."></textarea>
+  <button class="btn" id="guardarLista">Guardar lista</button>
+</section>
+<script src="popup.js"></script>
+</body></html>

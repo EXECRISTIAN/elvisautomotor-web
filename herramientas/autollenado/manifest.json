@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Autollenado de Registros",
+  "version": "1.0.0",
+  "description": "Rellena formularios con tus datos y te lleva a la siguiente dirección de tu lista.",
+  "permissions": ["storage", "scripting", "activeTab", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "action": { "default_popup": "popup.html", "default_title": "Autollenado" },
+  "background": { "service_worker": "background.js" }
+}
