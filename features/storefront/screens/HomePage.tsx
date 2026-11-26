@@ -14,6 +14,7 @@ import { createStorefrontBusiness } from '../lib/business'
 import { loadProgressiveOffers } from '../lib/data/progressive-offers'
 import { ProgressiveOfferCard } from '../components/ProgressiveOfferCard'
 import { ELVIS_ABOUT, ELVIS_BANKS, ELVIS_INFO, ELVIS_ZERO_KM_BRANDS } from '../lib/elvisContent'
+import { WeekdayHours } from '../components/WeekdayHours'
 
 // Fotos reales de Elvis: frente del salón (Google Maps, subida por la agencia, sep. 2026) e interior (Instagram).
 const HERO_PHOTO = '/images/elvis/salon-frente.jpg'
@@ -330,7 +331,7 @@ export async function HomePage() {
             {hours.length > 0 && (
               <div>
                 <dt><Clock className="size-5" aria-hidden="true" /> Horarios</dt>
-                <dd>{hours.map(([label, value]) => <span key={label} className="block">{label}: {value}</span>)}</dd>
+                <dd>{hours.map(([label, value]) => <span key={label} className="block">{label}: {label === 'Lunes a viernes' ? <WeekdayHours value={String(value)} /> : value}</span>)}</dd>
               </div>
             )}
             {address.length === 0 && !business.phoneDisplay && !business.salesEmail && hours.length === 0 && (

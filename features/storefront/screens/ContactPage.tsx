@@ -6,6 +6,7 @@ import { ArrowUpRight, CalendarDays, ChevronDown, Phone } from 'lucide-react'
 import { PlatformDateInput } from '@/features/platform/components/PlatformDateTime'
 import { submitStorefrontInquiry } from '../lib/submit'
 import { Container } from '../components/Container'
+import { WeekdayHours } from '../components/WeekdayHours'
 import { PageHeader } from '../components/PageHeader'
 import { useStorefrontBusiness } from '../components/StorefrontBusinessProvider'
 import { customerRequestReference } from '../lib/customerRequests'
@@ -112,9 +113,7 @@ export function ContactPage() {
     // "9 a 13 h sin cita (por la tarde, solo con cita asignada)" se muestra en dos líneas cortas.
     {
       label: 'Lun–Vie',
-      value: /sin cita/i.test(business.hoursMonFri)
-        ? <span className="flex flex-col items-end gap-1"><span>Sin cita: {business.hoursMonFri.split(/\s*sin cita/i)[0].trim()}</span><span>Con cita: por la tarde, solo con cita asignada</span></span>
-        : business.hoursMonFri,
+      value: business.hoursMonFri ? <WeekdayHours value={business.hoursMonFri} align="end" /> : '',
     },
     { label: 'Sábado', value: business.hoursSaturday },
     { label: 'Domingo', value: business.hoursSunday },

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
 import { SocialIcon } from './SocialIcon'
+import { WeekdayHours } from './WeekdayHours'
 import { WhatsAppButton } from './WhatsAppButton'
 import { WhatsAppChannelButton } from './WhatsAppChannelButton'
 import { ELVIS_ABOUT, ELVIS_INFO, ELVIS_LINKS } from '../lib/elvisContent'
@@ -30,7 +31,7 @@ export function Footer(_props: { branding?: boolean } = {}) {
   const year = new Date().getFullYear()
   const business = useStorefrontBusiness()
   const hours = [
-    { label: 'Lun–Vie', value: business.hoursMonFri },
+    { label: 'Lun–Vie', value: business.hoursMonFri ? <WeekdayHours value={business.hoursMonFri} /> : '' },
     { label: 'Sáb', value: business.hoursSaturday },
     { label: 'Dom', value: business.hoursSunday },
   ].filter((row) => row.value)

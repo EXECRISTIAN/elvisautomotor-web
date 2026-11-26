@@ -234,3 +234,5 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 Hechos: 19, 24, 25, 26, 29, 31, 32, 33–41, 44, 45, 46 (detalle en `LISTA-COMPLETA.md`).
 Quedan: 17 (pasar a la base real lo que vive en la muestra; incluye 28), 22 (respaldos online, depende del hosting), 30 (patente parcial: lo decide Elvis), 27 (cuando haya fotos propias).
 - Contacto: se muestran ventas@, usados@, creditos@, posventa@, pagos@, administracion@ e info@elvisautomotores.com. Hay que confirmar con Elvis que esas casillas existan (o cuáles quiere) y que el dominio tenga el correo configurado.
+- Muestra para celular Android sin internet: `docs/elvis/muestra-android/elvis-muestra-celular.html` (un solo archivo; se ve el diseño, sin botones ni formularios). Se regenera con `docs/elvis/generar-muestra-celular.js`.
+- Horarios lun–vie en todo el sitio como "Sin cita: 9 a 13 h / Con cita: por la tarde, solo con cita asignada".

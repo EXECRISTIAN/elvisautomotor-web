@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Container } from './Container'
 import { useStorefrontBusiness } from './StorefrontBusinessProvider'
+import { WeekdayHours } from './WeekdayHours'
 
 export function HomeContactPanel() {
   const business = useStorefrontBusiness()
   const hours = [
-    { label: 'Lun–Vie', value: business.hoursMonFri },
+    { label: 'Lun–Vie', value: business.hoursMonFri ? <WeekdayHours value={business.hoursMonFri} align="end" /> : '' },
     { label: 'Sábado', value: business.hoursSaturday },
     { label: 'Domingo', value: business.hoursSunday },
   ].filter((row) => row.value)
