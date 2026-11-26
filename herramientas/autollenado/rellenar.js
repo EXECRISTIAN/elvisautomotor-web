@@ -2,7 +2,15 @@
 function rellenarFormulario(p) {
   const nombreCompleto = [p.nombre, p.apellido].filter(Boolean).join(' ');
   const [anio, mes, dia] = (p.nacimiento || '').split('-');
-  const reglas = [
+  let edad = p.edad;
+  if (!edad && p.nacimiento) {
+    const n = new Date(p.nacimiento), h = new Date();
+    edad = String(h.getFullYear() - n.getFullYear() - ((h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) ? 1 : 0));
+  }
+  const sinAcento = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const extras = (p.extras || '').split('\n').map(l => l.split('=')).filter(x => x.length > 1 && x[0].trim())
+    .map(([k, ...v]) => [new RegExp(sinAcento(k.trim()).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), v.join('=').trim()]);
+  const reglas = [...extras,
     [/pass(word)?|contrase|clave/, p.password, 'password'],
     [/e-?mail|correo/, p.email],
     [/user(name)?|usuario|login|nick/, p.usuario || (p.email || '').split('@')[0]],
@@ -15,6 +23,8 @@ function rellenarFormulario(p) {
     [/birth.?month|^mes$|^month$/, mes],
     [/birth.?year|^a[nñ]o$|^year$/, anio],
     [/birth|nacim|dob/, p.nacimiento],
+    [/\bage\b|edad|your.?age/, edad],
+    [/occupation|ocupaci|profesi|job|cargo|puesto/, p.ocupacion],
     [/gender|sex|g[eé]nero/, p.genero],
     [/country|pa[ií]s|nacionalidad/, p.pais],
     [/state|province|provincia|region|estado/, p.provincia],

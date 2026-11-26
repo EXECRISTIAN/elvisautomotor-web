@@ -43,11 +43,14 @@ li{margin:2px 0;word-break:break-all}li.done{color:#059669;text-decoration:line-
   <div class="row"><div><label>Nombre</label><input data-k="nombre"></div><div><label>Apellido</label><input data-k="apellido"></div></div>
   <label>Email</label><input data-k="email" type="email">
   <div class="row"><div><label>Teléfono</label><input data-k="telefono"></div><div><label>Cód. país (+54)</label><input data-k="codigoPais"></div></div>
-  <div class="row"><div><label>Fecha nacimiento</label><input data-k="nacimiento" type="date"></div><div><label>Género</label><input data-k="genero"></div></div>
+  <div class="row"><div><label>Fecha nacimiento</label><input data-k="nacimiento" type="date"></div><div><label>Edad (vacío = se calcula)</label><input data-k="edad" type="number"></div></div>
+  <div class="row"><div><label>Género</label><input data-k="genero"></div><div><label>Ocupación</label><input data-k="ocupacion"></div></div>
   <div class="row"><div><label>País</label><input data-k="pais"></div><div><label>Provincia/Estado</label><input data-k="provincia"></div></div>
   <div class="row"><div><label>Ciudad</label><input data-k="ciudad"></div><div><label>Código postal</label><input data-k="cp"></div></div>
   <label>Dirección</label><input data-k="direccion">
   <div class="row"><div><label>Documento (DNI)</label><input data-k="documento"></div><div><label>Empresa</label><input data-k="empresa"></div></div>
+  <label>Datos extra (uno por línea: palabra del campo = valor)</label>
+  <textarea data-k="extras" style="height:70px" placeholder="nivel de ingles = básico&#10;idioma = español"></textarea>
   <label>Usuario preferido</label><input data-k="usuario">
   <label>Contraseña (opcional, se guarda solo en este navegador)</label><input data-k="password" type="password">
   <button class="btn" id="guardarDatos">Guardar datos</button>
