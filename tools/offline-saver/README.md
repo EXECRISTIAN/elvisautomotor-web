@@ -15,6 +15,5 @@ Limitaciones: iframes de otros dominios y videos por streaming (HLS/DASH) no se 
 
 ## Modo grabación
 En el popup, **● Iniciar grabación**: se guarda la página actual y, automáticamente, cada página a la que navegues desde esa pestaña (clicks, links que abren pestañas nuevas y cambios de ruta en apps tipo SPA). El ícono muestra cuántas páginas lleva.
-**■ Stop y descargar** baja todo a `Descargas/Grabacion-<fecha>/`: un HTML por página + `index.html`. Los links entre páginas grabadas apuntan a las copias locales, así se puede navegar offline.
+**■ Stop y descargar** descarga **un solo `Grabacion-<fecha>.zip`** con un HTML por página + `index.html`. Descomprimilo y abrí `index.html`. Los links entre páginas grabadas apuntan a las copias locales, así se puede navegar offline.
 
-Tip: en `chrome://settings/downloads` desactivá “Preguntar dónde guardar cada archivo”, o Chrome pedirá confirmar cada archivo.

@@ -29,7 +29,7 @@ $('rec').onclick = async () => {
     $('rs').textContent = 'Generando archivos…';
     const r = await send({ type: 'recStop' });
     $('rec').disabled = false; await refresh();
-    $('rs').textContent = r.error ? 'Error: ' + r.error : r.count ? `Descargadas ${r.count} páginas en la carpeta\n${r.folder}/ (abrí index.html)` : 'No se capturó ninguna página.';
+    $('rs').textContent = r.error ? 'Error: ' + r.error : r.count ? `${r.count} páginas en ${r.folder}\nDescomprimilo y abrí index.html` : 'No se capturó ninguna página.';
     return;
   }
   $('rec').disabled = false; refresh();

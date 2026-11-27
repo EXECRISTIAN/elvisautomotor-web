@@ -53,19 +53,22 @@ async function stopRecording() {
   const files = new Map();
   pages.forEach((p, i) => files.set(p.url, `${String(i + 1).padStart(3, '0')}-${p.name}`));
   const dec = h => h.replace(/&amp;/g, '&');
+  const entries = [];
   for (const p of pages) {
     // Point links to other recorded pages at their local copies.
     const html = p.html.replace(/(<a\b[^>]*?\shref=")([^"]*)"/gi, (all, pre, href) => {
       const [u, hash] = dec(href).split('#'); const f = files.get(u);
       return f ? `${pre}${encodeURI(f)}${hash ? '#' + hash : ''}"` : all;
     });
-    await chrome.downloads.download({ url: htmlDataUrl(html), filename: `${folder}/${files.get(p.url)}`, saveAs: false, conflictAction: 'uniquify' });
+    entries.push([`${folder}/${files.get(p.url)}`, html]);
   }
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const index = `<!doctype html><meta charset="utf-8"><title>Grabación offline</title><style>body{font:15px system-ui;max-width:800px;margin:40px auto;padding:0 16px}li{margin:8px 0}small{color:#666}</style><h1>Grabación offline</h1><p>${pages.length} páginas · ${new Date(s.started).toLocaleString()}</p><ol>${pages.map(p => `<li><a href="${encodeURI(files.get(p.url))}">${esc(p.title || p.url)}</a><br><small>${esc(p.url)}</small></li>`).join('')}</ol>`;
-  await chrome.downloads.download({ url: htmlDataUrl(index), filename: `${folder}/index.html`, saveAs: false, conflictAction: 'uniquify' });
+  entries.unshift([`${folder}/index.html`, index]);
+  const zip = makeZip(entries);
+  await chrome.downloads.download({ url: 'data:application/zip;base64,' + b64(zip), filename: `${folder}.zip`, saveAs: true, conflictAction: 'uniquify' });
   await tx('readwrite', st => st.clear());
-  return { count: pages.length, folder };
+  return { count: pages.length, folder: folder + '.zip' };
 }
 
 // Follow navigations in recorded tabs (full loads + SPA route changes).
@@ -103,3 +106,24 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (msg.type === 'recStatus') return done((async () => ({ ...(await getState()), count: await tx('readonly', st => st.count()) }))());
 });
 chrome.runtime.onStartup.addListener(badge);
+
+// ---------- Minimal ZIP writer (stored, no compression) ----------
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = b => { let c = ~0; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return ~c >>> 0; };
+function makeZip(entries) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)), dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate());
+  for (const [name, content] of entries) {
+    const n = enc.encode(name), data = enc.encode(content), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, dt, 2], [12, dd, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, n.length, 2], [28, 0, 2]].forEach(([o, v, s]) => s === 4 ? h.setUint32(o, v, true) : h.setUint16(o, v, true));
+    const c = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, dt, 2], [14, dd, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, n.length, 2], [42, off, 4]].forEach(([o, v, s]) => s === 4 ? c.setUint32(o, v, true) : c.setUint16(o, v, true));
+    parts.push(new Uint8Array(h.buffer), n, data); central.push(new Uint8Array(c.buffer), n);
+    off += 30 + n.length + data.length;
+  }
+  const csize = central.reduce((a, b) => a + b.length, 0), e = new DataView(new ArrayBuffer(22));
+  [[0, 0x06054b50, 4], [8, entries.length, 2], [10, entries.length, 2], [12, csize, 4], [16, off, 4]].forEach(([o, v, s]) => s === 4 ? e.setUint32(o, v, true) : e.setUint16(o, v, true));
+  const all = [...parts, ...central, new Uint8Array(e.buffer)], out = new Uint8Array(all.reduce((a, b) => a + b.length, 0));
+  let p = 0; for (const a of all) { out.set(a, p); p += a.length; } return out;
+}
