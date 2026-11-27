@@ -1,3 +1,8 @@
+// Canonical page URL: no hash, no tracking params (_gl, utm_*, gclid…), no trailing slash.
+const normUrl = u => { try { const x = new URL(u); x.hash = '';
+  [...x.searchParams.keys()].forEach(k => { if (/^(_gl|_ga|_gac|_gid|utm_.*|gclid|gbraid|wbraid|fbclid|msclkid|dclid|yclid|mc_cid|mc_eid|_hsenc|_hsmi|ref_src)$/i.test(k)) x.searchParams.delete(k); });
+  x.search = x.searchParams.toString() ? '?' + x.searchParams : ''; if (x.pathname.length > 1) x.pathname = x.pathname.replace(/\/+$/, '');
+  return x.href; } catch { return u; } };
 // ---------- Resource fetching (extension privileges bypass page CORS) ----------
 async function toDataURL(url) {
   const res = await fetch(url, { credentials: 'include' });
@@ -44,18 +49,18 @@ const badge = async () => {
   chrome.action.setBadgeBackgroundColor({ color: '#d93025' });
   chrome.action.setBadgeText({ text: s.on ? String(n || '●') : '' });
 };
-const inFlight = new Set();
+const inFlight = new Set(), pending = new Set(), lastSig = new Map(); // tabId → content signature of the last capture
 
-async function captureTab(tabId, record) {
+async function captureTab(tabId, record, spa) {
   const key = tabId;
-  if (inFlight.has(key)) return; inFlight.add(key);
+  if (inFlight.has(key)) { pending.add(key); return; } inFlight.add(key);
   try {
-    if (record) { const t = await chrome.tabs.get(tabId); if (await tx('readonly', st => st.get(t.url.split('#')[0]))) return; }
-    await new Promise(r => setTimeout(r, 1200)); // let the page settle / render
-    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, record, files: record && (await getState()).files !== false }] });
+    if (record) { const t = await chrome.tabs.get(tabId); if (await tx('readonly', st => st.get(normUrl(t.url)))) return; }
+    await new Promise(r => setTimeout(r, 400));
+    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, prevSig: spa ? lastSig.get(tabId) : null, record, files: record && (await getState()).files !== false }] });
     await chrome.scripting.executeScript({ target: { tabId }, files: ['capture.js'] });
   } catch (e) { console.warn('capture failed', e); }
-  finally { inFlight.delete(key); }
+  finally { inFlight.delete(key); if (pending.delete(key)) captureTab(tabId, record, true); } // navigated mid-capture → capture the new page too
 }
 
 async function startRecording(tabId, files) {
@@ -76,7 +81,7 @@ async function stopRecording() {
   for (const p of pages) {
     // Point links to other recorded pages at their local copies.
     const html = p.html.replace(/(<a\b[^>]*?\shref=")([^"]*)"/gi, (all, pre, href) => {
-      const [u, hash] = dec(href).split('#'); const f = files.get(u);
+      const [, hash] = dec(href).split('#'); const f = files.get(normUrl(dec(href)));
       return f ? `${pre}${encodeURI(f)}${hash ? '#' + hash : ''}"` : all;
     });
     entries.push([`${folder}/${files.get(p.url)}`, html]);
@@ -98,7 +103,7 @@ chrome.webNavigation.onCompleted.addListener(async d => {
 });
 chrome.webNavigation.onHistoryStateUpdated.addListener(async d => {
   if (d.frameId !== 0) return; const s = await getState();
-  if (s.on && s.tabs.includes(d.tabId)) captureTab(d.tabId, true);
+  if (s.on && s.tabs.includes(d.tabId)) captureTab(d.tabId, true, true);
 });
 // Links opened in new tabs/windows from a recorded tab are recorded too.
 chrome.webNavigation.onCreatedNavigationTarget.addListener(async d => {
@@ -121,7 +126,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     if (!msg.record) return done(chrome.downloads.download({ url: htmlDataUrl(msg.html), filename: msg.name, saveAs: true }).then(id => ({ id })));
     return done((async () => {
       const s = await getState(); if (!s.on) return { skipped: true };
-      const prev = await tx('readonly', st => st.get(msg.url));
+      msg.url = normUrl(msg.url); if (sender.tab) lastSig.set(sender.tab.id, msg.sig); const prev = await tx('readonly', st => st.get(msg.url));
       const seq = prev ? prev.seq : ++s.seq; await setState(s);
       await tx('readwrite', st => st.put({ url: msg.url, title: msg.title, name: msg.name, html: msg.html, seq }));
       badge(); chrome.runtime.sendMessage({ type: 'recUpdate' }).catch(() => {});

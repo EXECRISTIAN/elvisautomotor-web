@@ -26,6 +26,19 @@
     return css.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g, (all, q, u) => map[u] ? `url("${map[u]}")` : all);
   }
 
+  // 1. Wait until the page stops changing (SPA route changes render after the URL changes).
+  progress('Esperando que la página termine de cargar…');
+  // SPA route change: the URL changes before the new content renders. Wait until the content differs from the last capture.
+  const sig = () => { const t = document.body?.innerText || ''; let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return document.title + '|' + h; };
+  if (opts.prevSig) for (let i = 0; i < 50 && sig() === opts.prevSig; i++) await new Promise(r => setTimeout(r, 200));
+  await new Promise(done => {
+    let t = setTimeout(fin, 1000); const max = setTimeout(fin, 8000);
+    const mo = new MutationObserver(() => { clearTimeout(t); t = setTimeout(fin, 1000); });
+    mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    function fin() { mo.disconnect(); clearTimeout(t); clearTimeout(max); done(); }
+  });
+  if (document.readyState !== 'complete') await new Promise(r => addEventListener('load', r, { once: true }));
+
   // 2. Freeze live state into the DOM before cloning.
   document.querySelectorAll('input').forEach(i => { if (/checkbox|radio/.test(i.type)) i.toggleAttribute('checked', i.checked); else i.setAttribute('value', i.value); });
   document.querySelectorAll('textarea').forEach(t => t.textContent = t.value);
@@ -43,6 +56,8 @@
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = r.path; if (media) l.media = media; return l;
   };
   const hash = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return (h >>> 0).toString(16); };
+  // Snapshot the page's own <style> elements first, so converted stylesheets are never processed twice.
+  const styleEls = $$('style'), liveStyles = [...document.querySelectorAll('style')];
   await Promise.all($$('link[rel~="stylesheet"][href]').map(async l => {
     const u = abs(l.getAttribute('href')), r = await get(u);
     if (!r?.text) return l.remove();
@@ -50,7 +65,6 @@
     if (opts.files) return l.replaceWith(await toFile(css, u, l.media));
     const st = document.createElement('style'); if (l.media) st.media = l.media; st.textContent = css; l.replaceWith(st);
   }));
-  const styleEls = $$('style'), liveStyles = [...document.querySelectorAll('style')];
   await Promise.all(styleEls.map(async (st, i) => {
     let css = st.textContent;
     const live = liveStyles[i]?.sheet;
@@ -117,7 +131,7 @@
   const dt = document.doctype ? `<!DOCTYPE ${document.doctype.name}>` : '<!DOCTYPE html>';
   const html = dt + '\n' + doc.outerHTML;
   const name = ((document.title || location.hostname).replace(/[\\/:*?"<>|]+/g, '_').trim().slice(0, 100) || 'pagina') + '.html';
-  const r = await chrome.runtime.sendMessage({ type: 'captured', html, name, title: document.title, url: location.href.split('#')[0], record: !!opts.record });
+  const r = await chrome.runtime.sendMessage({ type: 'captured', sig: sig(), html, name, title: document.title, url: location.href.split('#')[0], record: !!opts.record });
   if (r?.error) return { ok: false, error: r.error };
   return { ok: true, name, count, size: html.length };
 })();
