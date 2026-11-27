@@ -1,5 +1,8 @@
 'use client'
 
+import { installPhotoFallback } from '@/features/storefront/lib/oemPhotos'
+if (typeof window !== 'undefined') installPhotoFallback()
+
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'

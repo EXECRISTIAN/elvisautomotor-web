@@ -5,6 +5,7 @@
 import { vehicleKind } from '@/features/lib/vehicleKinds'
 import { fetchGraphQL as serverFetch } from './graphql-client'
 import { applyCarChanges, isLocalDemo } from '../localStore'
+import { withOemCatalog } from '../oemPhotos'
 
 type Vehicle = Record<string, any>
 let snapshot: Promise<{ vehicles: Vehicle[] }> | null = null
@@ -50,7 +51,7 @@ function order(list: Vehicle[], orderBy: any) {
 export async function fetchGraphQL<T>(query: string, variables?: Record<string, any>): Promise<T> {
   if (!isLocalDemo()) return serverFetch<T>(query, variables)
   const { vehicles: base } = await load()
-  const vehicles = applyCarChanges(base as any[]).filter((v) => v.status !== 'deleted')
+  const vehicles = withOemCatalog(applyCarChanges(base as any[])).filter((v) => v.status !== 'deleted')
   if (/publicInventoryVehicle\s*\(\s*id/.test(query)) {
     const found = vehicles.find((v) => v.id === variables?.id) ?? null
     return { publicInventoryVehicle: found } as T
