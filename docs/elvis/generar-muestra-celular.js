@@ -6,7 +6,7 @@ const BASE = 'http://localhost:3000'
 const OUT = process.argv[2]
 ;(async () => {
   const b = await chromium.launch()
-  const ctx = await b.newContext({ ...devices['Pixel 7'] })
+  const ctx = await b.newContext({ ...devices[process.argv[3] || 'Pixel 7'] })
   const p = await ctx.newPage()
   await p.goto(BASE + '/inventory'); await p.waitForTimeout(1500)
   const carId = await p.evaluate(() => (document.querySelector('a[href^="/inventory/"]')?.getAttribute('href') || '').split('/').pop())
