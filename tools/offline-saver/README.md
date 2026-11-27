@@ -1,32 +1,45 @@
 # Guardar Offline (extensión de Chrome)
 
-Guarda la página actual como **un solo archivo `.html`** que funciona sin internet: imágenes, CSS, fuentes, íconos, fondos, video/audio, iframes del mismo origen, canvas y valores de formularios quedan embebidos (base64).
+Copia sitios web completos para verlos sin internet o reutilizarlos.
 
 ## Instalar
 1. Abrí `chrome://extensions` y activá **Modo de desarrollador**.
 2. **Cargar descomprimida** → elegí esta carpeta (`tools/offline-saver`).
+3. Al actualizar: reemplazá la carpeta y tocá ↻ en la extensión.
 
-## Usar
-Clic en el ícono → **Guardar página**. Opciones:
-- *Quitar scripts*: deja una “foto” estática y liviana (recomendado). Si se desactiva, los JS también se embeben.
+## Grabar todo (modo principal)
+1. Abrí la página donde querés empezar y tocá **● Iniciar grabación**.
+2. Navegá normalmente. Se graba **esta pestaña y todas las pestañas que abras después** (desde links, Ctrl+T, otra ventana), con cada página que visites. El ícono muestra cuántas páginas lleva.
+3. Tocá **■ Stop y descargar** → se descarga `Copia-<fecha>.zip`.
 
-Limitaciones: iframes de otros dominios y videos por streaming (HLS/DASH) no se pueden embeber; datos que cargan por API después de abrir la página quedan como estaban en el momento de guardar.
+Con **Copia completa del código original** (activada por defecto) la extensión usa el protocolo de DevTools para guardar **cada archivo que el servidor envía** al navegador. Al iniciar recarga la página para capturarla desde el primer pedido, y Chrome muestra la barra “Guardar Offline está depurando este navegador”: es normal, no la cierres hasta terminar.
 
-## Modo grabación
-En el popup, **● Iniciar grabación**: se guarda la página actual y, automáticamente, cada página a la que navegues desde esa pestaña (clicks, links que abren pestañas nuevas y cambios de ruta en apps tipo SPA). El ícono muestra cuántas páginas lleva.
-**■ Stop y descargar** descarga **un solo `Grabacion-<fecha>.zip`** con un HTML por página + `index.html`. Descomprimilo y abrí `index.html`. Los links entre páginas grabadas apuntan a las copias locales, así se puede navegar offline.
-
-
-### Formato para reutilizar en otra web
-Con la opción **“CSS, imágenes y fuentes como archivos separados”** (activada por defecto) el zip queda así:
+### Qué trae el zip
 ```
-Grabacion-<fecha>/
-  index.html
-  001-Inicio.html
-  002-Contacto.html
-  assets/css/…   assets/img/…   assets/fonts/…   assets/media/…
+Copia-<fecha>/
+  index.html               resumen + lista de páginas
+  LEEME.txt
+  lista-de-archivos.csv    URL original → archivo, tipo, tamaño
+  paginas/                 cada página como se veía, lista para abrir sin internet
+    001-Inicio.html …
+    assets/css|img|fonts|media/
+  codigo-original/         TODO lo que envió el servidor, sin modificar
+    www.sitio.com/
+      index.html
+      assets/app-123.js
+      api/autos.json
+      fonts/… img/… videos/…
 ```
-Los HTML referencian `assets/…` con rutas relativas, así que la carpeta se puede subir tal cual a otro hosting, o copiar imágenes/secciones a otro proyecto. Cada hoja de estilos (externa, `<style>` o generada por JS) queda como archivo `.css` propio, compartido entre páginas; sus `url()` apuntan a `../img/…`. Los scripts se quitan.
+- `paginas/`: copias fijas (sin JavaScript), con links entre páginas apuntando a las copias locales. Cada CSS es un archivo propio y las imágenes se toman del código (`data-src`, `srcset` en la mayor resolución).
+- `codigo-original/`: HTML, JavaScript, CSS, JSON de APIs, imágenes, fuentes, videos, PDF, wasm… byte por byte, en la estructura de carpetas de cada dominio. Usan rutas absolutas del sitio (`/assets/app.js`), así que para que funcionen como sitio hay que servir la carpeta del dominio en la raíz de un servidor web.
 
-Todo sale del código de la página en una sola pasada: las imágenes se toman de `data-src`/`srcset` (mayor resolución) sin hacer scroll, cada página se captura una vez y cada recurso se descarga una vez aunque aparezca en varias páginas.
-Sin esa opción, todo queda embebido en base64 dentro de cada HTML (un archivo autocontenido por página).
+Cada página y cada archivo se guarda una sola vez (se ignoran parámetros de seguimiento como `_gl`, `utm_*`, `gclid`). En sitios que cambian de página sin recargar, se espera a que aparezca el contenido nuevo.
+
+## Solo esta página
+**Guardar esta página** descarga un único `.html` con todo embebido (base64).
+
+## Limitaciones
+- Solo se copia lo que se carga mientras navegás: secciones que nunca abriste no se incluyen.
+- Videos por streaming (HLS/DASH) pueden quedar incompletos.
+- Iframes de otros dominios, publicidad y seguimiento no se copian en `paginas/`.
+- El contenido de terceros tiene derechos de autor: usá las copias con sitios propios o con permiso.
