@@ -64,14 +64,17 @@ const OUT = process.argv[2]
     for (const id of ids) { const esc = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); h = h.replace(new RegExp(`id="${esc}"`, 'g'), `id="${id}-${sid}"`).replace(new RegExp(`url\\(#${esc}\\)`, 'g'), `url(#${id}-${sid})`) }
     return h
   }
-  const body = sections.map(([id, h]) => `<section id="${id}" class="mx-pg">${scope(link(swap(h)), id)}</section>`).join('\n')
+  // El botón ☰ abre un menú hecho solo con CSS (en este archivo no corre el JavaScript del sitio).
+  const burger = (h) => h.replace(/<button([^>]*aria-label="Abrir menú"[^>]*)>([\s\S]*?)<\/button>/g, (all, attrs, inner) => `<a href="#mx-menu"${attrs.replace(/\s(type|aria-expanded|aria-controls)="[^"]*"/g, '')}>${inner}</a>`)
+  const body = sections.map(([id, h]) => `<section id="${id}" class="mx-pg">${scope(burger(link(swap(h))), id)}</section>`).join('\n')
   const doc = `<!doctype html><html lang="es" class="${htmlCls}" style="${htmlStyle}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elvis Automotores · Muestra</title><style>${css}
 .mx-pg{display:none}.mx-pg:target{display:block}body:not(:has(.mx-pg:target)) #inicio{display:block}
-.mx-nav{position:sticky;top:0;z-index:60;display:flex;gap:6px;overflow-x:auto;padding:8px 10px;background:#000;border-bottom:1px solid #2a2a2a;scrollbar-width:none}
-.mx-nav a{flex:none;padding:7px 12px;border:1px solid #c9a24a;border-radius:999px;color:#e9c46a;font:600 12px/1 system-ui,sans-serif;text-decoration:none;white-space:nowrap}
-.mx-note{background:#111;color:#bbb;font:12px/1.4 system-ui,sans-serif;text-align:center;padding:6px 10px}
+#mx-menu{display:none;position:fixed;inset:0;z-index:200;background:rgba(5,5,5,.97);padding:22px 24px;overflow-y:auto}#mx-menu:target{display:block}
+#mx-menu .mx-x{display:block;margin-left:auto;width:44px;height:44px;color:#f3efe7;font:300 34px/44px system-ui,sans-serif;text-align:center;text-decoration:none}
+#mx-menu nav a{display:block;padding:16px 4px;border-bottom:1px solid #2a2622;color:#f3efe7;font:600 15px/1.2 Montserrat,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+#mx-menu p{margin-top:22px;color:#8f8b84;font:12px/1.5 system-ui,sans-serif}
 .mx-pg header.sticky{position:relative!important}\n.sf-gold-text{background-image:var(--sf-gold-gradient)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
-</style></head><body class="${bodyCls}" style="margin:0;background:#0a0908"><nav class="mx-nav" aria-label="Secciones">${nav}</nav><div class="mx-note">Muestra sin internet: se ve el diseño; los botones y formularios no funcionan.</div>${body}</body></html>`
+</style></head><body class="${bodyCls}" style="margin:0;background:#0a0908">${body}<div id="mx-menu" role="dialog" aria-label="Menú"><a class="mx-x" href="#inicio" onclick="history.back();return false" aria-label="Cerrar menú">×</a><nav>${nav}</nav><p>Muestra sin internet: se ve el diseño; los formularios no envían datos.</p></div></body></html>`
   fs.writeFileSync(OUT, doc)
   console.log('ok', (doc.length / 1048576).toFixed(1) + ' MB', urls.size, 'recursos')
   await b.close()
