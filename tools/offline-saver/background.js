@@ -13,14 +13,16 @@ function assetPath(url, type) {
   let base = 'file', ext = EXT[type.split(';')[0]];
   try { const last = decodeURIComponent(new URL(url).pathname.split('/').pop() || ''); const m = last.match(/^(.*?)(?:\.([a-z0-9]{1,5}))?$/i); if (m[1]) base = m[1]; if (!ext && m[2]) ext = m[2].toLowerCase(); } catch {}
   base = base.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'file';
-  const dir = /^image/.test(type) ? 'img' : /font/.test(type) || /^(woff2?|ttf|otf|eot)$/.test(ext) ? 'fonts' : /^(video|audio)/.test(type) ? 'media' : 'other';
+  const dir = /css/.test(type) ? 'css' : /^image/.test(type) ? 'img' : /font/.test(type) || /^(woff2?|ttf|otf|eot)$/.test(ext) ? 'fonts' : /^(video|audio)/.test(type) ? 'media' : 'other';
   return `assets/${dir}/${base}-${crc32(new TextEncoder().encode(url)).toString(16)}${ext ? '.' + ext : ''}`;
 }
 async function fetchResource(url, store) {
+  if (store) { const have = await tx('readonly', st => st.get(url), 'assets'); if (have) return { path: have.path, type: have.type, text: have.text }; }
   const r = await toDataURL(url);
   if (!store) return { dataUrl: `data:${r.type};base64,${b64(r.buf)}`, type: r.type, text: r.text };
+  if (/css/.test(r.type)) return { type: r.type, text: r.text }; // CSS is processed and stored via storeText
   const path = assetPath(url, r.type);
-  await tx('readwrite', st => st.put({ url, path, buf: r.buf }), 'assets');
+  await tx('readwrite', st => st.put({ url, path, buf: r.buf, type: r.type, text: r.text }), 'assets');
   return { path, type: r.type, text: r.text };
 }
 function b64(buf) { let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(bin); }
@@ -48,8 +50,9 @@ async function captureTab(tabId, record) {
   const key = tabId;
   if (inFlight.has(key)) return; inFlight.add(key);
   try {
+    if (record) { const t = await chrome.tabs.get(tabId); if (await tx('readonly', st => st.get(t.url.split('#')[0]))) return; }
     await new Promise(r => setTimeout(r, 1200)); // let the page settle / render
-    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, scroll: true, record, files: record && (await getState()).files !== false }] });
+    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, record, files: record && (await getState()).files !== false }] });
     await chrome.scripting.executeScript({ target: { tabId }, files: ['capture.js'] });
   } catch (e) { console.warn('capture failed', e); }
   finally { inFlight.delete(key); }
@@ -106,6 +109,13 @@ chrome.tabs.onRemoved.addListener(async id => { const s = await getState(); if (
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   const done = p => { p.then(reply, e => reply({ error: String(e) })); return true; };
+  if (msg.type === 'storeText') return done((async () => {
+    const key = 'css:' + msg.key, have = await tx('readonly', st => st.get(key), 'assets');
+    if (have) return { path: have.path };
+    const path = msg.key.startsWith('inline:') ? `assets/css/estilos-${msg.key.slice(7)}.css` : assetPath(msg.key, 'text/css').replace(/\.css$/, '') + '.css';
+    await tx('readwrite', st => st.put({ url: key, path, buf: new TextEncoder().encode(msg.text) }), 'assets');
+    return { path };
+  })());
   if (msg.type === 'fetch') return done(fetchResource(msg.url, msg.store));
   if (msg.type === 'captured') {
     if (!msg.record) return done(chrome.downloads.download({ url: htmlDataUrl(msg.html), filename: msg.name, saveAs: true }).then(id => ({ id })));

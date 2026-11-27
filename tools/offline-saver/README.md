@@ -9,7 +9,6 @@ Guarda la página actual como **un solo archivo `.html`** que funciona sin inter
 ## Usar
 Clic en el ícono → **Guardar página**. Opciones:
 - *Quitar scripts*: deja una “foto” estática y liviana (recomendado). Si se desactiva, los JS también se embeben.
-- *Scroll*: recorre la página para forzar la carga de imágenes diferidas (lazy).
 
 Limitaciones: iframes de otros dominios y videos por streaming (HLS/DASH) no se pueden embeber; datos que cargan por API después de abrir la página quedan como estaban en el momento de guardar.
 
@@ -19,13 +18,15 @@ En el popup, **● Iniciar grabación**: se guarda la página actual y, automát
 
 
 ### Formato para reutilizar en otra web
-Con la opción **“Imágenes y fuentes como archivos separados”** (activada por defecto) el zip queda así:
+Con la opción **“CSS, imágenes y fuentes como archivos separados”** (activada por defecto) el zip queda así:
 ```
 Grabacion-<fecha>/
   index.html
   001-Inicio.html
   002-Contacto.html
-  assets/img/…   assets/fonts/…   assets/media/…
+  assets/css/…   assets/img/…   assets/fonts/…   assets/media/…
 ```
-Los HTML referencian `assets/…` con rutas relativas, así que la carpeta se puede subir tal cual a otro hosting, o copiar imágenes/secciones a otro proyecto. El CSS queda en bloques `<style>` dentro de cada HTML y los scripts se quitan.
+Los HTML referencian `assets/…` con rutas relativas, así que la carpeta se puede subir tal cual a otro hosting, o copiar imágenes/secciones a otro proyecto. Cada hoja de estilos (externa, `<style>` o generada por JS) queda como archivo `.css` propio, compartido entre páginas; sus `url()` apuntan a `../img/…`. Los scripts se quitan.
+
+Todo sale del código de la página en una sola pasada: las imágenes se toman de `data-src`/`srcset` (mayor resolución) sin hacer scroll, cada página se captura una vez y cada recurso se descarga una vez aunque aparezca en varias páginas.
 Sin esa opción, todo queda embebido en base64 dentro de cada HTML (un archivo autocontenido por página).

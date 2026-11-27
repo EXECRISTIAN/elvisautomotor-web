@@ -6,7 +6,7 @@ $('go').onclick = async () => {
   $('go').disabled = true; $('s').textContent = 'Iniciando…';
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   try {
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: $('noJs').checked, scroll: $('scroll').checked, record: false }] });
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: $('noJs').checked, record: false }] });
     const [{ result: r }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['capture.js'] });
     $('s').textContent = r && r.ok ? `Listo: ${r.name}\n${r.count} recursos embebidos, ${(r.size / 1048576).toFixed(1)} MB` : 'Error: ' + (r && r.error);
   } catch (e) { $('s').textContent = 'Error: ' + e.message; }
