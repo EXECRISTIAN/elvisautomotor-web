@@ -94,7 +94,7 @@
   }
 
   // 7. Absolute links, metadata, CSP removal.
-  $$('a[href]').forEach(a => { const h = a.getAttribute('href'); if (!h.startsWith('#')) a.setAttribute('href', abs(h) || h); });
+  $$('a[href]').forEach(a => { const h = a.getAttribute('href'); if (!h.startsWith('#') && !/^(javascript|mailto|tel):/i.test(h)) a.setAttribute('href', abs(h) || h); });
   $$('form[action]').forEach(f => f.setAttribute('action', abs(f.getAttribute('action'))));
   $$('base, meta[http-equiv="Content-Security-Policy" i]').forEach(e => e.remove());
   $$('[integrity]').forEach(e => e.removeAttribute('integrity'));
@@ -105,7 +105,7 @@
   const dt = document.doctype ? `<!DOCTYPE ${document.doctype.name}>` : '<!DOCTYPE html>';
   const html = dt + '\n' + doc.outerHTML;
   const name = ((document.title || location.hostname).replace(/[\\/:*?"<>|]+/g, '_').trim().slice(0, 100) || 'pagina') + '.html';
-  const r = await chrome.runtime.sendMessage({ type: 'download', html, name });
+  const r = await chrome.runtime.sendMessage({ type: 'captured', html, name, title: document.title, url: location.href.split('#')[0], record: !!opts.record });
   if (r?.error) return { ok: false, error: r.error };
   return { ok: true, name, count, size: html.length };
 })();
