@@ -89,6 +89,12 @@
   const liveFrames = [...document.querySelectorAll('iframe')];
   $$('iframe').forEach((f, i) => { try { const d = liveFrames[i].contentDocument; if (d) { f.setAttribute('srcdoc', '<!doctype html>' + d.documentElement.outerHTML); f.removeAttribute('src'); } } catch {} });
 
+  // Drop tracking/ad iframes and pixels (invisible or from known trackers): useless offline and they leak visits.
+  const TRACK = /doubleclick|googletagmanager|google-analytics|googlesyndication|facebook\.com\/tr|connect\.facebook|retargetly|hotjar|clarity\.ms|tiktok|bing\.com\/action|adservice|criteo|taboola|outbrain/i;
+  $$('iframe').forEach((f, i) => {
+    const live = liveFrames[i], r = live?.getBoundingClientRect();
+    if (TRACK.test(f.getAttribute('src') || '') || (r && (r.width <= 2 || r.height <= 2)) || (live && getComputedStyle(live).display === 'none')) f.remove();
+  });
   // 6. Scripts.
   if (opts.noJs) {
     $$('script:not([type="application/ld+json"])').forEach(s => s.remove());
