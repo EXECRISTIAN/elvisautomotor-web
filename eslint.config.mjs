@@ -8,7 +8,7 @@ export default defineConfig([
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     // Keystone resolver contexts are intentionally dynamic, and the inherited UI
-    // predates React Compiler lint rules. As in the Openfront donors, report that
+    // predates React Compiler lint rules. Report that
     // debt as warnings so lint stays executable and the findings stay visible.
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",

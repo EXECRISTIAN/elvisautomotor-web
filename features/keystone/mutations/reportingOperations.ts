@@ -251,7 +251,7 @@ function reportCsv(value: unknown) {
 async function buildReportRunSnapshot(saved: any, context: any) {
   const report = await savedReportPayload(saved, context)
   const exportPayload = saved.exportFormat === 'csv' ? { contentType: 'text/csv', content: reportCsv(report) } : report
-  const snapshot = { schema: 'openfront.report.v1', reportType: saved.reportType, exportFormat: saved.exportFormat, filters: normalizeReportFilters(saved.reportType, saved.filters || {}), report: exportPayload }
+  const snapshot = { schema: 'elvis.report.v1', reportType: saved.reportType, exportFormat: saved.exportFormat, filters: normalizeReportFilters(saved.reportType, saved.filters || {}), report: exportPayload }
   const digest = createHash('sha256').update(JSON.stringify(snapshot)).digest('hex')
   return { snapshot, digest, expiresAt: new Date(Date.now() + 30 * 86400000) }
 }

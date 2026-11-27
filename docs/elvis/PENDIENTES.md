@@ -103,7 +103,7 @@ Fuentes públicas: anuncios de los bancos difundidos por Infobae, La Nación, iP
 - Botón "Noticias y ofertas por WhatsApp" (canal) en inicio, ofertas y pie.
 - Panel en la PC: usuario **123** / contraseña **123** (solo local; cambiar antes de publicar). `INICIAR-ELVIS.bat` levanta todo con Docker Desktop y guarda los datos en la PC.
 - Muestra rápida: `INICIAR-MUESTRA.bat` (menús y simulador funcionan; no guarda datos).
-- Se quitó "Basado en Openfront (MIT)" del pie (la licencia sigue en el repositorio, que es lo que exige).
+- Se quitó del pie la mención a la plantilla base (la licencia sigue en el repositorio).
 
 ## Muestra local completa (20/11/2026, noche)
 - Todo se guarda en la carpeta `datos/` junto a INICIAR-MUESTRA.bat (consultas, usuarios, autos, ventas, caja, fotos, ajustes del sitio).
@@ -238,3 +238,4 @@ Quedan: 17 (pasar a la base real lo que vive en la muestra; incluye 28), 22 (res
 - Horarios lun–vie en todo el sitio como "Sin cita: 9 a 13 h / Con cita: por la tarde, solo con cita asignada".
 
 - 0 km con fotos oficiales enlazadas (sin descargar): Fiat 600, Titano y Toro 2026 (unidades de ejemplo en la muestra). Sin internet se ve "Foto próximamente". Faltan los HTML de Cronos, Amarok, Tracker, Tiggo 4, C3, 208, Kardian, Hilux.
+- Código depurado: sin menciones a la plantilla base; fotos de demo de la plantilla reemplazadas por "Foto próximamente". LICENSE solo en el repositorio (no se publica en la web ni en las muestras).

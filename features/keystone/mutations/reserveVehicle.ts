@@ -142,7 +142,7 @@ export async function reserveVehicle(_root: unknown, { data }: { data: any }, co
         amount: current.amountCents,
         currency: current.currency,
         description: `Reservation deposit: ${[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}`.trim(),
-        metadata: { openfront_transaction_id: transactionId },
+        metadata: { elvis_transaction_id: transactionId },
         idempotencyKey: current.idempotencyKey,
         successUrl,
         cancelUrl,

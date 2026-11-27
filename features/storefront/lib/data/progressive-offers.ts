@@ -1,5 +1,5 @@
 import { cache } from 'react'
-import { openfrontClient } from '../config'
+import { apiClient } from '../config'
 import type { PublicProgressiveOffer } from '../../components/ProgressiveOfferCard'
 
 const QUERY = `
@@ -10,7 +10,7 @@ const QUERY = `
 
 export const loadProgressiveOffers = cache(async (): Promise<PublicProgressiveOffer[]> => {
   try {
-    const data = await openfrontClient.request<{ publicProgressiveOffers: PublicProgressiveOffer[] }>(QUERY)
+    const data = await apiClient.request<{ publicProgressiveOffers: PublicProgressiveOffer[] }>(QUERY)
     return data.publicProgressiveOffers ?? []
   } catch {
     return []

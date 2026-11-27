@@ -18,7 +18,7 @@ test('deposit is $500, capped at the vehicle price', () => {
 test('reservation payments carry their lead and reuse the verified webhook + staff refund path', () => {
   assert.match(src, /sourceType: 'reservation'/);
   assert.match(src, /leadId: lead\.id/);
-  assert.match(src, /openfront_transaction_id: transactionId/);
+  assert.match(src, /elvis_transaction_id: transactionId/);
   const migration = fs.readFileSync(path.resolve(__dirname, '../migrations/20261102170000_vehicle_reservation_deposit/migration.sql'), 'utf8');
   assert.match(migration, /"sourceType" = 'reservation' AND "lead" IS NOT NULL/);
 });

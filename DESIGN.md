@@ -1,5 +1,5 @@
 ---
-name: Openfront Dealership
+name: Elvis Automotores
 description: Grease-pencil windshield numbers on the operator desk; the rooftop's own wayfinding signage, in daylight, on the storefront.
 colors:
   desk-ground: "oklch(1 0 0)"
@@ -265,17 +265,17 @@ components:
     padding: "0.2rem 0.5rem"
 ---
 
-# Design System: Openfront Dealership
+# Design System: Elvis Automotores
 
 ## Overview
 
 **Creative North Star: "The Lot, Marked and Signed"**
 
-Openfront Dealership carries two worlds that share one premise: a car lot is already a designed place. Inside the operator dashboard, the world is **the lot's windshield numbers**: a dealership writes price, stock and days on the glass in grease pencil and circles the units that need attention. Every desk page leads with the queue of units or people that need the operator now, with the one number each row is about set condensed and heavy, and a single lot-yellow marker on whatever has gone stale. Density is high, surfaces are flat, and state is always spoken as a word beside a small square mark.
+Elvis Automotores carries two worlds that share one premise: a car lot is already a designed place. Inside the operator dashboard, the world is **the lot's windshield numbers**: a dealership writes price, stock and days on the glass in grease pencil and circles the units that need attention. Every desk page leads with the queue of units or people that need the operator now, with the one number each row is about set condensed and heavy, and a single lot-yellow marker on whatever has gone stale. Density is high, surfaces are flat, and state is always spoken as a word beside a small square mark.
 
 On the storefront, the world is **the rooftop's own wayfinding signage in daylight**: the enamel pylon and directory sign (Sales, Service, Parts) in the merchant's logo hue, white panels on cool concrete, and the painted stall number on every space. The home page is that directory sign, and each row is a working door; the Sales row is the live inventory search. Vehicles are named and numbered in one breath (title plus stall number), and quantities (price, miles, monthly estimate) are set as figures, not prose.
 
-Scope: the shared Openfront dashboard shell (sidebar, breadcrumbs, PageContainer) is fixed and byte-identical to Openfront E-commerce, so it is out of scope for this system. The desk world consumes the shell's neutral tokens (white ground, zinc hairlines, carbon ink) but never restyles them. Both worlds share a hard brand commitment from the owner: no pill-shaped or heavily rounded tabs, chips or cards anywhere.
+Scope: the shared dashboard shell (sidebar, breadcrumbs, PageContainer) is fixed and kept unchanged, so it is out of scope for this system. The desk world consumes the shell's neutral tokens (white ground, zinc hairlines, carbon ink) but never restyles them. Both worlds share a hard brand commitment from the owner: no pill-shaped or heavily rounded tabs, chips or cards anywhere.
 
 **Key Characteristics:**
 - Desk: shell neutrals, carbon ink, one lot-yellow marker reserved for attention.
@@ -448,5 +448,5 @@ An asphalt band with white text and a 6px dashed lane-yellow stripe along the bo
 - **Don't** use lot yellow or lane yellow as decoration, on headings, or on buttons.
 - **Don't** set small labels in tracked uppercase, and don't put a small label above a heading as a kicker.
 - **Don't** add shadows to desk surfaces, or shadows beyond the three quiet storefront shadows.
-- **Don't** restyle the shared dashboard shell (sidebar, breadcrumbs, PageContainer). It is byte-identical to Openfront E-commerce.
+- **Don't** restyle the shared dashboard shell (sidebar, breadcrumbs, PageContainer). It is kept unchanged.
 - **Don't** hard-code a brand hue on the storefront.

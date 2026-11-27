@@ -4,7 +4,7 @@ type CreatePaymentInput = {
   amount: number;
   currency: string;
   description?: string;
-  metadata: { openfront_transaction_id: string };
+  metadata: { elvis_transaction_id: string };
   successUrl: string;
   cancelUrl: string;
   idempotencyKey?: string;

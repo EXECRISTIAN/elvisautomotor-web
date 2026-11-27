@@ -1,4 +1,4 @@
-import { openfrontClient } from '../config'
+import { apiClient } from '../config'
 import { GET_VEHICLES } from './queries'
 import { buildVehicleWhereInput } from './vehicle-inventory'
 
@@ -10,7 +10,7 @@ export async function listedVehicleIds(): Promise<string[]> {
   const ids: string[] = []
   try {
     for (let page = 0; page < MAX_PAGES; page += 1) {
-      const data = await openfrontClient.request<{ publicInventoryVehicles: { totalCount: number; items: { id: string }[] } | null }>(GET_VEHICLES, {
+      const data = await apiClient.request<{ publicInventoryVehicles: { totalCount: number; items: { id: string }[] } | null }>(GET_VEHICLES, {
         where: buildVehicleWhereInput(),
         orderBy: [{ year: 'desc' }],
         take: PAGE_SIZE,

@@ -1,6 +1,6 @@
-# Elvis Automotores — Fase 1: Auditoría de Openfront Dealership
+# Elvis Automotores — Fase 1: Auditoría de la plantilla base
 
-Base: `openshiporg/openfront-dealership` (licencia **MIT**: permite uso comercial y modificación; hay que conservar el archivo `LICENSE` con el aviso de copyright).
+Base: plantilla de código abierto con licencia **MIT** (permite uso comercial y modificación; se conserva el archivo `LICENSE` en el repositorio).
 Referencia visual: `docs/elvis/referencia-diseno.webp`.
 
 ## 1. Arquitectura actual
@@ -34,7 +34,7 @@ Referencia visual: `docs/elvis/referencia-diseno.webp`.
 | Toma de usado con varias fotos | 1 foto | Modelo de fotos múltiples para `TradeIn` |
 | WhatsApp | No existe | Número en `DealershipProfile` + botón con mensaje (vehículo, año, precio, link) |
 | Español argentino / ARS | Todo en inglés, USD | Traducción de storefront y panel, `lang="es-AR"`, formato `$ 54.900.000` |
-| Marca Elvis | Branding Openfront | Nuevo tema negro/dorado según referencia |
+| Marca Elvis | Branding de la plantilla | Nuevo tema negro/dorado según referencia |
 
 ## 4. Problemas / riesgos detectados
 - **Datos de ejemplo**: el seed trae vehículos/fotos de demo en `public/images/vehicles` — se deben reemplazar por stock real antes de publicar.
@@ -64,7 +64,7 @@ Referencia visual: `docs/elvis/referencia-diseno.webp`.
 - Nuevos campos de vehículo: combustible, transmisión, cilindrada/motor y "destacado" (migración `20261119130000_elvis_vehicle_specs`).
   Opciones y validación compartidas en `features/lib/vehicleSpecs.ts` (validadas también en el servidor).
 - Los campos se cargan en el alta y en la edición del panel (Inventory → vehículo → Edit). Como cambian el contenido publicado,
-  la publicación vuelve a borrador y debe aprobarse de nuevo (mismo circuito de revisión de Openfront).
+  la publicación vuelve a borrador y debe aprobarse de nuevo (mismo circuito de revisión).
 - Botón "Destacar" en la ficha del panel (no requiere re-aprobación). La home muestra primero los destacados y completa hasta 4.
 - Inventario público en español con filtros por marca, modelo, año, precio, kilometraje, combustible y transmisión.
 - Ficha de vehículo en español, con botón "Consultar por WhatsApp" que envía marca, modelo, versión, año, precio y enlace.

@@ -17,10 +17,10 @@ const SECRET = 'x'.repeat(40);
 const TX = 'cmvyiore8001jmj0xes9nqgft';
 
 test('success and cancel go to storefront pages on the same origin, never /dashboard', () => {
-  const { successUrl, cancelUrl } = paymentReturnUrls('https://dealership.openship.org/', TX, SECRET);
+  const { successUrl, cancelUrl } = paymentReturnUrls('https://elvis.example.com/', TX, SECRET);
   for (const url of [successUrl, cancelUrl]) {
     const parsed = new URL(url);
-    assert.equal(parsed.origin, 'https://dealership.openship.org');
+    assert.equal(parsed.origin, 'https://elvis.example.com');
     assert.ok(!parsed.pathname.startsWith('/dashboard'), url);
     assert.equal(readPaymentReturnReference(parsed.searchParams.get('ref'), SECRET), TX);
   }
@@ -39,8 +39,8 @@ test('the reference does not carry the raw id in the clear and rejects tampering
 });
 
 test('a missing secret or a bad origin refuses to build URLs', () => {
-  assert.throws(() => paymentReturnUrls('https://dealership.openship.org', TX, ''));
-  assert.throws(() => paymentReturnUrls('https://dealership.openship.org/dashboard', TX, SECRET));
+  assert.throws(() => paymentReturnUrls('https://elvis.example.com', TX, ''));
+  assert.throws(() => paymentReturnUrls('https://elvis.example.com/dashboard', TX, SECRET));
   assert.throws(() => paymentReturnUrls('undefined://undefined', TX, SECRET));
 });
 

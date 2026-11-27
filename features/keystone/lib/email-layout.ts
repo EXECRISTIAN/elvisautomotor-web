@@ -3,7 +3,7 @@
 // clients that invert colours in dark mode keep text readable, and the prefers-color-scheme block gives
 // Apple Mail / iOS a proper dark palette.
 
-export const SUPPORT_EMAIL = "hello@dealership.openship.org";
+export const SUPPORT_EMAIL = "info@elvisautomotores.com";
 
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 const C = {

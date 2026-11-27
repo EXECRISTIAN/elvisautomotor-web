@@ -1,6 +1,6 @@
 import { paymentProviderAdapters } from "../../integrations/payment";
 
-// Hardened dispatcher (same contract as Openfront Restaurant): adapter keys resolve only
+// Hardened dispatcher: adapter keys resolve only
 // through the finite registry, external adapters get a bounded, redirect-free POST, and
 // the provider record is projected so adapters never receive unrelated fields.
 const ADAPTER_OPERATIONS = new Set([

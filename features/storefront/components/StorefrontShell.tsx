@@ -49,7 +49,6 @@ export function StorefrontShell({
 
   const { business } = settings
   const brandStyle: StorefrontBrandStyle = { '--sf-logo-hue': business.logoColor }
-  const hideBranding = process.env.HIDE_OPENFRONT_BRANDING === 'true'
 
   return (
     <StorefrontBusinessProvider business={business}>
@@ -60,7 +59,7 @@ export function StorefrontShell({
         <LocalSiteOverrides />
         <Header />
         <main className="sf-main flex-1">{children}</main>
-        <Footer branding={!hideBranding} />
+        <Footer />
         <ComparisonBar />
       </div>
     </StorefrontBusinessProvider>

@@ -13,7 +13,7 @@ web
 - **Dealership staff (platform):** sales managers and salespeople working leads, test drives and deals; F&I managers on finance applications and products; delivery coordinators; service advisors and technicians on appointments and repair orders; parts counter; office/accounting on payments and journal batches; the owner reading the overview.
 
 ## Product Purpose
-Openfront Dealership is a self-hostable showroom plus dealer management system for one dealer group's rooftops: inventory, CRM, test drives, trade-ins, the deal desk, finance, delivery, service, parts, payments and accounting. Success is a staff member seeing what needs them today and acting on it in one or two clicks, and a shopper getting from "which car" to a booked visit.
+Elvis Automotores is a self-hostable showroom plus dealer management system for one dealer group's rooftops: inventory, CRM, test drives, trade-ins, the deal desk, finance, delivery, service, parts, payments and accounting. Success is a staff member seeing what needs them today and acting on it in one or two clicks, and a shopper getting from "which car" to a booked visit.
 
 ## Positioning
 The storefront is a live projection of the same inventory, pricing, hours and service menu the staff work in, so every price, stock number and slot shown is the one on the desk.
@@ -24,7 +24,7 @@ The storefront is a live projection of the same inventory, pricing, hours and se
 - Staff use the dashboard on desktop at the desk and on phones on the lot.
 
 ## Capabilities and Constraints
-- Platform routes live under `/dashboard/platform/*` inside the shared Openfront dashboard shell, which must stay byte-identical to Openfront E-commerce.
+- Platform routes live under `/dashboard/platform/*` inside the shared dashboard shell, which must stay kept unchanged.
 - Storefront routes: `/`, `/inventory`, vehicle detail via `[...slug]`, `/compare`, `/financing`, `/trade-in`, `/test-drive`, `/service`, `/contact`, `/photo-credits`, `/account/**`.
 - No online vehicle checkout; requests are leads. Payment estimates are estimates.
 - Vehicle photos are licensed third-party photos with visible credits; credits must stay.

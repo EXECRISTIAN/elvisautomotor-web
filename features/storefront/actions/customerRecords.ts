@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { openfrontClient } from '../lib/config'
+import { apiClient } from '../lib/config'
 import { getAuthHeaders } from '../lib/data/cookies'
 import type {
   CustomerEmailLink,
@@ -17,7 +17,7 @@ import type {
 // ownership; nothing in these calls names a customer, email or account.
 
 async function request<T>(document: string, variables: Record<string, unknown> = {}): Promise<T> {
-  return openfrontClient.request<T>(document, variables, await getAuthHeaders())
+  return apiClient.request<T>(document, variables, await getAuthHeaders())
 }
 
 function errorMessage(error: unknown, fallback: string) {

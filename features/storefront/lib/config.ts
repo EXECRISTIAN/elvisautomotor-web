@@ -7,7 +7,7 @@ import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { getGraphQLEndpoint } from './getBaseUrl';
 import { getServerGraphQLTarget } from '@/features/dashboard/lib/getBaseUrl';
 
-class OpenfrontClient {
+class ApiClient {
   // Built PER REQUEST: the loopback fetch signs the CURRENT visitor's identity, so nothing about one
   // visitor (endpoint, identity or headers) may be cached on this instance.
   private async getClient(): Promise<GraphQLClient> {
@@ -35,4 +35,4 @@ class OpenfrontClient {
   }
 }
 
-export const openfrontClient = new OpenfrontClient();
+export const apiClient = new ApiClient();

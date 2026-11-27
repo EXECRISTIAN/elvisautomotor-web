@@ -1,4 +1,4 @@
-# Openfront Dealership: schema map
+# Elvis Automotores: schema map
 
 Step 1 of the platform coverage brief (`~/Code/Euler/state/briefs/platform-coverage-2026-10-23.md`). Written from a full read of `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/lifecycle/**`, `features/keystone/mutations/**`, the onboarding seed, every platform slice under `features/platform/**` with its route wrappers under `app/dashboard/(admin)/platform/**`, and the storefront under `app/(storefront)/**` and `features/storefront/**`. Read only; nothing was run.
 

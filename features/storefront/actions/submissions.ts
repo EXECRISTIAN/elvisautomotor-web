@@ -1,6 +1,6 @@
 'use server'
 
-import { openfrontClient } from '../lib/config'
+import { apiClient } from '../lib/config'
 import { getAuthHeaders } from '../lib/data/cookies'
 import { DEMO_SUBMISSION_MESSAGE, isDemoMode } from '@/features/lib/demoMode'
 import { getGraphQLEndpoint } from '../lib/getBaseUrl'
@@ -32,7 +32,7 @@ async function executeSubmission<T extends SubmissionPayload>(
   if (isDemoMode()) return { success: false, error: DEMO_SUBMISSION_MESSAGE, code: 'demo-mode' }
   let response: Record<string, T>
   try {
-    response = await openfrontClient.request<Record<string, T>>(
+    response = await apiClient.request<Record<string, T>>(
       document,
       { data: { ...input, idempotencyKey: input.idempotencyKey.trim() } },
       await getAuthHeaders()

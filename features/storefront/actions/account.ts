@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { resetPassword } from '@/features/dashboard/actions/auth'
-import { openfrontClient } from '../lib/config'
+import { apiClient } from '../lib/config'
 import { getAuthHeaders, removeAuthToken, setAuthToken } from '../lib/data/cookies'
 
 export type AccountState = { error: string | null; success?: string }
@@ -18,7 +18,7 @@ export type CustomerProfile = {
 
 export async function getCustomer(): Promise<CustomerProfile | null> {
   try {
-    const { authenticatedItem } = await openfrontClient.request<{ authenticatedItem: CustomerProfile | null }>(
+    const { authenticatedItem } = await apiClient.request<{ authenticatedItem: CustomerProfile | null }>(
       `query CustomerAccount { authenticatedItem { ... on User { id name email phone } } }`,
       {},
       await getAuthHeaders()
@@ -30,7 +30,7 @@ export async function getCustomer(): Promise<CustomerProfile | null> {
 }
 
 async function authenticate(email: string, password: string) {
-  const { authenticateUserWithPassword } = await openfrontClient.request<{
+  const { authenticateUserWithPassword } = await apiClient.request<{
     authenticateUserWithPassword: { sessionToken?: string; message?: string } | null
   }>(
     `mutation CustomerSignin($email: String!, $password: String!) {
@@ -54,7 +54,7 @@ export async function signInCustomer(_state: AccountState, data: FormData): Prom
     if (!token) return { error: 'Usuario o contraseña incorrectos.' }
     await setAuthToken(token)
     // Si entra alguien del personal (por ejemplo, el administrador), va directo al panel.
-    const me = await openfrontClient
+    const me = await apiClient
       .request<{ authenticatedItem: { role?: { id: string } | null } | null }>(
         `query StaffCheck { authenticatedItem { ... on User { role { id } } } }`,
         {},
@@ -77,7 +77,7 @@ export async function signUpCustomer(_state: AccountState, data: FormData): Prom
   if (process.env.DEMO_MODE === 'true') return { error: 'Sitio de demostración: el registro de clientes está desactivado.' }
   if (!name || !email || !password) return { error: 'Ingresa tu nombre, email y contraseña.' }
   try {
-    await openfrontClient.request(
+    await apiClient.request(
       `mutation RegisterCustomer($name: String!, $email: String!, $password: String!) {
         registerCustomerAccount(name: $name, email: $email, password: $password) { id }
       }`,
@@ -112,7 +112,7 @@ async function updateCustomer(data: Record<string, string>, failure: string): Pr
   const customer = await getCustomer()
   if (!customer) return { error: 'Inicia sesión para actualizar tu perfil.' }
   try {
-    await openfrontClient.request(
+    await apiClient.request(
       `mutation UpdateCustomer($id: ID!, $data: UserUpdateInput!) {
         updateUser(where: { id: $id }, data: $data) { id }
       }`,

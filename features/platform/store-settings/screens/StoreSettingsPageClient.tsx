@@ -51,7 +51,7 @@ const EMPTY_SETTINGS: DealershipStoreSettings = {
   timezone: '',
 }
 
-const SHOW_OPENFRONT_LOGO_PICKER = false
+const SHOW_LOGO_PICKER = false
 
 const US_TIME_ZONES = [
   { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (Argentina)' },
@@ -325,12 +325,12 @@ export function StoreSettingsPageClient({
         </div>
 
         {/* Elvis Automotores: el logo AE está integrado en el diseño del sitio, así que el selector de ícono
-            de Openfront no se muestra (no tendría efecto). Se conserva el código por si se reutiliza. */}
+            de la plantilla no se muestra (no tendría efecto). Se conserva el código por si se reutiliza. */}
         <Section title="Marca">
           <p className="text-sm text-muted-foreground">El logo de Elvis Automotores (isotipo AE + logotipo) está integrado en el diseño del sitio.</p>
         </Section>
-        {SHOW_OPENFRONT_LOGO_PICKER && (
-        <Section title="Ícono (Openfront)">
+        {SHOW_LOGO_PICKER && (
+        <Section title="Ícono">
           <div className="space-y-6">
           {/* Logo Icon Selector */}
           <div>

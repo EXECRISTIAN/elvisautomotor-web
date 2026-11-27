@@ -1,6 +1,6 @@
 import { cache } from 'react'
 
-import { openfrontClient } from '../config'
+import { apiClient } from '../config'
 import {
   createStorefrontBusiness,
   type StorefrontProfileDto,
@@ -36,7 +36,7 @@ const STOREFRONT_PROFILE = `
 
 export const loadStorefrontBusiness = cache(async function (): Promise<StorefrontSettingsState> {
   try {
-    const data = await openfrontClient.request<{ storefrontProfile: StorefrontProfileDto | null }>(STOREFRONT_PROFILE)
+    const data = await apiClient.request<{ storefrontProfile: StorefrontProfileDto | null }>(STOREFRONT_PROFILE)
     return { status: 'ready', business: createStorefrontBusiness(data.storefrontProfile ?? {}) }
   } catch {
     return { status: 'error' }

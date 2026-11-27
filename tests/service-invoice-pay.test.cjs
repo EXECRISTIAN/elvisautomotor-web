@@ -37,7 +37,7 @@ function harness({ owned = ['so1'], status = 'invoiced', payments = [] } = {}) {
     user: { async findUnique() { return { email: 'buyer@example.com' } } },
   };
   const sudo = { prisma, transaction: async (fn) => fn({ prisma }), query: { PaymentProvider: { async findMany() { return [{ id: 'pp', code: 'stripe' }] } } } };
-  const context = { session: { listKey: 'User', itemId: 'acct' }, prisma: {}, sudo: () => sudo, req: { headers: { host: 'dealership.openship.org', 'x-forwarded-proto': 'https' } } };
+  const context = { session: { listKey: 'User', itemId: 'acct' }, prisma: {}, sudo: () => sudo, req: { headers: { host: 'elvis.example.com', 'x-forwarded-proto': 'https' } } };
   const mocks = {
     '../utils/paymentProviderAdapter': { async executeAdapterFunction({ args }) { charges.push(args); return { checkoutUrl: 'https://checkout.stripe.test/s1', providerSessionId: 'cs_1' } } },
     '../lib/paymentReturn': { paymentReturnUrls: () => ({ successUrl: 's', cancelUrl: 'c' }) },

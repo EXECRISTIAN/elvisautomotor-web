@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 
 import { Container } from '../components/Container'
 import { PageHeader } from '../components/PageHeader'
-import { openfrontClient } from '../lib/config'
+import { apiClient } from '../lib/config'
 import { GET_VEHICLES } from '../lib/data/queries'
 import { vehicleImageUrl } from '../lib/images'
 import type { Vehicle } from '../lib/types'
@@ -11,7 +11,7 @@ import { photoAttributionFor, type PhotoAttribution } from '../lib/photoAttribut
 
 async function listedPhotoAttributions(): Promise<PhotoAttribution[]> {
   try {
-    const data = await openfrontClient.request<{ publicInventoryVehicles: { items: Vehicle[] } }>(GET_VEHICLES, {
+    const data = await apiClient.request<{ publicInventoryVehicles: { items: Vehicle[] } }>(GET_VEHICLES, {
       where: { status: { equals: 'available' } },
       take: 100,
     })

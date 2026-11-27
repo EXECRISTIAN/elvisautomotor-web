@@ -75,7 +75,7 @@ test('confirmation email is sent once, names the car and next step, and needs a 
   const prisma = {
     paymentTransaction: { async findUnique() { return payment } },
     domainAuditEvent: { async create({ data }) { if (rows.has(data.eventKey)) throw new Error('unique'); rows.set(data.eventKey, data); return { id: 1 } }, async update({ where, data }) { Object.assign(rows.get(where.eventKey), data); return {} } },
-    rooftop: { async findUnique() { return { name: 'Openship Motors' } } },
+    rooftop: { async findUnique() { return { name: 'Elvis Automotores' } } },
     dealershipProfile: { async findFirst() { return { phone: '555-0199', addressLine1: '1 Main St', city: 'Austin', state: 'TX' } } },
   };
   const mail = { async sendReservationConfirmationEmail(to, details) { sent.push({ to, details }); return { sent: true, messageId: 'm1' } } };

@@ -172,7 +172,7 @@
         "Asientos calefaccionados",
         "Sensores de estacionamiento"
       ],
-      "imagePath": "/images/vehicles/smc-2401.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "nafta",
       "transmission": "automatica",
       "engine": "2.0 Turbo",
@@ -202,7 +202,7 @@
         "Cargador inalámbrico",
         "Monitor de punto ciego"
       ],
-      "imagePath": "/images/vehicles/smc-2404.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "nafta",
       "transmission": "automatica",
       "engine": "2.5",
@@ -232,7 +232,7 @@
         "Techo solar",
         "Tracción integral"
       ],
-      "imagePath": "/images/vehicles/smc-2405.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "hibrido",
       "transmission": "automatica",
       "engine": "2.0 Híbrido",
@@ -262,7 +262,7 @@
         "Pantalla táctil",
         "Control crucero"
       ],
-      "imagePath": "/images/vehicles/smc-2406.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "nafta",
       "transmission": "automatica",
       "engine": "1.5 Turbo",
@@ -292,7 +292,7 @@
         "Climatizador bizona",
         "Llantas de aleación"
       ],
-      "imagePath": "/images/vehicles/smc-2409.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "nafta",
       "transmission": "automatica",
       "engine": "2.0 Turbo",
@@ -322,7 +322,7 @@
         "Escape deportivo",
         "Modo de manejo seleccionable"
       ],
-      "imagePath": "/images/vehicles/smc-2412.jpg",
+      "imagePath": "/images/vehicles/foto-proximamente.jpg",
       "fuelType": "nafta",
       "transmission": "manual",
       "engine": "5.0 V8",

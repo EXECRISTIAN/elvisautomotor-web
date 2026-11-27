@@ -98,7 +98,7 @@ export async function getPublicInventoryFeed(context: any, input: PublicInventor
   }
 }
 
-const FEED_SCHEMA = 'openfront.inventory.v1'
+const FEED_SCHEMA = 'elvis.inventory.v1'
 const DEFAULT_TAKE = 100
 const MAX_TAKE = 200
 const CONDITIONS = new Set(['new', 'used', 'certified'])
@@ -178,7 +178,7 @@ function requestOrigin(context: any) {
 
 /**
  * Public `publicInventoryFeed` query: the syndication document (schema
- * openfront.inventory.v1) for frontline, approved, published units only.
+ * elvis.inventory.v1) for frontline, approved, published units only.
  * Bad filters and unavailable locations throw, so they surface as GraphQL errors.
  */
 export async function publicInventoryFeed(_root: unknown, args: PublicInventoryFeedArgs, context: any) {

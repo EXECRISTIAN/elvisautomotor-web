@@ -1,4 +1,4 @@
-import { openfrontClient } from '../config'
+import { apiClient } from '../config'
 
 export type PaymentReturn = {
   state: 'received' | 'refunded' | 'pending' | 'closed'
@@ -23,7 +23,7 @@ const PAYMENT_RETURN = `
 export async function loadPaymentReturn(reference: string | null | undefined): Promise<PaymentReturn | null> {
   if (!reference) return null
   try {
-    const data = await openfrontClient.request<{ paymentReturnStatus: PaymentReturn | null }>(PAYMENT_RETURN, { reference })
+    const data = await apiClient.request<{ paymentReturnStatus: PaymentReturn | null }>(PAYMENT_RETURN, { reference })
     return data.paymentReturnStatus ?? null
   } catch {
     return null

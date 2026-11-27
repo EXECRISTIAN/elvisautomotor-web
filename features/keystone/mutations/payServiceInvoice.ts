@@ -69,7 +69,7 @@ export async function payServiceInvoice(_root: unknown, { serviceOrderId }: { se
     const response = await executeAdapterFunction({
       provider,
       functionName: 'createPaymentFunction',
-      args: { amount: current.amountCents, currency: current.currency, description: `Service invoice ${current.serviceOrder?.invoiceNumber || ''}`.trim(), metadata: { openfront_transaction_id: transactionId }, idempotencyKey: current.idempotencyKey, successUrl, cancelUrl, customerEmail: account?.email || undefined },
+      args: { amount: current.amountCents, currency: current.currency, description: `Service invoice ${current.serviceOrder?.invoiceNumber || ''}`.trim(), metadata: { elvis_transaction_id: transactionId }, idempotencyKey: current.idempotencyKey, successUrl, cancelUrl, customerEmail: account?.email || undefined },
     })
     await sudo.prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_STARTABLE] } }, data: { status: 'pending', checkoutUrl: response?.checkoutUrl, providerSessionId: response?.providerSessionId, providerTransactionId: response?.providerTransactionId || '', version: { increment: 1 } } })
     if (!response?.checkoutUrl) throw new Error('Provider returned no checkout link')

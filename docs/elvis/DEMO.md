@@ -17,7 +17,7 @@ No apuntar el dominio `elvisautomotores.com` a esta demo. Usar el subdominio que
    - `DATABASE_URL` → la del Postgres de Railway
    - `SESSION_SECRET` → texto aleatorio de 32+ caracteres (por ejemplo `openssl rand -base64 48`)
    - `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`
-   - `DEMO_MODE=true`, `DEMO_PASSWORD=<clave>`, `HIDE_OPENFRONT_BRANDING=true` (opcional)
+   - `DEMO_MODE=true`, `DEMO_PASSWORD=<clave>`
 5. Deploy. Las migraciones se aplican solas (`release:migrate`).
 6. Entrar a `/dashboard/init`, crear el usuario administrador y completar **Store Settings** con los datos del negocio
    (o ejecutar `docs/elvis/perfil-elvis.sql` sobre la base). Dejar el WhatsApp vacío hasta tener el número confirmado.

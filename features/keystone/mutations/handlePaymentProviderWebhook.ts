@@ -52,9 +52,9 @@ async function handlePaymentProviderWebhook(
   const type = String(verified.type || verifiedEvent.type || "");
   const resource = verified.resource || {};
   const providerEventId = String(verifiedEvent.id || "");
-  const transactionId = String(resource.metadata?.openfront_transaction_id || "");
+  const transactionId = String(resource.metadata?.elvis_transaction_id || "");
   if (!providerEventId || !type) throw new Error("Provider event ID is required");
-  if (!transactionId) throw new Error("Payment webhook is missing Openfront transaction evidence");
+  if (!transactionId) throw new Error("Payment webhook is missing transaction evidence");
 
   const createdSeconds = Number(verifiedEvent.created || Math.floor(Date.now() / 1000));
   const result = await processVerifiedPaymentWebhook({

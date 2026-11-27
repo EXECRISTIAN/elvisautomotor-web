@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getStoreSetupState } from "../actions/onboarding";
 
 const DEALERSHIP_WELCOME_STEP = {
-  title: "Welcome to Openfront Dealership",
+  title: "Bienvenido al panel de Elvis Automotores",
   description: "Set up your dealership profile, inventory, service, parts, financing and staff roles.",
 };
 

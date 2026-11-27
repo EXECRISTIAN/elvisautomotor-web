@@ -41,9 +41,9 @@ export function internalIdentityHeaders(
     const signed = signInternalClientIdentity(source, secret, now)
     if (!signed) return {}
     return {
-      'x-openfront-client-identity': signed.identity,
-      'x-openfront-client-timestamp': signed.timestamp,
-      'x-openfront-client-signature': signed.signature,
+      'x-elvis-client-identity': signed.identity,
+      'x-elvis-client-timestamp': signed.timestamp,
+      'x-elvis-client-signature': signed.signature,
     }
   } catch {
     return {}

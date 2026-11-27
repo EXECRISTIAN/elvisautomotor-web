@@ -106,7 +106,7 @@ var SUPPORT_EMAIL, FONT, C, escapeHtml, p, emailParagraph, emailMuted;
 var init_email_layout = __esm({
   "features/keystone/lib/email-layout.ts"() {
     "use strict";
-    SUPPORT_EMAIL = "hello@dealership.openship.org";
+    SUPPORT_EMAIL = "info@elvisautomotores.com";
     FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
     C = {
       canvas: "#f4f4f5",
@@ -2159,7 +2159,7 @@ var VehicleImage = (0, import_core7.list)({
     imagePath: (0, import_fields11.text)({
       label: "Static Image Path",
       ui: {
-        description: "Public storefront asset path, for example /images/vehicles/smc-2403.jpg"
+        description: "Public storefront asset path, for example /images/vehicles/foto-auto.jpg"
       }
     }),
     // Caption
@@ -9574,7 +9574,7 @@ async function reserveVehicle(_root, { data }, context) {
         amount: current.amountCents,
         currency: current.currency,
         description: `Reservation deposit: ${[vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ")}`.trim(),
-        metadata: { openfront_transaction_id: transactionId },
+        metadata: { elvis_transaction_id: transactionId },
         idempotencyKey: current.idempotencyKey,
         successUrl,
         cancelUrl,
@@ -9658,7 +9658,7 @@ async function payServiceInvoice(_root, { serviceOrderId }, context) {
     const response = await executeAdapterFunction({
       provider,
       functionName: "createPaymentFunction",
-      args: { amount: current.amountCents, currency: current.currency, description: `Service invoice ${current.serviceOrder?.invoiceNumber || ""}`.trim(), metadata: { openfront_transaction_id: transactionId }, idempotencyKey: current.idempotencyKey, successUrl, cancelUrl, customerEmail: account?.email || void 0 }
+      args: { amount: current.amountCents, currency: current.currency, description: `Service invoice ${current.serviceOrder?.invoiceNumber || ""}`.trim(), metadata: { elvis_transaction_id: transactionId }, idempotencyKey: current.idempotencyKey, successUrl, cancelUrl, customerEmail: account?.email || void 0 }
     });
     await sudo.prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_STARTABLE] } }, data: { status: "pending", checkoutUrl: response?.checkoutUrl, providerSessionId: response?.providerSessionId, providerTransactionId: response?.providerTransactionId || "", version: { increment: 1 } } });
     if (!response?.checkoutUrl) throw new Error("Provider returned no checkout link");
@@ -18147,7 +18147,7 @@ async function createPaymentCheckout(_root, { data }, context) {
     const requestHeaders = context.req?.headers || {};
     const origin = `${requestHeaders["x-forwarded-proto"] || "https"}://${requestHeaders["x-forwarded-host"] || requestHeaders.host}`;
     const { successUrl, cancelUrl } = paymentReturnUrls(origin, transactionId, paymentReturnSecret3());
-    const response = await executeAdapterFunction({ provider, functionName: "createPaymentFunction", args: { amount: amountCents, currency, description: source.description, metadata: { openfront_transaction_id: transactionId }, idempotencyKey: idempotencyKey6, successUrl, cancelUrl } });
+    const response = await executeAdapterFunction({ provider, functionName: "createPaymentFunction", args: { amount: amountCents, currency, description: source.description, metadata: { elvis_transaction_id: transactionId }, idempotencyKey: idempotencyKey6, successUrl, cancelUrl } });
     if (!response?.checkoutUrl) throw new Error("This provider has no online checkout. Record a counter payment instead.");
     await context.sudo().prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_STARTABLE] } }, data: { status: "pending", checkoutUrl: response?.checkoutUrl, providerSessionId: response?.providerSessionId, providerTransactionId: response?.providerTransactionId, version: { increment: 1 } } });
   } catch (error) {
@@ -18237,7 +18237,7 @@ async function requestPaymentRefund(_root, { data }, context) {
   const existing = await context.sudo().prisma.paymentRefund.findUnique({ where: { id: refundId } });
   if (!existing.providerRefundId) {
     try {
-      const result2 = await executeAdapterFunction({ provider, functionName: "refundPaymentFunction", args: { paymentId: transaction.providerTransactionId, amount: amountCents, currency: transaction.currency, idempotencyKey: idempotencyKey6, metadata: { openfront_refund_id: refundId, openfront_transaction_id: transactionId, openfront_reason: reason.slice(0, 200) } } });
+      const result2 = await executeAdapterFunction({ provider, functionName: "refundPaymentFunction", args: { paymentId: transaction.providerTransactionId, amount: amountCents, currency: transaction.currency, idempotencyKey: idempotencyKey6, metadata: { elvis_refund_id: refundId, elvis_transaction_id: transactionId, elvis_reason: reason.slice(0, 200) } } });
       await context.sudo().prisma.paymentRefund.update({ where: { id: refundId }, data: { providerRefundId: result2?.providerRefundId ? String(result2.providerRefundId) : void 0, status: result2?.status === "succeeded" ? "succeeded" : "pending" } });
       if (result2?.status === "succeeded") await context.sudo().transaction(async (tx) => {
         await tx.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`payment-webhook:${transactionId}`}, 0))`;
@@ -18358,9 +18358,9 @@ async function handlePaymentProviderWebhook(root, { providerId, event: event2, h
   const type = String(verified.type || verifiedEvent.type || "");
   const resource = verified.resource || {};
   const providerEventId = String(verifiedEvent.id || "");
-  const transactionId = String(resource.metadata?.openfront_transaction_id || "");
+  const transactionId = String(resource.metadata?.elvis_transaction_id || "");
   if (!providerEventId || !type) throw new Error("Provider event ID is required");
-  if (!transactionId) throw new Error("Payment webhook is missing Openfront transaction evidence");
+  if (!transactionId) throw new Error("Payment webhook is missing transaction evidence");
   const createdSeconds = Number(verifiedEvent.created || Math.floor(Date.now() / 1e3));
   const result2 = await processVerifiedPaymentWebhook({
     id: providerEventId,
@@ -18664,7 +18664,7 @@ function reportCsv(value) {
 async function buildReportRunSnapshot(saved, context) {
   const report = await savedReportPayload(saved, context);
   const exportPayload = saved.exportFormat === "csv" ? { contentType: "text/csv", content: reportCsv(report) } : report;
-  const snapshot2 = { schema: "openfront.report.v1", reportType: saved.reportType, exportFormat: saved.exportFormat, filters: normalizeReportFilters(saved.reportType, saved.filters || {}), report: exportPayload };
+  const snapshot2 = { schema: "elvis.report.v1", reportType: saved.reportType, exportFormat: saved.exportFormat, filters: normalizeReportFilters(saved.reportType, saved.filters || {}), report: exportPayload };
   const digest = (0, import_node_crypto12.createHash)("sha256").update(JSON.stringify(snapshot2)).digest("hex");
   return { snapshot: snapshot2, digest, expiresAt: new Date(Date.now() + 30 * 864e5) };
 }
@@ -19789,7 +19789,7 @@ async function getPublicInventoryFeed(context, input2) {
     totalCount: validated.length
   };
 }
-var FEED_SCHEMA = "openfront.inventory.v1";
+var FEED_SCHEMA = "elvis.inventory.v1";
 var DEFAULT_TAKE = 100;
 var MAX_TAKE = 200;
 var CONDITIONS4 = /* @__PURE__ */ new Set(["new", "used", "certified"]);

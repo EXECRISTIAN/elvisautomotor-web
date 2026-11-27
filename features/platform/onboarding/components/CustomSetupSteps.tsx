@@ -107,9 +107,9 @@ Start by telling me what this JSON configuration currently contains:
 All prices are whole numbers of cents (for example 8995 is $89.95).
 
 Then ask: "This is what your dealership configuration currently has. What would you like to change?
-As the user provides more changes to the JSON, keep asking what changes and once the user is finished and indicates they are done, return the JSON and tell them to paste it into Openfront."
+As the user provides more changes to the JSON, keep asking what changes and once the user is finished and indicates they are done, return the JSON and tell them to paste it into the dashboard."
 
-After I tell you what to change, modify the JSON and provide the complete updated configuration for me to paste into Openfront.`;
+After I tell you what to change, modify the JSON and provide the complete updated configuration for me to paste into the dashboard.`;
   };
 
   const [jsonApplied, setJsonApplied] = useState(false);

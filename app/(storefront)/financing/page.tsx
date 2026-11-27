@@ -5,7 +5,7 @@ import { loadStorefrontBusiness } from '@/features/storefront/lib/data/storefron
 import { pageMetadata } from '@/features/storefront/lib/seo'
 import { PageFallback } from '@/features/storefront/components/PageFallback'
 import { FinancingPage, type PublicFinancingPlan } from '@/features/storefront/screens/FinancingPage'
-import { openfrontClient } from '@/features/storefront/lib/config'
+import { apiClient } from '@/features/storefront/lib/config'
 import { GET_VEHICLES } from '@/features/storefront/lib/data/queries'
 import type { Vehicle } from '@/features/storefront/lib/types'
 
@@ -23,12 +23,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const plans = await openfrontClient
+  const plans = await apiClient
     .request<{ publicFinancingPlans: PublicFinancingPlan[] }>(PUBLIC_FINANCING_PLANS)
     .then((data) => data.publicFinancingPlans ?? [])
     .catch(() => [])
   // La lista de autos viene incluida en la página (también funciona en la muestra local sin servidor).
-  const vehicles = await openfrontClient
+  const vehicles = await apiClient
     .request<{ publicInventoryVehicles: { items: Vehicle[] } }>(GET_VEHICLES, { where: { status: { equals: 'available' } }, orderBy: [{ year: 'desc' }], take: 100 })
     .then((data) => data.publicInventoryVehicles?.items ?? null)
     .catch(() => null)

@@ -110,7 +110,7 @@ export async function createPaymentCheckout(_root: unknown, { data }: any, conte
     const origin = `${requestHeaders['x-forwarded-proto'] || 'https'}://${requestHeaders['x-forwarded-host'] || requestHeaders.host}`
     // The customer pays, so they return to the storefront, never to the dashboard that staff used.
     const { successUrl, cancelUrl } = paymentReturnUrls(origin, transactionId, paymentReturnSecret())
-    const response = await executeAdapterFunction({ provider, functionName: 'createPaymentFunction', args: { amount: amountCents, currency, description: source.description, metadata: { openfront_transaction_id: transactionId }, idempotencyKey, successUrl, cancelUrl } })
+    const response = await executeAdapterFunction({ provider, functionName: 'createPaymentFunction', args: { amount: amountCents, currency, description: source.description, metadata: { elvis_transaction_id: transactionId }, idempotencyKey, successUrl, cancelUrl } })
     // A provider with no hosted page (Manual) would leave a pending row nothing can ever capture or cancel.
     if (!response?.checkoutUrl) throw new Error('This provider has no online checkout. Record a counter payment instead.')
     await context.sudo().prisma.paymentTransaction.updateMany({ where: { id: transactionId, status: { in: [...CHECKOUT_STARTABLE] } }, data: { status: 'pending', checkoutUrl: response?.checkoutUrl, providerSessionId: response?.providerSessionId, providerTransactionId: response?.providerTransactionId, version: { increment: 1 } } })
@@ -207,7 +207,7 @@ export async function requestPaymentRefund(_root: unknown, { data }: any, contex
   const existing = await context.sudo().prisma.paymentRefund.findUnique({ where: { id: refundId } })
   if (!existing.providerRefundId) {
     try {
-      const result = await executeAdapterFunction({ provider, functionName: 'refundPaymentFunction', args: { paymentId: transaction.providerTransactionId, amount: amountCents, currency: transaction.currency, idempotencyKey, metadata: { openfront_refund_id: refundId, openfront_transaction_id: transactionId, openfront_reason: reason.slice(0, 200) } } })
+      const result = await executeAdapterFunction({ provider, functionName: 'refundPaymentFunction', args: { paymentId: transaction.providerTransactionId, amount: amountCents, currency: transaction.currency, idempotencyKey, metadata: { elvis_refund_id: refundId, elvis_transaction_id: transactionId, elvis_reason: reason.slice(0, 200) } } })
       await context.sudo().prisma.paymentRefund.update({ where: { id: refundId }, data: { providerRefundId: result?.providerRefundId ? String(result.providerRefundId) : undefined, status: result?.status === 'succeeded' ? 'succeeded' : 'pending' } })
       if (result?.status === 'succeeded') await context.sudo().transaction(async (tx: any) => { await tx.prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`payment-webhook:${transactionId}`}, 0))`; await settleSucceededRefunds(tx, transactionId) }, { timeout: 30_000 })
     } catch (error: any) {
