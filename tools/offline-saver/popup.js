@@ -24,7 +24,7 @@ $('rec').onclick = async () => {
   $('rec').disabled = true;
   if (!on) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    await send({ type: 'recStart', tabId: tab.id });
+    await send({ type: 'recStart', tabId: tab.id, files: $('files').checked });
   } else {
     $('rs').textContent = 'Generando archivos…';
     const r = await send({ type: 'recStop' });

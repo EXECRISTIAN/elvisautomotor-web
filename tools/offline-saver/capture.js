@@ -5,12 +5,12 @@
   const abs = (u, base = location.href) => { try { return new URL(u, base).href; } catch { return null; } };
   const get = url => {
     if (!url || /^(data|blob|javascript|about):/i.test(url)) return Promise.resolve(null);
-    if (!cache.has(url)) cache.set(url, chrome.runtime.sendMessage({ type: 'fetch', url }).then(r => {
+    if (!cache.has(url)) cache.set(url, chrome.runtime.sendMessage({ type: 'fetch', url, store: !!opts.files }).then(r => {
       if (!r || r.error) return null; count++; if (count % 10 === 0) progress(`Descargando recursos… ${count}`); return r;
     }).catch(() => null));
     return cache.get(url);
   };
-  const dataOf = async u => (await get(u))?.dataUrl || u;
+  const dataOf = async u => { const r = await get(u); return (opts.files ? r?.path : r?.dataUrl) || u; };
 
   // Rewrite url(...) and @import inside CSS, recursively, relative to the stylesheet's own URL.
   async function inlineCss(css, base, depth = 0) {

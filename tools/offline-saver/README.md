@@ -17,3 +17,15 @@ Limitaciones: iframes de otros dominios y videos por streaming (HLS/DASH) no se 
 En el popup, **● Iniciar grabación**: se guarda la página actual y, automáticamente, cada página a la que navegues desde esa pestaña (clicks, links que abren pestañas nuevas y cambios de ruta en apps tipo SPA). El ícono muestra cuántas páginas lleva.
 **■ Stop y descargar** descarga **un solo `Grabacion-<fecha>.zip`** con un HTML por página + `index.html`. Descomprimilo y abrí `index.html`. Los links entre páginas grabadas apuntan a las copias locales, así se puede navegar offline.
 
+
+### Formato para reutilizar en otra web
+Con la opción **“Imágenes y fuentes como archivos separados”** (activada por defecto) el zip queda así:
+```
+Grabacion-<fecha>/
+  index.html
+  001-Inicio.html
+  002-Contacto.html
+  assets/img/…   assets/fonts/…   assets/media/…
+```
+Los HTML referencian `assets/…` con rutas relativas, así que la carpeta se puede subir tal cual a otro hosting, o copiar imágenes/secciones a otro proyecto. El CSS queda en bloques `<style>` dentro de cada HTML y los scripts se quitan.
+Sin esa opción, todo queda embebido en base64 dentro de cada HTML (un archivo autocontenido por página).

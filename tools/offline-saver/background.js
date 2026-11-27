@@ -5,18 +5,34 @@ async function toDataURL(url) {
   const blob = await res.blob();
   const buf = new Uint8Array(await blob.arrayBuffer());
   const type = blob.type || 'application/octet-stream';
-  return { dataUrl: `data:${type};base64,${b64(buf)}`, type, text: /text|css|javascript|json|svg|xml/.test(type) ? new TextDecoder().decode(buf) : null };
+  const text = /text|css|javascript|json|svg|xml/.test(type) ? new TextDecoder().decode(buf) : null;
+  return { buf, type, text };
+}
+const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'image/avif': 'avif', 'image/svg+xml': 'svg', 'image/x-icon': 'ico', 'image/vnd.microsoft.icon': 'ico', 'font/woff2': 'woff2', 'font/woff': 'woff', 'font/ttf': 'ttf', 'font/otf': 'otf', 'text/css': 'css', 'video/mp4': 'mp4', 'video/webm': 'webm', 'audio/mpeg': 'mp3' };
+function assetPath(url, type) {
+  let base = 'file', ext = EXT[type.split(';')[0]];
+  try { const last = decodeURIComponent(new URL(url).pathname.split('/').pop() || ''); const m = last.match(/^(.*?)(?:\.([a-z0-9]{1,5}))?$/i); if (m[1]) base = m[1]; if (!ext && m[2]) ext = m[2].toLowerCase(); } catch {}
+  base = base.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'file';
+  const dir = /^image/.test(type) ? 'img' : /font/.test(type) || /^(woff2?|ttf|otf|eot)$/.test(ext) ? 'fonts' : /^(video|audio)/.test(type) ? 'media' : 'other';
+  return `assets/${dir}/${base}-${crc32(new TextEncoder().encode(url)).toString(16)}${ext ? '.' + ext : ''}`;
+}
+async function fetchResource(url, store) {
+  const r = await toDataURL(url);
+  if (!store) return { dataUrl: `data:${r.type};base64,${b64(r.buf)}`, type: r.type, text: r.text };
+  const path = assetPath(url, r.type);
+  await tx('readwrite', st => st.put({ url, path, buf: r.buf }), 'assets');
+  return { path, type: r.type, text: r.text };
 }
 function b64(buf) { let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(bin); }
 const htmlDataUrl = html => 'data:text/html;base64,' + b64(new TextEncoder().encode(html));
 
 // ---------- IndexedDB store for recorded pages (survives service-worker restarts) ----------
 const db = new Promise((ok, err) => {
-  const r = indexedDB.open('offline-rec', 1);
-  r.onupgradeneeded = () => r.result.createObjectStore('pages', { keyPath: 'url' });
+  const r = indexedDB.open('offline-rec', 2);
+  r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('pages')) d.createObjectStore('pages', { keyPath: 'url' }); if (!d.objectStoreNames.contains('assets')) d.createObjectStore('assets', { keyPath: 'url' }); };
   r.onsuccess = () => ok(r.result); r.onerror = () => err(r.error);
 });
-const tx = async (mode, fn) => { const d = await db; return new Promise((ok, err) => { const t = d.transaction('pages', mode); const q = fn(t.objectStore('pages')); t.oncomplete = () => ok(q?.result); t.onerror = () => err(t.error); }); };
+const tx = async (mode, fn, store = 'pages') => { const d = await db; return new Promise((ok, err) => { const t = d.transaction(store, mode); const q = fn(t.objectStore(store)); t.oncomplete = () => ok(q?.result); t.onerror = () => err(t.error); }); };
 
 // ---------- Recording state ----------
 const getState = async () => (await chrome.storage.local.get('rec')).rec || { on: false, tabs: [], seq: 0 };
@@ -33,15 +49,15 @@ async function captureTab(tabId, record) {
   if (inFlight.has(key)) return; inFlight.add(key);
   try {
     await new Promise(r => setTimeout(r, 1200)); // let the page settle / render
-    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, scroll: true, record }] });
+    await chrome.scripting.executeScript({ target: { tabId }, func: o => { window.__offlineOpts = o; }, args: [{ noJs: true, scroll: true, record, files: record && (await getState()).files !== false }] });
     await chrome.scripting.executeScript({ target: { tabId }, files: ['capture.js'] });
   } catch (e) { console.warn('capture failed', e); }
   finally { inFlight.delete(key); }
 }
 
-async function startRecording(tabId) {
-  await tx('readwrite', st => st.clear());
-  await setState({ on: true, tabs: [tabId], seq: 0, started: Date.now() });
+async function startRecording(tabId, files) {
+  await tx('readwrite', st => st.clear()); await tx('readwrite', st => st.clear(), 'assets');
+  await setState({ on: true, tabs: [tabId], seq: 0, started: Date.now(), files });
   badge(); captureTab(tabId, true);
 }
 
@@ -65,9 +81,10 @@ async function stopRecording() {
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const index = `<!doctype html><meta charset="utf-8"><title>Grabación offline</title><style>body{font:15px system-ui;max-width:800px;margin:40px auto;padding:0 16px}li{margin:8px 0}small{color:#666}</style><h1>Grabación offline</h1><p>${pages.length} páginas · ${new Date(s.started).toLocaleString()}</p><ol>${pages.map(p => `<li><a href="${encodeURI(files.get(p.url))}">${esc(p.title || p.url)}</a><br><small>${esc(p.url)}</small></li>`).join('')}</ol>`;
   entries.unshift([`${folder}/index.html`, index]);
+  for (const a of await tx('readonly', st => st.getAll(), 'assets')) entries.push([`${folder}/${a.path}`, a.buf]);
   const zip = makeZip(entries);
   await chrome.downloads.download({ url: 'data:application/zip;base64,' + b64(zip), filename: `${folder}.zip`, saveAs: true, conflictAction: 'uniquify' });
-  await tx('readwrite', st => st.clear());
+  await tx('readwrite', st => st.clear()); await tx('readwrite', st => st.clear(), 'assets');
   return { count: pages.length, folder: folder + '.zip' };
 }
 
@@ -89,7 +106,7 @@ chrome.tabs.onRemoved.addListener(async id => { const s = await getState(); if (
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   const done = p => { p.then(reply, e => reply({ error: String(e) })); return true; };
-  if (msg.type === 'fetch') return done(toDataURL(msg.url));
+  if (msg.type === 'fetch') return done(fetchResource(msg.url, msg.store));
   if (msg.type === 'captured') {
     if (!msg.record) return done(chrome.downloads.download({ url: htmlDataUrl(msg.html), filename: msg.name, saveAs: true }).then(id => ({ id })));
     return done((async () => {
@@ -101,7 +118,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       return { ok: true };
     })());
   }
-  if (msg.type === 'recStart') return done(startRecording(msg.tabId));
+  if (msg.type === 'recStart') return done(startRecording(msg.tabId, msg.files));
   if (msg.type === 'recStop') return done(stopRecording());
   if (msg.type === 'recStatus') return done((async () => ({ ...(await getState()), count: await tx('readonly', st => st.count()) }))());
 });
@@ -114,7 +131,7 @@ function makeZip(entries) {
   const enc = new TextEncoder(), parts = [], central = []; let off = 0;
   const d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)), dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate());
   for (const [name, content] of entries) {
-    const n = enc.encode(name), data = enc.encode(content), crc = crc32(data);
+    const n = enc.encode(name), data = typeof content === 'string' ? enc.encode(content) : content, crc = crc32(data);
     const h = new DataView(new ArrayBuffer(30));
     [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, dt, 2], [12, dd, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, n.length, 2], [28, 0, 2]].forEach(([o, v, s]) => s === 4 ? h.setUint32(o, v, true) : h.setUint16(o, v, true));
     const c = new DataView(new ArrayBuffer(46));
