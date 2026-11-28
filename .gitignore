@@ -43,3 +43,4 @@ yarn-error.log*
 next-env.d.ts
 docs/elvis/elvis-muestra-offline.zip
 .ccr-ca.crt
+docs/elvis/elvis-web-netlify.zip
